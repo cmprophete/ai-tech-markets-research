@@ -1,7 +1,15 @@
 // AI, Tech and the Economy: Research Intelligence — data layer.
 // Loaded by index.html as a classic script (no build step, works on GitHub Pages
-// and file://). Edit THIS file to add research entries or update themes/policies;
-// every new entry needs `added: "YYYY-MM-DD"` (intake date) alongside `date`.
+// and file://).
+//
+// RESEARCH_DATA is GENERATED from content/research.csv. To add or edit a study,
+// curate that sheet and run:
+//     python3 tools/research.py build
+// then reload the page. Do not hand-edit the RESEARCH_DATA array below; the next
+// build overwrites it. New rows get their `id` and `added` (intake) date filled
+// in automatically. See content/README.md.
+//
+// THEMES, POLICY_DATA and CATEGORIES are still hand-edited here.
 
 const CATEGORIES = [
   { id: "hiring",           label: "Algorithmic Hiring & Screening",                  color: "var(--c3)"  },
@@ -609,7 +617,7 @@ const RESEARCH_DATA = [
       "Early adoption is metropolitan by construction: every leading market is a large metro, leaving rural regions structurally absent from the first wave of artificial-intelligence hiring.",
       "Concentration compounds: the same metros hold the talent, the research assets, and the capital, so early leads harden into durable geographic advantage.",
       "Brookings' 2025 follow-up finds the top 30 metros capture 67% of artificial-intelligence job postings, confirming the pattern's persistence."
-    ]
+    ],
   },
   { id: 266, date: "2026-07-10", added: "2026-07-16",
     title: "Labor Power and the Role of Subcontracting in the AI Economy",
@@ -621,7 +629,7 @@ const RESEARCH_DATA = [
       "Subcontracting is framed as a labor-power strategy rather than a cost decision: the layers exist partly to diffuse accountability and fragment organizing.",
       "Even large subcontractors remain subordinate. Cognizant's 2020 exit from content moderation shows the tier's dependence on lead-firm contracts.",
       "Supply-chain due-diligence law is the identified policy lever, and its current versions only partially cover artificial-intelligence production chains."
-    ]
+    ],
   },
   { id: 267, date: "2026-06-11", added: "2026-07-16",
     title: "Europe 2031: What Getting AI Wrong Means for Us",
@@ -633,7 +641,7 @@ const RESEARCH_DATA = [
       "Speculative fiction grounded in real 2025 to 2026 events, written to make compute dependence, hiring collapse, and fiscal stress concrete rather than to forecast them.",
       "The compute asymmetry and the access-rationing rule dramatize how infrastructure gaps convert into geopolitical leverage, with ASML as Europe's remaining card.",
       "The epilogue argues the decline was preventable, positioning the scenario as a policy warning rather than a prediction."
-    ]
+    ],
   },
   { id: 268, date: "2023-02-01", added: "2026-07-16",
     title: "Portable Benefits for Independent Contractors: A Framework for State Policymaking",
@@ -645,7 +653,7 @@ const RESEARCH_DATA = [
       "Operationalizes the individual-account model with concrete contribution formulas, such as the lesser of 25 percent of transaction fees or $6 per hour, under a 5 percent administrative cap.",
       "Washington's rideshare law is the enacted template: real benefits delivered while preserving contractor status, exactly the trade the classification debate contests.",
       "The work group was Amazon-supported, placing the framework on the industry-aligned side of the design debate cataloged in this database's portable-benefits sources."
-    ]
+    ],
   },
   { id: 257, date: "2016-07-13", added: "2026-07-08",
     title: "Portable Benefits Resource Guide",
@@ -657,7 +665,7 @@ const RESEARCH_DATA = [
       "Positions states and cities as the policy laboratories for portable benefits, the path the later state pilots followed.",
       "The five design questions (scope, administrator, financing, compulsion, eligibility) remain the standard decomposition of portable-benefits proposals.",
       "Written for the on-demand economy's first policy wave; predates the misclassification fights that now dominate the debate."
-    ]
+    ],
   },
   { id: 258, date: "2025-04-24", added: "2026-07-08",
     title: "Exploring Portable Benefits for Gig Workers",
@@ -669,7 +677,7 @@ const RESEARCH_DATA = [
       "Worker-directed allocation is the design centerpiece: let workers choose how contributions split across retirement, health, childcare, education, and housing.",
       "Gig-work heterogeneity undercuts one-size benefit design; part-time and full-time platform workers need different packages.",
       "Reflects the emerging federal-baseline-plus-state-pilots consensus rather than original empirical research."
-    ]
+    ],
   },
   { id: 259, date: "2025-03-24", added: "2026-07-08",
     title: "Why Workers Need Real Portable Benefits",
@@ -681,7 +689,7 @@ const RESEARCH_DATA = [
       "The insurance-versus-savings-account distinction is the analytical core: pooled-risk programs deliver security that individual accounts at pilot contribution levels cannot.",
       "Quantifies the pilot gap: $31 per month in company contributions against benchmarks like union pension contributions of 11.25 percent of pay.",
       "Argues the durable fix is extending existing social insurance to independent workers rather than building parallel private schemes."
-    ]
+    ],
   },
   { id: 260, date: "2025-08-16", added: "2026-07-08",
     title: "App-Based Workers Need Real Rights, Not 'Portable Benefits' Gimmicks",
@@ -693,7 +701,7 @@ const RESEARCH_DATA = [
       "Reads the state bills as a legal strategy: codifying contractor status is the payoff, benefit contributions are the cover.",
       "Pairs with the companion National Employment Law Project fact sheet quantifying pilot contributions at roughly $31 per month.",
       "Advocacy from the misclassification-critique camp, balancing the industry-aligned design guides in the same debate."
-    ]
+    ],
   },
   { id: 261, date: "2025-07-17", added: "2026-07-08",
     title: "Workers Need Real Security and Flexibility, Not Pro-Employer Portable Benefits Proposals",
@@ -705,7 +713,7 @@ const RESEARCH_DATA = [
       "The false-dilemma argument removes the bills' central justification: nothing in current law forces rigidity on employers who provide full benefits.",
       "The misclassification estimate (10 to 30 percent of employers) frames portable-benefits carve-outs as amnesty for an existing enforcement problem.",
       "Aligns the labor-institution critique with worker-advocacy positions against the 2025 federal bills."
-    ]
+    ],
   },
   { id: 262, date: "2026-04-06", added: "2026-07-08",
     title: "OpenAI's Vision for the AI Economy: Public Wealth Funds, Robot Taxes, and a Four-Day Workweek",
@@ -717,7 +725,7 @@ const RESEARCH_DATA = [
       "An artificial-intelligence lab publicly endorsing public wealth funds and capital taxation marks industry convergence with proposals long confined to policy circles.",
       "The payroll-tax warning gives fiscal urgency to delinking safety-net financing from wages.",
       "News coverage of the company's proposals; consult the primary document before citing specifics."
-    ]
+    ],
   },
   { id: 263, date: "2019-02-01", added: "2026-07-08",
     title: "Explainer: Algorithmic Management in the Workplace",
@@ -729,7 +737,7 @@ const RESEARCH_DATA = [
       "The foundational definition that most subsequent algorithmic-management research and regulation builds on.",
       "Framing the harms as structural rather than incidental anticipates the due-process remedies now appearing in law, including deactivation-rights ordinances.",
       "Documents the spread of platform-style management into conventional employment, a pattern later quantified by workplace-surveillance research."
-    ]
+    ],
   },
   { id: 264, date: "2025-01-01", added: "2026-07-08",
     title: "App-Based Worker Deactivation Rights Ordinance",
@@ -741,7 +749,7 @@ const RESEARCH_DATA = [
       "Converts deactivation from an unreviewable platform decision into a noticed, evidenced, and appealable process: due process as a labor standard.",
       "The aggregate-ratings prohibition directly regulates algorithmic management; a score alone can no longer end platform employment.",
       "Enforcement through a city labor-standards office demonstrates municipal capacity to regulate platform work absent federal action."
-    ]
+    ],
   },
   { id: 265, date: "2026-03-04", added: "2026-07-08",
     title: "Uber Technologies, Inc. v. City of Seattle",
@@ -753,7 +761,7 @@ const RESEARCH_DATA = [
       "Neutralizes the compelled-speech theory platforms raised against disclosure-based labor regulation, a template argument likely to recur elsewhere.",
       "With constitutionality affirmed at the appellate level, the Seattle model is cleared for adoption by other jurisdictions.",
       "Classifying notice-and-records mandates as economic conduct regulation keeps future algorithmic-transparency rules on firm First Amendment ground."
-    ]
+    ],
   },
   { id: 247, date: "2021-09-01", added: "2026-07-07",
     title: "Hidden Workers: Untapped Talent",
@@ -765,7 +773,7 @@ const RESEARCH_DATA = [
       "Automated screening is near-universal at the first stage of hiring, making transparency and audit requirements consequential for nearly every large employer rather than an early-adopter niche.",
       "Rigid keyword and work-history filters exclude an estimated 27 million United States workers from consideration, including caregivers, veterans, immigrants, and people with disabilities.",
       "The report recommends shifting from negative filtering to affirmative skills-based criteria, a design change that regulation or procurement standards could accelerate."
-    ]
+    ],
   },
   { id: 248, date: "2022-09-13", added: "2026-07-07",
     title: "Poverty in the United States: 2021",
@@ -777,7 +785,7 @@ const RESEARCH_DATA = [
       "The 46 percent decline is the largest single-year drop in child poverty on record, demonstrating that a monthly refundable child benefit can be administered at national scale through existing Internal Revenue Service infrastructure.",
       "Refundable tax credits moved 9.6 million people above the Supplemental Poverty Measure line in 2021, a larger effect than any program besides Social Security.",
       "The expansion's design elements, monthly disbursement, full refundability, and no earnings requirement, anchor the evidence base for universal child benefit proposals."
-    ]
+    ],
   },
   { id: 249, date: "2026-03-05", added: "2026-07-07",
     title: "The Gap: A Shortage of Affordable Homes",
@@ -789,7 +797,7 @@ const RESEARCH_DATA = [
       "No state has an adequate supply of affordable rental housing for its lowest-income renters, making the shortage structural rather than regional.",
       "Severe cost burdens leave the lowest-income households one income shock away from eviction, the mechanism through which labor-market disruption converts into housing instability.",
       "The shortage figure quantifies the construction scale a credible housing-stability package must address, on the order of the 500,000-unit social housing proposals now circulating."
-    ]
+    ],
   },
   { id: 250, date: "2026-06-01", added: "2026-07-07",
     title: "Policy Basics: Federal Rental Assistance",
@@ -801,7 +809,7 @@ const RESEARCH_DATA = [
       "Housing vouchers are rationed by appropriation rather than need, so eligibility does not translate into assistance for three of every four qualifying households.",
       "Full-funding proposals convert an existing, administratively proven program into a guarantee, a lower-friction expansion path than building new delivery infrastructure.",
       "Multi-year waiting lists mean voucher expansion operates on a lag; countercyclical protection requires funding ahead of displacement shocks rather than in response to them."
-    ]
+    ],
   },
   { id: 251, date: "2022-05-26", added: "2026-07-07",
     title: "Consumer Financial Protection Circular 2022-03: Adverse Action Notification Requirements in Connection with Credit Decisions Based on Complex Algorithms",
@@ -813,7 +821,7 @@ const RESEARCH_DATA = [
       "Establishes that existing consumer protection law already reaches algorithmic decision systems without new legislation, a template regulators can extend to hiring and tenant screening.",
       "Shifts the burden onto adopters: institutions must select models whose decisions can be explained, effectively barring unexplainable credit models from use.",
       "Cited across agencies as precedent for applying adverse-action logic to artificial intelligence systems in housing and employment contexts."
-    ]
+    ],
   },
   { id: 252, date: "2023-01-26", added: "2026-07-07",
     title: "Artificial Intelligence Risk Management Framework (AI RMF 1.0)",
@@ -825,7 +833,7 @@ const RESEARCH_DATA = [
       "Provides the technical vocabulary a binding audit regime needs; codifying it converts voluntary guidance into enforceable standards without drafting from scratch.",
       "Sector-agnostic design means the same framework covers hiring, credit, healthcare, and surveillance applications.",
       "Voluntariness is the limitation: absent regulation or procurement requirements, adoption is self-selected and unverified."
-    ]
+    ],
   },
   { id: 253, date: "2021-03-03", added: "2026-07-07",
     title: "Preliminary Analysis: SEED's First Year",
@@ -837,7 +845,7 @@ const RESEARCH_DATA = [
       "The employment finding reverses the standard objection: unconditional cash preceded more full-time work, not less, by funding the transport, childcare, and time that job search requires.",
       "Income-volatility smoothing is the mechanism most relevant to displacement policy, stabilizing households through transitions rather than replacing work.",
       "Findings cover February 2019 to February 2020, a pre-pandemic window that insulates them from stimulus-era confounds."
-    ]
+    ],
   },
   { id: 254, date: "2026-01-15", added: "2026-07-07",
     title: "Employee Ownership by the Numbers",
@@ -849,7 +857,7 @@ const RESEARCH_DATA = [
       "Fifteen million participants make Employee Stock Ownership Plans one of the largest broad-based capital ownership mechanisms in the United States economy.",
       "Plan formation has been roughly flat for years; conversion incentives such as lending programs, tax treatment, and state centers target the succession wave of retiring business owners.",
       "Form 5500 data lag about two years, so current-year counts understate recent conversions."
-    ]
+    ],
   },
   { id: 255, date: "2017-10-01", added: "2026-07-07",
     title: "Social Prosperity for the Future: A Proposal for Universal Basic Services",
@@ -861,7 +869,7 @@ const RESEARCH_DATA = [
       "Services-in-kind deliver the largest proportional benefit to the poorest households, a distributional profile that cash transfers of equal cost do not match.",
       "The proposal specifies deliverables, including 1.5 million new social homes and free bus travel, grounding the framework in concrete programs rather than abstract categories.",
       "Fiscal neutrality through a lower personal tax allowance demonstrates a financing route that requires no new tax instruments."
-    ]
+    ],
   },
   { id: 256, date: "2021-10-08", added: "2026-07-07",
     title: "Statement on a Two-Pillar Solution to Address the Tax Challenges Arising from the Digitalisation of the Economy",
@@ -873,7 +881,7 @@ const RESEARCH_DATA = [
       "Establishes the multilateral architecture an artificial-intelligence-profits extension would build on: an agreed rate floor, nexus rules, and model legislation already adopted by most large economies.",
       "Revenue materializes only where jurisdictions implement; United States adoption remains the framework's largest open question.",
       "Pillar One reallocates taxing rights over more than $125 billion of profit, the precedent for taxing digital value where users are located rather than where profits are booked."
-    ]
+    ],
   },
   { id: 241, date: "2026-07-02", added: "2026-07-06",
     title: "OpenAI Proposes U.S. Government Own 5% Stake to Address Political Blowback",
@@ -887,7 +895,7 @@ const RESEARCH_DATA = [
       "Altman frames government equity as a way to give the public a financial interest in AI's success — positioning the stake as a public benefit mechanism rather than a regulatory concession.",
       "The proposal envisions other leading AI companies including Anthropic, Google, and Meta making similar equity concessions through a sovereign wealth fund vehicle, though it is unclear whether any of these companies would agree.",
       "The pitch follows over a year of mounting political pressure on major U.S. AI firms over cybersecurity concerns and rising competition from Chinese open-source models."
-    ]
+    ],
   },
   { id: 242, date: "2026-07-02", added: "2026-07-06",
     title: "Preparing for the Unpredictable",
@@ -900,7 +908,7 @@ const RESEARCH_DATA = [
       "AI productivity gains are not yet visible in broad macroeconomic data despite accelerating corporate adoption; Quinlan attributes the lag to still-low economy-wide adoption rates, consistent with historical patterns where technology revolution benefits surface years after adoption reaches scale.",
       "Quinlan identifies overlooked investment opportunity in AI end-user sectors — healthcare, industrials, transportation — rather than infrastructure providers, arguing companies that deploy AI to operate more efficiently and boost margins are undervalued relative to the infrastructure layer.",
       "Key macro risks cited: higher-than-expected inflation, the Federal Reserve raising rates three times (a contrarian but possible scenario), and geopolitical tensions involving Iran potentially triggering an oil shock that offsets productivity gains."
-    ]
+    ],
   },
   { id: 243, date: "2026-06-30", added: "2026-07-06",
     title: "New Jersey A3481: Revises Homelessness Prevention Program, Establishes Eviction Filing Fee",
@@ -913,7 +921,7 @@ const RESEARCH_DATA = [
       "The $75 eviction filing fee funds an Office of Eviction Prevention to support resource navigators, relocation and rapid rehousing assistance, social services, rental assistance, and legal services for tenants facing displacement.",
       "Small landlords with three or fewer units are exempt from the new fee, and the bill explicitly prohibits passing the cost to tenants — targeting the measure at larger-scale eviction filers.",
       "New Jersey A3481 reflects state-level legislative movement on housing stability as a safety-net measure, a policy category directly relevant to economic displacement from workforce transitions including AI-driven ones."
-    ]
+    ],
   },
   { id: 244, date: "2026-06-01", added: "2026-07-06",
     title: "Tracking AI-Related Job Loss Using Unemployment Insurance Claims Data in California",
@@ -927,7 +935,7 @@ const RESEARCH_DATA = [
       "High-AI-exposure unemployment claims in the San Francisco Bay Area rose sharply after ChatGPT's release and remained elevated relative to the rest of California; statewide, claims among college-educated workers rose more than 50%.",
       "30.3% of initial California UI claims from 2023-2025 came from high-AI-exposure occupations (top quartile), validating UI data as a relevant detection instrument and contradicting the assumption that AI-exposed workers with stronger reemployment prospects would be unlikely to file.",
       "Validation analysis of six announced AI-driven mass layoffs (March 2024 to April 2025) found clear UI claim spikes at layoff dates with disproportionately high-AI-exposure workers among claimants — confirming the tracker is sensitive enough to detect AI-driven job loss when it occurs, even if aggregate effects remain below detection threshold."
-    ]
+    ],
   },
   { id: 245, date: "2026-06-25", added: "2026-07-06",
     title: "Prompt Governance? On Governing Technologies Governed by Natural Language",
@@ -940,7 +948,7 @@ const RESEARCH_DATA = [
       "System prompts function as a de facto governance layer for large language models and AI agents — setting behavioral constraints and defining permissible outputs — but they are invisible to users and largely unaddressed by existing regulatory frameworks designed for technical systems.",
       "Natural language governance creates novel accountability gaps: prompts can be modified without altering underlying model architecture, meaning behavioral changes can occur without the transparency requirements or audit trails that attach to training or code-level interventions.",
       "The authors document misalignments between technical evidence and policymaker assumptions, cautioning against treating system prompts as stable, interpretable control mechanisms and urging scrutiny before relying on prompt-based governance."
-    ]
+    ],
   },
   { id: 246, date: "2026-07-01", added: "2026-07-06",
     title: "Federal Trade Commission's Proposed Policy Statement Concerning the Suppression of Accuracy in Artificial Intelligence Systems",
@@ -954,7 +962,7 @@ const RESEARCH_DATA = [
       "An AI company can avoid Section 5 liability through clear, conspicuous, and adequate disclosures that its system prioritizes certain objectives over what users request or would otherwise expect — disclosure is framed as the primary defense mechanism.",
       "The statement singles out Colorado's Artificial Intelligence Act as an example of state law that may pressure AI companies to suppress output accuracy to avoid disparate impact liability, concluding such a state law may be impliedly preempted by federal Section 5 — a preemption argument with potential implications for state AI equity regulations nationwide.",
       "The FTC distinguishes hallucinations (arising from technological limitations, not an enforcement concern by themselves) from intentional suppression (a design choice subject to Section 5 enforcement), establishing a framework that focuses on intentional conduct and reinforces disclosure as the governing mechanism."
-    ]
+    ],
   },
   { id: 233, date: "2026-06-23", added: "2026-07-06",
     title: "Medicare's AI Push Snarls Patients and Doctors in Errors and Delays",
@@ -967,7 +975,7 @@ const RESEARCH_DATA = [
       "The University of Washington medical system reported nearly 100 patients waiting for epidural injections amid WISeR delays, and physicians described payment delays of six to eight weeks against a promised fifteen days.",
       "Documented errors include a denial asserting a patient was ineligible for thoracic procedures when the patient actually needed a neck injection, illustrating the risk of AI mistakes in coverage decisions.",
       "Roughly 84% of commercial insurers already use AI tools per a 2025 NAIC survey, though insurers say the tools are not used to deny prior-authorization requests; Medicare's seven-month WISeR rollout left vendors still adding features into spring."
-    ]
+    ],
   },
   { id: 234, date: "2026-06-01", added: "2026-07-06",
     title: "Soccer Fans, You're Being Watched",
@@ -980,7 +988,7 @@ const RESEARCH_DATA = [
       "Facial recognition is among the technologies used to identify and screen fans entering 2026 World Cup venues.",
       "Anti-drone systems and other crowd-surveillance tools form part of the security apparatus across the United States, Canada, and Mexico host sites.",
       "The tournament subjects attendees to an array of surveillance technologies, illustrating how mega-events expand biometric monitoring of the public."
-    ]
+    ],
   },
   { id: 235, date: "2026-06-17", added: "2026-07-06",
     title: "AI Is Taking Over Hospitals",
@@ -993,7 +1001,7 @@ const RESEARCH_DATA = [
       "A study led primarily by Harvard and Stanford researchers, published in Science, found ChatGPT beat hundreds of physicians on written diagnostic cases; lead author Adam Rodman cautioned the result does not prove AI is ready for routine clinical practice.",
       "AI tools are already entering hospital workflows ahead of robust evidence and safety standards, a dynamic the author compares to the disruptive, regulation-outrunning expansion of ride-hailing.",
       "The piece frames AI's clinical adoption as a question of governance and trust, not just capability, given the gap between benchmark performance and validated patient care."
-    ]
+    ],
   },
   { id: 236, date: "2026-06-01", added: "2026-07-06",
     title: "The Tech Behind ICE: Oligarchs, Immigration Enforcement, and the Threat to Democracy",
@@ -1006,7 +1014,7 @@ const RESEARCH_DATA = [
       "The report argues immigration enforcement, pursued under a domestic-terrorism framing, serves as the justification and testing ground for a broader police-state infrastructure built on federal investment in surveillance and AI.",
       "It traces a revolving door between government and major technology firms, following contracts and financial ties that channel public money into surveillance and enforcement systems.",
       "Drawing on commissioned research, it names the major corporate actors and outlines non-violent strategies to disrupt the entanglement of big technology, immigration enforcement, and militarism."
-    ]
+    ],
   },
   { id: 237, date: "2026-06-18", added: "2026-07-06",
     title: "Amazon's Next Warehouse Efficiency Drive Is About Moving Humans, Not Just Packages",
@@ -1019,7 +1027,7 @@ const RESEARCH_DATA = [
       "Internal documents show Amazon developing software to reallocate workers across tasks and locations to cut labor hours, extending automation from goods handling to the scheduling of human labor.",
       "The stated goal is saving millions of labor hours annually, signaling productivity gains that translate into reduced labor demand per unit of output.",
       "The initiative illustrates how algorithmic management increasingly governs where and how warehouse employees work, a frontier of workplace automation distinct from physical robotics."
-    ]
+    ],
   },
   { id: 238, date: "2026-05-01", added: "2026-07-06",
     title: "Privacy Without Remedy: An Assessment of Data Broker Compliance with California Privacy Law",
@@ -1031,7 +1039,7 @@ const RESEARCH_DATA = [
       "Only 9% of 522 registered data brokers fully complied with transparency requirements after the Delete Act took effect, with only slight improvement over time.",
       "An audit of 250 data brokers found 43% made it impossible for consumers to exercise all privacy rights, and 64% used design features that created substantial friction.",
       "The authors attribute the compliance gap to decentralized compliance decisions, weak enforcement, and regulatory ambiguity, and propose reforms to strengthen consumer privacy and transparency."
-    ]
+    ],
   },
   { id: 239, date: "2026-06-17", added: "2026-07-06",
     title: "2026 AI Report — Build for Everyone: A Framework for LGBTQ Representation and Safety in AI",
@@ -1044,7 +1052,7 @@ const RESEARCH_DATA = [
       "The report identifies distinct ways AI systems impact LGBTQ people, from how they are represented in model outputs to safety and content-moderation harms.",
       "It frames inclusive design as a requirement rather than an afterthought, calling on developers to build for everyone.",
       "As GLAAD's first dedicated AI report, it establishes an advocacy framework and recommendations for LGBTQ representation and safety across AI products."
-    ]
+    ],
   },
   { id: 240, date: "2026-04-16", added: "2026-07-06",
     title: "Acceleration Is Not a Strategy: A Framework for Directing AI Towards Public Value Before It's Too Late",
@@ -1057,7 +1065,7 @@ const RESEARCH_DATA = [
       "The authors contend governments have been too cautious and must intervene actively in citizens' interests, setting ambitious policy targets rather than relying on defensive risk management.",
       "They argue that accelerating technical capability alone is not a public strategy, and that the absence of a clear governing vision risks eroding public trust in AI.",
       "The report offers European policymakers a framework and near-term priorities for channeling AI toward measurable public value."
-    ]
+    ],
   },
   { id: 229, date: "2026-06-01", added: "2026-06-23",
     title: "Automation and Repression",
@@ -1070,7 +1078,7 @@ const RESEARCH_DATA = [
       "The capitalist state trades off redistribution and repression. Repression dominates unless the revolt threat is very weak or the capital stock is very low, and a higher capital stock encourages more automation, which encourages more repression.",
       "The complementarity holds even when firms can also invest in new labor-intensive tasks, meaning the standard new-task-creation counterweight to automation does not by itself rule out a repression-automation trajectory.",
       "Starting in a democracy, capital accumulation and automation make capitalists more willing to support a coup, framing the model as a structural account of democratic backsliding in technologically advanced capitalist economies."
-    ]
+    ],
   },
   { id: 230, date: "2026-04-01", added: "2026-06-23",
     title: "How AI Aggregation Affects Knowledge",
@@ -1083,7 +1091,7 @@ const RESEARCH_DATA = [
       "The model identifies a sharp speed threshold. Too-fast aggregator updating eliminates any robustly learning-improving weight choice, while sufficiently slow updating restores a positive-measure set of configurations that improve learning.",
       "The result implies a governance dimension to AI aggregator design that has no analog in static prediction quality. How often models retrain on the population's beliefs is a first-order parameter for the social-information ecosystem.",
       "The threshold result holds across a broad class of environments rather than a specific application, suggesting it functions as a structural constraint on AI aggregator deployment rather than an implementation detail to tune."
-    ]
+    ],
   },
   { id: 231, date: "2026-02-01", added: "2026-06-23",
     title: "AI, Human Cognition and Knowledge Collapse",
@@ -1096,7 +1104,7 @@ const RESEARCH_DATA = [
       "The model identifies a knowledge-collapse steady state in which general knowledge effectively disappears even as personalized AI advice remains accurate, an information-ecosystem failure that pure efficiency metrics do not register.",
       "Maximum AI accuracy is not the welfare-optimal target. Welfare is maximized at intermediate AI accuracy, providing a formal foundation for information-design regulations that intentionally constrain AI capability or coverage in some domains.",
       "Improved aggregation of human-generated general knowledge robustly improves welfare and resilience, suggesting public knowledge infrastructure (open archives, peer review, attribution standards) may matter more than constraints on AI accuracy itself."
-    ]
+    ],
   },
   { id: 232, date: "2019-05-01", added: "2026-06-23",
     title: "Automation and New Tasks: How Technology Displaces and Reinstates Labor",
@@ -1109,7 +1117,7 @@ const RESEARCH_DATA = [
       "Automation can reduce aggregate labor demand even as it raises productivity, contradicting the assumption that productivity growth automatically translates into wage growth, an assumption embedded in many AI-era productivity narratives.",
       "The empirical decomposition shows that slower U.S. employment growth in recent decades reflects three reinforcing trends: faster displacement (most pronounced in manufacturing), weaker reinstatement of new labor-intensive tasks, and slower overall productivity growth.",
       "The framework provides the foundational vocabulary for AI labor-market analysis. Many subsequent AI displacement studies build on its displacement/reinstatement decomposition, including the authors' own AI-specific work and the broader pro-worker AI research direction."
-    ]
+    ],
   },
   { id: 225, date: "2026-06-01", added: "2026-06-22",
     title: "Policy on the AI Exponential: Macroeconomics and Tax Policy",
@@ -1122,7 +1130,7 @@ const RESEARCH_DATA = [
       "Amodei outlines a staged response: measurement and tracking of AI's labor effects, pro-employment incentives such as wage insurance, retention tax credits, and workforce training, and longer-term income support including universal basic income financed through corporate or capital gains taxation.",
       "He argues AI's recursive self-improvement could supercharge growth by accelerating science and technology, but that growth alone will not distribute its benefits without deliberate policy.",
       "He warns that economic instability may surface indirectly as public hostility toward data centers unless policy addresses the broader anxieties underneath, and notes AI companies should absorb energy-cost increases, a step Anthropic has pledged to take."
-    ]
+    ],
   },
   { id: 226, date: "2026-06-01", added: "2026-06-22",
     title: "A Policy Framework for AI's Impact on Work (Anthropic Economic Policy Framework)",
@@ -1135,7 +1143,7 @@ const RESEARCH_DATA = [
       "The framework stresses that adaptation is not automatic: whether an AI economy creates reachable new work depends on deliberate choices by governments and firms, and it urges companies to deploy AI to expand capacity rather than default to headcount reduction.",
       "Concrete firm-level steps include building workforce training into AI deployment, deciding in advance how freed-up capacity is used, retraining and redeploying workers as roles change, and redesigning early-career roles around AI.",
       "It cites early US evidence that entry-level workers in the occupations most exposed to AI have seen weaker employment growth, and situates its recommendations against forecasts ranging from modest productivity growth to scenarios where output doubles but wages collapse."
-    ]
+    ],
   },
   { id: 227, date: "2026-06-01", added: "2026-06-22",
     title: "AI, the Economy, and You: A People-Centered AI Agenda",
@@ -1148,7 +1156,7 @@ const RESEARCH_DATA = [
       "The report maps AI's near-term reach into consequential individual decisions: whether someone gets a credit or debit card and at what rate, qualifies for a loan or insurance, has a claim paid, or keeps a job or earns a raise.",
       "At the macro level it frames a set of either/or stakes, including whether AI creates broad-based growth or concentrates gains at the top, strengthens or destabilizes the financial system, reduces or worsens inequality, and protects or exploits consumers, investors, and depositors.",
       "It positions responsible developers and corporate leaders as necessary allies, arguing that collaborative and inclusive decision-making determines whether AI's outcomes improve or worsen Americans' lives."
-    ]
+    ],
   },
   { id: 228, date: "2026-02-23", added: "2026-06-22",
     title: "Building Pro-Worker Artificial Intelligence",
@@ -1161,10 +1169,9 @@ const RESEARCH_DATA = [
       "The authors identify market failures, including misaligned firm and developer incentives, path dependence, and a pervasive pro-automation ideology, that lead to systematic underinvestment in pro-worker AI.",
       "They propose nine policy directions to reshape incentives toward pro-worker AI, including targeted investments in health care and education, tax code reform, antitrust enforcement, and intellectual property protections for worker expertise.",
       "The framework is illustrated through examples spanning aviation maintenance, electrical services, custodial work, education, patent examination, and gig delivery, showing how the same AI capability can either commodify or augment expertise depending on design and deployment."
-    ]
+    ],
   },
   { id: 207, date: "2026-05-05", added: "2026-06-04",
-    highlight: { stat: "$79 trillion", text: "redirected away from the bottom 90% of American workers since 1975, roughly $1 million per worker over a career.", themeId: "displacement" },
     title: "Recovering Wages and Wealth: What We Deserve in the Age of AI",
     source: "Rayan Semery-Palumbo — Economic Security Project",
     sourceUrl: "https://economicsecurityproject.org/resource/recovering-wages-and-wealth/",
@@ -1176,7 +1183,8 @@ const RESEARCH_DATA = [
       "The 'Recovered Wealth' frame addresses how wage suppression compounds across generations: Millennials are projected to lose $700,000 and Gen Z approximately $900,000 in lifetime wages and wealth relative to what equitable growth would have delivered.",
       "Research cited shows Americans reject cash assistance framed as response to automation obsolescence but accept it when presented as recognition of underpayment, making the narrative architecture of GI programs as consequential as their design.",
       "Historical precedent — particularly Social Security, framed as earned benefit — demonstrates that programs built on meritocratic deservingness language prove far more politically durable than those presented as needs-based assistance."
-    ]
+    ],
+    highlight: { stat: "$79 trillion", text: "redirected away from the bottom 90% of American workers since 1975, roughly $1 million per worker over a career.", themeId: "displacement" },
   },
   { id: 208, date: "2026-02-04", added: "2026-06-04",
     title: "Guaranteed Income and Employment in California",
@@ -1190,7 +1198,7 @@ const RESEARCH_DATA = [
       "Cash enables education and skill development: nearly half of San Francisco's MOMentum participants enrolled in education or training programs while receiving guaranteed income, with 86% crediting the payments for making enrollment possible.",
       "Guaranteed income supports working caregivers: Oakland participants attended more parent-teacher conferences while maintaining employment, documenting that cash resolves the caregiving-work trade-off that reduces labor force quality for parents in low-income households.",
       "Policy implications include eliminating costly work requirements from existing safety net programs, ensuring GI payments do not affect eligibility for other benefits, and pairing programs with wraparound services for vulnerable populations including domestic violence survivors and people experiencing homelessness."
-    ]
+    ],
   },
   { id: 209, date: "2025-10-17", added: "2026-06-04",
     title: "Cash Transfers Improve Maternal, Infant, and Child Health Outcomes in the U.S.",
@@ -1204,7 +1212,7 @@ const RESEARCH_DATA = [
       "The RxKids program's documented 18% preterm birth reduction and 29% NICU decrease are among the largest documented outcome improvements in the guaranteed income literature and directly demonstrate fiscal return on investment for health systems.",
       "Cash improves mental health and reduces stress, decreasing anxiety among recipients, the psychological mechanism through which financial security translates to improved physical health outcomes during pregnancy.",
       "Policy recommendations include federal reinstatement of expanded Child Tax Credits, maternal-infant cash pilots at federal level, and state use of TANF dollars and Medicaid waivers, positioning cash assistance as a cost-effective public health intervention."
-    ]
+    ],
   },
   { id: 210, date: "2025-10-01", added: "2026-06-04",
     title: "What We Know About the Effect of Guaranteed Income on Housing, Financial Security, and Employment",
@@ -1218,7 +1226,7 @@ const RESEARCH_DATA = [
       "More recent GI pilots find modest declines in labor force participation and earned income, a finding that complicates the simple narrative that cash always increases employment and requires honest communication with policymakers about the full evidence picture.",
       "Cash reduces housing burdens and improves housing quality across multiple studies, establishing a cross-site pattern that extends beyond individual pilot contexts to a more generalizable finding about how recipients prioritize unconditional income.",
       "The report frames its synthesis as a tool for policymakers navigating over 150 no-strings-attached cash programs launched across the U.S. in recent years, providing sober analysis of both promising and cautionary findings rather than advocacy."
-    ]
+    ],
   },
   { id: 211, date: "2025-06-01", added: "2026-06-04",
     title: "Guaranteed Income: A Policy Landscape Review of 105 Programs in the United States",
@@ -1232,7 +1240,7 @@ const RESEARCH_DATA = [
       "California's outsized role (28 of 105 programs) and the prevalence of county-level programs (16) reflect a pattern of subnational policy innovation filling gaps left by federal inaction on guaranteed income.",
       "The landscape reveals high heterogeneity in benefit levels, duration, and conditionality across programs, 'guaranteed income' encompasses a wide range of designs rather than a single model, making cross-program comparison methodologically challenging.",
       "The inventory establishes a baseline for identifying gaps, redundancies, and opportunities for more rigorous comparative research, the field currently lacks standardized outcome measurement that would allow genuine learning across the 105+ programs operating simultaneously."
-    ]
+    ],
   },
   { id: 212, date: "2026-01-16", added: "2026-06-04",
     title: "State Fact Sheets: How States Spend Funds Under the TANF Block Grant",
@@ -1246,7 +1254,7 @@ const RESEARCH_DATA = [
       "State-by-state variation is extreme: the same federal block grant produces radically different outcomes depending on state policy choices, meaning the path to guaranteed income expansion runs through state legislatures and governors as much as through federal authorization.",
       "TANF repurposing represents one of the most immediately actionable funding mechanisms for guaranteed income pilots: states can redirect existing block grant dollars without new federal legislation, as several cities and counties have already demonstrated.",
       "Research evidence shows that investments in cash assistance improve academic, health, and economic outcomes for children in families experiencing poverty, making the state spending pattern documented here not merely a fiscal anomaly but a documented contributor to child poverty and inequality."
-    ]
+    ],
   },
   { id: 213, date: "2024-12-11", added: "2026-06-04",
     title: "The Protective Power of Cash",
@@ -1260,7 +1268,7 @@ const RESEARCH_DATA = [
       "Economic research establishes a direct causal pathway: protecting families from hardship reduces child welfare investigations and family separation, making increased cash assistance a cost-effective alternative to child welfare system involvement that costs far more per family.",
       "Five policy recommendations — increasing benefit levels toward the poverty line, raising asset limits, reducing administrative burden, implementing targeted guaranteed income for families at critical transition points, and expanding emergency cash — provide a concrete state and city legislative agenda.",
       "With approximately 25% of NYC children living in poverty, the scale of need makes unconditional cash not merely a pilot intervention but a necessary structural component of an adequate urban social safety net."
-    ]
+    ],
   },
   { id: 214, date: "2024-01-01", added: "2026-06-04",
     title: "Enhancing Economic Stability: The Role of Guaranteed Income in Comprehensive Support Systems",
@@ -1274,7 +1282,7 @@ const RESEARCH_DATA = [
       "GI should be integrated into existing program architectures rather than treated as a replacement for other services, the brief explicitly situates guaranteed income within a continuum of supports, addressing the common policymaker concern that GI competes with or displaces existing safety net programs.",
       "The brief provides practical guidance on program design for GI integration: how to structure referral pathways, coordinate benefits, and design intake processes that connect GI recipients with complementary services without recreating the bureaucratic burden current programs impose.",
       "The framing of GI as infrastructure for other services rather than a standalone intervention is strategically significant for policy adoption: it allows advocates to argue for GI within existing programmatic frameworks rather than as a disruptive replacement."
-    ]
+    ],
   },
   { id: 215, date: "2024-11-01", added: "2026-06-04",
     title: "A Policy Framework for Guaranteed Income and the Safety Net",
@@ -1288,7 +1296,7 @@ const RESEARCH_DATA = [
       "Short-term workarounds (program-level waivers, as achieved in Chicago's SSI exemption for GI recipients) and longer-term structural reforms (legislative benefit disregards) require distinct advocacy strategies, the framework provides a roadmap for both timelines simultaneously.",
       "Equity considerations are central: the framework specifically addresses ensuring programs reach marginalized populations — undocumented immigrants, people with disabilities, and justice-involved individuals — who are systematically excluded from current safety net programs and face the greatest barriers to GI access.",
       "TANF repurposing, state general funds, and federal pilot authorization represent the three most viable funding mechanisms; each requires different administrative and legislative pathways and carries different conditionality implications for program design."
-    ]
+    ],
   },
   { id: 216, date: "2023-07-01", added: "2026-06-04",
     title: "Recurring Cash Transfers to Enhance the Mental Wellbeing of Americans",
@@ -1302,7 +1310,7 @@ const RESEARCH_DATA = [
       "Reframing GI programs as mental health infrastructure investments rather than purely economic interventions opens new funding streams, political coalitions, and evaluation frameworks, mental health return on investment may be as compelling as economic return on investment for health system and government funders.",
       "The argument extends to AI disruption context directly: as automation increases income volatility for workers in transitioning industries, the mental health case for guaranteed income becomes stronger independently of employment outcome effects.",
       "International evidence from conditional cash transfer programs in lower-income countries and domestic GI pilots both support the mental health pathway, suggesting the mechanism is robust across very different program contexts and income levels."
-    ]
+    ],
   },
   { id: 217, date: "2023-05-18", added: "2026-06-04",
     title: "Guaranteed Income and Financial Treatment Trial (GIFT Trial): Reducing Financial Toxicity in Low-Income Cancer Patients",
@@ -1316,7 +1324,7 @@ const RESEARCH_DATA = [
       "The SSI waiver negotiated for this trial — protecting disability income benefits while participants receive GI — represents a concrete administrative precedent for the benefits cliff problem documented across GI programs generally, with potential applicability beyond the cancer context.",
       "The trial tests income support as a structural intervention in healthcare rather than navigation toward existing assistance programs, a conceptual shift from 'connect patients to resources' to 'provide resources directly' with implications for how health systems address social determinants.",
       "Cost-benefit implications are direct: if $1,000/month reduces treatment non-adherence and improves mortality in Stage 3–4 cancer, the health system cost savings from better treatment outcomes may exceed the transfer cost, establishing GI as a health system investment rather than purely a social service."
-    ]
+    ],
   },
   { id: 218, date: "2025-01-01", added: "2026-06-04",
     title: "Renegotiating Deservedness: A Big Qual Analysis Across Eight Guaranteed Income Experiments",
@@ -1330,7 +1338,7 @@ const RESEARCH_DATA = [
       "The consistency of findings across pre-pandemic (Stockton) and pandemic-era experiments — controlling for the confounding effect of COVID-19 — indicates that the structural attribution shift reflects a longer-term trend in how Americans conceptualize economic hardship, not merely a pandemic artifact.",
       "The 'Big Qual' methodology — large-scale qualitative analysis across multiple studies — provides a methodological model for the GI field: individual pilots generate rich qualitative data that currently goes underutilized; pooled cross-site analysis reveals patterns invisible at the single-program level.",
       "If GI recipients develop more structural views of poverty, this may translate into political mobilization for broader systemic reforms, establishing a potential feedback loop between income support policy and political capacity building that advocates should anticipate and cultivate."
-    ]
+    ],
   },
   { id: 204, date: "2026-05-12", added: "2026-05-22",
     title: "Patchwork AI Hiring Laws Create Rising Compliance Risks for Employers",
@@ -1344,7 +1352,7 @@ const RESEARCH_DATA = [
       "Mobley v. Workday is the most consequential pending litigation: it tests whether AI vendors can be held directly liable for discriminatory hiring outputs, a ruling that would fundamentally restructure employer-vendor risk allocation and potentially expose software companies to civil rights liability they currently disclaim through contract terms.",
       "AI-generated hiring reports may trigger Fair Credit Reporting Act obligations, a federal hook creating liability under existing law without waiting for new AI-specific legislation, and that most employers deploying algorithmic screening tools have not yet analyzed.",
       "Minimum compliance posture requires: inventorying all algorithmic tools across the full hiring lifecycle; conducting bias audits meeting the most stringent applicable state standard; implementing notice and consent protocols; negotiating vendor contracts with robust indemnification provisions; and establishing cross-functional AI governance committees, because the legal exposure is present now, not contingent on future regulation."
-    ]
+    ],
   },
   { id: 158, date: "2026-05-07", added: "2026-05-11",
     title: "How Platform Labor Laws Are Shaping Gig Work in Singapore and Malaysia",
@@ -1358,7 +1366,7 @@ const RESEARCH_DATA = [
       "Singapore's mandatory CPF contributions and work injury compensation at employee levels represent concrete, enforceable minimums, a benchmark against which other jurisdictions implementing gig worker protections can measure their own frameworks.",
       "Neither Singapore nor Malaysia requires algorithmic transparency on pay calculation, leaving workers unable to verify or contest how earnings are determined, a gap that existing advocacy in both countries identifies as the unfinished central challenge of gig economy governance.",
       "Implementation skepticism centers on collective representation: Singapore's Platform Work Associations face criticism for state-aligned NTUC ties that may limit genuine worker leverage, while Malaysia's tripartite council lacks amendment authority, demonstrating that formal legal structures for gig worker representation do not automatically translate into effective bargaining power."
-    ]
+    ],
   },
   { id: 159, date: "2026-05-06", added: "2026-05-11",
     title: "The Political Economy of AI Starts in Brazil, Not Silicon Valley",
@@ -1372,7 +1380,7 @@ const RESEARCH_DATA = [
       "Infrastructure concentration translates into political power: a small number of firms control data, computing capacity, capital, and specialized talent, a market structure that gives those firms influence over public discourse and election integrity, as documented in Brazil's 2026 electoral context.",
       "Brazil's AI Legal Bill (PL 2338/2023) represents an opportunity for Global South governance agency before systems become globally entrenched, requiring that governance frameworks center ownership, equitable value distribution, and local technological capacity rather than merely adapting external safety frameworks designed for dominant-economy interests.",
       "Institutions engaging in cross-border AI frameworks should assess whether their participation legitimizes governance processes that systematically exclude populations bearing the highest costs of AI development, and whether 'responsible AI' frameworks are designed to redistribute value or to entrench existing concentration."
-    ]
+    ],
   },
   { id: 161, date: "2026-05-05", added: "2026-05-11",
     title: "AI Efficiency Can Undermine Accountability Even With Humans in the Loop",
@@ -1386,10 +1394,9 @@ const RESEARCH_DATA = [
       "Efficiency-driven systems compound the problem over time: as speed is prioritized, reliance on AI recommendations increases progressively, and as reliance deepens, the ability to detect AI errors decreases. The productivity gains justifying AI in high-stakes contexts are the same dynamics eroding the oversight those contexts require.",
       "High-pressure environments convert formal override rights into functionally empty permissions: in contexts with productivity targets and time pressure, decision-makers routinize AI acceptance as the path of least resistance, making 'human in the loop' a compliance label rather than a meaningful check.",
       "Institutions and regulators should design workflows that realistically support active scrutiny — testing for error detection capability after deployment, not just at procurement — and treat override rights as operationally meaningful only when organizational conditions for genuine deliberation actually exist."
-    ]
+    ],
   },
   { id: 160, date: "2026-05-04", added: "2026-05-11",
-    highlight: { stat: "40%", text: "syndication cap proposed in Google antitrust remedies as a supply-side path to competition that injunctions cannot deliver.", themeId: "macro-risk" },
     title: "Search Remedies in Google Antitrust Case Can Work Even if Company Stays on Top",
     source: "Sumit Sharma — Tech Policy Press",
     sourceUrl: "https://www.techpolicy.press/search-remedies-in-google-antitrust-case-can-work-even-if-company-stays-on-top/",
@@ -1401,7 +1408,8 @@ const RESEARCH_DATA = [
       "The 40% syndication cap creates a first-mover limitation: rivals can develop competitive search components through ordered remedies, but the declining allowances in subsequent years narrow the competitive window, and rivals cannot develop all required components, particularly web-search indexes and advertising technology.",
       "Google's generative AI integration into search is the antitrust case's most consequential unresolved dimension: AI embedding and Siri partnerships reinforce distribution advantages that existing remedies do not address, and standalone GenAI companies are structurally positioned to compete in AI but not to erode Google's underlying search dominance.",
       "Effective antitrust remedies require calibration to the specific market dynamics, data access, fresh indexing requirements, and flexible licensing terms address the actual competitive bottleneck; headline conduct restrictions address the appearance of action without changing the structural conditions that produced the monopoly."
-    ]
+    ],
+    highlight: { stat: "40%", text: "syndication cap proposed in Google antitrust remedies as a supply-side path to competition that injunctions cannot deliver.", themeId: "macro-risk" },
   },
   { id: 162, date: "2026-05-04", added: "2026-05-11",
     title: "Tech Policy Is on the Front Line of Fascism vs. Democracy. Pick a Side.",
@@ -1415,7 +1423,7 @@ const RESEARCH_DATA = [
       "Age verification illustrates the surveillance infrastructure risk: while protective intentions are understandable, systems requiring facial biometric data create infrastructure available for government misuse regardless of original policy intent, a pattern documented across security and identity infrastructure globally.",
       "The TESCREAL ideology critique documents a values misalignment: tech leaders who prioritize AGI development over immediate harms and frame AI safety in terms of long-run existential risk rather than present-tense discrimination and labor displacement are structurally unlikely to support regulatory frameworks that present-tense harms require.",
       "The practical implication is a reorientation of tech policy priorities: from innovation optimization to democracy protection as the organizing principle, with mandatory data minimization, privacy safeguards, and structural accountability for concentrated platform power as the near-term agenda."
-    ]
+    ],
   },
   { id: 163, date: "2026-04-26", added: "2026-05-11",
     title: "Democratic Governance of AI Is the Real Solution",
@@ -1429,10 +1437,9 @@ const RESEARCH_DATA = [
       "The AI data center emissions trajectory is documented and acute: 67 million tons of CO2 annually now, projected 24–44 million tons from AI specifically by 2030, with hyperscaler infrastructure investment equivalent to 2.1% of U.S. GDP, figures that establish AI infrastructure as a material climate policy problem requiring specific binding intervention.",
       "Clean energy requirements, water-permitting standards, and efficiency mandates target actual environmental harms rather than infrastructure existence, these interventions can be calibrated to resource consumption, enforced through existing environmental regulatory frameworks, and designed to apply to domestic and foreign operators alike, avoiding the offshoring dynamic that makes moratoria ineffective.",
       "The governance architecture argument is the deepest: the problem is not data centers but the absence of democratic mechanisms to set conditions on how AI infrastructure is built and who benefits. Public wealth funds capturing a share of AI productivity gains and comprehensive labor displacement protections would extend democratic governance to AI's full economic impact, not only its environmental footprint."
-    ]
+    ],
   },
   { id: 206, date: "2026-04-28", added: "2026-05-22",
-    highlight: { stat: "83%", text: "of workers in the 15 jobs most vulnerable to artificial intelligence are women, with women of color making up more than 30%.", themeId: "equity" },
     title: "New Analysis: More Than 30 Percent of Workers in the Most AI-Vulnerable Jobs Are Women of Color",
     source: "National Partnership for Women & Families",
     sourceUrl: "https://nationalpartnership.org/news_post/new-analysis-more-than-30-percent-of-workers-in-the-most-ai-vulnerable-jobs-are-women-of-color/",
@@ -1444,7 +1451,8 @@ const RESEARCH_DATA = [
       "Women represent 83% of workers in the 15 most AI-vulnerable occupations, a concentration so extreme that displacement policy designed around gender-neutral averages will systematically underserve the populations at greatest risk and misallocate protective resources toward workers facing lower actual exposure.",
       "Beyond displacement risk, the analysis documents overlapping in-workplace AI harms disproportionately affecting women workers: algorithmic bias in hiring and performance management, AI-enabled harassment and surveillance, privacy violations through workplace monitoring tools, and lack of transparency in automated pay and scheduling decisions, establishing that women workers face AI risk across multiple dimensions simultaneously, not only through job loss.",
       "The policy conclusion is that AI governance is a racial and gender equity issue requiring representation-conscious design, not merely a techno-economic one: regulatory frameworks applying neutral standards without accounting for documented overrepresentation will produce disparate outcomes even if technically non-discriminatory."
-    ]
+    ],
+    highlight: { stat: "83%", text: "of workers in the 15 jobs most vulnerable to artificial intelligence are women, with women of color making up more than 30%.", themeId: "equity" },
   },
   { id: 202, date: "2026-04-08", added: "2026-05-22",
     title: "The Looming Legislative and Labor Push Against Artificial Intelligence",
@@ -1458,7 +1466,7 @@ const RESEARCH_DATA = [
       "Minnesota Senate File 4689 represents the direction of travel in state AI employment legislation: requiring advance employee notice, consent, recordkeeping, disclosure of AI involvement in adverse employment decisions, appeal rights, and a private right of action with damages up to $2,500 per violation per day, a framework that would create significant employer liability for non-compliant deployment.",
       "NLRA bargaining obligations for AI deployment are legally uncertain at the threshold level but already clear downstream: even without NLRB guidance on whether AI adoption itself requires bargaining, the downstream effects on terms and conditions of employment clearly do, meaning employers who deploy AI without union consultation face unfair labor practice exposure regardless of how the threshold question resolves.",
       "Practical risk management requires acting now: employers should inventory AI tools across the full employment lifecycle, develop proactive union engagement strategies before bargaining demands arrive, monitor state legislative calendars, and document good-faith compliance efforts, because the legal uncertainty is more likely to resolve toward greater obligation than less."
-    ]
+    ],
   },
   { id: 196, date: "2026-04-06", added: "2026-05-22",
     title: "Advancing Responsible AI Adoption and Use in the Public Sector: Three Policy Priorities for State Legislation",
@@ -1472,7 +1480,7 @@ const RESEARCH_DATA = [
       "Public AI inventories documenting how AI is used, tested, and governed across agencies should be required and regularly updated, creating the transparency baseline that civil rights review, auditing, and oversight all depend on.",
       "Notice and disclosure requirements for public-facing AI tools must include explanations of how outcomes were influenced by AI systems, giving affected residents the information needed to contest adverse algorithmic decisions.",
       "Procurement safeguards and third-party audits — separate from internal agency oversight — are necessary to catch failures that self-assessment cannot reliably detect in AI systems making consequential public decisions."
-    ]
+    ],
   },
   { id: 197, date: "2026-03-31", added: "2026-05-22",
     title: "The Empty National AI Policy Framework: Who Is in Charge of Those in Charge?",
@@ -1486,7 +1494,7 @@ const RESEARCH_DATA = [
       "Meaningful AI policy must address four principles: accountability (who answers for harms), access (who can use AI), agency (who controls AI decisions), and action (who enforces limits), the framework lacks all four.",
       "An expert federal agency with authority to set behavioral expectations for AI developers is necessary; the current framework relies on existing agencies and voluntary commitments that have already been shown to be inadequate.",
       "The authors frame the fundamental governance question as whether AI power will be structured to serve the public or to entrench those who currently control it, a political choice that the framework avoids making."
-    ]
+    ],
   },
   { id: 198, date: "2026-03-20", added: "2026-05-22",
     title: "National Policy Framework for Artificial Intelligence: Legislative Recommendations",
@@ -1500,7 +1508,7 @@ const RESEARCH_DATA = [
       "Congress is urged to require AI platforms to implement safeguards against child sexual exploitation, establish age-assurance requirements, and give parents management tools, the most prescriptive and near-term legislative priority in the document.",
       "The framework favors regulatory sandboxes and coordination through existing sector agencies over creating new federal AI oversight bodies, an institutional design choice that leaves AI governance fragmented across dozens of agencies without a coordinating accountability structure.",
       "Workforce development recommendations include integrating AI training into education programs and expanding federal study of AI-driven workforce realignment, but contain no income support, benefit program, or displaced-worker assistance provisions."
-    ]
+    ],
   },
   { id: 201, date: "2026-03-11", added: "2026-05-22",
     title: "Lessons from Past Trade Adjustment Policies to Support Displaced Workers in the Era of Artificial Intelligence",
@@ -1514,7 +1522,7 @@ const RESEARCH_DATA = [
       "Benjamin Hyman's rigorous Census-data analysis of TAA participants found approximately $50,000 in higher earnings over 10 years compared to non-participants, establishing that well-designed adjustment programs produce measurable long-run returns, but only for those they actually reach; program design and coverage are separable problems requiring separate solutions.",
       "Three core design principles for AI displacement policy: Commitment (guaranteed, stable programs immune to political bargaining cycles); Speed (presumptive eligibility for immediate assistance, since extended non-employment causes lasting earnings damage); and Agency (workers need meaningful control over adjustment pathways rather than impersonal bureaucratic channeling).",
       "Adjustment programs cannot serve as the sole policy response, they must complement pre-displacement prevention through augmentation-focused AI development, collective bargaining rights, universal safety nets, and tax policy discouraging automation; framing worker support exclusively as an adjustment problem implicitly accepts displacement as inevitable and shifts responsibility from policy choices onto the workers experiencing their consequences."
-    ]
+    ],
   },
   { id: 205, date: "2026-03-07", added: "2026-05-22",
     title: "Is AI Changing the Path to Gender Parity?",
@@ -1528,7 +1536,7 @@ const RESEARCH_DATA = [
       "McKinsey data shows women's representation in European tech roles fell from 22% in 2023 to 19% in 2026 despite rising AI sector activity, indicating that AI economic growth is not automatically generating proportionate gains for women, and that headline AI adoption statistics mask a gendered distribution of who captures the economic upside.",
       "Structural access barriers compound displacement risk in low- and middle-income countries: GSMA data shows women are 7% less likely to own a phone and 19% less likely to have mobile internet access; in India only 18% of young women aged 20–29 are in paid work despite near-parity in higher education, establishing that AI governance in Global South contexts cannot separate gender equity from basic digital and economic access infrastructure.",
       "The gender gap in AI skills narrowing in 74 of 75 economies is the most constructive finding, but skill acquisition alone cannot close the gap at adequate speed: structural interventions in labor market access, safe work environments, and AI sector hiring practices are necessary complements to reskilling investment, and the 123-year parity timeline at current rates demonstrates the inadequacy of market-only solutions."
-    ]
+    ],
   },
   { id: 200, date: "2026-02-15", added: "2026-05-22",
     title: "No Bailouts for Big Tech Billionaires: Policies for When the AI Bubble Bursts",
@@ -1542,7 +1550,7 @@ const RESEARCH_DATA = [
       "Anticipated pro-bailout arguments fail empirical scrutiny: generative AI is not militarily reliable (Army War College studies found agentic AI gives militaries a 'glass jaw' with no measurable productivity gain); AI companies lack the financial system interconnections that justified 2008 bank bailouts; and data centers serve proprietary tech interests rather than public utility functions, each of the three standard justifications for government rescue is empirically unsupported.",
       "Suspect accounting inflates the industry's financial position: circular financing between interconnected companies, special-purpose vehicles hiding debt, and chip depreciation timelines of 5–6 years against 2–3 year actual replacement cycles may collectively understate major tech expenses by up to $176 billion over three years.",
       "Policy recommendations: let failing AI companies proceed through bankruptcy; block 'failing firm' antitrust defenses that enable monopoly-consolidating mergers; strengthen accounting standards and require quarterly earnings disclosures for major private companies; redirect any public support to displaced workers and affected communities rather than tech executives and investors."
-    ]
+    ],
   },
   { id: 166, date: "2025-11-05", added: "2026-05-11",
     title: "San Francisco's 'Hack for Social Impact' Unleashes AI for Homelessness and Justice",
@@ -1556,7 +1564,7 @@ const RESEARCH_DATA = [
       "Affordable housing code compliance automation (Comply.ai/bild.ai) addresses a documented bottleneck in housing supply: architectural plan review delays that increase development cost and timeline. Commercial viability within one year of a hackathon prototype demonstrates AI applications targeting supply constraints can move faster than legislative reform cycles.",
       "Innocence Center document review automation illustrates AI's potential to equalize legal resources: automating identification of discrepancies and evidence in case files for wrongful conviction review could accelerate case throughput for organizations operating with severely constrained legal capacity.",
       "The hackathon model itself is a governance observation: civic AI for homelessness and justice is being developed primarily through philanthropic events and university programs rather than public procurement or regulatory frameworks, concentrating development decisions in communities of technologists rather than affected populations."
-    ]
+    ],
   },
   { id: 165, date: "2025-09-23", added: "2026-05-11",
     title: "Can AI Help Solve the Housing Crisis?",
@@ -1570,7 +1578,7 @@ const RESEARCH_DATA = [
       "The 'Home Genome Project' concept addresses a foundational constraint: fragmented, non-standardized housing data across cities and systems prevents AI from learning patterns at useful scale. Data standardization is prerequisite infrastructure for AI applications in housing, a governance challenge more than a technical one.",
       "The responsible AI framework gap is the most urgent near-term concern: the homelessness and housing sectors lack the evaluation criteria, harm taxonomies, and deployment standards that other fields have developed. Deploying AI for vulnerable populations without these frameworks risks replicating the surveillance, dignity violations, and inaccuracy harms more developed sectors have already documented.",
       "Community Solutions' internal pilots and Bellagio Convening participation illustrate the field's current state: experimental, small-scale, and dependent on cross-sector philanthropic support, a configuration that may not produce the standardized, accountable tools the housing sector needs at scale."
-    ]
+    ],
   },
   { id: 164, date: "2025-07-11", added: "2026-05-11",
     title: "JusticeTech Uses AI to Address Eviction Crisis",
@@ -1584,7 +1592,7 @@ const RESEARCH_DATA = [
       "The 34,000-visitor scale of Franklin County's self-help center documents the demand side of AI-assisted legal access: the legal need vastly exceeds current legal aid capacity, and scalable AI tools that triage and navigate that need serve a concrete documented gap.",
       "The interdisciplinary law-computer science co-production model addresses a structural problem in legal technology: tools built by technologists without legal domain knowledge frequently produce inaccurate or harmful outputs, while tools built by legal aid organizations without technical capacity frequently stall. Academic co-production offers a replicable model.",
       "Responsible AI design is built in from the outset, JusticeTech explicitly emphasizes accountability and 'looking under the hood,' reflecting a lesson from prior legal technology failures: responsible deployment standards are harder to retrofit after tools are in use than to build into initial design."
-    ]
+    ],
   },
   { id: 203, date: "2025-05-16", added: "2026-05-22",
     title: "AI Labor Displacement and the Limits of Worker Retraining",
@@ -1598,7 +1606,7 @@ const RESEARCH_DATA = [
       "Three structural barriers compound the training design problem: (1) insufficient job availability — technological advancement may reduce skilled middle-wage openings faster than workers can retrain, with displaced workers often landing in lower-paying service positions empirically; (2) participation barriers — displaced workers disproportionately face poverty, caregiving, housing instability, and health challenges that prevent meaningful engagement; (3) demand unpredictability — it is genuinely difficult to identify which occupations will survive automation.",
       "AI-specific limitations further complicate retraining design: existing displacement evidence is limited to early industrial robotics data and small experimental LLM deployments, meaning programs must be designed under genuine uncertainty about which skills will retain value as AI capability evolves.",
       "Policy recommendations: avoid assuming retraining is the answer; design for multiple displacement scenarios; fund randomized experiments specifically targeting technology-displaced workers; and reconceptualize the employment-benefits relationship, potentially exploring non-employment forms of social contribution as bases for government support rather than treating paid employment as the only legitimate activity retraining should target."
-    ]
+    ],
   },
   { id: 177, date: "2025-05-09", added: "2026-05-22",
     title: "AI Is Reshaping the Workplace, but Entry-Level Hires Are Way Ahead of the Game",
@@ -1612,7 +1620,7 @@ const RESEARCH_DATA = [
       "This inversion has equity implications: if entry-level workers using AI informally are gaining productivity and skills that their organizations are not formally tracking or rewarding, the productivity gains may accrue to individuals without being captured in compensation or advancement.",
       "Corporate AI strategy must reckon with a workforce that is already ahead of formal rollout plans, the governance question is whether organizations will channel that informal adoption into structured benefit-sharing or allow it to remain an unmanaged individual advantage.",
       "The finding reinforces the broader pattern that AI adoption statistics measured at the organizational level undercount individual-level diffusion, particularly among younger workers who arrived with GenAI already in their toolkit."
-    ]
+    ],
   },
   { id: 167, date: "2025-01-01", added: "2026-05-11",
     title: "Platform Workers Act 2024 (Singapore)",
@@ -1626,7 +1634,7 @@ const RESEARCH_DATA = [
       "Work injury compensation at employee-equivalent levels is the most immediately protective provision: gig workers are disproportionately injured in high-risk delivery and ride-hail contexts, and prior to the Act bore those costs without the insurance coverage that employed workers carried as a standard condition of work.",
       "Platform Work Associations — established through NTUC affiliation rather than independent union formation — provide formal collective representation while preserving Singapore's industrial relations framework, a design that builds organized labor participation without adversarial dynamics but that limits worker leverage to what state-aligned institutions will pursue.",
       "The Act's silence on algorithmic transparency is the structural gap: workers gain protections against physical and financial risk but retain no statutory right to understand how pay is calculated, how task assignment operates, or how performance metrics are applied, preserving platform power over the core economic terms of gig work while mitigating its welfare consequences."
-    ]
+    ],
   },
   { id: 169, date: "2024-07-01", added: "2026-05-11",
     title: "FHFA 2024 Generative AI in Housing Finance TechSprint",
@@ -1640,7 +1648,7 @@ const RESEARCH_DATA = [
       "The convening of lenders, regulators, servicers, and technologists within a federal regulatory context establishes FHFA as an active participant in AI governance rather than a passive observer, creating leverage for embedding fair lending standards in AI tool design before commercial products are deployed at scale.",
       "The TechSprint model — structured rapid prototyping within a regulatory sandbox — builds agency technical capacity without waiting for rulemaking cycles: FHFA staff gain direct exposure to generative AI capabilities and limitations that inform the agency's ability to evaluate and supervise AI tools used by regulated entities.",
       "Lenders and servicers should anticipate AI-specific fair lending examination criteria emerging from FHFA's growing technical engagement: the institutional groundwork for supervisory expectations around generative AI in housing finance is being laid before those expectations are formalized."
-    ]
+    ],
   },
   { id: 178, date: "2024-12-12", added: "2026-05-22",
     title: "Creative Intelligence: AI and Creativity",
@@ -1654,7 +1662,7 @@ const RESEARCH_DATA = [
       "The 'mavericks' framing — individuals at Google, Facebook, and OpenAI who shaped AI's direction — highlights how consequential AI decisions have been made by small groups without democratic input or accountability.",
       "Hosanagar and Metz's exchange reflects the growing gap between AI expertise and the institutions — boards, legislatures, regulators — nominally responsible for governance but structurally underprepared to exercise it.",
       "Public conversations anchored in both technical and journalistic perspectives are filling an information gap that formal governance processes have not yet addressed."
-    ]
+    ],
   },
   { id: 179, date: "2024-08-20", added: "2026-05-22",
     title: "AI Can't Replace You at Work. Here's Why.",
@@ -1668,7 +1676,7 @@ const RESEARCH_DATA = [
       "Human oversight is not a transitional phase until AI improves, it is a structural requirement for current systems, which means organizations treating 'human in the loop' as temporary are building governance frameworks on a false premise.",
       "Routine communication tasks — a frequently cited candidate for near-term automation — cannot be fully automated without losing contextual information that determines whether the communication achieves its purpose.",
       "The implication for organizations is that productivity gains from AI will come primarily from task augmentation and workflow acceleration, not from headcount reduction, and planning around the latter creates labor relations risks before the technology actually delivers it."
-    ]
+    ],
   },
   { id: 180, date: "2024-07-25", added: "2026-05-22",
     title: "Wharton's Inaugural AI and the Future of Work Conference: Key Findings",
@@ -1682,7 +1690,7 @@ const RESEARCH_DATA = [
       "Academic peer review is facing a structural challenge as AI-generated writing becomes indistinguishable from human writing, a research integrity problem that requires institutional responses, not just individual disclosure norms.",
       "LLM deployment trends (plugins, personalized enterprise models, smaller open-source alternatives) are enabling broader research access and reducing the compute barrier, with implications for who can deploy and study AI and who remains dependent on major provider access.",
       "Independence Blue Cross's AI-powered customer service deployment — designed to enhance agent efficiency rather than monitor performance — illustrates the worker-first model in practice: AI as a capability amplifier rather than a control mechanism."
-    ]
+    ],
   },
   { id: 181, date: "2024-06-18", added: "2026-05-22",
     title: "AI Tools Come with Risks. This Wharton Professor Is Teaching 'Accountable AI.'",
@@ -1696,7 +1704,7 @@ const RESEARCH_DATA = [
       "Business leaders lack the educational foundation to make AI governance decisions with full awareness of the risk landscape, a gap that formal accountability curricula at major business schools can begin to close.",
       "AI accountability frameworks must address the full deployment lifecycle: from procurement and vendor selection through monitoring and incident response, not only initial design and testing.",
       "Werbach's work signals a broader institutional shift: AI governance is moving from a technical specialty into general management education, reflecting that accountability decisions are made by people who will not write code but will deploy, configure, and oversee AI systems."
-    ]
+    ],
   },
   { id: 182, date: "2024-06-14", added: "2026-05-22",
     title: "Stefano Puntoni | Decision-Driven Analytics | Talks at Google",
@@ -1710,7 +1718,7 @@ const RESEARCH_DATA = [
       "Human judgment and analytical capability are complements, not substitutes, the value of AI in decision support depends on the quality of the human decision framework it is integrated with.",
       "Organizations that invest in developing analytical fluency across leadership (not just technical staff) can leverage AI decision tools more effectively than those that treat analytics as a specialist function.",
       "The Google Talk format reflects the growing demand for practical AI decision-making frameworks from organizations that have access to powerful AI tools but need structured approaches to extract value from them."
-    ]
+    ],
   },
   { id: 183, date: "2024-06-03", added: "2026-05-22",
     title: "How Marketers Can Adapt to LLM-Powered Search",
@@ -1724,7 +1732,7 @@ const RESEARCH_DATA = [
       "The conversational, consultative nature of LLM interactions differs structurally from traditional web search: users receive conclusions rather than options, reducing the probability of exposure to non-dominant brands.",
       "Marketers need to monitor and influence how their brands appear in AI-generated query responses, a governance challenge that requires engaging LLM providers directly, not just optimizing content for indexing algorithms.",
       "The concentration of brand discovery in LLM outputs creates new competition policy questions: if a small number of AI systems determine which brands consumers encounter, the anticompetitive potential of biased or inaccurate brand representation is structurally greater than in traditional search."
-    ]
+    ],
   },
   { id: 184, date: "2024-05-24", added: "2026-05-22",
     title: "AI May Not Be a Job Killer, After All",
@@ -1738,7 +1746,7 @@ const RESEARCH_DATA = [
       "Near-term AI productivity effects are more likely to manifest as increased output per worker than as reduced headcount, a dynamic that intensifies the political economy question of whether productivity gains are shared through wages or captured through margins.",
       "The research contributes to the 'augmentation vs. automation' debate with a practical organizational implication: managers planning for near-term AI impact should model task composition changes, not just headcount scenarios.",
       "Workforce dynamics may evolve alongside AI capability in ways that are more additive than subtractive, but this does not automatically translate to worker benefit without labor market conditions or policy frameworks that give workers leverage to capture a share of productivity gains."
-    ]
+    ],
   },
   { id: 185, date: "2024-05-07", added: "2026-05-22",
     title: "Meet the AI Expert Advising the White House, JPMorgan, Google and the Rest of Corporate America",
@@ -1752,7 +1760,7 @@ const RESEARCH_DATA = [
       "General-purpose technologies inherently contain both beneficial and harmful consequences, the governance challenge is not to suppress the technology but to channel institutional and public pressure toward the harmful applications while enabling the beneficial ones.",
       "Mollick's cross-sector influence reflects the vacuum in AI governance expertise: the same academic can credibly advise the White House, JPMorgan, and Google simultaneously because the supply of grounded, operationally informed AI policy expertise is structurally insufficient.",
       "The profile-as-policy pattern — where individual experts fill governance gaps through advisory roles rather than institutional frameworks — is a structural symptom of the governance deficit, not a substitute for it."
-    ]
+    ],
   },
   { id: 186, date: "2024-04-23", added: "2026-05-22",
     title: "We're Focusing on the Wrong Kind of AI Apocalypse",
@@ -1766,7 +1774,7 @@ const RESEARCH_DATA = [
       "Organizations must proactively manage AI integration now — understanding workforce impacts, educational disruption, and deployment risks — rather than deferring governance to resolution of speculative long-run scenarios.",
       "Strategic AI deployment requires genuine evaluation before deployment rather than retrospective harm mitigation, a governance design choice that is being made right now in most organizational contexts.",
       "Redirecting public concern and institutional attention toward near-term materializing risks is essential for effective governance: organizations and policymakers who anchor AI risk assessment to existential scenarios are systematically underinvested in preventing the harms happening now."
-    ]
+    ],
   },
   { id: 187, date: "2024-04-22", added: "2026-05-22",
     title: "AI Will Change Work, for Better and Worse",
@@ -1780,7 +1788,7 @@ const RESEARCH_DATA = [
       "The impact of AI on workers extends beyond simple automation dynamics, human-technology interaction, task composition changes, and organizational power asymmetries all shape how AI affects worker welfare in ways not captured by employment rate statistics.",
       "Organizations and policymakers must assess AI's dual effects in context, resisting aggregate frames that average away the concentrated costs borne by specific worker populations.",
       "Research into human-AI collaboration is essential for managing the 'better and worse' distribution, the design of AI deployment, not just its adoption, determines which outcomes predominate."
-    ]
+    ],
   },
   { id: 188, date: "2024-03-20", added: "2026-05-22",
     title: "AI Horizons: AI and Innovation",
@@ -1794,7 +1802,7 @@ const RESEARCH_DATA = [
       "The quantity-quality tension is operationally important: AI tools that generate abundant output create filtering and evaluation burdens for organizations that may exceed the value of the raw generation.",
       "Human creativity retains comparative advantage at breakthrough innovation; AI's strength is recombination of existing approaches at speed, making hybrid strategies (human ideation + AI elaboration and filtering) more valuable than either in isolation.",
       "ChatGPT outperforms Google at answer retrieval but underperforms on fact-checking accuracy, an asymmetry that should inform which use cases organizations treat as appropriate for AI decision support and which require human verification."
-    ]
+    ],
   },
   { id: 189, date: "2024-02-26", added: "2026-05-22",
     title: "How Algorithmic Management Affects Employee Helpfulness",
@@ -1808,7 +1816,7 @@ const RESEARCH_DATA = [
       "The performance-evaluation mechanism is the most harmful configuration: algorithmic management that evaluates workers reduces helpfulness more severely than algorithmic management used for other functions, identifying performance scoring as the specific design choice that suppresses cooperation.",
       "Social connection strategies — shared spaces, team rotations, organized events — effectively counteract algorithmic management's isolating effects, providing practical organizational levers that do not require removing the algorithmic system.",
       "Algorithmic tools work best when paired with human judgment in performance assessment, the combination preserves the efficiency value of algorithmic monitoring while mitigating the prosocial harm of algorithmic evaluation."
-    ]
+    ],
   },
   { id: 190, date: "2024-02-23", added: "2026-05-22",
     title: "AI Horizons: AI and the Workforce",
@@ -1822,7 +1830,7 @@ const RESEARCH_DATA = [
       "Highly skilled workers embrace AI more readily because it amplifies their existing capabilities; lower-skilled workers need tailored messaging and scaffolded support rather than the same adoption pathways designed for workers already at the top of the skill distribution.",
       "Freelancers actively integrating LLMs gain measurable competitive advantages in client acquisition and project scope, demonstrating that AI tool proficiency is already differentiating outcomes in competitive labor markets.",
       "As AI-generated resumes proliferate, writing quality becomes a less reliable hiring signal, elevating interview performance and human interaction as the primary differentiators, with equity implications for candidates who perform differently across written and oral assessment modes."
-    ]
+    ],
   },
   { id: 175, date: "2024-04-26", added: "2026-05-11",
     title: "AI and Consumers: The Invisible Impact on Economic Justice",
@@ -1836,7 +1844,7 @@ const RESEARCH_DATA = [
       "The ABA survey on consumer law and automated decision systems documents that the legal profession itself is navigating widespread deployment of automated systems affecting clients without established guidance, a gap between deployment scale and available legal frameworks that civil rights attorneys are working to close.",
       "The 'economic justice' framing connects AI consumer harms to distributional impacts: algorithmic lending discrimination, automated debt collection harassment, and insurance pricing disparities aggregate into a system of invisible economic barriers that compounds the wealth and access gaps civil rights law was designed to address.",
       "Existing consumer protection statutes — ECOA, FCRA, FDCPA — already apply to automated decision systems, and the core legal work is extending these existing frameworks to reach the algorithmic layer now making most consequential consumer financial decisions."
-    ]
+    ],
   },
   { id: 174, date: "2024-01-01", added: "2026-05-11",
     title: "AI in Education: Addressing Biases and Discrimination, Privacy & Surveillance",
@@ -1850,7 +1858,7 @@ const RESEARCH_DATA = [
       "Proctoring AI produces disability discrimination through neutral-appearing tools: behaviors classified as suspicious cheating indicators (irregular eye movements, off-screen glances, frequent bathroom breaks) are protected disability manifestations for many students, making AI-proctored assessments a Title II ADA and Section 504 compliance question that most institutions have not analyzed.",
       "Privacy in educational AI settings implicates FERPA, COPPA, and state student data privacy laws across a proliferating set of vendors: civil rights attorneys representing student clients need fluency in both discrimination law and educational data privacy frameworks to identify full legal exposure.",
       "The ABA CRSJ's framing of AI in education as civil rights legal work reflects a broader institutional recognition: AI harms in education are not primarily technical failures to be addressed by IT policy but legal violations of existing anti-discrimination law requiring the same enforcement infrastructure as other civil rights violations in educational institutions."
-    ]
+    ],
   },
   { id: 176, date: "2024-01-01", added: "2026-05-11",
     title: "AI Essentials for Lawyers: What You Need to Know to Protect Your Clients in the Digital Age",
@@ -1864,7 +1872,7 @@ const RESEARCH_DATA = [
       "Due process is the most immediately actionable existing framework for AI-driven administrative harms: notice requirements, the right to hear reasons, access to decisional criteria, and meaningful opportunity to contest — all established constitutional standards — apply to algorithmic government decisions without requiring new statutory authority.",
       "The civil rights bar faces a scale gap: AI-driven discrimination typically operates across many individuals, but civil rights legal infrastructure is built for individual representation. Pattern and practice challenges, regulatory comment, and civil rights audit partnerships are the tools most likely to produce accountability at the scale AI harm actually operates.",
       "The ABA's investment in civil rights AI education signals a profession-wide recognition that AI governance is not exclusively regulatory but a live litigation and advocacy frontier, lawyers who cannot analyze AI systems are increasingly unable to protect their clients in AI-mediated legal and administrative environments."
-    ]
+    ],
   },
   { id: 168, date: "2024-06-01", added: "2026-05-11",
     title: "AI and Access to Justice Initiative",
@@ -1878,7 +1886,7 @@ const RESEARCH_DATA = [
       "Conditional public willingness is actionable: users are not categorically resistant to AI-assisted legal help but are skeptical on accuracy and transparency grounds that developers and legal aid organizations can address through design, jurisdictional specificity, clear limitations disclosure, human escalation pathways, and demographic-subgroup accuracy testing.",
       "Legal Help Commons addresses the duplication problem: every legal aid organization independently building AI tools produces fragmentation, inconsistency, and resource waste. Shared infrastructure with common quality standards creates conditions for the sector to improve collectively rather than in isolation.",
       "JusticeBench — the AI project mapping platform — is a governance contribution: a public inventory of AI projects in legal access, organized by task type and quality evidence, allows funders and practitioners to see where capacity exists, where it is duplicated, and where genuine gaps remain — information that efficient sector development currently lacks."
-    ]
+    ],
   },
   { id: 173, date: "2023-06-01", added: "2026-05-11",
     title: "Benefits Tech Advocacy Hub",
@@ -1892,7 +1900,7 @@ const RESEARCH_DATA = [
       "The documented harms in HCBS eligibility algorithms — in Arkansas, Missouri, and Wisconsin — establish that algorithmic benefits denial is a present pattern, not a future risk, and that legal challenges grounded in constitutional due process, statutory rulemaking requirements, and ADA integration mandates can succeed in reversing automated cuts.",
       "The 'fight austerity policies' framing connects technology advocacy to underlying fiscal dynamics: algorithmic benefits systems are deployed primarily to reduce program costs, not improve accuracy. Advocacy contesting only technical implementation without addressing the political economy driving deployment will win individual battles while losing the structural fight.",
       "The coalition model (NHeLP's benefits law expertise + TechTonic Justice's policy analysis + Upturn's technology accountability research) demonstrates that effective benefits technology advocacy requires combining legal doctrine, policy analysis, and technical literacy, a capacity configuration that must be built deliberately since it doesn't exist in any single institution."
-    ]
+    ],
   },
   { id: 199, date: "2023-12-15", added: "2026-05-22",
     title: "Generative Artificial Intelligence and the Creative Economy Staff Report: Perspectives and Takeaways",
@@ -1906,7 +1914,7 @@ const RESEARCH_DATA = [
       "Artists expressed concern about AI tools mimicking their unique styles, voices, and likenesses — enabling knockoffs and synthetic endorsements they never authorized — a harm that existing IP and right-of-publicity frameworks do not fully address.",
       "Creative professionals called for opt-in rather than opt-out frameworks for AI training data: opt-outs only address future use, are undermined by developer opacity about what data is used, and shift the compliance burden onto the harmed parties rather than the extracting parties.",
       "The FTC's stance — deploying targeted enforcement under existing authority while monitoring generative AI markets — establishes federal consumer protection jurisdiction over AI training practices and creative economy harms without requiring new statutory authority."
-    ]
+    ],
   },
   { id: 191, date: "2023-11-10", added: "2026-05-22",
     title: "How Will AI Transform Industries and Organizations?",
@@ -1920,7 +1928,7 @@ const RESEARCH_DATA = [
       "The investment advisory and marketing transformations illustrate a pattern: AI automation of information-intensive customer-facing functions is operating in parallel with ongoing debates about whether AI 'will' transform industries.",
       "Business leaders who engage with AI transformation as a present-tense strategic reality rather than a planning horizon are better positioned to manage transitions proactively than those waiting for AI to become undeniable.",
       "This is part of Wharton's 10-part series examining AI's broad influence on business, providing practitioner-oriented synthesis from academic researchers engaged with deployment-stage AI rather than theoretical capability."
-    ]
+    ],
   },
   { id: 192, date: "2023-11-10", added: "2026-05-22",
     title: "How Are AI and Robotics Redefining Productivity?",
@@ -1934,7 +1942,7 @@ const RESEARCH_DATA = [
       "Automation and AI impact physical labor, knowledge work, and human resources simultaneously, requiring integrated planning rather than function-by-function deployment strategies.",
       "Understanding the relationship between new AI tools and existing processes is prerequisite for successful adoption: deployments that ignore process integration constraints frequently produce waste, rework, and resistance.",
       "Productivity redefinition is not uniform: AI and robotics may increase output per worker in some dimensions while creating new bottlenecks, quality problems, or coordination costs that offset headline productivity gains."
-    ]
+    ],
   },
   { id: 193, date: "2023-11-10", added: "2026-05-22",
     title: "How Is AI Affecting Innovation Management?",
@@ -1948,7 +1956,7 @@ const RESEARCH_DATA = [
       "Risk assessment and organizational structure in innovation benefit from AI assistance: processing large volumes of market signals, patent landscapes, and competitor data at speed informs strategy in ways previously limited by human analytical capacity.",
       "Customer understanding is a domain where AI can add value by processing survey and behavioral data at scale, but interpreting what that data means for innovation direction still requires contextual human expertise.",
       "Value capture — how organizations extract benefit from their innovations — is the least-developed AI application in innovation management, and also the most strategically consequential: technical advantage that competitors can quickly replicate produces limited durable value."
-    ]
+    ],
   },
   { id: 194, date: "2023-11-10", added: "2026-05-22",
     title: "How Is AI Changing the Auto Industry?",
@@ -1962,7 +1970,7 @@ const RESEARCH_DATA = [
       "The competitive tension between automotive incumbents and technology companies over AI integration is a structural industry reorganization — not just a product feature race — with implications for who controls the software-defined vehicle architecture and the data it generates.",
       "Open-source AI software creates a dual dynamic in automotive: collaborative platforms for non-differentiating features while intensifying competition in the AI capabilities that determine driver experience and safety.",
       "The auto industry's AI transformation illustrates a broader pattern: sectors with legacy physical infrastructure face disruption not only in product capability but in the organizational control of AI systems that now govern core product functions."
-    ]
+    ],
   },
   { id: 195, date: "2023-11-10", added: "2026-05-22",
     title: "How Does AI Impact Education?",
@@ -1976,7 +1984,7 @@ const RESEARCH_DATA = [
       "Educators face a genuine curriculum redesign challenge: if AI can produce competent first drafts, correct grammar, and generate research summaries, the educational value of traditional writing and research assignments must be reassessed rather than simply defended.",
       "ChatGPT and similar tools represent significant developments for what the future workforce needs to know, AI fluency is becoming a baseline professional skill, and educational systems that treat AI literacy as optional are disadvantaging their students.",
       "The academic integrity challenge is the most immediate institutional problem: AI-generated work detection is unreliable, policy is inconsistent, and the penalty frameworks designed for plagiarism do not map cleanly onto AI-assisted composition, creating enforcement challenges that are forcing a broader rethinking of assessment design."
-    ]
+    ],
   },
   { id: 170, date: "2022-05-23", added: "2026-05-11",
     title: "Ableism and Disability Discrimination in New Surveillance Technologies",
@@ -1990,7 +1998,7 @@ const RESEARCH_DATA = [
       "Proctoring AI is the clearest documented case: behaviors classified as cheating indicators — irregular eye movements, looking off-screen, frequent bathroom breaks — are protected disability manifestations under the ADA and Section 504. Institutions deploying these systems without disability accommodation protocols are creating civil rights liability at scale.",
       "Bossware amplifies disability harm specifically: intrusive monitoring combined with accommodation requests creates a documented retaliation risk, workers needing modifications to standard productivity tracking must choose between disclosing disability to request accommodation or accepting monitoring that measures disability-related work patterns against non-disabled baselines.",
       "Coverage across four domains — education, criminal justice, healthcare, and employment — documents disability discrimination as a systemic feature of AI surveillance deployment rather than a sector-specific failure: calibrating AI systems to a non-disabled behavioral norm produces discrimination across every context where AI surveillance is deployed."
-    ]
+    ],
   },
   { id: 172, date: "2021-04-30", added: "2026-05-11",
     title: "Statement to the California Fair Employment and Housing Council on AI and Disability Discrimination",
@@ -2004,7 +2012,7 @@ const RESEARCH_DATA = [
       "The disparate screening harm is addressable through existing disparate impact doctrine under the ADA without new statutory authority: the legal framework is in place; what is absent is enforcement agency technical capacity and employer compliance infrastructure.",
       "The self-regulation critique has structural implications: employer and vendor auditing processes operate behind closed doors without worker participation, producing accountability claims that cannot be independently evaluated. Meaningful oversight requires external auditing with public disclosure and worker access to findings.",
       "California's FEHA provides a more demanding standard than federal ADA requirements, making California the most important state-level enforcement frontier for algorithmic hiring discrimination against disabled applicants, and the DFEH/CRD hearing process documented the legal community's growing engagement with AI-specific civil rights enforcement."
-    ]
+    ],
   },
   { id: 171, date: "2020-10-21", added: "2026-05-11",
     title: "Challenging the Use of Algorithm-Driven Decision-Making in Benefits Determinations Affecting People with Disabilities",
@@ -2018,7 +2026,7 @@ const RESEARCH_DATA = [
       "Constitutional due process provides the most immediately actionable legal challenge: states must give advance notice with adequate explanation before reducing or terminating benefits, and algorithmic systems generating denial notices without explaining the decisional logic they applied violate this constitutional standard under existing doctrine.",
       "The notice-and-comment rulemaking requirement creates a second challenge pathway: when states implement new algorithmic decision systems without required public rulemaking — including affected community input — they may violate administrative law requirements governing how policy changes are made, independent of whether the substantive outcome is correct.",
       "The ADA community integration mandate is the most expansive legal hook: Olmstead doctrine requires states to provide services in the most integrated setting appropriate to individual needs, and automated benefit cuts that force disabled people into institutional care rather than maintaining community-based services may violate this mandate even when the algorithmic determination is technically accurate."
-    ]
+    ],
   },
   { id: 157, date: "2025-07-01", added: "2026-05-11",
     title: "LLM-Generated Messages Can Persuade Humans on Policy Issues",
@@ -2032,7 +2040,7 @@ const RESEARCH_DATA = [
       "The misidentification rate is the most consequential finding for governance: over 94% of participants failed to identify LLM-generated content as AI-authored, meaning that detection-based safeguards and voluntary disclosure requirements face a fundamental epistemic obstacle, citizens cannot exercise skepticism they cannot activate because they cannot identify the source.",
       "LLM and human messages succeeded through different mechanisms: LLM messages were persuasive through perceived 'facts, evidence, logical reasoning, and dispassionate voice,' while human messages worked through perceived uniqueness and originality, suggesting that AI persuasion does not mimic human persuasion but achieves comparable attitude change through a distinct epistemic pathway that existing media literacy training is not designed to counter.",
       "The policy threat is multiplicative, not additive: the study tested single messages on individual participants, but the governance risk is that LLMs can generate persuasive content at arbitrary scale simultaneously across millions of people, simulating broad public consensus. The authors recommend mandatory disclosure requirements, digital watermarking, and detection systems, none of which currently exist as binding standards in the U.S."
-    ]
+    ],
   },
   { id: 156, date: "2026-03-05", added: "2026-05-11",
     title: "When Using AI Leads to 'Brain Fry'",
@@ -2046,10 +2054,9 @@ const RESEARCH_DATA = [
       "The 'brain fry' mechanism is distinct from conventional work overload: it emerges from AI's capacity to produce content at speeds that outpace human review capacity, creating a form of cognitive strain specific to human-AI collaboration that occupational health frameworks designed for human-paced information loads are not calibrated to measure or regulate.",
       "A paradox documented here and in related research (APA always-on work culture) finds that high AI adopters often report higher job satisfaction alongside greater cognitive demands, the competence gains and task variety AI enables may dominate early adoption experience before cumulative boundary erosion becomes the dominant signal, warning against using initial satisfaction data as evidence of sustained wellbeing.",
       "Deployment design is a worker health question: which AI tools are used, at what frequency and intensity, and for which task types determines whether AI compounds or relieves cognitive load, making deployment standards a workplace wellbeing intervention, not only a productivity or safety issue."
-    ]
+    ],
   },
   { id: 155, date: "2026-05-06", added: "2026-05-11",
-    highlight: { stat: "5 gigawatts", text: "natural gas plant Microsoft is developing as artificial intelligence data-center expansion outpaces its 2030 clean-energy commitment.", themeId: "community" },
     title: "Microsoft's AI Data Center Push Is Colliding with Its Clean Power Goals",
     source: "Tim De Chant — TechCrunch",
     sourceUrl: "https://techcrunch.com/2026/05/06/microsofts-ai-data-center-push-is-colliding-with-its-clean-power-goals/",
@@ -2061,7 +2068,8 @@ const RESEARCH_DATA = [
       "The distinction between hourly and annual clean energy matching is material for accountability: annual matching allows companies to claim renewable credits through accounting mechanisms without eliminating real-time fossil fuel reliance, while hourly matching requires actual production-consumption alignment. Abandoning the hourly target while retaining annual targets would allow the company to report clean energy progress while remaining fossil-fuel dependent in practice.",
       "The 5-gigawatt natural gas plant co-developed with Chevron signals that AI energy demand has crossed a threshold where fossil fuel investment is being treated as a near-term operational requirement, not a transitional measure, even at companies whose stated climate commitments are among the most ambitious in the sector.",
       "Microsoft's position sets a precedent with systemic implications: as the largest cloud provider and a leading AI developer, its energy sourcing decisions influence other hyperscalers, shape regulatory expectations, and directly test whether corporate clean energy pledges — a primary current governance mechanism for AI infrastructure — can withstand deployment pressure at scale."
-    ]
+    ],
+    highlight: { stat: "5 gigawatts", text: "natural gas plant Microsoft is developing as artificial intelligence data-center expansion outpaces its 2030 clean-energy commitment.", themeId: "community" },
   },
   { id: 154, date: "2026-05-06", added: "2026-05-11",
     title: "Anthropic Is Letting Claude Agents 'Dream' So They Don't Sleep on the Job",
@@ -2075,7 +2083,7 @@ const RESEARCH_DATA = [
       "Multi-agent orchestration — allowing lead agents to delegate sub-tasks with full visibility and coordination — introduces an AI organizational layer above individual task execution, performing project management and coordination functions previously requiring human judgment and sustained attention.",
       "The 'Outcomes' grading mechanism, which improves task success by approximately 10 percentage points by showing agents example outputs, demonstrates that AI performance on professional tasks can be systematically optimized through output comparison, a feedback loop that enables capability improvement without human retraining cycles.",
       "The cumulative trajectory — from single-session tools to multi-session, multi-agent systems with memory consolidation, orchestration, and outcome grading — represents a structural capability shift toward autonomous sustained workflows, compressing the timeline before AI intersects with full professional task scope across knowledge-work occupations."
-    ]
+    ],
   },
   { id: 153, date: "2026-05-01", added: "2026-05-11",
     title: "The New Way Your Boss Is Watching Your Feelings",
@@ -2089,7 +2097,7 @@ const RESEARCH_DATA = [
       "The scientific foundations of emotion AI are actively contested: the systems make inferences based on research whose validity is disputed within psychology, meaning workers may face consequential employment decisions made by systems built on contested science with no regulatory requirement to validate accuracy before deployment.",
       "The accountability asymmetry is particularly acute: workers in most U.S. jurisdictions have no legal right to know when their emotional state is being inferred, no mechanism to verify whether inferences are accurate, and no recourse against decisions made on that basis, creating a monitoring environment with no practical accountability.",
       "The documented diffusion pathway — from logistics and customer service toward professional and educational contexts — follows the same normalization pattern as earlier monitoring technologies: first embedded in low-wage settings with limited worker power, then extended upward through the labor market as costs fall and the precedent of use is established."
-    ]
+    ],
   },
   { id: 152, date: "2022-08-02", added: "2026-05-11",
     title: "IDC CIO Sentiment Survey 2022: The Future CIO Is Not the Same as Today's CIO",
@@ -2103,7 +2111,7 @@ const RESEARCH_DATA = [
       "Digital business has reached majority share globally: at 50% of total business activity across all regions, AI-enabled digital operations are no longer supplementing traditional business models but displacing them as the primary mode of enterprise activity, with significant implications for which workforces, skills, and organizational structures remain economically viable.",
       "The expanding CIO mandate signals where workforce design authority is shifting: 55% of CIOs reported having expanded beyond traditional IT responsibilities into business strategy, revenue generation, and digital transformation leadership, reflecting a structural shift in who has authority over automation and workforce decisions within firms.",
       "The $13.29 million in annual revenue supported per IT employee documents the leverage differential automation creates: as AI replaces functions previously requiring headcount, value-per-employee ratios rise, producing productivity statistics that may mask underlying labor displacement in standard economic aggregates."
-    ]
+    ],
   },
   { id: 151, date: "2024-10-01", added: "2026-05-11",
     title: "Estimating the Prevalence of Automated Management and Surveillance Technologies at Work and Their Impact on Workers' Well-Being",
@@ -2117,7 +2125,7 @@ const RESEARCH_DATA = [
       "The critical analytic distinction is monitoring purpose, not presence: disciplinary monitoring correlates strongly with unsafe work practices, elevated injury rates, and anxiety, while monitoring designed for worker health and safety shows minimal adverse effects, indicating that deployment intent shapes outcomes as much as the technology itself, with direct implications for how oversight frameworks should be structured.",
       "Harm is racially stratified: electronic monitoring is significantly more common in larger organizations and among Black and Hispanic workers, who are both more likely to be monitored and more likely to experience the worst documented outcomes, injury rates and unsafe work practices concentrate disproportionately in this population, reinforcing the link between algorithmic management and pre-existing racial inequalities in workplace conditions.",
       "The policy recommendations frame workplace monitoring as an occupational health issue: mandatory worker consultation in technology design, enhanced federal data collection by BLS and OSHA, and occupational safety standards specifically governing surveillance, moving the regulatory frame beyond privacy law toward the workplace safety obligations that employers already bear for other hazards."
-    ]
+    ],
   },
   { id: 150, date: "2022-09-01", added: "2026-05-11",
     title: "Every Move You Make: When Monitoring Employees Gives Rise to Legal Risks",
@@ -2131,7 +2139,7 @@ const RESEARCH_DATA = [
       "The legal exposure created by monitoring programs spans multiple liability pathways: privacy invasion, NLRA protections for concerted activity, employment discrimination claims (where monitored data is used in adverse decisions), wage-and-hour violations (where monitoring tracks compensable time), and workplace injury risks, most monitoring policies are designed without adequate attention to any of these vectors.",
       "The U.S. regulatory floor is exceptionally low: only Connecticut, Delaware, and New York require employers to notify employees that monitoring is in use, contrasting with EU regulations requiring data protection impact assessments and necessity justifications before deployment. California's failed Workplace Technology Accountability Act (AB 1651) would have substantially restricted these practices, and its failure documents the distance between advocacy goals and current statutory protection.",
       "The analysis is structurally significant from both sides: the same legal assessment that documents employer liability exposure simultaneously reveals that workers have almost no affirmative rights to know, contest, or limit monitoring, an asymmetry that worker data rights proposals and algorithmic transparency mandates are designed to close."
-    ]
+    ],
   },
   { id: 149, date: "2026-05-01", added: "2026-05-08",
     title: "Government AI Landscape Assessment (Second Annual)",
@@ -2144,7 +2152,7 @@ const RESEARCH_DATA = [
       "Workforce capacity building is the weakest dimension nationally: across all 50 states, AI training programs and skill development for government workers is the least developed area, creating a growing competency gap as operational deployment accelerates ahead of the talent infrastructure needed to manage it.",
       "Benefits navigation is the primary equity-relevant use case: the second annual report specifically examined AI's role in connecting eligible residents to benefits, Code for America's programs helped 7 million people access $22 billion in benefits across safety net, criminal justice, and tax systems, making AI-assisted benefits access the most consequential government AI deployment for vulnerable populations.",
       "Governance architecture determines trajectory: states with published AI governance frameworks, Chief AI Officers, and cross-agency advisory groups (Texas, New Jersey, Utah) consistently outperform states relying on ad-hoc structures, identifying institutional design, not technology access, as the primary variable separating leading from lagging states."
-    ]
+    ],
   },
   { id: 148, date: "2026-01-13", added: "2026-05-08",
     title: "New Jersey Responsible AI Advancement and Workforce Protection Act (S.1840)",
@@ -2157,7 +2165,7 @@ const RESEARCH_DATA = [
       "Mandatory layoff disclosure and training fund contribution requirements extend obligations to employers rather than only AI companies: firms that deploy AI to eliminate positions bear a cost proportional to the displacement they generate, a price signal absent from the current regulatory environment.",
       "Enhanced unemployment benefits for AI-displaced workers address the TAA expiration gap at the state level, providing income support that WIOA alone does not offer, and creating a state model for the extended benefits that previously existed only under the now-expired federal TAA program.",
       "Ethical use and transparency requirements for high-risk AI systems embedded in the bill extend NJ's framework into AI governance more broadly, making S.1840 simultaneously a workforce protection policy and an AI accountability framework, with worker protection as the organizing principle."
-    ]
+    ],
   },
   { id: 147, date: "2025-09-01", added: "2026-05-08",
     title: "AI in Workforce Development: Guidance for WIOA Programs (NJ WD-PY25-14)",
@@ -2170,7 +2178,7 @@ const RESEARCH_DATA = [
       "By requiring updates to career development resources and digital literacy competency frameworks, the guidance creates accountability for state workforce boards to assess whether training programs reflect current AI skill demands, a gap most states have not yet addressed.",
       "The practical implication for WIOA participants is that AI literacy may become a condition of program design rather than an optional add-on, shifting who gets AI training access from employers (who concentrate it among higher-wage workers) to publicly-funded systems serving displaced and low-income workers.",
       "NJ's guidance creates a replicable state-level model requiring no new federal legislation: it uses existing WIOA administrative flexibility to integrate AI workforce development into funded programs, providing a template other states can adapt under current federal program rules."
-    ]
+    ],
   },
   { id: 146, date: "2024-06-01", added: "2026-05-08",
     title: "GiveDirectly: AI-Supported Triggers for Cash Transfers",
@@ -2183,7 +2191,7 @@ const RESEARCH_DATA = [
       "By automating preliminary beneficiary identification, the approach reduces the administrative cost ratio of cash transfer programs, potentially improving cost-effectiveness in direct proportion to the scale of deployment.",
       "The AI-human hybrid model retains human review at the verification stage: AI handles large-scale pattern recognition across geographic data while human judgment applies local context, a design that complements rather than supplants human decision-making in consequential welfare decisions.",
       "The case demonstrates AI's potential role as social protection infrastructure, not only a labor market risk: the technology can extend reach and reduce delivery friction for direct cash programs in ways directly applicable to proposals for AI-era income support mechanisms, including contingent UBI triggers and climate-linked cash transfers."
-    ]
+    ],
   },
   { id: 145, date: "2025-04-01", added: "2026-05-08",
     title: "AI-Related Job Impacts Clarity Act (S.3108)",
@@ -2196,7 +2204,7 @@ const RESEARCH_DATA = [
       "The reporting requirement applies at the organizational level, creating accountability for AI deployment decisions that is currently entirely absent: employers can implement AI systems at any scale with no obligation to disclose effects on their workforce.",
       "The bill addresses a structural governance failure: without systematic data collection, neither Congress nor the Department of Labor can accurately assess whether AI displacement is accelerating, which sectors are most affected, or whether existing programs have adequate capacity to respond.",
       "Transparency reporting is a precondition for evidence-based policy: the Clarity Act would enable displacement monitoring that makes it possible to calibrate displaced worker programs, wage insurance, and retraining investments against actual rather than projected disruption, a prerequisite for any adaptive policy architecture."
-    ]
+    ],
   },
   { id: 144, date: "2025-03-04", added: "2026-05-08",
     title: "Trump's Rollback of AI Guardrails Leaves US Workers 'At Real Risk'",
@@ -2209,7 +2217,7 @@ const RESEARCH_DATA = [
       "Labor experts characterize the primary risk not as future displacement but as present-day job quality degradation: AI is already being used to intensify surveillance in warehouses, deny healthcare claims, and algorithmically manage gig workers, and the removal of federal guardrails eliminates the most direct oversight mechanism for these active harms.",
       "The DOL's notation that its 'AI & Inclusive Hiring Framework' and 'Artificial Intelligence Best Practices' guidance 'may now be outdated' creates a compliance vacuum: employers who built AI policies on this guidance have no federal replacement framework, and enforcement agencies have diminished guidance for evaluating worker complaints.",
       "State-level AI labor protections take on heightened importance in the absence of federal standards, but most states still lack comprehensive worker-facing AI governance, creating a fragmented protection landscape with significant geographic inequality in worker rights."
-    ]
+    ],
   },
   { id: 143, date: "2025-10-27", added: "2026-05-08",
     title: "What Happens When Jobs Disappear? A Guide to Displaced Worker Programs in the U.S.",
@@ -2222,7 +2230,7 @@ const RESEARCH_DATA = [
       "WIOA's Dislocated Worker Program is the weaker of the two programs by effectiveness evidence: research shows moderate re-employment improvements but less success than other WIOA streams, with outcomes dependent on wraparound supports that are not standardized across state delivery systems.",
       "No federal program currently contains language or eligibility criteria specifically addressing automation-driven displacement, AI-displaced workers must qualify as 'dislocated workers' under general criteria designed for trade and industry decline, a mismatch that will produce significant eligibility gaps as AI-driven transitions accelerate.",
       "Key unresolved policy design questions: how to define automation-displaced workers, whether income support or retraining should be prioritized under different labor market conditions, and what initial funding (~$700M annually) is required with built-in flexibility to scale."
-    ]
+    ],
   },
   { id: 142, date: "2025-07-24", added: "2026-05-08",
     title: "AI as Profoundly Abnormal Technology",
@@ -2235,7 +2243,7 @@ const RESEARCH_DATA = [
       "AI labs can directly use advanced AI to accelerate their own research, creating recursive improvement dynamics absent from previous general-purpose technologies: deployment speed may not be constrained by external capability ceilings in the way prior technologies were.",
       "Professional adoption of 19–79% within a single year creates competitive pressure that eliminates the 'wait and see' option, compressing the adjustment window for affected workers and institutions, retraining programs requiring 1–3 years of participation may not be deployed before the displacement they address has already occurred.",
       "The practical implication for workforce policy is that AI will penetrate professional sectors at speeds incompatible with typical transition timelines, requiring anticipatory policy investment, the governance, reskilling, and income support infrastructure must be built before disruption peaks, not in response to it."
-    ]
+    ],
   },
   { id: 141, date: "2025-07-09", added: "2026-05-08",
     title: "AI and Jobs: Two Phases of Automation",
@@ -2248,7 +2256,7 @@ const RESEARCH_DATA = [
       "Phase 2 requires a fundamentally different social contract because AI becomes simultaneously autonomous (no human support tasks required) and general (competitive across most occupational categories), eliminating the comparative advantage mechanism that has historically protected employment during technological transitions.",
       "The key policy risk: early success addressing Phase 1 disruption could paradoxically discredit advocates warning of Phase 2, creating false confidence that AI disruption is manageable under existing frameworks at exactly the moment when preparatory investment for more severe scenarios is most needed.",
       "The two-phase framing resolves the apparent contradiction between 'normal automation' and 'fundamental displacement' camps: both are correct about different time horizons, and the mistake is treating them as competing rather than sequential hypotheses requiring complementary policy investments."
-    ]
+    ],
   },
   { id: 140, date: "2025-06-01", added: "2026-05-08",
     title: "Expertise",
@@ -2261,7 +2269,7 @@ const RESEARCH_DATA = [
       "A radiologist and a nurse may face similar AI pressure on their occupations but with opposite economic consequences: AI attacking diagnostic expertise compresses specialist wages and may expand lower-skill roles, while AI handling documentation tasks increases the relative value of clinical judgment.",
       "Standard displacement projections — including the widely cited Eloundou et al. task-exposure estimates — do not distinguish expert-task from routine-task automation, meaning they may predict the wrong direction of wage effects in high-expertise occupations.",
       "The expertise framework requires different policy responses: wage insurance and reskilling accounts are appropriate when routine tasks are automated, but occupational wage-floor policies and credentialing reforms may be more critical when expert task automation compresses specialized professional wages."
-    ]
+    ],
   },
   { id: 139, date: "2019-05-01", added: "2026-05-08",
     title: "Artificial Intelligence, Automation, and Work",
@@ -2274,7 +2282,7 @@ const RESEARCH_DATA = [
       "New labor-intensive task creation is the essential counterbalance: without deliberate reinvestment of productivity gains into new kinds of work, automation generates output growth that does not translate into proportional wage growth for workers.",
       "Structural barriers limit adjustment benefits: skill mismatches, geographic concentration, and the possibility that AI automation outpaces creation of new complementary work mean the standard 'lump-of-labor fallacy' rebuttal underestimates displacement risk in fast-moving adoption environments.",
       "The framework anticipated the AI-era debate: general-purpose technologies with very broad task coverage — precisely the characteristic of large language models — create the most challenging conditions for labor adjustment because they simultaneously displace across many occupational categories, limiting the natural emergence of new task creation."
-    ]
+    ],
   },
   { id: 138, date: "2025-02-11", added: "2026-05-08",
     title: "Which Economic Tasks Are Performed with AI? Evidence from Millions of Claude Conversations",
@@ -2287,7 +2295,7 @@ const RESEARCH_DATA = [
       "Software development and writing dominating AI task usage concentrates AI's current economic impact in a narrow occupational band; the 36% of occupations using AI for 25%+ of tasks indicates penetration already wider than commonly assumed.",
       "The methodology — mapping real conversation data against the U.S. Department of Labor's O*NET occupational task frameworks — establishes an evidence-based approach for tracking how AI economic penetration evolves over time, avoiding reliance on expert elicitation or employer surveys.",
       "The Anthropic dataset represents a single platform and skews toward technically sophisticated users, meaning these findings likely underrepresent AI usage in lower-skill occupations and overrepresent high-complexity cognitive work, the actual automation share in routine tasks is likely higher."
-    ]
+    ],
   },
   { id: 137, date: "2023-04-01", added: "2026-05-08",
     title: "Generative AI at Work",
@@ -2300,10 +2308,9 @@ const RESEARCH_DATA = [
       "The distributional pattern is the inverse of prior automation research: lower-skill workers benefit most from generative AI assistance, suggesting this technology may reduce within-workplace wage inequality in deployment contexts where it augments rather than replaces.",
       "Secondary benefits beyond productivity included improved customer sentiment and increased employee retention among supported agents, indicating that AI assistance reduces the cognitive and emotional stress of handling difficult interactions.",
       "The concentration of gains among low-skill workers implies that the productivity case for generative AI in high-skill or highly experienced workforces may be considerably weaker than headline figures suggest, and that AI's augmentation value is strongest precisely where expertise gaps are widest."
-    ]
+    ],
   },
-  {
-    id: 1, date: "2023-03-17", added: "2026-04-30",
+  { id: 1, date: "2023-03-17", added: "2026-04-30",
     title: "GPTs are GPTs: An Early Look at the Labor Market Impact Potential of Large Language Models",
     source: "Eloundou, Manning, Mishkin & Rock — OpenAI / University of Pennsylvania",
     sourceUrl: "https://arxiv.org/abs/2303.10130",
@@ -2313,10 +2320,9 @@ const RESEARCH_DATA = [
       "Approximately 19% of workers may see 50%+ of their tasks affected, concentrated in professional and managerial occupations rather than routine blue-collar roles.",
       "Unlike previous automation waves, LLM exposure peaks at the top of the wage distribution, writers, programmers, financial analysts.",
       "Tasks involving complex writing, coding, and information synthesis score highest on GPT exposure, suggesting white-collar disruption precedes displacement."
-    ]
+    ],
   },
-  {
-    id: 2, date: "2024-01-15", added: "2026-04-30",
+  { id: 2, date: "2024-01-15", added: "2026-04-30",
     title: "New Data Show No AI Jobs Apocalypse — For Now",
     source: "Brookings Institution",
     sourceUrl: "https://www.brookings.edu/articles/new-data-show-no-ai-jobs-apocalypse-for-now/",
@@ -2326,10 +2332,9 @@ const RESEARCH_DATA = [
       "Job postings requiring AI skills grew 3.5× faster than overall postings in 2023, signaling rapid demand-side restructuring toward AI-complementary roles.",
       "Workers who adopt AI tools show a 14–40% individual productivity boost in controlled studies, but gains concentrate in already high-wage occupations.",
       "Emerging 'AI premiums' in starting salaries (11–25% above equivalent roles) risk entrenching a two-tier labor market within professional services."
-    ]
+    ],
   },
-  {
-    id: 3, date: "2023-07-12", added: "2026-04-30",
+  { id: 3, date: "2023-07-12", added: "2026-04-30",
     title: "Writers Strike 2023: AI Provisions and What They Mean for Contracts",
     source: "Writers Guild of America",
     sourceUrl: "https://www.wga.org/contracts/know-your-rights/artificial-intelligence",
@@ -2339,10 +2344,9 @@ const RESEARCH_DATA = [
       "The final WGA agreement prohibits AI-generated scripts from undermining writer minimums or stripping residuals, creating enforceable contractual floors.",
       "Studios had proposed using AI for 'first drafts' that writers polish, a model unions argued would eliminate entry-level positions over a single contract cycle.",
       "The strike demonstrated collective action can translate diffuse AI anxieties into specific, auditable contract terms now studied by healthcare and tech unions."
-    ]
+    ],
   },
-  {
-    id: 4, date: "2024-02-08", added: "2026-04-30",
+  { id: 4, date: "2024-02-08", added: "2026-04-30",
     title: "Unionization Rates in Tech: Structural Barriers in the AI Era",
     source: "Cornell ILR School",
     sourceUrl: "https://www.ilr.cornell.edu/worker-institute/research",
@@ -2352,10 +2356,9 @@ const RESEARCH_DATA = [
       "Contractor misclassification — affecting ~40% of the tech workforce — substantially depresses formal union eligibility under current NLRA coverage rules.",
       "Remote-first work has fractured traditional solidarity mechanisms, making organizing 30–50% more costly per worker reached than pre-pandemic.",
       "Tech workers are significantly more likely to sign open letters and protest than to pursue NLRB elections, reflecting structural constraints rather than apathy."
-    ]
+    ],
   },
-  {
-    id: 5, date: "2024-03-19", added: "2026-04-30",
+  { id: 5, date: "2024-03-19", added: "2026-04-30",
     title: "Big Tech Merger Tracker: FTC Enforcement and AI Market Consolidation",
     source: "American Economic Liberties Project",
     sourceUrl: "https://www.economicliberties.us/big-tech-merger-tracker/",
@@ -2365,10 +2368,9 @@ const RESEARCH_DATA = [
       "Microsoft, Google, and Amazon collectively control over 65% of cloud compute used for AI training and inference, creating hard dependencies for downstream companies.",
       "Minority investment structures (Microsoft/OpenAI, Amazon/Anthropic) allow effective control without triggering standard HSR merger notification thresholds.",
       "FTC challenges revealed limits of traditional merger review: data moats, talent lock-in, and API dependency chains fall outside conventional competitive harm analysis."
-    ]
+    ],
   },
-  {
-    id: 6, date: "2023-11-30", added: "2026-04-30",
+  { id: 6, date: "2023-11-30", added: "2026-04-30",
     title: "Foundation Model Concentration and API Dependency: Systemic Risk in AI Supply Chains",
     source: "Georgetown CSET",
     sourceUrl: "https://cset.georgetown.edu/publications/",
@@ -2378,10 +2380,9 @@ const RESEARCH_DATA = [
       "Over 70% of AI startups surveyed rely on one of three foundation model providers, creating pricing and policy risk comparable to historical utility lock-in.",
       "Model providers control fine-tuning access and usage data, giving them structural intelligence advantages over applications built on their APIs.",
       "A single terms-of-service change could render entire downstream product categories non-viable within days, with limited contractual recourse."
-    ]
+    ],
   },
-  {
-    id: 7, date: "2023-09-14", added: "2026-04-30",
+  { id: 7, date: "2023-09-14", added: "2026-04-30",
     title: "Algorithmic Management and Worker Surveillance: Evidence from Warehouse Logistics",
     source: "MIT Work of the Future",
     sourceUrl: "https://dl.acm.org/doi/10.1145/3757409",
@@ -2391,10 +2392,9 @@ const RESEARCH_DATA = [
       "Algorithmic target systems create a 'ratchet effect': as workers adapt to baselines, the AI raises them, leaving no sustainable steady state.",
       "Workers under algorithmic management report 2.3× higher rates of musculoskeletal injuries and psychological stress than those under traditional supervisors.",
       "Workers lack visibility into how scores are calculated, closing off both informal appeals and formal legal challenge pathways."
-    ]
+    ],
   },
-  {
-    id: 8, date: "2021-07-06", added: "2026-04-30",
+  { id: 8, date: "2021-07-06", added: "2026-04-30",
     title: "Essential Work: Analyzing the Hiring Technologies of Large Hourly Employers",
     source: "Upturn",
     sourceUrl: "https://www.upturn.org/work/essential-work/",
@@ -2404,10 +2404,9 @@ const RESEARCH_DATA = [
       "Large hourly employers route nearly all applications through automated screening before human review, making the configuration of these tools a de facto hiring policy.",
       "Availability filters, assessments, and knockout questions reject qualified applicants for reasons unrelated to job performance.",
       "Applicants receive little transparency about why they were screened out, leaving no practical route to contest automated rejections."
-    ]
+    ],
   },
-  {
-    id: 9, date: "2024-04-24", added: "2026-04-30",
+  { id: 9, date: "2024-04-24", added: "2026-04-30",
     title: "Improving Mortgage Underwriting Outcomes for Protected Classes Through Distribution Matching",
     source: "National Fair Housing Alliance",
     sourceUrl: "https://nationalfairhousing.org/resource/improving-mortgage-underwriting-and-pricing-outcomes-for-protected-classes-through-distribution-matching/",
@@ -2417,10 +2416,9 @@ const RESEARCH_DATA = [
       "Models trained on historical data encoded decades of discriminatory lending geography; their opacity made denial reasons impossible for applicants to understand or challenge.",
       "A shift toward 'intent'-based legal standards would effectively immunize algorithmic discrimination from ECOA disparate-impact challenge.",
       "Lenders deploying third-party AI tools reported lacking access to model internals needed to conduct HMDA disparate impact analysis required by federal regulation."
-    ]
+    ],
   },
-  {
-    id: 10, date: "2023-10-05", added: "2026-04-30",
+  { id: 10, date: "2023-10-05", added: "2026-04-30",
     title: "Gender Gaps in AI Tool Adoption and the Emerging Productivity Divide",
     source: "World Economic Forum",
     sourceUrl: "https://www.weforum.org/publications/the-global-gender-gap-report-2023/",
@@ -2430,10 +2428,9 @@ const RESEARCH_DATA = [
       "Across 15 countries, men are 1.5× more likely to report regular AI tool use for professional tasks, driven by differential access, confidence gaps, and unequal encouragement.",
       "Women in highest AI-exposure occupations — administrative, customer service — receive less employer-sponsored AI training than men in equivalent roles.",
       "Without targeted intervention, WEF projects the gender productivity gap could widen by 8–12 percentage points in knowledge-intensive sectors by 2030."
-    ]
+    ],
   },
-  {
-    id: 11, date: "2023-12-18", added: "2026-04-30",
+  { id: 11, date: "2023-12-18", added: "2026-04-30",
     title: "Local Implications of Data Centers and the Tech Layoff Wave on Regional Labor Markets",
     source: "Brookings Metro",
     sourceUrl: "https://www.brookings.edu/articles/local-implications-data-centers-rural-communities-us/",
@@ -2443,10 +2440,9 @@ const RESEARCH_DATA = [
       "San Francisco, Seattle, Austin, New York, and Boston absorbed over 70% of announced tech layoffs despite representing under 15% of total U.S. employment.",
       "Affected metros saw 6–12% declines in commercial real estate occupancy within six months, with downstream effects on municipal revenues and transit.",
       "Displaced tech workers showed lower-than-expected geographic mobility, concentrating high-skill unemployment in already high-cost housing markets."
-    ]
+    ],
   },
-  {
-    id: 12, date: "2025-10-17", added: "2026-04-30",
+  { id: 12, date: "2025-10-17", added: "2026-04-30",
     title: "Data Drain: The Land and Water Impacts of the AI Boom",
     source: "Jon Gorey — Lincoln Institute of Land Policy",
     sourceUrl: "https://www.lincolninst.edu/publications/land-lines-magazine/articles/land-water-impacts-data-centers/",
@@ -2456,10 +2452,9 @@ const RESEARCH_DATA = [
       "Large data centers in water-stressed regions consume 1–5 million gallons daily for cooling, often under NDAs preventing public accounting of cumulative regional water draw.",
       "Despite large capital investment announcements, data center operations typically create fewer than 50 permanent local jobs per facility.",
       "Local electricity rate increases following data center grid connections have averaged 4–9% in rural co-op territories, disproportionately affecting low-income residents."
-    ]
+    ],
   },
-  {
-    id: 13, date: "2024-03-05", added: "2026-04-30",
+  { id: 13, date: "2024-03-05", added: "2026-04-30",
     title: "Always-On Work Culture and AI Assistant Adoption: Boundary Erosion Among Knowledge Workers",
     source: "American Psychological Association",
     sourceUrl: "https://www.apa.org/pubs/reports/work-wellbeing",
@@ -2469,10 +2464,9 @@ const RESEARCH_DATA = [
       "Workers who adopted AI assistants reported 1.8 more working hours per week on average, tools enable work expansion rather than substitution.",
       "The 'always-ready' framing of AI tools erodes psychological permission to disengage, raising baseline stress even when objective workload is unchanged.",
       "High AI adopters paradoxically report higher job satisfaction despite longer hours, driven by perceived competence gains and task variety."
-    ]
+    ],
   },
-  {
-    id: 14, date: "2019-06-01", added: "2026-04-30",
+  { id: 14, date: "2019-06-01", added: "2026-04-30",
     title: "Behind the Screen: Content Moderation in the Shadows of Social Media",
     source: "Sarah T. Roberts — Yale University Press",
     sourceUrl: "https://yalebooks.yale.edu/book/9780300235883/behind-the-screen/",
@@ -2482,10 +2476,9 @@ const RESEARCH_DATA = [
       "Commercial content moderation is invisible by design: platforms distance the work through outsourcing and non-disclosure, keeping its human cost off the books.",
       "Moderators describe cumulative psychological harm from sustained exposure to violent and abusive material, with little employer-provided mental-health support.",
       "Outsourced moderation concentrates in the Global South, where workers absorb the trauma of screening content for platforms headquartered elsewhere."
-    ]
+    ],
   },
-  {
-    id: 15, date: "2023-06-14", added: "2026-04-30",
+  { id: 15, date: "2023-06-14", added: "2026-04-30",
     title: "The Economic Potential of Generative AI: The Next Productivity Frontier",
     source: "McKinsey Global Institute",
     sourceUrl: "https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/the-economic-potential-of-generative-ai-the-next-productivity-frontier",
@@ -2495,10 +2488,9 @@ const RESEARCH_DATA = [
       "Current AI investment is concentrated in infrastructure buildout, resembling the 1993–1999 internet phase that preceded measurable GDP productivity gains.",
       "Early efficiency gains are predominantly captured as margin by AI-deploying firms rather than passed to consumers or workers.",
       "The Jevons Paradox is already visible: AI efficiency gains in coding and content are absorbed by increased output demands rather than reduced working time."
-    ]
+    ],
   },
-  {
-    id: 16, date: "2023-03-27", added: "2026-04-30",
+  { id: 16, date: "2023-03-27", added: "2026-04-30",
     title: "Generative AI Could Raise Global GDP by 7%",
     source: "Goldman Sachs Global Investment Research",
     sourceUrl: "https://www.gspublishing.com/content/research/en/reports/2023/03/27/d64e052b-0f6e-45d7-967b-d7be35fabd16.html",
@@ -2508,10 +2500,9 @@ const RESEARCH_DATA = [
       "Stock image and illustration licensing revenue is projected to fall 60–75% by 2027 as AI image generation becomes embedded in enterprise design workflows.",
       "Copywriting and content marketing — a $400B global market — faces 30–50% revenue compression as AI drafting becomes default in marketing platforms.",
       "Displacement concentrates among freelancers and small agencies while large platforms integrating AI tools capture productivity surplus as margin."
-    ]
+    ],
   },
-  {
-    id: 17, date: "2025-03-01", added: "2026-04-30",
+  { id: 17, date: "2025-03-01", added: "2026-04-30",
     title: "EU AI Act: Economic Impact Assessment and Compliance Burden Analysis",
     source: "European Parliament Research Service",
     sourceUrl: "https://www.europarl.europa.eu/RegData/etudes/STUD/2025/778575/ECTI_STU(2025)778575_EN.pdf",
@@ -2521,10 +2512,9 @@ const RESEARCH_DATA = [
       "SMEs building AI for employment, credit, or education decisions face disproportionate conformity assessment burdens that scale poorly with firm size.",
       "20–30% of EU-focused AI startups are exploring non-EU incorporation to avoid high-risk classification, a regulatory arbitrage the Act's extraterritorial provisions don't fully close.",
       "The prohibited AI list is narrower than civil society advocates requested, leaving several contested use cases in the 'limited risk' tier."
-    ]
+    ],
   },
-  {
-    id: 18, date: "2024-01-08", added: "2026-04-30",
+  { id: 18, date: "2024-01-08", added: "2026-04-30",
     title: "State-Level AI Employment Laws: A 50-State Survey",
     source: "National Employment Law Project",
     sourceUrl: "https://www.nelp.org/publication/artificial-intelligence-employment-law/",
@@ -2534,10 +2524,9 @@ const RESEARCH_DATA = [
       "Illinois, Maryland, and New York City have enacted laws requiring bias audits or disclosure for AI hiring tools, but enforcement capacity varies enormously.",
       "No federal floor exists: workers in 47 states have no statutory right to know whether AI was used in their hiring, promotion, or termination decisions.",
       "60% of HR technology vendors have not updated products to satisfy existing state audit requirements, suggesting widespread non-compliance even where laws exist."
-    ]
+    ],
   },
-  {
-    id: 23, date: "2026-04-08", added: "2026-04-30",
+  { id: 23, date: "2026-04-08", added: "2026-04-30",
     title: "Pennsylvania's Power: Why Local Authority Is the Key to AI Infrastructure Decisions",
     source: "Cella Sum, Maia Woluchem — Data & Society",
     sourceUrl: "https://datasociety.net/library/pennsylvanias-power/",
@@ -2547,10 +2536,9 @@ const RESEARCH_DATA = [
       "State preemption laws reduce local governance and public oversight of data center siting, prioritizing regulatory speed over community needs and environmental review.",
       "Federal AI Action Plan initiatives are accelerating state-level measures that streamline infrastructure approvals without adequate democratic participation from affected communities.",
       "An alternative governance framework would balance state infrastructure goals with meaningful local authority, allowing communities to negotiate conditions, not just receive decisions."
-    ]
+    ],
   },
-  {
-    id: 24, date: "2026-01-21", added: "2026-04-30",
+  { id: 24, date: "2026-01-21", added: "2026-04-30",
     title: "The Big AI State: How the Trump Administration Is Shaping US Industrial Policy Toward 'Global Technological Dominance'",
     source: "Brian J. Chen, Jai Vipra — Data & Society",
     sourceUrl: "https://datasociety.net/library/the-big-ai-state/",
@@ -2560,10 +2548,9 @@ const RESEARCH_DATA = [
       "The emerging 'Big AI State' dedicates substantial public resources to AI investments spanning tech, fossil fuel, real estate, and asset management sectors, blurring public-private boundaries.",
       "Government actions consistently prioritize political objectives and industry growth over worker welfare, community impacts, and environmental protections.",
       "Addressing the concentration of power in AI infrastructure requires new public policy tools and stronger democratic oversight, reversing current policies is necessary but insufficient."
-    ]
+    ],
   },
-  {
-    id: 25, date: "2026-02-04", added: "2026-04-30",
+  { id: 25, date: "2026-02-04", added: "2026-04-30",
     title: "(404) Job Not Found: How Government Can Help AI Education Deliver Real Benefits for Workers",
     source: "Serena Oduro, Anuli Akanegbu — Data & Society",
     sourceUrl: "https://datasociety.net/library/404-job-not-found/",
@@ -2573,10 +2560,9 @@ const RESEARCH_DATA = [
       "AI literacy programs fail workers when they treat skill-building in isolation from the broader socioeconomic conditions — housing instability, childcare, transportation — that make sustained learning impossible.",
       "Federal, state, and local governments must align workforce training investments with quality-of-life supports; skills without stability produce credentials, not economic mobility.",
       "Effective digital skilling is contextualized within comprehensive workforce support strategies — not standalone courses — and must be designed with input from the workers they intend to serve."
-    ]
+    ],
   },
-  {
-    id: 26, date: "2025-10-08", added: "2026-04-30",
+  { id: 26, date: "2025-10-08", added: "2026-04-30",
     title: "The 'Privacy' Trap: How 'Privacy-Preserving AI Techniques' Mask the New Worker Surveillance and Datafication",
     source: "Minsu Longiaru, Wilneida Negrón, Brian J. Chen, Aiha Nguyen et al. — Data & Society",
     sourceUrl: "https://datasociety.net/library/the-privacy-trap/",
@@ -2586,10 +2572,9 @@ const RESEARCH_DATA = [
       "Techniques like differential privacy and federated learning can mask surveillance operations: workers remain monitored and profiled even as companies claim compliance with privacy regulations.",
       "Workers lack adequate voice and agency in digital workplace environments; current privacy frameworks address data exposure but not the power imbalances that surveillance creates.",
       "Stronger state enforcement, new workplace technology rights, and three proposed design principles — transparency, worker consent, and third-party audits — offer pathways to genuine protection."
-    ]
+    ],
   },
-  {
-    id: 27, date: "2026-02-09", added: "2026-04-30",
+  { id: 27, date: "2026-02-09", added: "2026-04-30",
     title: "Building Civic Strength for an AI Era",
     source: "Meg Young, Alice E. Marwick, Anuli Akanegbu et al. — Data & Society",
     sourceUrl: "https://datasociety.net/points/building-civic-strength-for-an-ai-era/",
@@ -2599,10 +2584,9 @@ const RESEARCH_DATA = [
       "Public audiences express significant anxiety about AI's rapid integration into daily life and job prospects, and want engagement beyond passive consumption, they seek avenues for collective action.",
       "AI Civics treats artificial intelligence as a civic domain where people hold rights and collective action potential, shifting responsibility from individual users to institutions and policymakers.",
       "The initiative runs through 2029, partnering with community organizations to develop context-specific civics curricula that address systemic concerns rather than promoting individual adoption."
-    ]
+    ],
   },
-  {
-    id: 28, date: "2026-03-25", added: "2026-04-30",
+  { id: 28, date: "2026-03-25", added: "2026-04-30",
     title: "Protecting the Public from Chatbot Harms: Aligning State Policy with Research",
     source: "Serena Oduro, Briana Vecchione, Meryl Ye, Livia Garofalo — Data & Society",
     sourceUrl: "https://datasociety.net/points/protecting-the-public-from-chatbot-harms-aligning-state-policy-with-research/",
@@ -2612,10 +2596,9 @@ const RESEARCH_DATA = [
       "Research shows chatbots can mimic intimacy, reinforce detachment from reality, and escalate emotional distress across all age groups, harms that one-time disclosure notices do not prevent.",
       "Effective regulation requires mandatory design constraints prohibiting manipulative behaviors, emotional looping, and isolation-promoting patterns, not just labeling that the user is talking to an AI.",
       "Safety protocols must incorporate crisis signal recognition with clinically-informed escalation to human support; independent audits and attorney general enforcement are essential accountability mechanisms."
-    ]
+    ],
   },
-  {
-    id: 29, date: "2026-03-19", added: "2026-04-30",
+  { id: 29, date: "2026-03-19", added: "2026-04-30",
     title: "What 81,000 People Want from AI",
     source: "Saffron Huang et al. — Anthropic",
     sourceUrl: "https://www.anthropic.com/features/81k-interviews",
@@ -2625,10 +2608,9 @@ const RESEARCH_DATA = [
       "Top AI visions: professional excellence (18.8%), personal transformation (13.7%), and time freedom (11.1%), but 81% report AI has moved them toward their stated vision, with productivity gains cited by 32%.",
       "Lower-income regions show 67% net positive sentiment versus more skepticism in wealthy Western nations; entrepreneurship resonates most in Africa and South Asia, while life management concerns peak in developed countries.",
       "A critical 'experience gap' exists: benefits are mostly grounded in lived experience (91% of learning-benefit mentions), while systemic harms remain largely speculative, 46% of cognitive atrophy concerns are firsthand, suggesting public fear outpaces actual harm for some risks."
-    ]
+    ],
   },
-  {
-    id: 30, date: "2024-12-11", added: "2026-04-30",
+  { id: 30, date: "2024-12-11", added: "2026-04-30",
     title: "The Missing Institution: A Global Dividend System for the Age of Transformative AI",
     source: "Anna Yelizarova — Digitalist Papers",
     sourceUrl: "https://www.digitalistpapers.com/vol2/yelizarova",
@@ -2638,10 +2620,9 @@ const RESEARCH_DATA = [
       "National UBI schemes and traditional taxation cannot address AI systems that generate value across borders without clear jurisdictional accountability, a structural gap that grows as AI scales.",
       "A global AI dividend institution would hold corporate equity stakes in AI firms and distribute returns universally, requiring unprecedented international coordination but offering a durable redistribution floor.",
       "The proposal reframes AI governance from a regulatory problem to an institutional design problem: not just how to constrain AI, but how to structurally distribute its gains before inequality becomes irreversible."
-    ]
+    ],
   },
-  {
-    id: 32, date: "2023-10-30", added: "2026-04-30",
+  { id: 32, date: "2023-10-30", added: "2026-04-30",
     title: "AI and the Future of Work in America: Policy Solutions for Supporting Workers",
     source: "Patrick Gaspard — Center for American Progress",
     sourceUrl: "https://www.schumer.senate.gov/imo/media/doc/Patrick%20Gaspard%20-%20Statement.pdf",
@@ -2651,10 +2632,9 @@ const RESEARCH_DATA = [
       "Work-sharing programs can prevent mass layoffs by allowing employers to reduce hours rather than eliminate positions, preserving employment relationships and benefits during AI-driven industry transitions.",
       "Current unemployment insurance was designed for cyclical job loss, not structural technological displacement, benefit duration, eligibility criteria, and retraining support all require systematic modernization.",
       "Closing tax loopholes that enable tech sector offshore profit shifting is a prerequisite for funding transition programs, enforcement is an underutilized policy lever before any new revenue mechanisms are needed."
-    ]
+    ],
   },
-  {
-    id: 33, date: "2025-12-09", added: "2026-04-30",
+  { id: 33, date: "2025-12-09", added: "2026-04-30",
     title: "How Americans Feel About a World Without Paid Work",
     source: "Bharat Ramamurti — The Bully Pulpit",
     sourceUrl: "https://bharatramamurti.substack.com/p/how-americans-feel-about-a-world",
@@ -2664,10 +2644,9 @@ const RESEARCH_DATA = [
       "Americans across partisan lines express skepticism about AI profits concentrating in private hands, suggesting broad latent support for redistribution mechanisms tied to AI economic gains.",
       "Even when presented with a post-scarcity scenario, most Americans prefer meaningful employment over unconditional income transfers, a finding that challenges UBI-first policy frameworks.",
       "The survey reveals a public mandate for jobs guarantee programs that current political narratives about AI policy have largely failed to engage or activate."
-    ]
+    ],
   },
-  {
-    id: 34, date: "2024-05-01", added: "2026-04-30",
+  { id: 34, date: "2024-05-01", added: "2026-04-30",
     title: "Wage Insurance for Displaced Workers",
     source: "Benjamin Hyman, Brian Kovak, Adam Leive — NBER",
     sourceUrl: "https://www.nber.org/papers/w32464",
@@ -2677,10 +2656,9 @@ const RESEARCH_DATA = [
       "Workers receiving wage insurance return to employment faster and achieve higher total earnings over time compared to those receiving only traditional unemployment benefits.",
       "The financial self-sustainability finding is significant: wage insurance may pay for itself through reduced benefit duration and increased tax contributions from faster re-employment, removing a core fiscal objection.",
       "Trade Adjustment Assistance provides the closest existing model for AI displacement insurance; expanding wage insurance eligibility beyond trade-displaced workers is a near-term, tested policy option."
-    ]
+    ],
   },
-  {
-    id: 35, date: "2024-12-11", added: "2026-04-30",
+  { id: 35, date: "2024-12-11", added: "2026-04-30",
     title: "Resilient by Design: Dual Safety Nets for Workers in the AI Economy",
     source: "Ioana Marinescu — Digitalist Papers",
     sourceUrl: "https://www.digitalistpapers.com/vol2/marinescu",
@@ -2690,10 +2668,9 @@ const RESEARCH_DATA = [
       "AI Adjustment Insurance extends existing unemployment infrastructure with enhanced benefits, wage insurance, and retraining support, deployable now without building new administrative systems.",
       "The Digital Dividend is contingent: funded by taxes on the digital economy, it activates and scales only if AI causes persistent widespread joblessness rather than transitional displacement.",
       "The dual-tier design bridges the policy debate between incrementalists and UBI advocates, fiscally prudent under moderate disruption, adequate under severe scenarios, and politically viable across both."
-    ]
+    ],
   },
-  {
-    id: 36, date: "2025-12-11", added: "2026-04-30",
+  { id: 36, date: "2025-12-11", added: "2026-04-30",
     title: "Beyond Job Displacement: How AI Could Reshape the Value of Human Expertise",
     source: "David Autor, Neil Thompson — Digitalist Papers",
     sourceUrl: "https://www.digitalistpapers.com/vol2/autorthompson",
@@ -2703,10 +2680,9 @@ const RESEARCH_DATA = [
       "The 'expertise framework' predicts divergent outcomes across occupations facing identical AI pressures, a nurse and a radiologist may both face automation but with opposite consequences for wages and employment.",
       "Occupations where AI removes routine sub-tasks could see employment expand as work becomes accessible to workers without deep expertise, but at lower wages, worsening inequality within occupational fields.",
       "Policy interventions differ sharply depending on which type of automation dominates: augmenting expertise requires investment incentives; routine-task automation requires income support and retraining at much larger scale."
-    ]
+    ],
   },
-  {
-    id: 37, date: "2020-11-17", added: "2026-04-30",
+  { id: 37, date: "2020-11-17", added: "2026-04-30",
     title: "The Work of the Future: Building Better Jobs in an Age of Intelligent Machines",
     source: "David Autor, David Mindell, Elisabeth Reynolds — MIT Work of the Future Task Force",
     sourceUrl: "https://workofthefuture-taskforce.mit.edu/wp-content/uploads/2021/01/2020-Final-Report4.pdf",
@@ -2716,10 +2692,9 @@ const RESEARCH_DATA = [
       "The U.S. has created abundant employment since 1980 but failed to create sufficient good jobs, the core problem is job quality and wage distribution, not job quantity.",
       "Labor market institutions — unions, minimum wage, worker training systems — have eroded precisely when they were most needed to distribute technological gains broadly across the workforce.",
       "Rebuilding these institutions requires coordinated action across employers, educational systems, and government; no single piecemeal intervention can address the systemic compression of wages at the bottom."
-    ]
+    ],
   },
-  {
-    id: 38, date: "2024-01-24", added: "2026-04-30",
+  { id: 38, date: "2024-01-24", added: "2026-04-30",
     title: "National Artificial Intelligence Research Resource (NAIRR)",
     source: "U.S. National Science Foundation",
     sourceUrl: "https://www.nsf.gov/focus-areas/ai/nairr",
@@ -2729,10 +2704,9 @@ const RESEARCH_DATA = [
       "Concentrated AI compute resources at a handful of private firms creates structural barriers to independent safety, fairness, and societal-impact research, public infrastructure is a prerequisite for accountability.",
       "The NAIRR model distributes AI research capacity to universities, nonprofits, and government agencies that cannot currently compete with frontier labs, enabling more diverse and public-interest research agendas.",
       "Federal investment in shared AI infrastructure is simultaneously a competitiveness strategy and an equity intervention, access to compute determines who shapes AI's development trajectory."
-    ]
+    ],
   },
-  {
-    id: 39, date: "2025-01-30", added: "2026-04-30",
+  { id: 39, date: "2025-01-30", added: "2026-04-30",
     title: "Building CERN for AI: An Institutional Blueprint",
     source: "Alex Petropoulos et al. — Centre for Future Generations",
     sourceUrl: "https://cfg.eu/building-cern-for-ai/",
@@ -2742,10 +2716,9 @@ const RESEARCH_DATA = [
       "The CERN model offers a proven template: pooling sovereign resources and scientific talent across nations to produce research infrastructure that individual governments cannot fund competitively.",
       "A hybrid structure — distributed research networks plus concentrated in-house teams — balances the speed advantages of centralized effort with the diversity and legitimacy of open collaboration.",
       "Governance transparency and public accountability are core design requirements: the institution must demonstrate clear public benefit to maintain political support across member states through multiple election cycles."
-    ]
+    ],
   },
-  {
-    id: 40, date: "2025-07-29", added: "2026-04-30",
+  { id: 40, date: "2025-07-29", added: "2026-04-30",
     title: "Sovereignty, Security, Scale: A UK Strategy for AI Infrastructure",
     source: "Tony Blair Institute for Global Change",
     sourceUrl: "https://institute.global/insights/tech-and-digitalisation/sovereignty-security-scale-a-uk-strategy-for-ai-infrastructure",
@@ -2755,10 +2728,9 @@ const RESEARCH_DATA = [
       "Competing with the U.S. and China in frontier AI model training is not viable for the UK; a deployment-focused strategy applying AI broadly across the economy offers higher and more durable national returns.",
       "Planning and energy infrastructure constraints are the primary bottlenecks, regulatory reform in these areas is as strategically important as direct AI investment and more immediately actionable.",
       "AI Growth Zones with streamlined approvals and infrastructure commitments could concentrate private investment while preserving public oversight of critical AI infrastructure at the national level."
-    ]
+    ],
   },
-  {
-    id: 41, date: "2026-02-23", added: "2026-04-30",
+  { id: 41, date: "2026-02-23", added: "2026-04-30",
     title: "Building Pro-Worker AI",
     source: "Daron Acemoglu, David Autor, Simon Johnson — Brookings Institution",
     sourceUrl: "https://www.brookings.edu/articles/building-pro-worker-ai/",
@@ -2768,10 +2740,9 @@ const RESEARCH_DATA = [
       "The choice between augmenting and automating AI is not technologically determined, it reflects investment incentives shaped by tax policy, procurement rules, and competitive dynamics that government can actively reshape.",
       "Nine proposed interventions span demand-side (public procurement favoring augmentation), supply-side (research investment in worker-complementary AI), and regulatory levers (antitrust action against anticompetitive AI acquisitions).",
       "Without active policy intervention, default market incentives will continue directing AI investment toward labor replacement, the current automation-heavy trajectory is a policy failure, not an inevitability."
-    ]
+    ],
   },
-  {
-    id: 42, date: "2025-06-03", added: "2026-04-30",
+  { id: 42, date: "2025-06-03", added: "2026-04-30",
     title: "Artificial Power: 2025 Landscape Report",
     source: "Kate Brennan, Amba Kak, Dr. Sarah Myers West — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publications/research/ai-now-2025-landscape-report",
@@ -2781,10 +2752,9 @@ const RESEARCH_DATA = [
       "A handful of vertically integrated tech corporations now control the full AI stack — from chips and cloud infrastructure to models and applications — creating systemic risks to democratic accountability and competitive markets.",
       "AI power concentration is not a side effect of innovation but a deliberate corporate strategy; regulatory and community responses must be similarly deliberate and coordinated to be effective.",
       "The report frames AI governance as fundamentally a question of political and economic power, not just technical safety, shifting the policy debate from harms mitigation to structural accountability."
-    ]
+    ],
   },
-  {
-    id: 43, date: "2026-04-01", added: "2026-04-30",
+  { id: 43, date: "2026-04-01", added: "2026-04-30",
     title: "2026 AI Index Report",
     source: "Stanford HAI",
     sourceUrl: "https://aiindex.stanford.edu/report/",
@@ -2794,10 +2764,9 @@ const RESEARCH_DATA = [
       "AI capabilities continued rapid advancement across benchmarks in 2025, with multimodal and reasoning models showing particular gains, but performance improvements are increasingly concentrated in a small number of well-resourced labs.",
       "AI adoption in enterprise and government settings accelerated, yet workforce displacement effects remain unevenly distributed, with lower-wage and routine-task workers facing disproportionate exposure.",
       "Global AI governance diverged further in 2025-26, with the EU implementing binding rules, the U.S. rolling back federal oversight, and China expanding state-directed AI deployment, creating a fragmented international regulatory landscape."
-    ]
+    ],
   },
-  {
-    id: 44, date: "2026-01-06", added: "2026-04-30",
+  { id: 44, date: "2026-01-06", added: "2026-04-30",
     title: "Expert Predictions on What's at Stake in AI Policy in 2026",
     source: "J.B. Branch & Ilana Beller (Public Citizen) et al. — Tech Policy Press",
     sourceUrl: "https://techpolicy.press/expert-predictions-on-whats-at-stake-in-ai-policy-in-2026",
@@ -2807,10 +2776,9 @@ const RESEARCH_DATA = [
       "Federal preemption of state AI laws is the central legislative battleground in 2026; corporate lobbying for weak federal standards that override stronger state protections is the primary regulatory threat.",
       "Documented AI harms — to minors, in elections, in healthcare and criminal justice — are no longer hypothetical, increasing pressure on legislators to move from voluntary frameworks to binding accountability rules.",
       "State-level AI legislation has outpaced federal action and represents the most active regulatory frontier; the fate of state authority to regulate AI will define the scope of accountability possible in the near term."
-    ]
+    ],
   },
-  {
-    id: 45, date: "2026-01-12", added: "2026-04-30",
+  { id: 45, date: "2026-01-12", added: "2026-04-30",
     title: "How 2026 Could Decide the Future of Artificial Intelligence",
     source: "Chris McGuire, Kat Duffy et al. — Council on Foreign Relations",
     sourceUrl: "https://www.cfr.org/article/how-2026-could-decide-future-artificial-intelligence",
@@ -2820,10 +2788,9 @@ const RESEARCH_DATA = [
       "2026 marks a transition point where AI moves from research and pilots to embedded infrastructure, governance decisions made now will be extremely difficult to reverse as systems become load-bearing.",
       "U.S.-China competition for AI leadership is intensifying across semiconductors, talent, and standards bodies; export controls and investment restrictions are shaping a bifurcated global AI ecosystem.",
       "Democratic governance of AI requires proactive international coordination; a fragmented or race-to-the-bottom regulatory environment risks ceding norm-setting to authoritarian models with fewer accountability constraints."
-    ]
+    ],
   },
-  {
-    id: 46, date: "2026-03-01", added: "2026-04-30",
+  { id: 46, date: "2026-03-01", added: "2026-04-30",
     title: "Last Place in the AI-First Economy",
     source: "Alexandra Mateescu, Aiha Nguyen, Sanjay Pinto — Data & Society",
     sourceUrl: "https://datasociety.net/library/last-place-in-the-ai-first-economy/",
@@ -2833,10 +2800,9 @@ const RESEARCH_DATA = [
       "The 'AI-first' framing naturalizes corporate choices about automation and surveillance as inevitable technological progress, obscuring the labor relations and power dynamics those choices embed.",
       "Workers in low-wage, care, and service sectors face the most intensive AI monitoring and the fewest protections, the same populations least able to exit bad employers or contest algorithmic decisions.",
       "Worker organizing and collective bargaining are the most effective mechanisms for shaping AI deployment in workplaces; policy interventions that strengthen labor rights are AI governance interventions."
-    ]
+    ],
   },
-  {
-    id: 47, date: "2026-04-01", added: "2026-04-30",
+  { id: 47, date: "2026-04-01", added: "2026-04-30",
     title: "Uber For Nursing Part II",
     source: "Katie J. Wells, Maya Pinto, Funda Ustek Spilda — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publications/uber-for-nursing",
@@ -2846,10 +2812,9 @@ const RESEARCH_DATA = [
       "Gig nursing apps have moved beyond disrupting staffing agencies to actively lobbying state legislatures to eliminate nurse-to-patient ratio requirements and worker classification protections, using the same playbook as Uber and Lyft.",
       "The deregulatory push is concentrated in states with active legislative sessions, making 2026 a critical window for worker and patient safety advocates to engage at the state level.",
       "Nursing represents a test case for how platform economy dynamics extend into highly credentialed, traditionally stable professions, with implications for teachers, social workers, and other public-sector occupations."
-    ]
+    ],
   },
-  {
-    id: 48, date: "2026-04-01", added: "2026-04-30",
+  { id: 48, date: "2026-04-01", added: "2026-04-30",
     title: "North Star Data Center Policy Toolkit",
     source: "AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publications/data-center-policy-guide",
@@ -2859,10 +2824,9 @@ const RESEARCH_DATA = [
       "AI data center development has accelerated dramatically with little public scrutiny; facilities consume billions of gallons of water and massive amounts of electricity while generating few permanent local jobs.",
       "Communities hosting data centers — often lower-income and communities of color — bear disproportionate environmental burdens while economic benefits flow primarily to shareholders and distant tech workers.",
       "The toolkit provides model legislation and regulatory frameworks for state and local governments to require environmental impact disclosure, community benefit agreements, and water/energy use limits."
-    ]
+    ],
   },
-  {
-    id: 49, date: "2026-01-15", added: "2026-04-30",
+  { id: 49, date: "2026-01-15", added: "2026-04-30",
     title: "Reframing Impact: AI Summit 2026",
     source: "AI Now Institute, Aapti Institute, The Maybe",
     sourceUrl: "https://ainowinstitute.org/publication/reframing-impact-ai-summit-2026",
@@ -2872,10 +2836,9 @@ const RESEARCH_DATA = [
       "Terms like 'responsible AI,' 'AI safety,' and 'impact assessment' have been progressively emptied of accountability content through industry adoption, the summit sought to reclaim and sharpen these concepts.",
       "Global South advocates brought distinct perspectives on AI harms — including data extraction, labor exploitation in content moderation, and exclusion from governance processes — that are systematically underrepresented in dominant AI policy debates.",
       "Effective AI governance requires centering the expertise and interests of affected communities, not just technical experts and corporate stakeholders; the summit modeled a more inclusive governance process."
-    ]
+    ],
   },
-  {
-    id: 50, date: "2025-11-11", added: "2026-04-30",
+  { id: 50, date: "2025-11-11", added: "2026-04-30",
     title: "Fission for Algorithms",
     source: "Dr. Sofia Guerra, Dr. Heidy Khlaaf — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publication/fission-for-algorithms",
@@ -2885,10 +2848,9 @@ const RESEARCH_DATA = [
       "Tech companies seeking cheap, clean power for data centers are partnering with the nuclear industry to restart dormant plants and accelerate new builds, creating political pressure to waive safety reviews and environmental requirements.",
       "Nuclear regulators are simultaneously being pushed to adopt AI tools for licensing decisions despite documented unreliability of these systems in high-stakes technical domains.",
       "The intersection of AI energy demand and nuclear power represents an underexamined risk nexus where two sets of inadequately governed technologies are being rapidly co-deployed with insufficient accountability."
-    ]
+    ],
   },
-  {
-    id: 51, date: "2025-10-14", added: "2026-04-30",
+  { id: 51, date: "2025-10-14", added: "2026-04-30",
     title: "Alli Finn Testifies at the Philadelphia City Council",
     source: "Alli Finn — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publication/alli-finn-testifies-at-the-philadelphia-city-council",
@@ -2898,10 +2860,9 @@ const RESEARCH_DATA = [
       "Municipal governments are emerging as important AI governance venues as federal action stalls; city councils can set procurement standards, restrict surveillance uses, and require algorithmic impact assessments.",
       "Philadelphia's consideration of AI governance ordinances reflects broader municipal momentum, over a dozen major cities have enacted or are considering AI accountability legislation.",
       "Framing AI governance as a question of democratic accountability — who decides, who benefits, who bears costs — is more durable than a purely technical or safety-focused frame at the local level."
-    ]
+    ],
   },
-  {
-    id: 52, date: "2025-04-21", added: "2026-04-30",
+  { id: 52, date: "2025-04-21", added: "2026-04-30",
     title: "Safety Co-Option and Compromised National Security: The Self-Fulfilling Prophecy of Weakened AI Risk Thresholds",
     source: "Heidy Khlaaf, Sarah Myers West — arXiv",
     sourceUrl: "https://arxiv.org/abs/2504.15088",
@@ -2911,10 +2872,9 @@ const RESEARCH_DATA = [
       "Without democratically established AI risk thresholds, private technology companies have become de facto arbiters of safety standards, a governance vacuum with life-or-death consequences for military and critical infrastructure systems.",
       "The 'AI arms race' framing is being used to justify lower safety standards, creating a self-reinforcing dynamic where urgency claims erode the oversight mechanisms designed to prevent catastrophic failures.",
       "Military AI systems must align with established assurance frameworks and international humanitarian law — the same standards applied to other safety-critical systems — rather than bespoke industry-defined tolerances."
-    ]
+    ],
   },
-  {
-    id: 53, date: "2025-02-20", added: "2026-04-30",
+  { id: 53, date: "2025-02-20", added: "2026-04-30",
     title: "Real Surveillance, Prices and Wages",
     source: "AI Now Institute et al.",
     sourceUrl: "https://ainowinstitute.org/wp-content/uploads/2025/02/Real-Surveillance-Prices-and-Wages-Report.pdf",
@@ -2924,10 +2884,9 @@ const RESEARCH_DATA = [
       "Workplace monitoring technologies create asymmetric information environments where employers have granular data on worker behavior and productivity while workers lack comparable visibility into pay-setting and performance evaluation criteria.",
       "Surveillance-driven pricing mechanisms — including algorithmic dynamic pricing and behavioral targeting — allow corporations to extract maximum willingness to pay from consumers, compressing any gains from competition or efficiency.",
       "The dual impact on wages and prices means surveillance infrastructure functions as a wealth transfer mechanism, simultaneously suppressing worker compensation and inflating consumer costs."
-    ]
+    ],
   },
-  {
-    id: 54, date: "2024-12-01", added: "2026-04-30",
+  { id: 54, date: "2024-12-01", added: "2026-04-30",
     title: "AI Generated Business: The Rise of AGI and the Rush to Find a Working Revenue Model",
     source: "Brian Merchant — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publications/ai-generated-business",
@@ -2937,10 +2896,9 @@ const RESEARCH_DATA = [
       "AGI language was strategically deployed at key fundraising and restructuring moments, the term functions primarily as a capital attraction device rather than a technical roadmap, allowing OpenAI to justify massive compute costs and a for-profit pivot.",
       "Enterprise AI sales center explicitly on labor replacement: OpenAI's own definition frames AGI as systems that 'outperform humans at most economically valuable work,' positioning automation as the core value proposition to corporate clients.",
       "Despite $3.4 billion in annualized revenue, the generative AI business model requires industry-wide revenue of ~$600 billion annually to justify current investment levels, a figure with no near-term path to realization, raising significant bubble risk."
-    ]
+    ],
   },
-  {
-    id: 55, date: "2024-10-18", added: "2026-04-30",
+  { id: 55, date: "2024-10-18", added: "2026-04-30",
     title: "Mind the Gap: Foundation Models and the Covert Proliferation of Military Intelligence, Surveillance, and Targeting",
     source: "Heidy Khlaaf, Sarah Myers West, Meredith Whittaker — arXiv",
     sourceUrl: "https://arxiv.org/abs/2410.14831",
@@ -2950,10 +2908,9 @@ const RESEARCH_DATA = [
       "Regulatory approaches anchored to compute thresholds and model weight restrictions miss actual military AI applications already in deployment, the policy conversation is lagging the operational reality by years.",
       "Commercial foundation models cannot reliably exclude personally identifiable information, creating uncontrolled pathways for adversaries to access intelligence, surveillance, targeting, and reconnaissance capabilities at scale.",
       "Integrating foundation models into military systems expands attack surfaces across interconnected defense infrastructure, the security risk is not just the model itself but the systemic vulnerabilities created by its integration."
-    ]
+    ],
   },
-  {
-    id: 56, date: "2024-10-15", added: "2026-04-30",
+  { id: 56, date: "2024-10-15", added: "2026-04-30",
     title: "Redirecting Europe's AI Industrial Policy",
     source: "Frederike Kaltheuner, Leevi Saari, Amba Kak, Sarah Myers West — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publications/research/redirecting-europes-ai-industrial-policy",
@@ -2963,10 +2920,9 @@ const RESEARCH_DATA = [
       "Current EU AI industrial policy is shaped by competitiveness and sovereignty framings that largely accept U.S. and Chinese Big Tech dominance as a given, the 12-essay collection argues this concedes too much before the policy fight has begun.",
       "EU public procurement represents an underutilized lever: directing government contracts toward alternatives to dominant platforms could reshape market incentives more effectively than regulation alone.",
       "Integrating climate, labor, and human rights standards into AI industrial investment decisions is not a constraint on innovation but a prerequisite for genuinely public-interest-oriented industrial policy."
-    ]
+    ],
   },
-  {
-    id: 57, date: "2024-10-01", added: "2026-04-30",
+  { id: 57, date: "2024-10-01", added: "2026-04-30",
     title: "AI Now's Testimony to New York City Council on Corporate Capture of the MyCity Portal",
     source: "Kate Brennan — AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/wp-content/uploads/2024/10/NYC-Council-Testimony_AI-Now_MyCity-Portal_September-2024.pdf",
@@ -2976,10 +2932,9 @@ const RESEARCH_DATA = [
       "Centralized digital wallets proposed under MyCity would allow government agencies to monitor resident spending on public benefits in granular detail — including potential use of 'incentive points' to influence dietary choices — with no demonstrated operational necessity.",
       "The portal's design reflects a pattern of public digital infrastructure being structured around corporate data interests rather than resident needs, with Big Tech partners gaining privileged access to citizen data as a condition of service delivery.",
       "Municipal governments should evaluate AI-enabled service platforms against explicit public interest standards: whether surveillance features are necessary, proportionate, and under democratic oversight rather than corporate control."
-    ]
+    ],
   },
-  {
-    id: 58, date: "2024-07-01", added: "2026-04-30",
+  { id: 58, date: "2024-07-01", added: "2026-04-30",
     title: "Public Interest AI for Europe? Shaping Europe's Nascent Industrial Policy",
     source: "AI Now Institute",
     sourceUrl: "https://ainowinstitute.org/publications/public-interest-ai-for-europe-shaping-europes-nascent-industrial-policy",
@@ -2989,10 +2944,9 @@ const RESEARCH_DATA = [
       "'There is no AI without Big Tech', U.S. and Chinese firms control essential AI infrastructure (compute, data, talent, consumer access), meaning European industrial policy built on competitiveness assumptions starts from a position of structural dependency.",
       "Current industrial policy may inadvertently strengthen rather than challenge AI monopolies; the Dutch child benefits scandal illustrates how algorithmic government systems can cause severe harm to vulnerable populations when built without accountability.",
       "Europe's comparative advantage lies in building an alternative innovation paradigm grounded in public interest, sustainability, and democratic accountability, not in replicating the ChatGPT hype cycle or racing toward speculative AGI development."
-    ]
+    ],
   },
-  {
-    id: 59, date: "2025-05-20", added: "2026-04-30",
+  { id: 59, date: "2025-05-20", added: "2026-04-30",
     title: "Generative AI and Jobs: A 2025 Update",
     source: "Paweł Gmyrek et al. — International Labour Organization",
     sourceUrl: "https://www.ilo.org/publications/generative-ai-and-jobs-2025-update",
@@ -3002,10 +2956,9 @@ const RESEARCH_DATA = [
       "ILO's refined task-level methodology finds overall automation risk is lower and more stable than early estimates, AI will augment most jobs rather than replace them wholesale, but clerical occupations remain the highest-exposure category globally.",
       "Gender disparities in exposure are stark: female employment in high-income countries faces a 9.6% high-exposure rate versus 3.5% for male employment, compounding existing labor market inequalities through a new technological channel.",
       "Workers need social dialogue, collective bargaining, and updated labor law to capture AI productivity gains, without these governance mechanisms, AI advances will manifest as speed-up, deskilling, or displacement rather than shared prosperity."
-    ]
+    ],
   },
-  {
-    id: 60, date: "2024-03-28", added: "2026-04-30",
+  { id: 60, date: "2024-03-28", added: "2026-04-30",
     title: "Unbalanced Labor Market Power Is What Makes Technology — Including AI — Threatening to Workers",
     source: "Josh Bivens, Ben Zipperer — Economic Policy Institute",
     sourceUrl: "https://www.epi.org/publication/ai-unbalanced-labor-markets/",
@@ -3015,10 +2968,9 @@ const RESEARCH_DATA = [
       "Historical data show productivity growth has not correlated with higher unemployment or inequality, wage stagnation and displacement are political economy outcomes shaped by policy choices, not inherent properties of any technology including AI.",
       "The same AI tools can augment worker productivity and raise wages OR suppress wages and surveil workers, which outcome prevails depends entirely on the balance of power between employers and employees, not anything intrinsic to the technology.",
       "Policymakers should prioritize strengthening unions, expanding unemployment insurance, and maintaining low unemployment over crafting AI-specific regulations; organized workers have already successfully negotiated AI's workplace role in recent union contracts."
-    ]
+    ],
   },
-  {
-    id: 61, date: "2024-05-01", added: "2026-04-30",
+  { id: 61, date: "2024-05-01", added: "2026-04-30",
     title: "The Simple Macroeconomics of AI",
     source: "Daron Acemoglu — NBER Working Paper",
     sourceUrl: "https://www.nber.org/papers/w32487",
@@ -3028,10 +2980,9 @@ const RESEARCH_DATA = [
       "The trillion-dollar productivity projections underpinning current AI investment are inconsistent with task-level economic modeling: even optimistic assumptions yield less than 1% TFP growth over a decade, suggesting a significant valuation-to-reality gap.",
       "AI produces both a productivity effect and a displacement effect simultaneously, if displacement exceeds productivity gains in a sector, wages fall even as output rises, meaning aggregate growth statistics can mask deteriorating worker outcomes.",
       "Some AI-created tasks may have negative social value — manipulation, surveillance, engagement optimization — a dimension macroeconomic models systematically omit but that has direct implications for whether AI investment generates genuine public welfare."
-    ]
+    ],
   },
-  {
-    id: 62, date: "2025-01-07", added: "2026-04-30",
+  { id: 62, date: "2025-01-07", added: "2026-04-30",
     title: "Future of Jobs Report 2025",
     source: "World Economic Forum",
     sourceUrl: "https://www.weforum.org/publications/the-future-of-jobs-report-2025/",
@@ -3041,10 +2992,9 @@ const RESEARCH_DATA = [
       "86% of employers expect AI and information processing to transform their businesses by 2030, yet 39% of current job skills will be transformed or become outdated, a structural transition challenge that individual upskilling programs alone cannot address at the scale and speed required.",
       "The skills gap is the primary barrier to workforce transformation: 63% of employers cite it as the key constraint, suggesting the binding limit on AI-driven growth is not technology availability but human capital investment and institutional capacity.",
       "Care economy jobs — nursing, social work, personal care aides — are among the fastest-growing categories through 2030, indicating AI will shift labor demand toward human-intensive services while automating information-processing and administrative tasks."
-    ]
+    ],
   },
-  {
-    id: 63, date: "2025-10-07", added: "2026-04-30",
+  { id: 63, date: "2025-10-07", added: "2026-04-30",
     title: "Reimagining the Future of Data and AI Labor in the Global South",
     source: "Michelle Du, Chinasa T. Okolo — Brookings Institution",
     sourceUrl: "https://www.brookings.edu/articles/reimagining-the-future-of-data-and-ai-labor-in-the-global-south/",
@@ -3054,10 +3004,9 @@ const RESEARCH_DATA = [
       "Data annotators in the Global South frequently work 20-hour shifts processing 1,000 cases daily, experiencing depression, anxiety, and PTSD from moderating violent content, documented psychological harm that is structurally unaddressed because workers often do not know which AI systems their labor will train.",
       "Multinational tech companies shield themselves from accountability by subcontracting through third-party vendors, creating a deliberate opacity that prevents labor protections from attaching to the corporations that ultimately profit from this work.",
       "International and regional bodies (ASEAN, African Union, CARICOM) must establish binding directives on data laborer rights; companies should redesign roles to integrate worker expertise with automation rather than treating human annotation as a temporary cost to be eliminated."
-    ]
+    ],
   },
-  {
-    id: 64, date: "2025-06-14", added: "2026-04-30",
+  { id: 64, date: "2025-06-14", added: "2026-04-30",
     title: "Medical AI and Clinician Surveillance — The Risk of Becoming Quantified Workers",
     source: "I. Glenn Cohen, Ifeoma Ajunwa, Ravi B. Parikh — New England Journal of Medicine",
     sourceUrl: "https://www.nejm.org/doi/abs/10.1056/NEJMp2502448",
@@ -3067,10 +3016,9 @@ const RESEARCH_DATA = [
       "AI documentation and monitoring tools are being deployed in hospitals primarily to optimize billing, throughput, and compliance metrics, creating surveillance infrastructure that measures clinician performance against efficiency targets rather than clinical quality or patient outcomes.",
       "Clinician surveillance via AI follows the same trajectory documented in warehouse and gig work: algorithmic management erodes professional judgment, raises burnout rates, and produces ratchet effects where performance baselines continuously tighten with no sustainable endpoint.",
       "Healthcare settings require specific institutional protections: clinicians need transparency about what is measured, the right to contest algorithmic assessments, and governance safeguards ensuring AI monitoring serves patients rather than administrative or revenue optimization."
-    ]
+    ],
   },
-  {
-    id: 65, date: "2022-10-15", added: "2026-04-30",
+  { id: 65, date: "2022-10-15", added: "2026-04-30",
     title: "Rent Going Up? One Company's Algorithm Could Be Why",
     source: "Heather Vogell — ProPublica",
     sourceUrl: "https://www.propublica.org/article/yieldstar-rent-increase-realpage-rent",
@@ -3080,10 +3028,9 @@ const RESEARCH_DATA = [
       "RealPage's software captured approximately 90% of the algorithmic rent-setting market and instructed landlords to accept lower occupancy rather than reduce prices, an algorithmically enforced coordination among competitors that antitrust experts likened to price-fixing.",
       "In Seattle's Belltown neighborhood, 70% of apartments were managed by RealPage users; concentrated adoption in specific markets amplifies rent effects beyond what any single landlord could achieve, demonstrating how algorithmic tools enable collective market power without formal cartel structures.",
       "The DOJ filed an antitrust lawsuit against RealPage in August 2024 and reached a settlement in November 2025, establishing a legal precedent that algorithmic coordination using non-public competitor data constitutes actionable anticompetitive conduct even without explicit agreement."
-    ]
+    ],
   },
-  {
-    id: 66, date: "2023-09-26", added: "2026-04-30",
+  { id: 66, date: "2023-09-26", added: "2026-04-30",
     title: "Digital Denials: How Abuse, Bias, and Lack of Transparency in Tenant Screening Harm Renters",
     source: "Ariel Nelson, Chi Chi Wu, Caroline Cohn — National Consumer Law Center",
     sourceUrl: "https://www.nclc.org/new-report-examines-how-abuse-and-bias-in-tenant-screening-harm-renters/",
@@ -3093,10 +3040,9 @@ const RESEARCH_DATA = [
       "There is no empirical evidence that credit scores, eviction records, or criminal history predict whether a renter will pay rent or maintain a tenancy, yet these data points are the primary inputs to AI screening tools used by the vast majority of large landlords.",
       "Racial disparities embedded in underlying data (eviction filings, credit histories, criminal records) are amplified rather than corrected by algorithmic processing, automated tools make discrimination faster, cheaper, and harder to challenge than human decision-making.",
       "FTC, CFPB, Congress, and state governments must regulate the tenant screening industry: requiring accuracy standards, mandatory dispute resolution, demographic impact disclosure, and explicit bans on screening criteria with no demonstrated predictive validity."
-    ]
+    ],
   },
-  {
-    id: 67, date: "2024-10-17", added: "2026-04-30",
+  { id: 67, date: "2024-10-17", added: "2026-04-30",
     title: "Stopping Big Tech from Becoming Big AI: A Roadmap for Using Competition Policy to Keep Artificial Intelligence Open for All",
     source: "Max von Thun, Daniel Hanley — Open Markets Institute & Mozilla",
     sourceUrl: "https://www.openmarketsinstitute.org/publications/report-stopping-big-tech-big-ai-roadmap",
@@ -3106,10 +3052,9 @@ const RESEARCH_DATA = [
       "The mechanisms concentrating AI power mirror those that entrenched platform dominance: exclusive cloud partnerships between hyperscalers and frontier AI labs, self-preferencing of proprietary AI tools in distribution, and control of the compute infrastructure all other players depend on.",
       "Existing competition law does not require new legislation to address AI concentration, merger blocking, partnership nullification, structural separation, and mandated access to compute are all available today under current antitrust frameworks.",
       "Without coordinated global enforcement, AI consolidation will proceed faster than any single regulator can address; the window for structural intervention is narrowing as AI becomes embedded in critical infrastructure and enterprise workflows."
-    ]
+    ],
   },
-  {
-    id: 68, date: "2026-04-27", added: "2026-04-30",
+  { id: 68, date: "2026-04-27", added: "2026-04-30",
     title: "Same Gatekeepers, New Tollbooths: Mapping the AI Content Licensing Market",
     source: "Dr. Courtney Radsch, Karina Montoya — Open Markets Institute",
     sourceUrl: "https://www.openmarketsinstitute.org/publications/report-mapping-the-ai-content-licensing-market",
@@ -3119,10 +3064,9 @@ const RESEARCH_DATA = [
       "AI bots circumventing voluntary content access restrictions quadrupled in six months — from 3.3% to 12.9% non-compliance — demonstrating that industry self-regulation fails creators by design, repeating the pattern from the social media licensing era.",
       "A three-tiered licensing market is forming in which large publishers negotiate individually, mid-tier publishers receive nominal payments, and individual creators and small outlets receive nothing, concentrating the benefits of AI training data with those who need it least.",
       "Statutory licensing, collective bargaining rights for publishers, mandatory technical attribution systems, and transparency requirements have succeeded in other jurisdictions (Canada, Australia) and provide a tested policy template for protecting creator labor."
-    ]
+    ],
   },
-  {
-    id: 69, date: "2025-12-11", added: "2026-04-30",
+  { id: 69, date: "2025-12-11", added: "2026-04-30",
     title: "Fair and Open Markets for Virtual Power Plants",
     source: "Open Markets Institute & Mission:data Coalition",
     sourceUrl: "https://www.openmarketsinstitute.org/publications/utilities-are-blocking-virtual-power-plants",
@@ -3132,10 +3076,9 @@ const RESEARCH_DATA = [
       "Utilities reserve the right to terminate customer-authorized data access 'at any time, without notice, for any reason,' making independent virtual power plant operation practically impossible and cementing monopoly control over distributed energy resources.",
       "Virtual power plants are among the most cost-effective mechanisms for reducing peak energy costs and avoiding expensive new infrastructure, their suppression by utility monopolies directly inflates energy costs for households and small businesses.",
       "Utility conduct constitutes tying, exclusive dealing, and refusals to deal — forms of monopolistic exclusion courts have repeatedly found unlawful — yet antitrust enforcement has not kept pace with the urgency created by surging AI data center energy demand."
-    ]
+    ],
   },
-  {
-    id: 70, date: "2025-10-22", added: "2026-04-30",
+  { id: 70, date: "2025-10-22", added: "2026-04-30",
     title: "The Enduring Force of the Federal Antitrust Laws",
     source: "Daniel Hanley — Open Markets Institute",
     sourceUrl: "https://www.openmarketsinstitute.org/publications/brief-enduring-power-of-us-antitrust-laws",
@@ -3145,10 +3088,9 @@ const RESEARCH_DATA = [
       "Despite decades of judicial skepticism since the 1970s, the core federal antitrust statutes have not been gutted, creative enforcement under existing law can address AI-era monopolistic practices from merger challenges to exclusionary conduct by dominant platforms.",
       "Algorithmic price-fixing is explicitly actionable under current antitrust law alongside traditional cartel behavior, the RealPage settlement demonstrates that AI-mediated coordination among competitors can be prosecuted without needing new statutory authority.",
       "Platform lock-in practices — onboarding frictions, data portability barriers, API restrictions — constitute enforceable antitrust violations; regulators need sustained political will and technical expertise more than new legal powers."
-    ]
+    ],
   },
-  {
-    id: 71, date: "2024-06-27", added: "2026-04-30",
+  { id: 71, date: "2024-06-27", added: "2026-04-30",
     title: "Big Tech Won't Fix Disinformation Without Regulation",
     source: "Austin Ahlman, Dr. Courtney Radsch — Open Markets Institute",
     sourceUrl: "https://www.openmarketsinstitute.org/publications/big-tech-wont-fix-disinformation-without-regulation",
@@ -3158,10 +3100,9 @@ const RESEARCH_DATA = [
       "AI-generated content is accelerating the scale, speed, and sophistication of disinformation in ways that overwhelm voluntary moderation commitments, the same structural incentives that produced platform inaction on earlier disinformation crises remain fully intact.",
       "Self-regulation by dominant platforms is structurally incapable of addressing AI disinformation because the business models of these platforms are directly served by high-engagement content regardless of veracity.",
       "Effective regulation requires mandatory algorithmic transparency, interoperability requirements that reduce platform lock-in, and civil liability provisions that create genuine financial consequences for amplifying demonstrably false content."
-    ]
+    ],
   },
-  {
-    id: 72, date: "2025-11-01", added: "2026-04-30",
+  { id: 72, date: "2025-11-01", added: "2026-04-30",
     title: "Artificial Intelligence and Competitive Dynamics in Downstream Markets",
     source: "OECD Competition Committee",
     sourceUrl: "https://www.oecd.org/en/publications/artificial-intelligence-and-competitive-dynamics-in-downstream-markets_ccf0624a-en/full-report.html",
@@ -3171,10 +3112,9 @@ const RESEARCH_DATA = [
       "AI adoption is costly, complex, and risky at the firm level, creating an 'AI divide' that concentrates productivity gains among large enterprises with resources to invest, SMEs face structural disadvantages that market competition alone will not correct.",
       "Competition risks from AI are largely classical — algorithmic collusion, self-preferencing, exclusionary conduct, price discrimination — but are amplified by the black-box nature of AI systems, making detection and enforcement substantially harder than in traditional markets.",
       "AI's competitive impact is highly context-dependent across sectors; competition authorities need sector-specific expertise and real-time market intelligence rather than one-size-fits-all remedies to keep pace with AI-driven market structure changes."
-    ]
+    ],
   },
-  {
-    id: 73, date: "2025-04-01", added: "2026-04-30",
+  { id: 73, date: "2025-04-01", added: "2026-04-30",
     title: "AI Index Report 2025",
     source: "Stanford HAI",
     sourceUrl: "https://hai.stanford.edu/ai-index/2025-ai-index-report",
@@ -3184,10 +3124,9 @@ const RESEARCH_DATA = [
       "Private investment in generative AI reached $33.9 billion in 2024, representing more than 20% of all AI-related private investment, yet this capital is overwhelmingly concentrated in the U.S., with the investment gap between the U.S. and the rest of the world widening rather than narrowing.",
       "AI demonstrably boosts productivity in controlled studies, and evidence suggests it narrows the gap between low- and high-skilled workers in specific task settings, but these gains are unevenly distributed and have not yet produced measurable macroeconomic productivity improvements at scale.",
       "The 2025 Index spans R&D, technical performance, ethics, economy, education, and policy, providing the most comprehensive annual empirical baseline for assessing AI's trajectory across sectors and geographies."
-    ]
+    ],
   },
-  {
-    id: 74, date: "2026-04-02", added: "2026-04-30",
+  { id: 74, date: "2026-04-02", added: "2026-04-30",
     title: "How AI May Reshape Career Pathways to Better Jobs",
     source: "Justin Heck, Mark Muro et al. — Opportunity@Work & Brookings Metro",
     sourceUrl: "https://www.brookings.edu/articles/how-ai-may-reshape-career-pathways-to-better-jobs/",
@@ -3197,10 +3136,9 @@ const RESEARCH_DATA = [
       "The primary AI labor risk for non-degree workers is not immediate job elimination but pathway disruption: when Gateway roles are automated or deskilled, the route to higher-wage work disappears even for workers who retain employment in the short run.",
       "Regional exposure varies sharply — Florida metros like Palm Bay face 35.5% Gateway pathway exposure while Midwest cities like Milwaukee face 24% — demanding locally-tailored workforce strategies rather than national policy responses that average over highly unequal local conditions.",
       "Critical unanswered questions remain about whether AI-integrated roles will require credentials beyond reach of non-degree workers, or whether workplace experience can still build transferable skills for advancement, the answer will determine whether AI widens or narrows existing credential divides."
-    ]
+    ],
   },
-  {
-    id: 75, date: "2026-01-01", added: "2026-04-30",
+  { id: 75, date: "2026-01-01", added: "2026-04-30",
     title: "AI Will Reshape More Jobs Than It Replaces",
     source: "BCG Henderson Institute",
     sourceUrl: "https://www.bcg.com/publications/2026/ai-will-reshape-more-jobs-than-it-replaces",
@@ -3210,10 +3148,9 @@ const RESEARCH_DATA = [
       "The dominant AI labor story is not replacement but reshaping: workers keep their jobs but face fundamentally different skill requirements, performance metrics, and career trajectories, a transformation that is largely invisible in aggregate employment statistics.",
       "BCG's six-category job taxonomy reveals heterogeneous impacts: 'Substituted Roles' (12% of workforce) face direct AI displacement of core work, while 'Divergent Roles' (12%) see senior positions grow as junior ones shrink, hollowing out career pipelines without reducing headline employment.",
       "The compressed two-to-three-year timeline for reshaping half the workforce demands immediate institutional response; training and transition programs operating on five-to-ten-year planning cycles will be structurally too slow to prevent widespread economic disruption."
-    ]
+    ],
   },
-  {
-    id: 76, date: "2025-10-15", added: "2026-04-30",
+  { id: 76, date: "2025-10-15", added: "2026-04-30",
     title: "Workers First: AI Principles to Protect Workers",
     source: "AFL-CIO",
     sourceUrl: "https://aflcio.org/reports/workers-first-ai",
@@ -3223,10 +3160,9 @@ const RESEARCH_DATA = [
       "70% of workers fear replacement by AI, yet federal action has stalled; the Workers First Initiative explicitly shifts the accountability framework from government regulation to collective bargaining and state-level legislation, positioning organized labor as the primary enforcement mechanism in the near term.",
       "The five principles require that AI adoption be treated as a workplace change subject to formal worker input or negotiation, that employers set explicit boundaries on AI-powered monitoring, and that skill-building and career pathways be funded when AI reshapes job roles.",
       "The framework addresses public-sector AI separately: when public funds support AI systems, agencies must disclose how those systems operate, what data they use, and how decisions can be reviewed or challenged, establishing a transparency floor for government AI procurement."
-    ]
+    ],
   },
-  {
-    id: 77, date: "2026-01-26", added: "2026-04-30",
+  { id: 77, date: "2026-01-26", added: "2026-04-30",
     title: "Government by AI? Trump Administration Plans to Write Regulations Using Artificial Intelligence",
     source: "Jesse Coburn — ProPublica",
     sourceUrl: "https://www.propublica.org/article/trump-artificial-intelligence-google-gemini-transportation-regulations",
@@ -3236,10 +3172,9 @@ const RESEARCH_DATA = [
       "DOT leadership explicitly framed the goal as 'good enough' regulations, prioritizing speed over rigor in safety-critical domains where regulatory errors have direct life-or-death consequences.",
       "The agency's simultaneous staff reductions mean that AI-generated drafts will face less expert review than ever, the combination of automated drafting and depleted subject-matter expertise creates compounding rather than offsetting risks.",
       "Federal employees, academics, and former officials called the approach 'wildly irresponsible,' comparing it to having an intern draft aviation safety standards, and flagging AI hallucination risks in legally binding regulatory documents."
-    ]
+    ],
   },
-  {
-    id: 78, date: "2025-03-13", added: "2026-04-30",
+  { id: 78, date: "2025-03-13", added: "2026-04-30",
     title: "How ProPublica Uses AI Responsibly in Its Investigations",
     source: "Charles Ornstein et al. — ProPublica",
     sourceUrl: "https://www.propublica.org/article/using-ai-responsibly-for-reporting",
@@ -3249,10 +3184,9 @@ const RESEARCH_DATA = [
       "AI analysis of the Cruz grant database revealed that many flagged grants had only tangential references to diversity or were entirely unrelated to DEI themes, findings that required prohibiting the model from guessing and verifying every output against source documents.",
       "All AI-generated findings underwent staff review before publication, with journalists contacting named parties for comment; the newsroom explicitly frames AI as augmenting human judgment rather than replacing it.",
       "ProPublica has applied similar methods to identify sexual misconduct patterns in disciplinary records and to classify hundreds of hours of Uvalde investigation audio, establishing a replicable, accountability-journalism standard for responsible AI use."
-    ]
+    ],
   },
-  {
-    id: 79, date: "2026-04-06", added: "2026-04-30",
+  { id: 79, date: "2026-04-06", added: "2026-04-30",
     title: "The Federal Government Is Rushing Toward AI. Our Reporting Offers Three Cautionary Tales.",
     source: "Renee Dudley — ProPublica",
     sourceUrl: "https://www.propublica.org/article/federal-government-ai-cautionary-tales",
@@ -3262,10 +3196,9 @@ const RESEARCH_DATA = [
       "Discounted or free AI offerings from vendors create dependency that allows significant price increases once agencies are locked in, the GSA has already warned that usage costs can grow quickly without monitoring, mirroring the cloud computing playbook.",
       "FedRAMP now operates with an absolute minimum of support staff, making security validation effectively a rubber stamp at the moment federal AI adoption is accelerating fastest.",
       "Third-party security assessors paid by the vendors they evaluate create structural conflicts of interest; without robust independent oversight, agencies rely on vendor claims rather than verified assessments, a pattern that enabled major federal cybersecurity failures in the cloud era."
-    ]
+    ],
   },
-  {
-    id: 80, date: "2025-06-06", added: "2026-04-30",
+  { id: 80, date: "2025-06-06", added: "2026-04-30",
     title: "Inside the AI Prompts DOGE Used to 'Munch' Contracts Related to Veterans' Health",
     source: "Brandon Roberts, Vernal Coleman — ProPublica",
     sourceUrl: "https://www.propublica.org/article/inside-ai-tool-doge-veterans-affairs-contracts-sahil-lavingia",
@@ -3275,10 +3208,9 @@ const RESEARCH_DATA = [
       "The system analyzed only the first 10,000 characters of contracts when current AI models support inputs more than 50 times larger, a deliberate or negligent design choice that systematically excluded critical contract details from review.",
       "Core terms like 'direct patient care' and 'soft services' were never defined in the prompts, forcing the model to interpret ambiguous criteria in ways that flagged clearly essential services, including ceiling lift maintenance for disabled veterans.",
       "Prompt revisions focused exclusively on making the model 'more aggressive' about flagging contracts for termination, with no parallel refinements to reduce false positives, structurally biasing the system toward maximum cuts rather than accurate waste identification."
-    ]
+    ],
   },
-  {
-    id: 81, date: "2024-02-02", added: "2026-04-30",
+  { id: 81, date: "2024-02-02", added: "2026-04-30",
     title: "Police Departments Are Turning to AI to Sift Through Millions of Hours of Unreviewed Body-Cam Footage",
     source: "Umar Farooq — ProPublica",
     sourceUrl: "https://www.propublica.org/article/police-body-cameras-video-ai-law-enforcement",
@@ -3288,10 +3220,9 @@ const RESEARCH_DATA = [
       "The scale of unreviewed footage — equivalent to 25 million feature films — reflects a fundamental failure of the bodycam transparency promise; AI analysis is being adopted not to fulfill that promise publicly but to manage officer behavior internally.",
       "Around 30 departments currently use AI tools like Truleo that automatically flag behaviors including interrupting civilians, using force, or muting cameras, but union pressure and department resistance mean findings are rarely disclosed to the public or oversight bodies.",
       "The dynamic illustrates a recurring pattern in law enforcement technology: tools adopted under the banner of accountability are operationalized in ways that preserve institutional opacity, with AI accelerating the volume of analysis while accountability mechanisms remain unchanged."
-    ]
+    ],
   },
-  {
-    id: 82, date: "2025-11-19", added: "2026-04-30",
+  { id: 82, date: "2025-11-19", added: "2026-04-30",
     title: "Moratoriums and Federal Preemption of State Artificial Intelligence Laws Pose Serious Risks",
     source: "Nicole Alvarez — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/moratoriums-and-federal-preemption-of-state-artificial-intelligence-laws-pose-serious-risks/",
@@ -3301,10 +3232,9 @@ const RESEARCH_DATA = [
       "The reconciliation moratorium contained vague definitions and enforcement mechanisms that would have created legal confusion, inviting costly litigation while blocking states from regulating AI harms in employment, healthcare, housing, and elections.",
       "Large AI companies and their trade associations actively lobbied for federal preemption to reduce regulatory friction and protect market dominance, framing it as a compliance burden relief for small firms while primarily benefiting incumbent platforms.",
       "States have enacted meaningful AI protections precisely because federal action stalled; preserving state regulatory authority allows for policy experimentation and development of best practices that can eventually inform stronger federal standards."
-    ]
+    ],
   },
-  {
-    id: 83, date: "2024-09-25", added: "2026-04-30",
+  { id: 83, date: "2024-09-25", added: "2026-04-30",
     title: "To Implement AI Responsibly, Third-Party Deployments Must Require Safeguards",
     source: "Anastasia Dodd, Megan Shahi — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/to-implement-ai-responsibly-third-party-deployments-must-require-safeguards/",
@@ -3314,10 +3244,9 @@ const RESEARCH_DATA = [
       "In first-party deployments, users can report safety issues directly to developers; in third-party deployments they can only report to deployers, who have no structural incentive to escalate violations upstream, creating an accountability gap at the fastest-growing layer of AI distribution.",
       "Safety tools exist across major AI platforms but deployers can disable them without consequence; CAP recommends these tools default to on across all deployments rather than being optional features deployers can strip out.",
       "AI companies lack standardized transparency reporting on policy violations, and deployers struggle navigating fragmented compliance documentation, leaving end users exposed to harms that neither the developer nor the deployer is formally accountable for preventing."
-    ]
+    ],
   },
-  {
-    id: 84, date: "2024-09-19", added: "2026-04-30",
+  { id: 84, date: "2024-09-19", added: "2026-04-30",
     title: "Using Learning Science To Analyze the Risks and Benefits of AI in K-12 Education",
     source: "Lisette Partelow — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/using-learning-science-to-analyze-the-risks-and-benefits-of-ai-in-k-12-education/",
@@ -3327,10 +3256,9 @@ const RESEARCH_DATA = [
       "Human brains learn through play, social interaction, and movement in ways that screen-based AI instruction cannot replicate; schools adopting AI tools without assessing their fit with developmental science risk substituting engagement metrics for genuine learning outcomes.",
       "Low-income and BIPOC students face compounded risks from poorly designed AI adoption — including a deepened digital divide and reduced access to enriched learning environments — making equity assessment a prerequisite for any AI tool deployment, not an afterthought.",
       "AI tools should be evaluated against whether they enhance or displace meaningful teacher-student and peer relationships, which are central to motivation and cognitive development; tools that automate interaction rather than support it are likely to harm the students most in need."
-    ]
+    ],
   },
-  {
-    id: 85, date: "2024-07-30", added: "2026-04-30",
+  { id: 85, date: "2024-07-30", added: "2026-04-30",
     title: "How States and Districts Can Close the Digital Divide To Increase College and Career Readiness",
     source: "Paige Shoemaker DeMio — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/how-states-and-districts-can-close-the-digital-divide-to-increase-college-and-career-readiness/",
@@ -3340,10 +3268,9 @@ const RESEARCH_DATA = [
       "One-third of jobs created over the past 25 years did not previously exist, and AI is projected to create 20-50 million new jobs globally by 2030; students without meaningful digital literacy exposure in K-12 are structurally unprepared for the labor market they will enter.",
       "Closing the design and use dimensions of the divide — not just device access — requires building teacher capacity to integrate technology into rich curricula rather than passive uses like online quizzes; professional development investment is as essential as hardware procurement.",
       "Existing federal funding streams including ESSA, IDEA, and IIJA can support technology integration without new appropriations; states and districts that have not mapped available resources against all three divide dimensions are leaving implementation capacity on the table."
-    ]
+    ],
   },
-  {
-    id: 86, date: "2024-06-17", added: "2026-04-30",
+  { id: 86, date: "2024-06-17", added: "2026-04-30",
     title: "Taking Further Agency Action on AI",
     source: "Will Dobbs-Allsopp, Reed Shaw, Adam Conner et al. — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/taking-further-agency-action-on-ai/",
@@ -3353,10 +3280,9 @@ const RESEARCH_DATA = [
       "Congressional inaction on AI legislation means federal agencies must become the primary regulators; existing laws including consumer protection, civil rights, and labor statutes apply to AI-enabled harms with no AI exemption required, enforcement will and technical capacity are the binding constraints.",
       "The analysis spans the White House, Department of Labor, Department of Education, housing regulators, and nine financial agencies, mapping over 80 specific recommendations to each sector's existing jurisdiction, providing an implementation roadmap that does not depend on legislative action.",
       "The core argument mirrors the antitrust framing from Open Markets Institute: regulatory authority already exists; what is missing is the institutional will, technical expertise, and political prioritization to deploy it consistently against AI-enabled harms."
-    ]
+    ],
   },
-  {
-    id: 87, date: "2024-02-01", added: "2026-04-30",
+  { id: 87, date: "2024-02-01", added: "2026-04-30",
     title: "Generative AI Should Be Developed and Deployed Responsibly at Every Level for Everyone",
     source: "Megan Shahi, Adam Conner, Nicole Alvarez et al. — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/generative-ai-should-be-developed-and-deployed-responsibly-at-every-level-for-everyone/",
@@ -3366,10 +3292,9 @@ const RESEARCH_DATA = [
       "The disparity between first-party and third-party safety requirements creates a system where responsibility is passed to deployers who lack the technical capacity, contractual obligation, or business incentive to enforce it, and end users bear the resulting risk.",
       "Current usage policies lack specificity, transparency, and enforcement capacity; without defined investigation processes, timelines, and consequences for violations, policy terms function as liability shields rather than meaningful safety commitments.",
       "CAP recommends NIST incorporate third-party risk management into its AI framework, the FTC conduct safety requirement studies for API deployments, and Congress establish liability frameworks ensuring developers and deployers share accountability for downstream harms."
-    ]
+    ],
   },
-  {
-    id: 88, date: "2024-06-17", added: "2026-04-30",
+  { id: 88, date: "2024-06-17", added: "2026-04-30",
     title: "Fact Sheet: Recommendations for Financial Regulatory Agencies To Take Further Action on AI",
     source: "Todd Phillips, Adam Conner — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/fact-sheet-recommendations-for-financial-regulatory-agencies-to-take-further-action-on-ai/",
@@ -3379,10 +3304,9 @@ const RESEARCH_DATA = [
       "Regulators should require that AI systems used in lending, capital management, and customer-facing applications be explainable to both expert and lay audiences, with regular audits and source code reviews to detect discrimination and vulnerabilities before they cause systemic harm.",
       "Financial institutions must conduct structured red team exercises to identify AI vulnerabilities, particularly as adversarial actors increasingly use AI-enabled attacks, a requirement that larger firms should face on an ongoing basis rather than at point-of-deployment only.",
       "Requiring financial firms to ensure interoperability with at least five AI providers before contracting would prevent vendor lock-in, promote competitive alternatives, and reduce the systemic risk of critical financial infrastructure depending on a single AI supplier."
-    ]
+    ],
   },
-  {
-    id: 89, date: "2024-06-17", added: "2026-04-30",
+  { id: 89, date: "2024-06-17", added: "2026-04-30",
     title: "Fact Sheet: Recommendations for Housing Regulators To Take Further Action on AI",
     source: "Anna Rodriguez — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/fact-sheet-recommendations-for-housing-regulators-to-take-further-action-on-ai/",
@@ -3392,10 +3316,9 @@ const RESEARCH_DATA = [
       "HUD should update fair housing advertising guidance to explicitly hold companies providing AI-driven advertising services liable for steering housing ads away from protected communities, closing a gap where algorithmic targeting escapes accountability that applies to human decision-making.",
       "The FHFA should expand its proposed automated valuation model rule to cover nonbank lenders, which originated over 50% of residential loans in 2022, and align minimum standards with NIST AI guidelines, the current rule covers a shrinking share of the market it purports to regulate.",
       "Mandatory disclosure of AVM use and the right to request manual appraisals would protect against data manipulation and conflicts of interest in property valuations, directly addressing one of the documented mechanisms through which AI perpetuates racial wealth gaps in housing."
-    ]
+    ],
   },
-  {
-    id: 90, date: "2024-06-17", added: "2026-04-30",
+  { id: 90, date: "2024-06-17", added: "2026-04-30",
     title: "Fact Sheet: Recommendations for the Department of Education To Take Further Action on AI",
     source: "Anna Rodriguez — Center for American Progress",
     sourceUrl: "https://www.americanprogress.org/article/fact-sheet-recommendations-for-the-department-of-education-to-take-further-action-on-ai/",
@@ -3405,10 +3328,9 @@ const RESEARCH_DATA = [
       "The Department should issue guidance clarifying that Title VI and Title IX apply to discrimination enabled by AI systems, including algorithmic discipline tools that disproportionately affect students of color and AI-based surveillance systems that flag protected characteristics.",
       "AI-based cheating detection tools may discriminate against students with disabilities by flagging accommodation-related behaviors as suspicious; the Department should require schools to assess disability impacts before deploying any AI surveillance or academic integrity system.",
       "Contracted loan servicers deploying AI chatbots must guarantee borrowers receive accurate information about their individual loans and maintain guaranteed pathways to human agents within reasonable timeframes, a basic standard that current AI deployments in federal loan servicing frequently fail to meet."
-    ]
+    ],
   },
-  {
-    id: 91, date: "2016-05-23", added: "2026-04-30",
+  { id: 91, date: "2016-05-23", added: "2026-04-30",
     title: "Machine Bias",
     source: "Julia Angwin, Jeff Larson, Surya Mattu, Lauren Kirchner — ProPublica",
     sourceUrl: "https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing",
@@ -3418,10 +3340,9 @@ const RESEARCH_DATA = [
       "Black defendants were 77% more likely to be labeled higher risk for future violent crime and 45% more likely to be labeled higher risk generally, with error patterns running in opposite directions by race.",
       "The algorithm’s inverse error pattern is systematic: Black defendants are disproportionately mislabeled high-risk, while white defendants who go on to reoffend are more often labeled low-risk.",
       "Northpointe’s COMPAS tool was deployed across multiple states for sentencing and pretrial decisions before rigorous independent validation, with predictive calculations kept proprietary and unavailable to defendants."
-    ]
+    ],
   },
-  {
-    id: 92, date: "2016-10-18", added: "2026-04-30",
+  { id: 92, date: "2016-10-18", added: "2026-04-30",
     title: "The Perpetual Line-Up: Unregulated Police Face Recognition in America",
     source: "Clare Garvie, Alvaro Bedoya, Jonathan Frankle — Georgetown Law Center on Privacy & Technology",
     sourceUrl: "https://www.law.georgetown.edu/privacy-technology-center/publications/the-perpetual-line-up/",
@@ -3431,10 +3352,9 @@ const RESEARCH_DATA = [
       "Over 117 million Americans were in a law enforcement face recognition network at time of publication, enrolled without consent or knowledge, most via driver’s license photo databases shared with police.",
       "The majority of states and departments using facial recognition had no legal requirements to test for racial bias or validate accuracy, and research shows the technology is least accurate for Black individuals, women, and people aged 18–30.",
       "The report directly prompted regulatory action — Maryland proposed legislation to regulate police use and Vermont ended its driver’s license facial recognition program — demonstrating the policy leverage of empirical surveillance documentation."
-    ]
+    ],
   },
-  {
-    id: 93, date: "2019-04-01", added: "2026-04-30",
+  { id: 93, date: "2019-04-01", added: "2026-04-30",
     title: "Dirty Data, Bad Predictions: How Civil Rights Violations Impact Police Data, Predictive Policing Systems, and Justice",
     source: "Rashida Richardson, Jason M. Schultz, Kate Crawford — NYU Law Review",
     sourceUrl: "https://www.nyulawreview.org/wp-content/uploads/2019/04/NYULawReview-94-Richardson-Schultz-Crawford.pdf",
@@ -3444,10 +3364,9 @@ const RESEARCH_DATA = [
       "Predictive policing launders discriminatory enforcement: systems like PredPol and HunchLab train on historical arrest data that reflects the biases of the officers who generated it, then output algorithmic predictions that appear objective and are harder to contest legally.",
       "The “dirty data cities” identified include jurisdictions where police data was formally found tainted through civil rights investigations, consent decrees, and federal oversight, yet procurement processes contained no requirement to audit training data for such contamination.",
       "No existing legal framework requires law enforcement agencies to assess whether training data is compromised by past misconduct before deploying predictive systems, a structural accountability gap with no current remedy."
-    ]
+    ],
   },
-  {
-    id: 94, date: "2019-10-25", added: "2026-04-30",
+  { id: 94, date: "2019-10-25", added: "2026-04-30",
     title: "Dissecting Racial Bias in an Algorithm Used to Manage the Health of Populations",
     source: "Ziad Obermeyer, Brian Powers, Christine Vogeli, Sendhil Mullainathan — Science",
     sourceUrl: "https://www.science.org/doi/10.1126/science.aax2342",
@@ -3457,10 +3376,9 @@ const RESEARCH_DATA = [
       "At any given risk score, Black patients are considerably sicker than white patients, meaning the algorithm consistently underestimates Black patients’ illness severity and need for additional care management.",
       "Correcting the bias would more than double the proportion of Black patients identified for high-risk care programs, raising the share from 17.7% to 46.5%, affecting millions of people currently under-served by the tool.",
       "The flaw lies not in implementation but in the choice of cost as a proxy for health need, a design decision that appears technically reasonable but encodes structural inequity, demonstrating how bias enters through proxy selection rather than explicit discrimination."
-    ]
+    ],
   },
-  {
-    id: 95, date: "2020-08-27", added: "2026-04-30",
+  { id: 95, date: "2020-08-27", added: "2026-04-30",
     title: "Hidden in Plain Sight — Reconsidering the Use of Race Correction in Clinical Algorithms",
     source: "Darshali A. Vyas, Leo G. Eisenstein, David S. Jones — New England Journal of Medicine",
     sourceUrl: "https://www.nejm.org/doi/abs/10.1056/NEJMms2004740",
@@ -3470,10 +3388,9 @@ const RESEARCH_DATA = [
       "Race correction in the eGFR kidney function formula assigns higher scores to Black patients regardless of individual clinical circumstances, resulting in Black patients being less likely to receive timely transplant referrals, a concrete, documented harm from a widely deployed clinical tool.",
       "These adjustments are embedded in clinical software, electronic health records, and medical training across multiple specialties, making individual provider awareness an inadequate remedy for a structural problem in clinical decision infrastructure.",
       "The authors call for eliminating race as a variable in clinical algorithms and replacing it with socioeconomic and structural determinants of health that reflect actual causal mechanisms rather than a biological proxy with no empirical basis."
-    ]
+    ],
   },
-  {
-    id: 96, date: "2024-10-17", added: "2026-04-30",
+  { id: 96, date: "2024-10-17", added: "2026-04-30",
     title: "Refusal of Care: Medicare Advantage Insurers’ Use of Prior Authorization to Delay and Deny Post-Acute Care for Seniors",
     source: "U.S. Senate Permanent Subcommittee on Investigations",
     sourceUrl: "https://www.blumenthal.senate.gov/newsroom/press/release/senate-permanent-subcommittee-on-investigations-releases-majority-staff-report-exposing-medicare-advantage-insurers-refusal-of-care-for-vulnerable-seniors",
@@ -3483,10 +3400,9 @@ const RESEARCH_DATA = [
       "UnitedHealthcare’s prior authorization rejection rate for post-acute care nearly doubled from 10.9% in 2020 to 22.7% in 2022, directly following expanded AI automation in the review process, with no corresponding change in patient health or clinical standards.",
       "CVS increased prior authorization requirements by 57.5% — far exceeding its 40% enrollment growth — after deploying AI-driven prior authorization software, and internal presentations show the company deliberately deprioritized reducing denial volume due to significant profit impact.",
       "The investigation found no evidence that escalating denial rates reflected appropriate clinical judgment, documenting AI deployment as a profit-maximization mechanism in consequential medical decisions affecting vulnerable seniors."
-    ]
+    ],
   },
-  {
-    id: 97, date: "2023-01-18", added: "2026-04-30",
+  { id: 97, date: "2023-01-18", added: "2026-04-30",
     title: "OpenAI Used Kenyan Workers on Less Than $2 Per Hour to Make ChatGPT Less Toxic",
     source: "Billy Perrigo — TIME",
     sourceUrl: "https://time.com/6247678/openai-chatgpt-kenya-workers/",
@@ -3496,10 +3412,9 @@ const RESEARCH_DATA = [
       "Workers at Nairobi-based Sama, contracted by OpenAI, were paid between $1.32 and $2 per hour to review and label disturbing content to train ChatGPT’s safety classifier, a supply chain dimension absent from most AI safety discourse.",
       "Many workers reported symptoms of secondary trauma; Sama’s contract with OpenAI was terminated several months early amid a labor dispute in which workers sought union recognition.",
       "The commercial viability of “safe” generative AI depends on an invisible global workforce of low-wage data laborers disproportionately located in the Global South, a structural labor condition that safety certifications and model cards do not disclose."
-    ]
+    ],
   },
-  {
-    id: 98, date: "2020-07-08", added: "2026-04-30",
+  { id: 98, date: "2020-07-08", added: "2026-04-30",
     title: "Decolonial AI: Decolonial Theory as Sociotechnical Foresight in Artificial Intelligence",
     source: "Shakir Mohamed, Marie-Therese Png, William Isaac — Philosophy & Technology",
     sourceUrl: "https://link.springer.com/article/10.1007/s13347-020-00405-8",
@@ -3509,10 +3424,9 @@ const RESEARCH_DATA = [
       "AI development reproduces colonial dynamics through “algorithmic coloniality”: surveillance systems and behavioral classification tools are developed for and tested on vulnerable populations in the Global South before deployment elsewhere, extracting data value without redistributing benefit.",
       "The authors call for “reverse tutelage”, reorienting AI knowledge flows so that communities historically marginalized by technology hold genuine authority over research agendas and deployment decisions, rather than serving as data sources or test populations.",
       "Strengthening political communities across the Global South is necessary to make AI governance genuinely multilateral, a direct challenge to the concentration of AI ethics and governance in a handful of Western institutions and companies."
-    ]
+    ],
   },
-  {
-    id: 99, date: "2018-12-10", added: "2026-04-30",
+  { id: 99, date: "2018-12-10", added: "2026-04-30",
     title: "Help Wanted: An Examination of Hiring Algorithms, Equity, and Bias",
     source: "Aaron Rieke, Miranda Bogen — Upturn",
     sourceUrl: "https://www.upturn.org/work/help-wanted/",
@@ -3522,10 +3436,9 @@ const RESEARCH_DATA = [
       "Most algorithmic hiring tools automate rejection rather than selection, screening candidates out before human review, concentrating disparate impact at the point of least visibility and accountability in the hiring funnel.",
       "Removing protected characteristics like race and gender from algorithm inputs does not prevent discriminatory outcomes: historical hiring patterns, zip codes, and credentials carry demographic proxies that reproduce the same disparities through different variables.",
       "Existing civil rights law was designed for human decision-makers and does not clearly assign liability to vendors versus employers when algorithmic tools produce discriminatory outcomes, a structural enforcement gap that benefits neither jobseekers nor regulators."
-    ]
+    ],
   },
-  {
-    id: 100, date: "2020-01-27", added: "2026-04-30",
+  { id: 100, date: "2020-01-27", added: "2026-04-30",
     title: "Mitigating Bias in Algorithmic Hiring: Evaluating Claims and Practices",
     source: "Manish Raghavan, Solon Barocas, Jon Kleinberg, Karen Levy — ACM FAccT",
     sourceUrl: "https://dl.acm.org/doi/10.1145/3351095.3372828",
@@ -3535,10 +3448,9 @@ const RESEARCH_DATA = [
       "Hiring algorithm vendors provide almost no documentation of how their systems are built or validated for bias, making independent audit impossible and employer due diligence effectively meaningless.",
       "Technical choices about what data to collect and what outcomes to predict introduce distinct bias risks hidden behind product-level mitigation claims, each representing a separate, undisclosed design decision with disparate impact potential.",
       "De-biasing techniques — such as removing protected attributes or adjusting score distributions — can conflict with Uniform Guidelines on Employee Selection Procedures, creating situations where a legally compliant system remains technically biased and vice versa."
-    ]
+    ],
   },
-  {
-    id: 101, date: "2021-10-28", added: "2026-04-30",
+  { id: 101, date: "2021-10-28", added: "2026-04-30",
     title: "EEOC Launches Initiative on Artificial Intelligence and Algorithmic Fairness",
     source: "U.S. Equal Employment Opportunity Commission",
     sourceUrl: "https://www.eeoc.gov/newsroom/eeoc-launches-initiative-artificial-intelligence-and-algorithmic-fairness",
@@ -3548,10 +3460,9 @@ const RESEARCH_DATA = [
       "The initiative represents the first formal EEOC assertion that employers cannot outsource civil rights liability to AI vendors, if an algorithmic hiring or management tool produces discriminatory outcomes, the employer remains legally responsible.",
       "The EEOC identified tools across the hiring funnel — resume screeners, video interview analyzers, predictive assessments — as potential sources of disparate impact, with particular attention to disability discrimination via AI screening under the ADA.",
       "The initiative produced concrete technical guidance and stakeholder listening sessions, establishing a regulatory baseline that companies deploying AI in employment contexts can be held to without waiting for new legislation."
-    ]
+    ],
   },
-  {
-    id: 102, date: "2020-06-30", added: "2026-04-30",
+  { id: 102, date: "2020-06-30", added: "2026-04-30",
     title: "Inside the Invasive, Secretive ‘Bossware’ Tracking Workers",
     source: "Bennett Cyphers, Karen Gullo — Electronic Frontier Foundation",
     sourceUrl: "https://www.eff.org/deeplinks/2020/06/inside-invasive-secretive-bossware-tracking-workers",
@@ -3561,10 +3472,9 @@ const RESEARCH_DATA = [
       "Nine of ten bossware vendors examined offered invisible or covert installation modes, enabling employers to monitor workers on employer-provided devices without disclosure, a capability with no analog in physical workplace monitoring.",
       "Data collected routinely exceeds any plausible business justification: many tools capture personal communications, passwords, and off-hours activity, extending employer surveillance into domestic space without consent.",
       "U.S. law offers workers almost no protection: employers can monitor employer-owned devices with minimal restriction, and proposed legislation requiring notice and proportionality exists only at the state level in a small number of jurisdictions."
-    ]
+    ],
   },
-  {
-    id: 103, date: "2022-06-21", added: "2026-04-30",
+  { id: 103, date: "2022-06-21", added: "2026-04-30",
     title: "The Values Encoded in Machine Learning Research",
     source: "Abeba Birhane, Pratyusha Kalluri, Dallas Card, William Agnew, Ravit Dotan, Michelle Bao — ACM FAccT",
     sourceUrl: "https://dl.acm.org/doi/fullHtml/10.1145/3531146.3533083",
@@ -3574,10 +3484,9 @@ const RESEARCH_DATA = [
       "The six dominant values in mainstream ML research — performance, generalization, efficiency, building on past work, quantitative evidence, and novelty — are structurally misaligned with societal benefit and generally support the centralization of power.",
       "Increasingly close ties between highly-cited papers and tech companies and elite universities mean mainstream ML research reflects the values of privileged institutional actors, not communities most affected by deployment.",
       "The field’s value system is self-reinforcing: the metrics by which research is evaluated reward the same qualities that serve commercial and institutional interests, creating a feedback loop that resists reform from within the research community."
-    ]
+    ],
   },
-  {
-    id: 111, date: "2021-02-12", added: "2026-04-30",
+  { id: 111, date: "2021-02-12", added: "2026-04-30",
     title: "Privacy Without Monopoly: Data Protection and Interoperability",
     source: "Bennett Cyphers, Cory Doctorow — Electronic Frontier Foundation",
     sourceUrl: "https://www.eff.org/wp/interoperability-and-privacy",
@@ -3587,10 +3496,9 @@ const RESEARCH_DATA = [
       "Reforming the DMCA, CFAA, and Terms of Service enforcement would allow developers to build privacy-enhancing tools and alternative services without legal reprisal, giving users meaningful choice rather than choosing between surveillance and exclusion from essential platforms.",
       "Mandated interoperability creates new privacy risks if not paired with robust legal constraints: data shared across company boundaries under portability or back-end interoperability requirements can be exploited unless consent and minimization requirements travel with the data.",
       "Relying on tech monopolies as de facto privacy protectors is structurally flawed, democratically-enacted privacy law with private rights of action provides more durable protection than corporate discretion, and interoperability mandates work best when layered on top of strong baseline privacy requirements."
-    ]
+    ],
   },
-  {
-    id: 112, date: "2023-11-14", added: "2026-04-30",
+  { id: 112, date: "2023-11-14", added: "2026-04-30",
     title: "Privacy First: A Better Way to Address Online Harms",
     source: "Corynne McSherry, Mario Trujillo, Cindy Cohn, Thorin Klosowski — Electronic Frontier Foundation",
     sourceUrl: "https://www.eff.org/wp/privacy-first-better-way-address-online-harms",
@@ -3600,10 +3508,9 @@ const RESEARCH_DATA = [
       "Rather than passing disconnected laws targeting individual harms, policymakers should implement robust privacy protections that address multiple internet harms at once, the paper maps how a single strong privacy framework would resolve concerns currently addressed through a patchwork of sector-specific legislation.",
       "Effective legislation requires behavioral advertising bans, data minimization mandates, strong opt-in consent, private rights of action, and prohibitions on deceptive design patterns, the paper treats these as a non-negotiable floor, not optional additions.",
       "Privacy protections function as civil rights legislation: reducing discriminatory targeting, limiting law enforcement access to personal data, preventing foreign surveillance, and leveling competitive playing fields for technology startups against entrenched incumbents."
-    ]
+    ],
   },
-  {
-    id: 104, date: "2025-04-23", added: "2026-04-30",
+  { id: 104, date: "2025-04-23", added: "2026-04-30",
     title: "Revolutionizing Health and Safety: The Role of AI and Digitalization at Work",
     source: "International Labour Organization",
     sourceUrl: "https://www.ilo.org/publications/revolutionizing-health-and-safety-role-ai-and-digitalization-work",
@@ -3613,10 +3520,9 @@ const RESEARCH_DATA = [
       "Automation, robotics, smart monitoring, and algorithmic work management are reshaping occupational safety practices across industries, with benefits in hazard reduction but new exposures in stress, surveillance, and work intensification.",
       "Significant regulatory gaps exist across countries in how digitalized workplaces are governed for occupational safety, with most national frameworks still oriented toward physical hazards rather than the psychosocial risks AI deployment introduces.",
       "The report provides governments, employers, and workers with case studies and preventive strategies for safely integrating digital tools, positioning occupational safety as an active AI governance frontier, not a downstream compliance issue."
-    ]
+    ],
   },
-  {
-    id: 105, date: "2024-07-26", added: "2026-04-30",
+  { id: 105, date: "2024-07-26", added: "2026-04-30",
     title: "Mind the AI Divide: Shaping a Global Perspective on the Future of Work",
     source: "International Labour Organization",
     sourceUrl: "https://www.ilo.org/publications/major-publications/mind-ai-divide-shaping-global-perspective-future-work",
@@ -3626,10 +3532,9 @@ const RESEARCH_DATA = [
       "The AI divide is not primarily about access to AI tools but about the prerequisites for adoption: digital infrastructure, skills, regulatory capacity, and institutional readiness, gaps that compound at every level of development.",
       "Organizations can achieve productivity gains and improved working conditions through AI when supported by proper infrastructure and collaborative labor practices, but these enabling conditions are deeply unevenly distributed globally.",
       "Addressing the divide requires international collaboration in AI capacity building, individual country strategies are insufficient given the scale of cross-border dependency in AI supply chains and the concentration of AI development in a handful of wealthy economies."
-    ]
+    ],
   },
-  {
-    id: 106, date: "2026-04-30", added: "2026-04-30",
+  { id: 106, date: "2026-04-30", added: "2026-04-30",
     title: "AI Systems @ Work: A Changing Psychosocial Work Environment",
     source: "International Labour Organization",
     sourceUrl: "https://www.ilo.org/resource/news/ai-driven-intrusive-surveillance-and-loss-autonomy-work-linked-psychosocial",
@@ -3639,11 +3544,9 @@ const RESEARCH_DATA = [
       "AI implementation creates a cluster of interconnected psychosocial hazards — surveillance anxiety, reduced autonomy, work intensification, and privacy erosion — that existing OSH frameworks, still oriented toward physical risks, do not adequately govern.",
       "ILO Working Paper 170 documents that mental health risks from AI management are structural, not incidental: they arise from how algorithmic systems are designed and deployed, making individual coping strategies an insufficient response.",
       "An integrated policy approach combining labor regulation, occupational safety law, equality protections, and data protection frameworks is required, no single regulatory stream is sufficient to address the psychosocial risks AI management systems generate."
-    ]
+    ],
   },
-  {
-    id: 107, date: "2026-04-21", added: "2026-04-30",
-    highlight: { stat: "54", text: "countries negotiated the first global tripartite agreement on artificial intelligence in manufacturing, covering nearly 500 million workers.", themeId: "worker-power" },
+  { id: 107, date: "2026-04-21", added: "2026-04-30",
     title: "ILO Adopts First-Ever Conclusions on AI in Manufacturing Work",
     source: "International Labour Organization",
     sourceUrl: "https://www.ilo.org/resource/news/ilo-adopts-first-ever-conclusions-ai-manufacturing-work",
@@ -3653,10 +3556,10 @@ const RESEARCH_DATA = [
       "The conclusions are the first ILO tripartite agreement specifically on AI, developed by government officials, employers, and trade unions from 54 countries, giving them legitimacy and global reach that unilateral national frameworks cannot achieve.",
       "Core recommendations cover skills development, occupational safety standards, fundamental labor rights protection, and strengthened social dialogue, rejecting a purely productivity-focused framing of AI deployment in manufacturing.",
       "Submission to the ILO Governing Body in November 2026 for approval establishes a policy timeline that labor advocates can use to hold governments accountable to the tripartite commitments made during adoption."
-    ]
+    ],
+    highlight: { stat: "54", text: "countries negotiated the first global tripartite agreement on artificial intelligence in manufacturing, covering nearly 500 million workers.", themeId: "worker-power" },
   },
-  {
-    id: 108, date: "2026-04-14", added: "2026-04-30",
+  { id: 108, date: "2026-04-14", added: "2026-04-30",
     title: "AI Training Opens Doors for Women Entrepreneurs in the Philippines",
     source: "International Labour Organization",
     sourceUrl: "https://www.ilo.org/resource/news/ai-training-opens-doors-women-entrepreneurs-philippines",
@@ -3666,10 +3569,9 @@ const RESEARCH_DATA = [
       "The Digital-PINAS programme equipped women from the United Mothers Livelihood Association with practical AI tools for informal micro-businesses, showing that technical expertise is not a prerequisite for AI adoption when training is appropriately designed.",
       "The program addressed both the skills gap and the infrastructure gap simultaneously, equipping local training centers with connectivity tools alongside the AI training itself, recognizing that access without connectivity is not meaningful access.",
       "The Philippine case offers a replicable model for Global South AI inclusion: community-centered, practical, and designed for micro and small enterprises rather than scaling down tools built for larger organizations."
-    ]
+    ],
   },
-  {
-    id: 109, date: "2026-03-06", added: "2026-04-30",
+  { id: 109, date: "2026-03-06", added: "2026-04-30",
     title: "Adoption of Artificial Intelligence and Productivity Growth in Kuwait’s Private Sector",
     source: "International Labour Organization",
     sourceUrl: "https://www.ilo.org/resource/news/ai-adoption-shapes-productivity-kuwait",
@@ -3679,10 +3581,9 @@ const RESEARCH_DATA = [
       "Large enterprises show far stronger AI readiness than small firms: 45% of large companies have formal AI policies and 65% offer AI training, compared to 14% and 29% respectively among smaller firms, a size-stratified gap that mirrors patterns in Western economies.",
       "Despite widespread reports of faster task execution, only 26% of claimed productivity effects met the study’s criteria for verified impact, suggesting that AI adoption and AI-driven productivity are not the same thing and that measurement gaps are significant.",
       "Converting AI investment into measurable productivity gains requires organizational prerequisites — data systems, skills development, governance structures — that many firms, particularly smaller ones, have not yet built."
-    ]
+    ],
   },
-  {
-    id: 110, date: "2024-02-19", added: "2026-04-30",
+  { id: 110, date: "2024-02-19", added: "2026-04-30",
     title: "Algorithmic Management Practices in Regular Workplaces: Case Studies in Logistics and Healthcare",
     source: "Uma Rani, Annarosa Pesole, Ignacio Gonzalez Vazquez — International Labour Organization",
     sourceUrl: "https://www.ilo.org/publications/algorithmic-management-practices-regular-workplaces-case-studies-logistics",
@@ -3692,10 +3593,9 @@ const RESEARCH_DATA = [
       "Algorithmic management follows consistent patterns across all four countries regardless of regulatory context: streamlined workflows for employers, intensified monitoring, reduced worker autonomy, and greater exposure to algorithmic evaluation workers cannot contest.",
       "Job quality deterioration is a consistent finding across developed and developing economies alike, manifesting in increased performance pressure, reduced discretion over work pace and methods, and algorithmic accountability with no recourse mechanism.",
       "The cross-regional evidence challenges the assumption that strong labor law in advanced economies protects workers from algorithmic management harms: documented negative effects appear in France and Italy despite robust labor regulation frameworks."
-    ]
+    ],
   },
-  {
-    id: 113, date: "2026-03-30", added: "2026-05-04",
+  { id: 113, date: "2026-03-30", added: "2026-05-04",
     title: "Beyond 'US Innovates, Europe Regulates': Lessons and Recommendations from a Transatlantic AI Exchange",
     source: "Julia Tréhu, Adrienne Goldstein — German Marshall Fund of the United States",
     sourceUrl: "https://www.gmfus.org/news/beyond-us-innovates-europe-regulates",
@@ -3705,10 +3605,9 @@ const RESEARCH_DATA = [
       "Children's safety and 'AI redlines' — unacceptable uses such as social scoring — are the clearest convergence points for US-EU cooperation, suggesting a targeted bilateral dialogue would yield more than broad harmonization efforts.",
       "Structural barriers to AI competitiveness span the entire value chain — financing, energy costs, talent retention, compute access — and extend well beyond regulatory frameworks, requiring industrial policy and procurement strategies alongside governance reform.",
       "Legislatures lack institutional capacity to address AI's cross-sectoral impacts, requiring dedicated technical civil service, rotating academic and industry experts, and sustained peer education across policy domains."
-    ]
+    ],
   },
-  {
-    id: 114, date: "2026-04-15", added: "2026-05-04",
+  { id: 114, date: "2026-04-15", added: "2026-05-04",
     title: "Copy, Paste, Govern: Microsoft Ghostwrote EU Policy That Keeps Data Centres' Energy Use Secret",
     source: "Corporate Europe Observatory and AlgorithmWatch",
     sourceUrl: "https://corporateeurope.org/en/2026/04/copy-paste-govern",
@@ -3718,10 +3617,9 @@ const RESEARCH_DATA = [
       "The EU Commission 'essentially plagiarised' Microsoft and DigitalEurope amendments into a Delegated Act, establishing a documented precedent of Big Tech lobby text being incorporated verbatim into binding regulatory instruments.",
       "The resulting rules classify individual data centre energy and water use as proprietary trade secrets, making it structurally impossible for regulators, journalists, or the public to hold facilities accountable for their environmental footprint.",
       "Data centre expansion faces $156 billion in blocked or stalled projects in the US alone during 2025, making opacity in EU energy disclosure rules particularly valuable for corporations seeking to limit accountability as resistance grows globally."
-    ]
+    ],
   },
-  {
-    id: 115, date: "2025-05-29", added: "2026-05-04",
+  { id: 115, date: "2025-05-29", added: "2026-05-04",
     title: "The Innovation Framework: A Civil Rights Approach to AI",
     source: "The Leadership Conference on Civil and Human Rights",
     sourceUrl: "https://civilrights.org/wp-content/uploads/2025/05/The-Innovation-Framework.pdf",
@@ -3731,10 +3629,9 @@ const RESEARCH_DATA = [
       "The framework's dual structure separates long-term strategic values from operational lifecycle pillars aligned to the AI development and deployment pipeline, enabling implementation at both governance and product levels.",
       "Developed with input from industry developers and deployers alongside civil society and academic experts, the framework is positioned as a proactive standard rather than a reactive compliance checklist.",
       "The framework explicitly requires developers to assess how AI systems will impact marginalized communities throughout development, not as a post-launch audit, but as an embedded design requirement."
-    ]
+    ],
   },
-  {
-    id: 116, date: "2023-04-25", added: "2026-05-04",
+  { id: 116, date: "2023-04-25", added: "2026-05-04",
     title: "The Promises and Perils of Residential Proptech: Year 1 Summary Report",
     source: "TechEquity Collaborative",
     sourceUrl: "https://techequity.us/wp-content/uploads/2023/04/TBHI-Y1-Research-Summary-Report.pdf",
@@ -3744,10 +3641,9 @@ const RESEARCH_DATA = [
       "Tenant screening algorithms are 'opaque, predictive, and frequently based on inaccurate data,' creating hidden barriers to rental housing that applicants cannot contest or understand.",
       "Digital tools enable institutional investors to amass and manage massive single-family home portfolios, prioritizing investor returns over tenant welfare and long-term housing affordability.",
       "Alternative homeownership paths marketed through PropTech — including rent-to-own and land contracts — echo discriminatory and predatory practices of the past, perpetuating historical inequities through modern technological infrastructure."
-    ]
+    ],
   },
-  {
-    id: 117, date: "2023-04-01", added: "2026-05-04",
+  { id: 117, date: "2023-04-01", added: "2026-05-04",
     title: "The Scarlet Letter 'E': How Tenancy Screening Policies Exacerbate Housing Inequity for Evicted Black Women",
     source: "Yvette N.A. Pappoe — Boston University Law Review",
     sourceUrl: "https://www.bu.edu/bulawreview/files/2023/04/PAPPOE.pdf",
@@ -3757,10 +3653,9 @@ const RESEARCH_DATA = [
       "Eviction filings create a permanent 'Scarlet Letter E' that follows tenants indefinitely through screening systems, foreclosing future housing access regardless of subsequent financial recovery or case outcomes.",
       "Black women face compounded disadvantage: eviction records reflect gendered economic precarity while screening criteria encode racial disparities from the criminal justice system and credit markets.",
       "The paper proposes an interpretive framework extending Fair Housing Act liability to tenant screening companies as well as landlords, closing a structural accountability gap where third-party vendors escape direct legal exposure for discriminatory outputs."
-    ]
+    ],
   },
-  {
-    id: 118, date: "2022-02-01", added: "2026-05-04",
+  { id: 118, date: "2022-02-01", added: "2026-05-04",
     title: "Locked Out: How Algorithmic Tenant Screening Exacerbates the Eviction Crisis in the United States",
     source: "Matthew Harold Leiwant — Georgetown Law Technology Review",
     sourceUrl: "https://georgetownlawtechreview.org/wp-content/uploads/2022/02/Leiwant_Locked-Out_Formatted.pdf",
@@ -3770,10 +3665,9 @@ const RESEARCH_DATA = [
       "Over nine million American households faced rent delinquency during the pandemic, producing a wave of eviction filings that now function as permanent housing barriers regardless of whether tenants won their cases.",
       "Eviction court records are scraped by screening companies as soon as they are filed — before any adjudication — meaning even dismissed cases generate lasting housing disqualifications.",
       "Record-sealing legislation targeting pandemic-era filings is the most direct policy remedy, but most states lack provisions to seal records at the point of filing, where screening company data collection occurs."
-    ]
+    ],
   },
-  {
-    id: 119, date: "2024-07-16", added: "2026-05-04",
+  { id: 119, date: "2024-07-16", added: "2026-05-04",
     title: "Record Costs: Collateral Consequences of Eviction Court Filings in Pennsylvania",
     source: "Alexa Eisenberg, Kate Brantley — University of Michigan Poverty Solutions",
     sourceUrl: "https://c9737800-326f-4c8f-9fd8-3f266717d0f2.filesusr.com/ugd/9d463d_6517025d2feb407f86473c5006da1484.pdf",
@@ -3783,10 +3677,9 @@ const RESEARCH_DATA = [
       "Eight in ten participants reported their eviction filing limited future housing options; over half were explicitly denied by a prospective landlord because of their filing, even when the case was dismissed or won.",
       "Unsuccessful rental applications generated hundreds to thousands of dollars in excess costs per tenant — application fees, moving expenses, and emergency housing — compounding the economic harm of the original housing crisis.",
       "Record-sealing at the point of filing — not just after case resolution — is the only effective remedy, as screening companies scrape public court records before adjudication, making post-judgment sealing insufficient."
-    ]
+    ],
   },
-  {
-    id: 120, date: "2025-07-12", added: "2026-05-04",
+  { id: 120, date: "2025-07-12", added: "2026-05-04",
     title: "The Discriminatory Impacts of AI-Powered Tenant Screening Programs",
     source: "Lauren Karpinski — Georgetown Journal on Poverty Law & Policy",
     sourceUrl: "https://www.law.georgetown.edu/poverty-journal/blog/the-discriminatory-impacts-of-ai-powered-tenant-screening-programs/",
@@ -3796,10 +3689,9 @@ const RESEARCH_DATA = [
       "Screening databases contain unsubstantiated information including false matches and outdated records that applicants cannot dispute or correct before denial, algorithmic speed forecloses the informal contestation that human decision-making occasionally allowed.",
       "Criminal record and credit score criteria are structurally skewed: arrest data reflects racial policing disparities, while credit scores encode historical economic discrimination rather than actual rental risk.",
       "Landlord over-reliance on screening scores — treating algorithmic outputs as authoritative rather than as one input — removes discretion from decision-making and can unconsciously shape future judgment even after discontinuing a particular system."
-    ]
+    ],
   },
-  {
-    id: 121, date: "2023-10-01", added: "2026-05-04",
+  { id: 121, date: "2023-10-01", added: "2026-05-04",
     title: "A Home for Digital Equity: Algorithmic Redlining and Property Technology",
     source: "Nadiyah J. Humber — California Law Review",
     sourceUrl: "https://www.californialawreview.org/print/a-home-for-digital-equity",
@@ -3809,10 +3701,9 @@ const RESEARCH_DATA = [
       "Tenant screening algorithms inherit discrimination from their training data — eviction records, credit histories, and criminal databases — which disproportionately reflect decades of racialized housing exclusion and structural inequality.",
       "Segregative effect theory provides stronger litigation advantages than disparate impact: it applies to individual decisions rather than requiring statistical proof across policies, requires narrower geographic statistics, and has greater appellate track record in housing discrimination cases.",
       "Algorithmic neutrality creates a dangerous accountability gap: landlords attribute denials to technology rather than human choice, eliminating appeal processes and denying tenants recourse despite demonstrably disparate outcomes."
-    ]
+    ],
   },
-  {
-    id: 122, date: "2022-06-10", added: "2026-05-04",
+  { id: 122, date: "2022-06-10", added: "2026-05-04",
     title: "HUD Guidance: Criminal Background Screenings May Violate the Fair Housing Act",
     source: "U.S. Department of Housing and Urban Development",
     sourceUrl: "https://nlihc.org/resource/hud-memo-criminal-background-screenings-may-violate-fair-housing-act",
@@ -3822,10 +3713,9 @@ const RESEARCH_DATA = [
       "HUD outlined three Fair Housing Act violation pathways for criminal screening: discriminatory intent, discriminatory effects on protected classes, and failure to accommodate persons with disabilities, giving tenants multiple legal avenues to challenge categorical exclusions.",
       "Written individualized screening policies that assess each applicant's specific history are both the legally required and practically superior alternative to blanket conviction bans, which courts have increasingly found to constitute disparate impact discrimination.",
       "Because criminal justice system involvement disproportionately affects Black and Latino individuals due to documented enforcement disparities, blanket criminal history bans function as a proxy for race discrimination, regardless of facially neutral intent."
-    ]
+    ],
   },
-  {
-    id: 123, date: "2024-09-13", added: "2026-05-04",
+  { id: 123, date: "2024-09-13", added: "2026-05-04",
     title: "The Legal Doctrine That Will Be Key to Preventing AI Discrimination",
     source: "Chiraag Bains — Brookings Institution",
     sourceUrl: "https://www.brookings.edu/articles/the-legal-doctrine-that-will-be-key-to-preventing-ai-discrimination/",
@@ -3835,10 +3725,9 @@ const RESEARCH_DATA = [
       "Because algorithms lack human intent, proving discrimination requires examining outcomes rather than motivations, disparate impact doctrine is uniquely suited to AI accountability in ways that disparate treatment theory structurally cannot be.",
       "Documented AI discrimination is widespread: Amazon's resume screening filtered out women, and facial recognition tools fail on darker-skinned faces at rates 10–100 times higher than for white faces, neither failure involved explicit discriminatory intent.",
       "Existing disparate impact protections are fragmented across multiple federal statutes with inconsistent coverage, and courts have progressively narrowed them; unified AI-specific legislation with private rights of action is the necessary structural fix."
-    ]
+    ],
   },
-  {
-    id: 124, date: "2026-01-22", added: "2026-05-04",
+  { id: 124, date: "2026-01-22", added: "2026-05-04",
     title: "When Machines Discriminate: The Critical Role of Disparate Impact in AI Accountability",
     source: "The Leadership Conference on Civil and Human Rights",
     sourceUrl: "https://civilrights.org/wp-content/uploads/2026/01/SNAPSHOT-When-Machines-Discriminate_The-Critical-Role-of-Disparate-Impact-in-AI-Accountability.pdf",
@@ -3848,10 +3737,9 @@ const RESEARCH_DATA = [
       "Disparate impact doctrine surfaces and addresses sources of bias that disparate treatment doctrine cannot reach, because AI discrimination operates through statistical patterns rather than conscious choices, intent-based standards are structurally inadequate for algorithmic accountability.",
       "Efforts to roll back disparate impact protections — through executive action, judicial narrowing, or preemption legislation — would functionally immunize AI systems from civil rights enforcement across every domain where they are deployed.",
       "A unified federal AI-specific disparate impact framework with private rights of action would close the fragmentation gap left by sector-by-sector antidiscrimination statutes and provide consistent accountability regardless of deployment context."
-    ]
+    ],
   },
-  {
-    id: 125, date: "2019-05-22", added: "2026-05-05",
+  { id: 125, date: "2019-05-22", added: "2026-05-05",
     title: "Algorithmic Bias Detection and Mitigation: Best Practices and Policies to Reduce Consumer Harms",
     source: "Turner Lee, Resnick & Barton — Brookings Institution",
     sourceUrl: "https://www.brookings.edu/articles/algorithmic-bias-detection-and-mitigation-best-practices-and-policies-to-reduce-consumer-harms/",
@@ -3861,10 +3749,9 @@ const RESEARCH_DATA = [
       "Self-regulatory best practices — bias impact statements, diverse teams, algorithmic audits — are necessary but insufficient without legal requirements that create enforceable accountability for algorithmic discrimination.",
       "Existing nondiscrimination law was not designed for algorithmic decision-making; explicitly extending Title VII, ECOA, and Fair Housing Act coverage to automated systems is the most direct path to closing the accountability gap.",
       "Regulatory sandboxes and improved algorithmic literacy across federal agencies are enabling conditions for effective oversight, but are currently absent from most enforcement frameworks."
-    ]
+    ],
   },
-  {
-    id: 126, date: "2018-02-23", added: "2026-05-05",
+  { id: 126, date: "2018-02-23", added: "2026-05-05",
     title: "Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification",
     source: "Buolamwini & Gebru — MIT Media Lab",
     sourceUrl: "https://proceedings.mlr.press/v81/buolamwini18a.html",
@@ -3874,10 +3761,9 @@ const RESEARCH_DATA = [
       "Facial analysis accuracy gaps are not technical limitations, they are the direct result of unrepresentative training data. Systems perform worst for the demographic groups they are most likely to be deployed against.",
       "Intersectional testing is essential: auditing by gender or race alone masks the compounded disadvantage faced by darker-skinned women, who were the most misclassified group across all commercial systems tested.",
       "The Gender Shades methodology established intersectional demographic parity testing as the standard for AI bias audits, yet most commercial systems still lack independent demographic accuracy testing before deployment."
-    ]
+    ],
   },
-  {
-    id: 127, date: "2019-12-01", added: "2026-05-05",
+  { id: 127, date: "2019-12-01", added: "2026-05-05",
     title: "Face Recognition Vendor Test (FRVT) Part 3: Demographic Effects",
     source: "Grother, Ngan & Hanaoka — National Institute of Standards and Technology",
     sourceUrl: "https://www.nist.gov/publications/face-recognition-vendor-test-part-3-demographic-effects",
@@ -3887,10 +3773,9 @@ const RESEARCH_DATA = [
       "False positive disparities in facial recognition are not outlier failures, they are a systemic feature confirmed across virtually all commercially deployed algorithms in government testing, including systems currently in use by law enforcement.",
       "The populations most subject to law enforcement contact face the highest misidentification rates: Black women and Native American women had the highest false positive rates across most tested algorithms.",
       "NIST testing established the empirical foundation for legislative action: the disparities are not hypothetical and cannot be attributed to image quality, they occur even under controlled, high-quality conditions across nearly all vendors."
-    ]
+    ],
   },
-  {
-    id: 128, date: "2024-02-14", added: "2026-05-05",
+  { id: 128, date: "2024-02-14", added: "2026-05-05",
     title: "Artificial Intelligence Is Putting Innocent People at Risk of Being Incarcerated",
     source: "Sanford — Innocence Project",
     sourceUrl: "https://innocenceproject.org/news/artificial-intelligence-is-putting-innocent-people-at-risk-of-being-incarcerated/",
@@ -3900,10 +3785,9 @@ const RESEARCH_DATA = [
       "Facial recognition has moved from investigative tool to courtroom evidence without standards that reflect its documented racial accuracy disparities, mirroring the historical pattern of flawed forensic science being admitted at trial before its limitations were acknowledged.",
       "Six of seven documented wrongful facial recognition arrests involved Black individuals, consistent with NIST findings that Black women face the highest false positive rates among commercially deployed systems.",
       "The absence of mandatory pre-deployment accuracy audits by demographic subgroup means the evidence standard for facial recognition at trial exceeds the evidence standard for its development and validation."
-    ]
+    ],
   },
-  {
-    id: 129, date: "2021-08-25", added: "2026-05-05",
+  { id: 129, date: "2021-08-25", added: "2026-05-05",
     title: "The Secret Bias Hidden in Mortgage-Approval Algorithms",
     source: "Martinez & Kirchner — The Markup",
     sourceUrl: "https://themarkup.org/denied/2021/08/25/the-secret-bias-hidden-in-mortgage-approval-algorithms",
@@ -3913,10 +3797,9 @@ const RESEARCH_DATA = [
       "Algorithmic mortgage underwriting does not discriminate by intent but does by effect, a finding that directly supports disparate impact claims under the Fair Housing Act and Equal Credit Opportunity Act without requiring proof of discriminatory purpose.",
       "The 80% denial rate disparity for Black applicants persisted after controlling for income, debt, and other financial variables, demonstrating that the gap is produced by the algorithm's structure, not by applicant qualifications.",
       "This investigation provided the quantitative foundation for advocacy requiring bias auditing of automated valuation models and algorithmic underwriting tools as a condition of Fair Housing Act compliance."
-    ]
+    ],
   },
-  {
-    id: 130, date: "2024-05-24", added: "2026-05-05",
+  { id: 130, date: "2024-05-24", added: "2026-05-05",
     title: "MBIAS: Mitigating Bias in Large Language Models While Retaining Context",
     source: "Raza, Raval & Chatrath — Vector Institute",
     sourceUrl: "https://arxiv.org/abs/2405.11290",
@@ -3926,10 +3809,9 @@ const RESEARCH_DATA = [
       "Technical bias mitigation is achievable without sacrificing model performance, but requires deliberate investment in curated training data and targeted fine-tuning, not post-hoc filtering or generic safety guardrails.",
       "A 30%+ reduction in measured bias demonstrates that current commercial LLM deployments are not at a technical ceiling on bias mitigation, the remaining gap reflects a choice about where to invest development resources.",
       "Out-of-distribution testing is essential for evaluating bias mitigation: models that appear debiased on standard benchmarks may still exhibit significant disparities when applied to novel demographic contexts."
-    ]
+    ],
   },
-  {
-    id: 131, date: "2022-01-27", added: "2026-05-05",
+  { id: 131, date: "2022-01-27", added: "2026-05-05",
     title: "Aligning Language Models to Follow Instructions",
     source: "Ouyang et al. — OpenAI",
     sourceUrl: "https://openai.com/index/instruction-following/",
@@ -3939,10 +3821,9 @@ const RESEARCH_DATA = [
       "Scale alone does not produce aligned AI behavior, RLHF-based instruction-following is the architectural foundation that makes current AI assistants commercially viable and is now standard across frontier models including ChatGPT, Claude, and Gemini.",
       "The same mechanism that makes AI assistants useful makes their behavior more legible and more trainable toward specific objectives, which has direct implications for how AI tools are shaped by the organizations that deploy and fine-tune them.",
       "InstructGPT's demonstration that alignment and capability can be jointly optimized shifted AI development toward human-feedback-based training as a default, a transition with ongoing implications for how AI systems interpret and prioritize instructions from different sources."
-    ]
+    ],
   },
-  {
-    id: 132, date: "2024-03-01", added: "2026-05-05",
+  { id: 132, date: "2024-03-01", added: "2026-05-05",
     title: "Gender Bias in Large Language Models across Multiple Languages",
     source: "Zhao, Ding, Jia, Wang & Qian — arXiv",
     sourceUrl: "https://arxiv.org/abs/2403.00277",
@@ -3952,10 +3833,9 @@ const RESEARCH_DATA = [
       "LLM gender bias is not an English-language problem, it propagates across multilingual deployments, meaning institutions deploying AI tools in non-English-speaking contexts face the same structural bias risks documented in English-language research.",
       "Bias audits conducted only on English outputs produce systematically incomplete assessments: organizations deploying AI internationally need language-specific evaluation to capture the actual risk profile.",
       "The consistency of gender bias across three different measurement methods suggests the bias is embedded in the model's underlying representations, not a surface artifact of particular prompting approaches."
-    ]
+    ],
   },
-  {
-    id: 133, date: "2021-01-14", added: "2026-05-05",
+  { id: 133, date: "2021-01-14", added: "2026-05-05",
     title: "Persistent Anti-Muslim Bias in Large Language Models",
     source: "Abid, Farooqi & Zou — arXiv",
     sourceUrl: "https://arxiv.org/abs/2101.05783",
@@ -3965,10 +3845,9 @@ const RESEARCH_DATA = [
       "Religious bias in large language models is persistent and directional, not random noise. GPT-3's documented anti-Muslim stereotyping is a measurable harm risk that prompt modifications cannot reliably prevent.",
       "For institutions deploying AI tools in multicultural or community-facing contexts, this finding identifies a specific population at disproportionate risk from LLM-generated content, a risk that standard safety evaluations may not capture.",
       "The persistence of anti-Muslim bias after positive prompt interventions demonstrates that bias mitigation requires architectural or training-data changes, not surface-level prompting strategies."
-    ]
+    ],
   },
-  {
-    id: 134, date: "2024-02-06", added: "2026-05-05",
+  { id: 134, date: "2024-02-06", added: "2026-05-05",
     title: "Measuring Implicit Bias in Explicitly Unbiased Large Language Models",
     source: "Bai, Wang, Sucholutsky & Griffiths — arXiv",
     sourceUrl: "https://arxiv.org/abs/2402.04105",
@@ -3978,11 +3857,9 @@ const RESEARCH_DATA = [
       "Passing standard AI bias benchmarks does not mean a model is unbiased: aligned models harbor implicit stereotypes that emerge only under methods designed to detect them, making vendor bias certifications based on standard tests necessary but not sufficient.",
       "The gap between explicit benchmark performance and implicit bias — documented across eight models including frontier commercial systems — means institutions relying solely on vendor safety documentation face an unquantified residual bias risk in deployed systems.",
       "Psychological association methods adapted for LLM evaluation provide a more sensitive detection framework than existing AI bias benchmarks, suggesting the AI auditing field needs evaluation standards that go beyond current approaches."
-    ]
+    ],
   },
-  {
-    id: 136, date: "2026-05-01", added: "2026-05-08",
-    highlight: { stat: "236", text: "first-person worker accounts document 12 distinct patterns through which artificial intelligence drives job loss across the labor pipeline.", themeId: "displacement" },
+  { id: 136, date: "2026-05-01", added: "2026-05-08",
     title: "AI Commons: Worker Stories from the AI Economy",
     source: "AI Commons Project",
     sourceUrl: "https://www.aicommonsproject.org/stories",
@@ -3993,7 +3870,8 @@ const RESEARCH_DATA = [
       "The Trojan Horse pattern (10 stories) — workers training the AI systems that later replace them — is among the most prevalent, with no current legal framework requiring disclosure, compensation, or consent when this occurs.",
       "The Left Behind pattern (7 stories) disproportionately documents workers over 40, whose AI adoption pace is being used to justify termination, raising age discrimination concerns that existing ADEA frameworks were not designed to address in algorithmic performance contexts.",
       "Full Displacement (25 stories) affects a wide range of knowledge workers — copywriters, UX writers, software engineers, social media managers — not just routine or manual roles, challenging the assumption that cognitive work is insulated from near-term displacement."
-    ]
+    ],
+    highlight: { stat: "236", text: "first-person worker accounts document 12 distinct patterns through which artificial intelligence drives job loss across the labor pipeline.", themeId: "displacement" },
   },
   { id: 135, date: "2024-02-21", added: "2026-05-05",
     title: "What's in a Name? Auditing Large Language Models for Race and Gender Bias",
@@ -4005,7 +3883,7 @@ const RESEARCH_DATA = [
       "Name-based racial and gender bias in LLMs has direct employment implications: AI tools used for resume screening, salary negotiation coaching, or career advice will produce systematically worse outcomes for people with minority-associated names regardless of identical underlying qualifications.",
       "The consistency of bias across 42 different scenario types suggests that name-based demographic discrimination is a general feature of how these models weight cues, not a domain-specific artifact.",
       "Partial mitigation through numerical anchors does not eliminate the disparity and may not be applicable in real-world contexts, meaning organizations deploying LLMs in evaluation or advisory roles face a bias risk that current prompt engineering cannot fully address."
-    ]
+    ],
   },
   { id: 219, date: "2025-01-01", added: "2026-06-08",
     title: "Myths about Generative AI, Productivity, and Job Displacement",
@@ -4019,7 +3897,7 @@ const RESEARCH_DATA = [
       "Job displacement from generative AI is not technologically determined: deployment choices, contractual terms, and regulatory frameworks shape whether AI substitutes or complements worker labor, framing displacement as inevitable forecloses the negotiating space that workers and unions actually have.",
       "Labor organizers and advocates need primer-level analytical tools to interrogate employer AI claims in bargaining contexts, this resource equips union members and worker advocates with frameworks to evaluate productivity and displacement arguments on their merits, not on employer or vendor assertions.",
       "The gap between AI hype cycles and documented labor market outcomes creates both a challenge and an opportunity for worker organizing: challenging exaggerated displacement claims is as strategically important as resisting actual deployment, since premature capitulation to AI inevitability narratives weakens bargaining positions before organizing begins."
-    ]
+    ],
   },
   { id: 220, date: "2024-06-01", added: "2026-06-08",
     title: "Ziff Davis Creators Guild: AI Contract Protections Case Study",
@@ -4033,7 +3911,7 @@ const RESEARCH_DATA = [
       "The campaign provides replicable contract language and organizing strategy for other media and content worker unions facing AI deployment, the specific provisions won (consent requirements, transparency obligations, and protections against AI substitution for covered work) are directly transferable to comparable bargaining contexts.",
       "Employer AI deployment in media is accelerating in advance of any regulatory framework, workers without contract-specific AI protections face unlimited employer discretion over how and when AI replaces or supplements their labor, with no recourse under existing law.",
       "The NewsGuild of New York context demonstrates that craft-based unions in journalism and digital media have particular leverage points around AI: the quality, institutional knowledge, and creative judgment that media workers bring to their work creates organizing arguments grounded in employer self-interest, not only worker rights."
-    ]
+    ],
   },
   { id: 221, date: "2023-12-01", added: "2026-06-08",
     title: "New York Times Tech Guild: Largest Tech Worker Strike Case Study",
@@ -4047,7 +3925,7 @@ const RESEARCH_DATA = [
       "AI-related contract demands were central to the campaign, workers organized explicitly around how AI tools would be deployed in editorial and product contexts, establishing that AI governance is a collective bargaining issue, not only a management prerogative or a policy question.",
       "The tech worker context within a media organization created a distinctive organizing environment: workers had both technical knowledge of AI capabilities and editorial standing to assess their impacts, giving the union unusual credibility in framing AI deployment risks to the public and to management.",
       "The case study provides an organizing roadmap for tech workers at other companies facing AI deployment decisions, including how to build majority support, frame AI demands in terms of journalism quality and public trust, and sustain a credible strike threat without legacy union infrastructure."
-    ]
+    ],
   },
   { id: 222, date: "2024-01-01", added: "2026-06-08",
     title: "National Nurses United: Political Education Program on AI Case Study",
@@ -4061,7 +3939,7 @@ const RESEARCH_DATA = [
       "Healthcare AI presents unique organizing challenges: AI in clinical settings is often framed as patient care improvement, requiring nurses to develop the analytical capacity to distinguish genuine care enhancements from surveillance, speed-up, and scope creep in ways that resonate with both patients and the public.",
       "A politically educated membership is a structural asset for AI governance: when workers understand the issues, they can identify harmful deployments, report them accurately, build public coalitions, and sustain organizing pressure over the multi-year cycles that major hospital contract negotiations require.",
       "The NNU model provides a replicable framework for other healthcare and professional sector unions, the program's design, content topics, delivery mechanisms, and member engagement strategies are transferable to nursing and allied health contexts where AI deployment is accelerating and union density provides organizing leverage."
-    ]
+    ],
   },
   { id: 223, date: "2024-01-01", added: "2026-06-08",
     title: "National Nurses United: Professional Practice Committees Case Study",
@@ -4075,7 +3953,7 @@ const RESEARCH_DATA = [
       "The registered nurse-controlled committee model establishes clinical workers — not managers, vendors, or administrators — as the authoritative voice on care protocols and technology deployment, directly challenging the framing that AI deployment decisions are technical questions outside the scope of collective bargaining.",
       "The NNU case demonstrates that worker governance structures for AI are achievable through collective bargaining without waiting for legislation, and that healthcare provides a uniquely compelling organizing argument because patient safety and worker authority are aligned interests that can build broad public and institutional support.",
       "Replicating this model requires sustained bargaining over multiple contract cycles and organizing capacity to hold the line as employers resist governance provisions, the case study provides the negotiating strategy, language, and counter-argument frameworks that other nursing and healthcare unions need to replicate NNU's approach in their own bargaining contexts."
-    ]
+    ],
   },
   { id: 224, date: "2025-01-01", added: "2026-06-08",
     title: "Luddite Lab Case Study Highlights: Common Insights Across Worker AI Campaigns",
@@ -4089,8 +3967,8 @@ const RESEARCH_DATA = [
       "Political education and member capacity-building appear consistently in successful campaigns: workers who understand AI systems can identify deployment risks, develop credible demands, and sustain organizing pressure over multi-year cycles, informal knowledge is not a substitute for systematic member education.",
       "Contract language won across these campaigns — consent requirements, transparency obligations, nurse-controlled committees, AI use disclosures — provides a replicable toolkit that other unions can adapt without starting from scratch; the most effective language is sector-specific and tied to existing worker expertise.",
       "Worker AI organizing is expanding beyond legacy union industries: the combination of established union precedents in media and healthcare with rising organizing energy in tech creates conditions for a broader AI governance movement, the Luddite Lab case studies collectively document that worker power over AI is achievable, sector-specific, and accumulating across industries."
-    ]
-  }
+    ],
+  },
 ];
 
 const DISRUPTION_LEVELS = [
