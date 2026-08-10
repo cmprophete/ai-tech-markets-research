@@ -20,6 +20,7 @@ One row per study. Columns:
 | `id` | A stable number. **Leave blank for a new study** — `build` assigns the next id and writes it back. Never renumber existing rows: policy cards reference studies by id. |
 | `date` | Publication date, `YYYY-MM-DD`. |
 | `added` | Intake date (when you added it), `YYYY-MM-DD`. **Leave blank for a new study** — `build` fills in today's date. |
+| `archived` | Leave blank to publish. Put a note or date here to **retire** a study: it stays in the sheet but drops off the site (see below). |
 | `category` | One of the category ids. Run `python3 tools/research.py check` to see the list if unsure. |
 | `geography` | `us` or `intl`. |
 | `evidence` | One of `analysis`, `commentary`, `industry`, `official`, `peer-reviewed`, or blank. |
@@ -32,7 +33,10 @@ One row per study. Columns:
 
 To **add** a study: add a row, fill everything except `id` and `added`, save, run `build`.
 To **edit** one: change the cell, save, run `build`.
-To **remove** one: delete the row, save, run `build`. (Check first that no policy card cites its id — `check` warns about orphaned references.)
+To **retire** one without losing it: put a note in its `archived` cell (e.g. `superseded 2026-08`), save, run `build`. It disappears from the site but stays in the sheet, and its `id` is preserved. Clear the cell to bring it back.
+To **delete** one permanently: remove the row, save, run `build`.
+
+**Archive, don't delete, when you might want it back or a policy cites it.** Archiving is reversible and keeps the `id` reserved, so nothing gets reused or re-pointed. `check` warns if a policy card references a study you've archived or deleted (`POLICY_DATA paperIds ... missing or archived`).
 
 ## Using Google Sheets
 

@@ -34,6 +34,9 @@ THE SHEET. One row per study. Columns:
                 for a new row -- build assigns the next id and writes it back.
     date        publication date, YYYY-MM-DD
     added       intake date, YYYY-MM-DD. Blank on a new row -> today, written back.
+    archived    OPTIONAL. Put a note/date here to retire a study: it stays in the
+                sheet for the record but drops off the site. Blank = live. Clear it
+                to un-archive. (Prefer this to deleting the row -- it keeps the id.)
     category    one of the CATEGORIES ids (see the list build/check prints)
     geography   us | intl
     evidence    analysis | commentary | industry | official | peer-reviewed | (blank)
@@ -42,6 +45,10 @@ THE SHEET. One row per study. Columns:
     sourceUrl   http(s) URL
     keyFinding  one paragraph
     takeaways   one bullet PER LINE inside the cell (Alt+Enter in Excel)
+
+REMOVING A STUDY. Either delete its row, or -- better -- put a note in `archived`
+to keep it on record. The site is regenerated from the sheet, so a deletion is
+permanent once you rebuild; archiving is reversible and preserves the id.
 
 No dependencies beyond the Python standard library.
 """
@@ -62,12 +69,20 @@ SHEET = os.path.join(ROOT, "content", "research.csv")
 # Column order in the CSV. `id` and `added` may be blank on new rows. Any entry
 # field that isn't one of the flat columns (e.g. a `highlight` object on a
 # featured study) rides along in extra_json so nothing is ever dropped.
-COLUMNS = ["id", "date", "added", "category", "geography", "evidence",
+COLUMNS = ["id", "date", "added", "archived", "category", "geography", "evidence",
            "title", "source", "sourceUrl", "keyFinding", "takeaways", "extra_json"]
 
-# The fields that get their own CSV column; everything else -> extra_json.
+# The fields that get their own CSV column and are published in RESEARCH_DATA;
+# everything else on an entry -> extra_json.
 FLAT_FIELDS = {"id", "date", "added", "category", "geography", "evidence",
                "title", "source", "sourceUrl", "keyFinding", "takeaways"}
+
+# Control columns: they live in the sheet/CSV but are never written into
+# RESEARCH_DATA. `archived`: any text (a note or date) keeps the row in the sheet
+# for the record but drops it from the published site; blank = live. Archiving
+# preserves the row's id, so ids are never reused and references never silently
+# re-point.
+CONTROL_FIELDS = {"archived"}
 
 GEOGRAPHY = {"us", "intl"}
 EVIDENCE = {"analysis", "commentary", "industry", "official", "peer-reviewed"}
@@ -299,9 +314,10 @@ def serialize_entries(entries):
             L.append("    ],")
         else:
             L.append("    takeaways: [],")
-        # Preserve any field beyond the flat schema verbatim (e.g. `highlight`).
+        # Preserve any field beyond the flat schema verbatim (e.g. `highlight`),
+        # but never the control columns (archived).
         for k, val in e.items():
-            if k in FLAT_FIELDS:
+            if k in FLAT_FIELDS or k in CONTROL_FIELDS:
                 continue
             L.append(f"    {js_key(k)}: {js_value(val)},")
         L.append("  },")
@@ -324,8 +340,9 @@ def entry_to_row(e):
         "sourceUrl": e["sourceUrl"],
         "keyFinding": e["keyFinding"],
         "takeaways": "\n".join(e["takeaways"]),
+        "archived": e.get("archived", ""),
     }
-    extra = {k: v for k, v in e.items() if k not in FLAT_FIELDS}
+    extra = {k: v for k, v in e.items() if k not in FLAT_FIELDS and k not in CONTROL_FIELDS}
     row["extra_json"] = json.dumps(extra, ensure_ascii=False) if extra else ""
     return row
 
@@ -345,6 +362,7 @@ def row_to_entry(row):
         "sourceUrl": (row.get("sourceUrl") or "").strip(),
         "keyFinding": (row.get("keyFinding") or "").strip(),
         "takeaways": takeaways,
+        "archived": (row.get("archived") or "").strip(),
     }
     extra = (row.get("extra_json") or "").strip()
     if extra:
@@ -392,6 +410,12 @@ def validate(entries, cats, warn=print):
 
     for n, e in enumerate(entries, 1):
         where = f"row {n} (id {e['id'] if e['id'] is not None else 'NEW'})"
+        if e["id"] is not None:
+            if e["id"] in seen_ids:
+                errors.append(f"{where}: duplicate id (also row {seen_ids[e['id']]})")
+            seen_ids[e["id"]] = n
+        if e.get("archived"):
+            continue  # kept in the sheet for the record, not published -> skip content checks
         for f in ("date", "title", "source", "sourceUrl", "category", "geography", "keyFinding"):
             if not e[f]:
                 errors.append(f"{where}: missing required field '{f}'")
@@ -409,10 +433,6 @@ def validate(entries, cats, warn=print):
             warn(f"  note: {where}: evidence '{e['evidence']}' is new (known: {', '.join(sorted(EVIDENCE))})")
         if e["sourceUrl"] and not e["sourceUrl"].startswith("http"):
             errors.append(f"{where}: sourceUrl should start with http")
-        if e["id"] is not None:
-            if e["id"] in seen_ids:
-                errors.append(f"{where}: duplicate id (also row {seen_ids[e['id']]})")
-            seen_ids[e["id"]] = n
     return errors
 
 
@@ -509,13 +529,16 @@ def cmd_check(url=None):
         for e in errors:
             print("  - " + e, file=sys.stderr)
         return 1
-    # orphaned policy references (warn only)
-    research_ids = {e["id"] for e in entries if e["id"] is not None}
-    orphans = policy_paper_ids(text) - research_ids
+    # A policy that cites an archived (or missing) study dangles -> flag it.
+    live = [e for e in entries if not e.get("archived")]
+    live_ids = {e["id"] for e in live if e["id"] is not None}
+    orphans = policy_paper_ids(text) - live_ids
     if orphans:
-        print(f"  note: POLICY_DATA paperIds reference missing research ids: "
+        print(f"  note: POLICY_DATA paperIds reference research ids that are missing or archived: "
               f"{', '.join(map(str, sorted(orphans)))}")
-    print(f"  ok  {len(entries)} entries valid")
+    archived = len(entries) - len(live)
+    print(f"  ok  {len(live)} live entries valid"
+          + (f"  ({archived} archived, not published)" if archived else ""))
     return 0
 
 
@@ -551,10 +574,14 @@ def cmd_build(url=None):
         if assigned:
             print(f"  assigned id + intake date to {assigned} new row(s)")
 
-    out = splice_research(text, entries)
+    # Publish only live rows; archived rows stay in the sheet/CSV for the record.
+    live = [e for e in entries if not e.get("archived")]
+    archived = len(entries) - len(live)
+    out = splice_research(text, live)
     with open(DATA, "w", encoding="utf-8") as fh:
         fh.write(out)
-    print(f"  wrote  data/tracker-data.js  ({len(entries)} entries)")
+    print(f"  wrote  data/tracker-data.js  ({len(live)} entries published"
+          + (f"; {archived} archived, kept in the sheet)" if archived else ")"))
     print("  Reload the page to see it; commit + push to publish.")
     return 0
 
