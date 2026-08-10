@@ -195,15 +195,6 @@
     setView(view);
   });
 
-  // Economy nav group (Data Tracker + Job Displacement) is hidden unless
-  // economyEnabled (see 00-state.js). The markup stays in the header so restoring
-  // is a one-line flag flip. Inline display:none beats `.tab-group { display:flex }`;
-  // a `hidden` attribute would not.
-  if (!economyEnabled) {
-    const economyGroup = document.querySelector('.tab-group[data-group="economy"]');
-    if (economyGroup) economyGroup.style.display = 'none';
-  }
-
   // Key findings band: open a source-excerpt modal.
   //
   // There used to be a goToTheme() here that handed off to the retired Themes

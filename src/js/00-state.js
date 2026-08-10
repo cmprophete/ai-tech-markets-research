@@ -11,11 +11,6 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
-  // Toggles the Economy nav group (Data Tracker + Job Displacement): its header
-  // visibility (70-render.js) and its route guards (40-router.js). false hides the
-  // whole group (stale #tracker / #job-displacement links then fall through to the
-  // default view); true shows it. Flip to false and rebuild to hide it again.
-  let economyEnabled = true;
   let activeLens    = 'general'; // 'general' | 'economist'
   const SORT_STATES = [
     { order: 'desc',   label: 'Newest first' },
