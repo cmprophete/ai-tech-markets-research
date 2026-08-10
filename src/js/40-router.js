@@ -38,7 +38,7 @@
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
-    'job-displacement': { view: 'jobs' },
+    'job-displacement': { view: 'jobs', guard: () => economyEnabled },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
   // `changelog` as the generic name for the cards view; the sub-view is
@@ -88,6 +88,9 @@
 
       // ── Data Tracker: #tracker/<tab>, and /<link> inside the BTOS tab ──
       if (head === 'tracker') {
+        // Economy group hidden (see economyEnabled in 00-state.js): a stale
+        // #tracker link falls through to the default view instead of showing it.
+        if (!economyEnabled) return false;
         // An unknown sub-tab still belongs in the tracker. Falling through to
         // the default view would drop a reader who mistyped one segment onto
         // About, which reads as a broken link rather than a stale one.

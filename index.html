@@ -4089,6 +4089,11 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
+  // Economy nav group (Data Tracker + Job Displacement) hidden 2026-08-10 at the
+  // team's request. TO SHOW IT AGAIN: set this to true and rebuild (python3 build.py).
+  // One flag drives both the nav group's visibility (70-render.js) and its route
+  // guards (40-router.js); nothing else needs editing to restore it.
+  let economyEnabled = false;
   let activeLens    = 'general'; // 'general' | 'economist'
   const SORT_STATES = [
     { order: 'desc',   label: 'Newest first' },
@@ -5481,7 +5486,7 @@
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
-    'job-displacement': { view: 'jobs' },
+    'job-displacement': { view: 'jobs', guard: () => economyEnabled },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
   // `changelog` as the generic name for the cards view; the sub-view is
@@ -5531,6 +5536,9 @@
 
       // ── Data Tracker: #tracker/<tab>, and /<link> inside the BTOS tab ──
       if (head === 'tracker') {
+        // Economy group hidden (see economyEnabled in 00-state.js): a stale
+        // #tracker link falls through to the default view instead of showing it.
+        if (!economyEnabled) return false;
         // An unknown sub-tab still belongs in the tracker. Falling through to
         // the default view would drop a reader who mistyped one segment onto
         // About, which reads as a broken link rather than a stale one.
@@ -5986,6 +5994,15 @@
     if (view === 'cards') setResearchSubview('database');
     setView(view);
   });
+
+  // Economy nav group (Data Tracker + Job Displacement) is hidden unless
+  // economyEnabled (see 00-state.js). The markup stays in the header so restoring
+  // is a one-line flag flip. Inline display:none beats `.tab-group { display:flex }`;
+  // a `hidden` attribute would not.
+  if (!economyEnabled) {
+    const economyGroup = document.querySelector('.tab-group[data-group="economy"]');
+    if (economyGroup) economyGroup.style.display = 'none';
+  }
 
   // Key findings band: open a source-excerpt modal.
   //
