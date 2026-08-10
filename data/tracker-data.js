@@ -2941,7 +2941,7 @@ const RESEARCH_DATA = [
     category: "policy", geography: "intl",
     keyFinding: "Europe's AI industrial policy risks entrenching the very monopolies it aims to challenge; genuine public-interest AI requires an innovation paradigm outside current market incentives rather than a competitive arms race with U.S. and Chinese tech giants.",
     takeaways: [
-      "'There is no AI without Big Tech', U.S. and Chinese firms control essential AI infrastructure (compute, data, talent, consumer access), meaning European industrial policy built on competitiveness assumptions starts from a position of structural dependency.",
+      "There is no AI without Big Tech', U.S. and Chinese firms control essential AI infrastructure (compute, data, talent, consumer access), meaning European industrial policy built on competitiveness assumptions starts from a position of structural dependency.",
       "Current industrial policy may inadvertently strengthen rather than challenge AI monopolies; the Dutch child benefits scandal illustrates how algorithmic government systems can cause severe harm to vulnerable populations when built without accountability.",
       "Europe's comparative advantage lies in building an alternative innovation paradigm grounded in public interest, sustainability, and democratic accountability, not in replicating the ChatGPT hype cycle or racing toward speculative AGI development."
     ],
