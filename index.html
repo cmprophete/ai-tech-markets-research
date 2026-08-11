@@ -4578,6 +4578,10 @@
     factBankEnabled = true;
 
     const paperMap = Object.fromEntries(RESEARCH_DATA.map(p => [p.id, p]));
+    // Only facts whose source paper is a live research entry can render: every
+    // card/group dereferences paperMap[paperId] for its citation, so a fact whose
+    // paper was archived would throw and blank the whole view. Drop them here.
+    const liveFacts = FACT_BANK.filter(f => paperMap[f.paperId]);
 
     const EV_LABELS = {
       'rct': 'Randomized experiment', 'natural-experiment': 'Natural experiment',
@@ -4762,7 +4766,7 @@
     }
 
     const byPaper = {};
-    FACT_BANK.forEach(f => { (byPaper[f.paperId] = byPaper[f.paperId] || []).push(f); });
+    liveFacts.forEach(f => { (byPaper[f.paperId] = byPaper[f.paperId] || []).push(f); });
     let paperOrder = Object.keys(byPaper);
     paperOrder.sort((a, b) => {
       const da = byPaper[a].map(f => pubDateOf(f)).sort().pop() || '';
@@ -4772,7 +4776,7 @@
 
     function resortAll() {
       const wraps = Object.fromEntries([...allFactsView.children].map(w => [w.dataset.fid, w]));
-      [...FACT_BANK].sort(factSorter).forEach(f => allFactsView.appendChild(wraps[f.id]));
+      [...liveFacts].sort(factSorter).forEach(f => allFactsView.appendChild(wraps[f.id]));
     }
     function resortPapers() {
       const metric = pid => {
@@ -4801,7 +4805,7 @@
       return true;
     }
     function applyFilters() {
-      const shown = new Set(FACT_BANK.filter(matches).map(f => f.id));
+      const shown = new Set(liveFacts.filter(matches).map(f => f.id));
       [...allFactsView.querySelectorAll(':scope > .cwrap')].forEach(w => {
         w.classList.toggle('hidden', !shown.has(w.dataset.fid));
       });
@@ -4816,8 +4820,8 @@
         gw.classList.toggle('hidden', any === 0);
         if (any) visiblePapers++;
       });
-      const nPapers = mode === 'paper' ? visiblePapers : new Set(FACT_BANK.filter(matches).map(f => f.paperId)).size;
-      resultLine.textContent = `${shown.size} of ${FACT_BANK.length} facts, drawn from ${nPapers} sources.`;
+      const nPapers = mode === 'paper' ? visiblePapers : new Set(liveFacts.filter(matches).map(f => f.paperId)).size;
+      resultLine.textContent = `${shown.size} of ${liveFacts.length} facts, drawn from ${nPapers} sources.`;
       emptyState.hidden = shown.size !== 0;
     }
 
@@ -4838,7 +4842,7 @@
       root.addEventListener('click', e => {
         const cp = e.target.closest('[data-copy]');
         if (cp) {
-          const f = FACT_BANK.find(x => x.id === cp.dataset.copy);
+          const f = liveFacts.find(x => x.id === cp.dataset.copy);
           const p = paperMap[f.paperId];
           const text = `"${f.fact}"\n\nSource: ${apaPlain(p)} ${p.sourceUrl}`;
           navigator.clipboard.writeText(text).then(() => {
@@ -4867,7 +4871,7 @@
 
       // Populate the evidence-type select.
       const evSelect = document.getElementById('kfEvidence');
-      [...new Set(FACT_BANK.map(f => f.evidenceType))].sort().forEach(t => {
+      [...new Set(liveFacts.map(f => f.evidenceType))].sort().forEach(t => {
         const o = document.createElement('option');
         o.value = t; o.textContent = EV_LABELS[t] || t;
         evSelect.appendChild(o);
@@ -4875,7 +4879,7 @@
 
       // Build keyword pills.
       const kwCounts = {};
-      FACT_BANK.forEach(f => (f.keywords || []).forEach(k => { kwCounts[k] = (kwCounts[k] || 0) + 1; }));
+      liveFacts.forEach(f => (f.keywords || []).forEach(k => { kwCounts[k] = (kwCounts[k] || 0) + 1; }));
       const pillWrap = document.getElementById('kwPills');
       const kwActiveCount = document.getElementById('kwActiveCount');
       Object.keys(kwCounts).sort((a, b) => kwCounts[b] - kwCounts[a]).forEach(k => {
@@ -4909,7 +4913,7 @@
       document.getElementById('kfSort').addEventListener('change', e => { sortBy = e.target.value; resortAll(); resortPapers(); applyFilters(); });
 
       byPaperView.innerHTML = paperOrder.map(pid => paperGroupHTML(pid, byPaper[pid])).join('');
-      allFactsView.innerHTML = [...FACT_BANK].sort(factSorter).map(factCardHTML).join('');
+      allFactsView.innerHTML = [...liveFacts].sort(factSorter).map(factCardHTML).join('');
 
       handleCardEvents(byPaperView);
       handleCardEvents(allFactsView);

@@ -1240,7 +1240,7 @@ const FACT_BANK = [
   },
   {
     id: "kf-41-1",
-    paperId: 41,
+    paperId: 228,
     pubDate: "2026-02-23",
     fact: "The majority of U.S. workers—52 percent of those surveyed in 2024—are worried about how artificial intelligence (AI) will affect their jobs (Lin and Parker 2025). This is not a simple case of fear of the unknown: 42 percent of workers who currently use AI at work believe that it will reduce their future job opportunities.",
     factPlain: "52% of U.S. workers surveyed in 2024 said they are worried about how AI will affect their jobs. Workers who already use AI at work are even more pessimistic: 42% think it will reduce their future job opportunities, compared to 30% of workers who don't use AI.",
@@ -1262,7 +1262,7 @@ const FACT_BANK = [
   },
   {
     id: "kf-41-3",
-    paperId: 41,
+    paperId: 228,
     pubDate: "2026-02-23",
     fact: "Taxi and chauffeur driver employment in the United States rose by around 60 percent between 2000 and 2018. Simultaneously, the average earnings of such primarily urban drivers fell relative to the economywide average.",
     factPlain: "Taxi and chauffeur driver employment in the U.S. grew about 60% between 2000 and 2018 as app-based ride-hailing like Uber and Lyft expanded, but average driver earnings fell relative to the rest of the economy.",

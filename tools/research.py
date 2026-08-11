@@ -6,8 +6,10 @@ research.py -- curate the research database from a spreadsheet.
     python3 tools/research.py build      content/research.csv  -> data/tracker-data.js (regenerate after editing)
     python3 tools/research.py build --sheet <url>              pull a published Google Sheet (CSV),
                                                                snapshot it to research.csv, then regenerate
-    python3 tools/research.py check      validate the sheet without writing anything
-                                         (also accepts --sheet <url>)
+    python3 tools/research.py check      validate the sheet without writing anything;
+                                         also flags dangling id references (POLICY_DATA,
+                                         THEMES, {{cite}} tokens, Fact Bank) to archived or
+                                         missing studies. (also accepts --sheet <url>)
     python3 tools/research.py selftest   prove the parser/serializer round-trips losslessly
 
 GOOGLE SHEETS. Keep the master in Google Sheets if you like collaborative editing.
@@ -65,6 +67,9 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data", "tracker-data.js")
 SHEET = os.path.join(ROOT, "content", "research.csv")
+# Read-only for `check`: a second file that references research by id, so
+# archiving a study can leave a fact here dangling. Never written by this tool.
+FACT_BANK_DATA = os.path.join(ROOT, "data", "fact-bank-data.js")
 
 # Column order in the CSV. `id` and `added` may be blank on new rows. Any entry
 # field that isn't one of the flat columns (e.g. a `highlight` object on a
@@ -380,16 +385,43 @@ def category_ids(text):
     return [c["id"] for c in cats]
 
 
-def policy_paper_ids(text):
-    """IDs referenced by POLICY_DATA paperIds, for orphan detection."""
-    import re
+def _id_list(text, key):
+    """IDs inside every `<key>: [ ... ]` array of integers in `text`."""
     ids = set()
-    for m in re.finditer(r"paperIds:\s*\[([0-9,\s]*)\]", text):
+    for m in re.finditer(key + r":\s*\[([0-9,\s]*)\]", text):
         for n in m.group(1).split(","):
             n = n.strip()
             if n:
                 ids.add(int(n))
     return ids
+
+
+def policy_paper_ids(text):
+    """IDs referenced by POLICY_DATA `paperIds:` arrays, for orphan detection."""
+    return _id_list(text, "paperIds")
+
+
+def theme_paper_ids(text):
+    """IDs referenced by THEMES `papers:` arrays, for orphan detection.
+    (`papers:` cannot match `paperIds:`, so the two never overlap.)"""
+    return _id_list(text, "papers")
+
+
+def cite_token_ids(text):
+    """IDs referenced by {{cite:N}} / {{citep:N}} prose tokens, for orphan detection."""
+    return {int(m.group(1)) for m in re.finditer(r"\{\{cite[a-z]*:\s*(\d+)\s*\}\}", text)}
+
+
+def fact_bank_paper_ids():
+    """IDs referenced by Fact Bank facts (data/fact-bank-data.js). Returns an
+    empty set if that file is absent or unreadable, so `check` still runs on a
+    partial checkout instead of crashing."""
+    try:
+        with open(FACT_BANK_DATA, encoding="utf-8") as fh:
+            fb = fh.read()
+    except OSError:
+        return set()
+    return {int(m.group(1)) for m in re.finditer(r"paperId:\s*(\d+)", fb)}
 
 
 # ── validation ──────────────────────────────────────────────────────────────
@@ -542,13 +574,27 @@ def cmd_check(url=None):
         for e in errors:
             print("  - " + e, file=sys.stderr)
         return 1
-    # A policy that cites an archived (or missing) study dangles -> flag it.
+    # Four hand-maintained regions reference research by id: POLICY_DATA and
+    # THEMES id arrays, {{cite:N}} tokens in prose, and Fact Bank facts.
+    # Archiving a study leaves any of these dangling -- the policy/theme silently
+    # drops it, a {{cite}} renders raw, and a fact whose paper is archived is
+    # hidden by the runtime guard in 80-fact-bank.js. None corrupts the build, so
+    # these are notes (not errors): the checklist of hand-edits an archive leaves
+    # behind. This is why the Fact Bank went blank once -- an archive with no
+    # such warning left every fact pointing at a study that no longer rendered.
     live = [e for e in entries if not e.get("archived")]
     live_ids = {e["id"] for e in live if e["id"] is not None}
-    orphans = policy_paper_ids(text) - live_ids
-    if orphans:
-        print(f"  note: POLICY_DATA paperIds reference research ids that are missing or archived: "
-              f"{', '.join(map(str, sorted(orphans)))}")
+
+    def note_orphans(label, referenced):
+        dangling = sorted(referenced - live_ids)
+        if dangling:
+            print(f"  note: {label} reference research ids that are missing or "
+                  f"archived: {', '.join(map(str, dangling))}")
+
+    note_orphans("POLICY_DATA paperIds", policy_paper_ids(text))
+    note_orphans("THEMES papers", theme_paper_ids(text))
+    note_orphans("{{cite:N}} tokens", cite_token_ids(text))
+    note_orphans("Fact Bank paperIds", fact_bank_paper_ids())
     archived = len(entries) - len(live)
     print(f"  ok  {len(live)} live entries valid"
           + (f"  ({archived} archived, not published)" if archived else ""))
