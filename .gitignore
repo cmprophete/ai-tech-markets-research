@@ -1,34 +1,6 @@
 .DS_Store
 .claude
 
-# ── analysis/: what is and is not committed ───────────────────────────────
-# Rule of thumb: if a script can rebuild it, it is not committed.
-#
-#   inputs/    raw downloads, 5.7 GB          ignored  (see analysis/INPUTS.md)
-#   interim/   built intermediates            ignored
-#   frozen/    small + irreplaceable          COMMITTED
-#   src/       code and hand-kept lookups     COMMITTED
-#
-# index.html reads only data/*.js, which are committed, so a fresh clone
-# renders the site with none of the ignored data present.
-analysis/inputs/
-analysis/interim/
-
-# ── belt and braces: never commit these formats anywhere ──────────────────
-# Listed after the directory rules so a stray extract outside inputs/ is
-# still caught. The frozen/ exceptions follow, and must come last to win.
-*.RDS
-*.rds
-*.dat.gz
-*.parquet
-*.csv.gz
-
-# ── frozen/: the exceptions, re-included by name ──────────────────────────
-# Each cannot be regenerated without an input we do not keep. If you add one,
-# add a line here AND a row in analysis/INPUTS.md, so provenance stays legible.
-!analysis/frozen/
-!analysis/frozen/**
-
 # ── phase 1 refactor scaffolding ──────────────────────────────────────────
 # The pre-split index.html, kept only to prove the src/ extraction was
 # byte-identical. build.py --check plus the pre-commit build guard subsume it;

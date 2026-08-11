@@ -22,7 +22,7 @@ if [ -z "$SKIP_BUILD_GUARD" ] && \
 fi
 
 # ── Guard 1: reject any staged blob over 2 MB ─────────────────────────────
-# Large derived data does not belong in this repo -- see analysis/README.md.
+# Large derived data does not belong in this repo.
 [ -n "$SKIP_SIZE_GUARD" ] && exit 0
 limit=2097152
 fail=0
@@ -36,9 +36,8 @@ for f in $(git diff --cached --name-only --diff-filter=ACMRT); do
 done
 if [ "$fail" -eq 1 ]; then
   echo ""
-  echo "Large derived data does not belong in this repo. Put it under"
-  echo "analysis/inputs/ or analysis/interim/ (both ignored). If it genuinely"
-  echo "cannot be rebuilt, add it to analysis/frozen/ with a row in"
-  echo "analysis/INPUTS.md and a .gitignore exception."
+  echo "Large derived data does not belong in this repo. Regenerate it from its"
+  echo "source (research is curated in content/research.csv) rather than"
+  echo "committing the built blob."
 fi
 exit $fail
