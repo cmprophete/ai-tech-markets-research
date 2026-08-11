@@ -12,8 +12,8 @@ never the thing you edit. Edit src/ and rebuild.
     index.html   the whole site, in one self-contained document
 
 Where to edit:
-    a number      ->  nowhere. Rerun its contract: Rscript analysis/run.R <name>
-                      (never hand-edit data/*.js)
+    research      ->  content/research.csv, then python3 tools/research.py build
+                      (see content/README.md; do not hand-edit RESEARCH_DATA)
     prose         ->  src/views/<view>.html
     styling       ->  src/styles/<area>.css
     app behaviour ->  src/js/<area>.js
