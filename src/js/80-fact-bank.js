@@ -399,10 +399,6 @@
   });
 
   // ── init ─────────────────────────────────────────────────────
-  // Census BTOS chain prev/next controls, built before routing so a
-  // #tracker/btos/<link> deep link lands on a finished panel.
-  buildAdSteps();
-
   // R2: honor a deep link if one is present; otherwise land on About (home).
   if (!applyHashRoute()) setView('about');
   window.addEventListener('hashchange', applyHashRoute);

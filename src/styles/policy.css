@@ -80,37 +80,6 @@
     font-family: 'Public Sans', sans-serif;
   }
 
-  /* ── JOB DISPLACEMENT TAB ── (static view, modeled on About) */
-  #jobDisplacementArea                    { display: none; }
-  .jobs-view #jobDisplacementArea         { display: block; }
-  .jobs-view .sidebar                     { display: none; }
-  .jobs-view .inline-filters              { display: none; }
-  .jobs-view .cards-grid                  { display: none !important; }
-  .jobs-view .empty-state                 { display: none !important; }
-  .jobs-view .lens-toggle                 { display: none; }
-  .jobs-view .header-tab-desc             { display: none; }
-  .jobs-view .key-findings-band           { display: none; }
-  .jobs-view .app-layout                  { grid-template-columns: 1fr; }
-  .jobs-view .main-content                { grid-column: 1 / -1; }
-  /* The masthead owns its own top gap via --masthead-top, so .cards-area
-     must not add to it — otherwise .mast's padding means one thing here
-     and another in the standalone jobs_displacement.html. */
-  .jobs-view .cards-area                  { padding-top: 0; }
-
-  /* ── CENSUS BTOS ── (static view; reuses the .jd-* editorial components) */
-  #trackerArea                           { display: none; }
-  .tracker-view #trackerArea            { display: block; }
-  .tracker-view .sidebar                 { display: none; }
-  .tracker-view .inline-filters          { display: none; }
-  .tracker-view .cards-grid              { display: none !important; }
-  .tracker-view .empty-state             { display: none !important; }
-  .tracker-view .lens-toggle             { display: none; }
-  .tracker-view .header-tab-desc         { display: none; }
-  .tracker-view .key-findings-band       { display: none; }
-  .tracker-view .app-layout              { grid-template-columns: 1fr; }
-  .tracker-view .main-content            { grid-column: 1 / -1; }
-  .tracker-view .cards-area              { padding-top: 0; }
-
   /* ── SOLUTIONS TAB ── (static editorial view, modeled on About) */
   #solutionsArea                          { display: none; }
   .solutions-view #solutionsArea          { display: block; }

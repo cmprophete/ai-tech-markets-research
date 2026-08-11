@@ -28,27 +28,15 @@ const SNAP = path.join(__dirname, 'snapshots', 'routes.json');
    legacy aliases, a parameterised route, and two that should not match. */
 const ROUTES = [
   '', '#about', '#research', '#changelog', '#fact-bank', '#policy', '#solutions',
-  '#job-displacement',
-  '#tracker', '#tracker/jobs', '#tracker/jolts', '#tracker/gdp',
-  '#tracker/productivity', '#tracker/btos',
-  '#tracker/btos/aggregate', '#tracker/btos/exposure', '#tracker/btos/who',
-  '#tracker/btos/what-for', '#tracker/btos/where', '#tracker/btos/jobs',
   // Removed routes, pinned so their fall-through to About cannot regress
-  // silently. #themes/#theme were never in this list, which is why the
-  // ReferenceError they threw went unnoticed. See docs/adr/0005.
+  // silently. The Economy tab (Data Tracker + Job Displacement) and its routes
+  // were removed 2026-08; #adoption/#themes/#theme predate it (docs/adr/0005).
+  '#job-displacement', '#tracker', '#tracker/jobs', '#tracker/btos/where',
   '#adoption', '#adoption/who', '#themes', '#theme/displacement',
   '#tracker/nonsense', '#nonsense',
 ];
 
-const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy', 'viewTracker', 'viewJobs', 'viewSolutions'];
-const TRK_TABS  = ['jobs', 'jolts', 'gdp', 'productivity', 'btos'];
-const AD_LINKS  = ['aggregate', 'exposure', 'who', 'what-for', 'where', 'jobs'];
-const CHART_IDS = [
-  'adHeadline', 'adSize', 'adSupSector', 'adSubsector', 'adDiffusion', 'adStateMap',
-  'adSupFunctions', 'adSupGenai', 'adSupBarriers', 'adSupEmpEffect', 'adExposureScatter',
-  'trkPrimeAge', 'trkCes', 'trkJoltsQuits', 'trkJoltsHires', 'trkJoltsLayoffs',
-  'trkJoltsOpenings', 'trkGdp',
-];
+const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'];
 
 const txt = el => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : null);
 
@@ -70,32 +58,8 @@ async function capture(hash) {
     navSelected: NAV_IDS.filter(id => on(id, 'aria-selected') === 'true'),
     panelLabelledBy: on('viewPanel', 'aria-labelledby'),
     announce: txt(d.getElementById('viewAnnounce')),
-    // Tracker sub-tabs: selected button, and every panel that is not hidden
-    trackerTab: TRK_TABS.find(t => on('trkTab-' + t, 'aria-selected') === 'true') || null,
-    trackerVisible: TRK_TABS.filter(t => { const p = d.getElementById('trkPanel-' + t); return p && !p.hidden; }),
-    // BTOS chain
-    chainLink: AD_LINKS.find(k => { const b = d.getElementById('adLink-' + k); return b && b.classList.contains('on'); }) || null,
-    chainVisible: AD_LINKS.filter(k => { const p = d.getElementById('adPanel-' + k); return p && !p.hidden; }),
-    chainValues: AD_LINKS.map(k => txt(d.getElementById('adChainV-' + k))),
     // Address bar after the route settled
     hash: w.location.hash,
-    // Did each chart draw, and to what size
-    charts: Object.fromEntries(CHART_IDS.map(id => {
-      const e = d.getElementById(id);
-      return [id, e ? e.childNodes.length : -1];
-    })),
-    // Tracker stat tiles, values included: these are published numbers on screen
-    stats: Object.fromEntries(['trkJobsStats', 'trkJoltsStats', 'trkGdpStats'].map(id => {
-      const e = d.getElementById(id);
-      return [id, e ? [...e.querySelectorAll('.trk-stat-v')].map(x => txt(x)) : null];
-    })),
-    // The empty state must stay empty
-    productivityEmpty: (() => {
-      const p = d.getElementById('trkPanel-productivity');
-      if (!p) return null;
-      return { svgs: p.querySelectorAll('svg').length, stats: p.querySelectorAll('.trk-stat').length,
-               marked: /Not built yet/.test(p.textContent) };
-    })(),
   };
 }
 
@@ -113,19 +77,6 @@ async function main() {
 
   const now = {};
   for (const r of subset) now[r || '(none)'] = await capture(r);
-
-  // Standalone page: fewer moving parts, but it must load clean and render.
-  if (!sliceArg || hi >= ROUTES.length) {
-    const { d, errors } = load('jobs_displacement.html', '#level');
-    await settle(4);
-    now['[standalone]'] = {
-      errors,
-      sections: d.querySelectorAll('#jobDisplacementArea .sec').length,
-      answers: (d.getElementById('answers') || { children: [] }).children.length,
-      wrapper: !!d.getElementById('jobDisplacementArea'),
-      embedded: !!d.getElementById('viewPanel'),
-    };
-  }
 
   if (write) {
     fs.mkdirSync(path.dirname(SNAP), { recursive: true });

@@ -30,8 +30,6 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
-    if (activeView === 'tracker') { return; }   // static: charts drawn once by assets/adoption-charts.js
-    if (activeView === 'jobs')   { return; }
     if (activeView === 'solutions') { return; }  // static: prose only
 
     // ── Research (cards) view ──
@@ -104,14 +102,6 @@
       general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
       economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
     },
-    jobs: {
-      general:   { lede: 'Is AI displacing workers yet?', text: 'How much job displacement there is and what can be traced to AI, analyzed in an economically rigorous way.' },
-      economist: { lede: 'Is AI displacing workers yet?', text: 'How much job displacement there is and what can be traced to AI, analyzed in an economically rigorous way.' },
-    },
-    tracker: {
-      general:   { lede: 'Who is actually adopting AI, what are they using it for, and is anyone losing a job over it?', text: 'Who is actually adopting AI and what they are using it for, from the Census Business Trends and Outlook Survey.' },
-      economist: { lede: 'Who is actually adopting AI, what are they using it for, and is anyone losing a job over it?', text: 'Census BTOS AI adoption against employment-weighted occupational exposure, plus the AI supplement on business functions, barriers and self-reported employment effects.' },
-    },
     solutions: {
       general:   { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
       economist: { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
@@ -144,12 +134,12 @@
     if (t)  t.textContent  = desc.text;
   }
 
-  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', tracker: 'viewTracker', jobs: 'viewJobs', solutions: 'viewSolutions', about: 'homeTitleLink' };
+  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', about: 'homeTitleLink' };
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewTracker', 'viewJobs', 'viewSolutions'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const active = id === VIEW_TAB_IDS[view];
@@ -161,8 +151,6 @@
     const _sb = document.getElementById('sortBtn'); if (_sb) _sb.style.display = view === 'cards' ? '' : 'none';
     document.body.classList.toggle('policy-view',   view === 'policy');
     document.body.classList.toggle('about-view',    view === 'about');
-    document.body.classList.toggle('tracker-view', view === 'tracker');
-    document.body.classList.toggle('jobs-view',     view === 'jobs');
     document.body.classList.toggle('solutions-view', view === 'solutions');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
@@ -174,7 +162,7 @@
     if (ann) {
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Lab', tracker: 'Data Tracker', jobs: 'Job Displacement', solutions: 'Solutions', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Lab', solutions: 'Solutions', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());

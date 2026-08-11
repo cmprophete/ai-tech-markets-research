@@ -1,24 +1,19 @@
   /* ── ROUTER ──────────────────────────────────────────────────────────────
      One place that knows how location.hash and app state map onto each other.
-     Everything here used to live in what is now 50-tracker-tabs.js, which owned
-     it only because the BTOS chain was the first thing that needed deep links.
 
      Routes
        #about #research #changelog #fact-bank #policy #solutions
-       #job-displacement                       ... the flat views, in VIEWS below
-       #tracker #tracker/<tab> #tracker/btos/<chain-link>
+                                               ... the flat views, in VIEWS below
        #policy/<policy-id> #entry/<entry-id>   ... parameterised
-     Anything else falls through to About. That now includes #adoption,
-     #adoption/<chain-link>, #themes and #theme/<id>, all removed 2026-08-01
-     (docs/adr/0005): the first two were an alias kept only for inbound links
-     that turned out not to exist, and the themes pair called a function that
-     was never defined.
+     Anything else falls through to About, including the retired #tracker,
+     #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
+     routes (Data Tracker + Job Displacement removed 2026-08).
 
      The address bar tracks navigation with replaceState (no history spam);
      hashchange handles pasted links and back/forward.
 
-     Ordering note: this file runs before the tab groups and the render layer
-     are defined, and refers to both. That is safe because everything here is a
+     Ordering note: this file runs before the render layer is defined and refers
+     to it. That is safe because everything here is a
      hoisted function declaration and nothing runs until init calls it, by
      which point the whole IIFE has evaluated. Keep them function declarations,
      not const arrows, or they will land in the temporal dead zone. */
@@ -38,7 +33,6 @@
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
-    'job-displacement': { view: 'jobs' },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
   // `changelog` as the generic name for the cards view; the sub-view is
@@ -59,13 +53,6 @@
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
     if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
-    if (activeView === 'tracker') {
-      const tab = trackerTabs.get();
-      if (tab !== 'btos') return 'tracker/' + tab;
-      // Inside Census BTOS the chain link is a third segment; link 1 is bare.
-      const link = adChain.get();
-      return link === adChain.ids[0] ? 'tracker/btos' : 'tracker/btos/' + link;
-    }
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 
@@ -75,7 +62,7 @@
     if (!h) return false;
     routeApplying = true;
     try {
-      const [head, tail, tail2] = h.split('/');
+      const [head, tail] = h.split('/');
 
       // ── flat views ────────────────────────────────────────────────────
       if (!tail && VIEWS[head]) {
@@ -83,25 +70,6 @@
         if (cfg.guard && !cfg.guard()) return false;
         if (cfg.enter) cfg.enter();
         setView(cfg.view);
-        return true;
-      }
-
-      // ── Data Tracker: #tracker/<tab>, and /<link> inside the BTOS tab ──
-      if (head === 'tracker') {
-        // An unknown sub-tab still belongs in the tracker. Falling through to
-        // the default view would drop a reader who mistyped one segment onto
-        // About, which reads as a broken link rather than a stale one.
-        trackerTabs.set(trackerTabs.has(tail) ? tail : TRACKER_DEFAULT, { silent: true });
-        if (!tail || !trackerTabs.has(tail)) {
-          setView('tracker');
-          // A typo'd segment should not stay in the address bar once it has
-          // been resolved. setHash is inert while routeApplying, so write it
-          // directly; currentRoute() is now the canonical default.
-          if (tail) history.replaceState(null, '', '#' + currentRoute());
-          return true;
-        }
-        if (tail === 'btos') setAdLink(adChain.has(tail2) ? tail2 : adChain.ids[0]);
-        setView('tracker');
         return true;
       }
 
