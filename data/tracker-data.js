@@ -1940,18 +1940,6 @@ const RESEARCH_DATA = [
       "The paper proposes an interpretive framework extending Fair Housing Act liability to tenant screening companies as well as landlords, closing a structural accountability gap where third-party vendors escape direct legal exposure for discriminatory outputs."
     ],
   },
-  { id: 118, date: "2022-02-01", added: "2026-05-04",
-    title: "Locked Out: How Algorithmic Tenant Screening Exacerbates the Eviction Crisis in the United States",
-    source: "Matthew Harold Leiwant — Georgetown Law Technology Review",
-    sourceUrl: "https://georgetownlawtechreview.org/wp-content/uploads/2022/02/Leiwant_Locked-Out_Formatted.pdf",
-    category: "community", geography: "us",
-    keyFinding: "Algorithmic tenant screening systems compound housing instability by treating pandemic-era eviction filings as permanent disqualifying marks, locking financially recovered renters out of the housing market through automated discrimination.",
-    takeaways: [
-      "Over nine million American households faced rent delinquency during the pandemic, producing a wave of eviction filings that now function as permanent housing barriers regardless of whether tenants won their cases.",
-      "Eviction court records are scraped by screening companies as soon as they are filed — before any adjudication — meaning even dismissed cases generate lasting housing disqualifications.",
-      "Record-sealing legislation targeting pandemic-era filings is the most direct policy remedy, but most states lack provisions to seal records at the point of filing, where screening company data collection occurs."
-    ],
-  },
   { id: 119, date: "2024-07-16", added: "2026-05-04",
     title: "Record Costs: Collateral Consequences of Eviction Court Filings in Pennsylvania",
     source: "Alexa Eisenberg, Kate Brantley — University of Michigan Poverty Solutions",
@@ -1962,18 +1950,6 @@ const RESEARCH_DATA = [
       "Eight in ten participants reported their eviction filing limited future housing options; over half were explicitly denied by a prospective landlord because of their filing, even when the case was dismissed or won.",
       "Unsuccessful rental applications generated hundreds to thousands of dollars in excess costs per tenant — application fees, moving expenses, and emergency housing — compounding the economic harm of the original housing crisis.",
       "Record-sealing at the point of filing — not just after case resolution — is the only effective remedy, as screening companies scrape public court records before adjudication, making post-judgment sealing insufficient."
-    ],
-  },
-  { id: 120, date: "2025-07-12", added: "2026-05-04",
-    title: "The Discriminatory Impacts of AI-Powered Tenant Screening Programs",
-    source: "Lauren Karpinski — Georgetown Journal on Poverty Law & Policy",
-    sourceUrl: "https://www.law.georgetown.edu/poverty-journal/blog/the-discriminatory-impacts-of-ai-powered-tenant-screening-programs/",
-    category: "equity", geography: "us",
-    keyFinding: "AI-powered tenant screening perpetuates housing discrimination through data quality failures, structurally biased criteria, and landlord over-reliance on algorithmic scores, a triple accountability gap with no current regulatory remedy.",
-    takeaways: [
-      "Screening databases contain unsubstantiated information including false matches and outdated records that applicants cannot dispute or correct before denial, algorithmic speed forecloses the informal contestation that human decision-making occasionally allowed.",
-      "Criminal record and credit score criteria are structurally skewed: arrest data reflects racial policing disparities, while credit scores encode historical economic discrimination rather than actual rental risk.",
-      "Landlord over-reliance on screening scores — treating algorithmic outputs as authoritative rather than as one input — removes discretion from decision-making and can unconsciously shape future judgment even after discontinuing a particular system."
     ],
   },
   { id: 121, date: "2023-10-01", added: "2026-05-04",
@@ -2084,18 +2060,6 @@ const RESEARCH_DATA = [
       "This investigation provided the quantitative foundation for advocacy requiring bias auditing of automated valuation models and algorithmic underwriting tools as a condition of Fair Housing Act compliance."
     ],
   },
-  { id: 130, date: "2024-05-24", added: "2026-05-05",
-    title: "MBIAS: Mitigating Bias in Large Language Models While Retaining Context",
-    source: "Raza, Raval & Chatrath — Vector Institute",
-    sourceUrl: "https://arxiv.org/abs/2405.11290",
-    category: "equity", geography: "intl",
-    keyFinding: "Instruction fine-tuning Mistral-7B on curated paired datasets of biased and benign text reduces LLM bias and toxicity by more than 30% while preserving contextual accuracy. Demographic-specific testing showed reductions exceeding 90% across multiple groups in out-of-distribution scenarios.",
-    takeaways: [
-      "Technical bias mitigation is achievable without sacrificing model performance, but requires deliberate investment in curated training data and targeted fine-tuning, not post-hoc filtering or generic safety guardrails.",
-      "A 30%+ reduction in measured bias demonstrates that current commercial LLM deployments are not at a technical ceiling on bias mitigation, the remaining gap reflects a choice about where to invest development resources.",
-      "Out-of-distribution testing is essential for evaluating bias mitigation: models that appear debiased on standard benchmarks may still exhibit significant disparities when applied to novel demographic contexts."
-    ],
-  },
   { id: 131, date: "2022-01-27", added: "2026-05-05",
     title: "Aligning Language Models to Follow Instructions",
     source: "Ouyang et al. — OpenAI",
@@ -2106,18 +2070,6 @@ const RESEARCH_DATA = [
       "Scale alone does not produce aligned AI behavior, RLHF-based instruction-following is the architectural foundation that makes current AI assistants commercially viable and is now standard across frontier models including ChatGPT, Claude, and Gemini.",
       "The same mechanism that makes AI assistants useful makes their behavior more legible and more trainable toward specific objectives, which has direct implications for how AI tools are shaped by the organizations that deploy and fine-tune them.",
       "InstructGPT's demonstration that alignment and capability can be jointly optimized shifted AI development toward human-feedback-based training as a default, a transition with ongoing implications for how AI systems interpret and prioritize instructions from different sources."
-    ],
-  },
-  { id: 132, date: "2024-03-01", added: "2026-05-05",
-    title: "Gender Bias in Large Language Models across Multiple Languages",
-    source: "Zhao, Ding, Jia, Wang & Qian — arXiv",
-    sourceUrl: "https://arxiv.org/abs/2403.00277",
-    category: "equity", geography: "intl",
-    keyFinding: "GPT series models exhibit significant gender biases across all languages tested, including non-English contexts substantially underrepresented in AI bias research. Bias manifests consistently across three measurement approaches: gendered word selection, pronoun attribution, and topic assignment in dialogue.",
-    takeaways: [
-      "LLM gender bias is not an English-language problem, it propagates across multilingual deployments, meaning institutions deploying AI tools in non-English-speaking contexts face the same structural bias risks documented in English-language research.",
-      "Bias audits conducted only on English outputs produce systematically incomplete assessments: organizations deploying AI internationally need language-specific evaluation to capture the actual risk profile.",
-      "The consistency of gender bias across three different measurement methods suggests the bias is embedded in the model's underlying representations, not a surface artifact of particular prompting approaches."
     ],
   },
   { id: 133, date: "2021-01-14", added: "2026-05-05",
@@ -3239,20 +3191,6 @@ const RESEARCH_DATA = [
       "The gap between AI hype cycles and documented labor market outcomes creates both a challenge and an opportunity for worker organizing: challenging exaggerated displacement claims is as strategically important as resisting actual deployment, since premature capitulation to AI inevitability narratives weakens bargaining positions before organizing begins."
     ],
   },
-  { id: 220, date: "2024-06-01", added: "2026-06-08",
-    title: "Ziff Davis Creators Guild: AI Contract Protections Case Study",
-    source: "Luddite Lab / DAIR Institute",
-    sourceUrl: "https://cdn.sanity.io/files/uvgbyd32/production/03b3d86701d9c7d0a484c59bd5b78389dae5cc5f.pdf",
-    category: "workers", geography: "us",
-    evidence: "analysis",
-    keyFinding: "Documents how the Ziff Davis Creators Guild — 62 media workers within a 4,000-person corporate conglomerate — organized to win meaningful AI protections in their first successor collective bargaining agreement. The case study details the organizing strategy, the specific contract language won, and the lessons applicable to other media and digital content worker campaigns facing AI deployment without contractual protections.",
-    takeaways: [
-      "A small bargaining unit (62 workers) within a large conglomerate successfully won AI contract protections, demonstrating that AI governance provisions are achievable even without majority union density across a company, and that media workers can establish sector-leading precedents from positions of relative numerical weakness.",
-      "The campaign provides replicable contract language and organizing strategy for other media and content worker unions facing AI deployment, the specific provisions won (consent requirements, transparency obligations, and protections against AI substitution for covered work) are directly transferable to comparable bargaining contexts.",
-      "Employer AI deployment in media is accelerating in advance of any regulatory framework, workers without contract-specific AI protections face unlimited employer discretion over how and when AI replaces or supplements their labor, with no recourse under existing law.",
-      "The NewsGuild of New York context demonstrates that craft-based unions in journalism and digital media have particular leverage points around AI: the quality, institutional knowledge, and creative judgment that media workers bring to their work creates organizing arguments grounded in employer self-interest, not only worker rights."
-    ],
-  },
   { id: 221, date: "2023-12-01", added: "2026-06-08",
     title: "New York Times Tech Guild: Largest Tech Worker Strike Case Study",
     source: "Luddite Lab / DAIR Institute",
@@ -3265,34 +3203,6 @@ const RESEARCH_DATA = [
       "AI-related contract demands were central to the campaign, workers organized explicitly around how AI tools would be deployed in editorial and product contexts, establishing that AI governance is a collective bargaining issue, not only a management prerogative or a policy question.",
       "The tech worker context within a media organization created a distinctive organizing environment: workers had both technical knowledge of AI capabilities and editorial standing to assess their impacts, giving the union unusual credibility in framing AI deployment risks to the public and to management.",
       "The case study provides an organizing roadmap for tech workers at other companies facing AI deployment decisions, including how to build majority support, frame AI demands in terms of journalism quality and public trust, and sustain a credible strike threat without legacy union infrastructure."
-    ],
-  },
-  { id: 222, date: "2024-01-01", added: "2026-06-08",
-    title: "National Nurses United: Political Education Program on AI Case Study",
-    source: "Luddite Lab / DAIR Institute",
-    sourceUrl: "https://cdn.sanity.io/files/uvgbyd32/production/5b2c7e89a2238a38cbf8a94d7f303de348775ecb.pdf",
-    category: "workers", geography: "us",
-    evidence: "analysis",
-    keyFinding: "Documents how National Nurses United built a sustained political education program on AI and emerging technology to create an informed and engaged membership base capable of identifying and resisting harmful AI deployment in clinical settings. The case study details the program's structure, content, and outcomes as a model for other unions seeking to build member capacity on AI governance before deployment decisions are made.",
-    takeaways: [
-      "Political education on AI must be sustained and consistent — not a one-time workshop — to build the member knowledge base needed to identify AI deployment risks in real time and negotiate informed contract language; NNU's approach of regularly sharing emerging issues with members created the organizational capacity that reactive responses cannot.",
-      "Healthcare AI presents unique organizing challenges: AI in clinical settings is often framed as patient care improvement, requiring nurses to develop the analytical capacity to distinguish genuine care enhancements from surveillance, speed-up, and scope creep in ways that resonate with both patients and the public.",
-      "A politically educated membership is a structural asset for AI governance: when workers understand the issues, they can identify harmful deployments, report them accurately, build public coalitions, and sustain organizing pressure over the multi-year cycles that major hospital contract negotiations require.",
-      "The NNU model provides a replicable framework for other healthcare and professional sector unions, the program's design, content topics, delivery mechanisms, and member engagement strategies are transferable to nursing and allied health contexts where AI deployment is accelerating and union density provides organizing leverage."
-    ],
-  },
-  { id: 223, date: "2024-01-01", added: "2026-06-08",
-    title: "National Nurses United: Professional Practice Committees Case Study",
-    source: "Luddite Lab / DAIR Institute",
-    sourceUrl: "https://cdn.sanity.io/files/uvgbyd32/production/7c88723fbaf28433eff62ada17c629b0200d7462.pdf",
-    category: "workers", geography: "us",
-    evidence: "analysis",
-    keyFinding: "Documents National Nurses United's campaign to win registered nurse-controlled professional practice committees in every collective bargaining agreement, creating formal worker governance structures that give nurses democratic oversight over technology deployment, care protocols, and staffing decisions in clinical settings. The case study details the committee model, bargaining strategy, and how these structures are being used to govern AI and clinical technology deployment.",
-    takeaways: [
-      "Worker-controlled governance committees embedded in collective bargaining agreements provide the most durable form of AI oversight: they cannot be unilaterally dissolved by management, they are legally enforceable, and they create ongoing accountability rather than one-time contract protections that may become obsolete as AI capabilities evolve.",
-      "The registered nurse-controlled committee model establishes clinical workers — not managers, vendors, or administrators — as the authoritative voice on care protocols and technology deployment, directly challenging the framing that AI deployment decisions are technical questions outside the scope of collective bargaining.",
-      "The NNU case demonstrates that worker governance structures for AI are achievable through collective bargaining without waiting for legislation, and that healthcare provides a uniquely compelling organizing argument because patient safety and worker authority are aligned interests that can build broad public and institutional support.",
-      "Replicating this model requires sustained bargaining over multiple contract cycles and organizing capacity to hold the line as employers resist governance provisions, the case study provides the negotiating strategy, language, and counter-argument frameworks that other nursing and healthcare unions need to replicate NNU's approach in their own bargaining contexts."
     ],
   },
   { id: 224, date: "2025-01-01", added: "2026-06-08",
