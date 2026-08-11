@@ -483,7 +483,7 @@ def sheet_csv_url(url):
 
 def fetch_entries(url):
     """Fetch a published sheet as CSV and parse it, guarding against getting an
-    HTML login/error page instead of the data."""
+    HTML login/error page instead of the data. Returns (entries, has_archived_col)."""
     with urllib.request.urlopen(sheet_csv_url(url), timeout=30) as resp:
         text = resp.read().decode("utf-8")
     header = text.split("\n", 1)[0].lower()
@@ -492,7 +492,9 @@ def fetch_entries(url):
             "research: that URL did not return the sheet as CSV.\n"
             "  In Google Sheets: File > Share > Publish to web > CSV, and use that link\n"
             "  (or a .../export?format=csv link).")
-    return [row_to_entry(r) for r in csv.DictReader(io.StringIO(text))]
+    reader = csv.DictReader(io.StringIO(text))
+    has_archived = "archived" in (reader.fieldnames or [])
+    return [row_to_entry(r) for r in reader], has_archived
 
 
 def reconcile_ids(entries, ledger):
@@ -512,11 +514,22 @@ def reconcile_ids(entries, ledger):
 def load_source(url):
     """Entries to build from: a remote sheet (reconciled against the committed
     snapshot) or the local content/research.csv."""
-    if url:
-        entries = fetch_entries(url)
-        reconcile_ids(entries, load_local_entries())
-        return entries
-    return load_local_entries()
+    if not url:
+        return load_local_entries()
+    entries, sheet_has_archived = fetch_entries(url)
+    ledger = load_local_entries()
+    reconcile_ids(entries, ledger)
+    # A sheet with no `archived` column cannot express archive state, so preserve
+    # archives already recorded in the committed snapshot (matched by sourceUrl)
+    # rather than silently un-archiving them on every sync. A sheet that DOES
+    # carry the column stays authoritative -- including blanks that un-archive.
+    if not sheet_has_archived:
+        by_url = {e["sourceUrl"]: e for e in ledger if e.get("sourceUrl")}
+        for e in entries:
+            prev = by_url.get(e["sourceUrl"])
+            if prev and prev.get("archived") and not e.get("archived"):
+                e["archived"] = prev["archived"]
+    return entries
 
 
 def cmd_check(url=None):
