@@ -826,7 +826,7 @@ const RESEARCH_DATA = [
   { id: 23, date: "2026-04-08", added: "2026-04-30",
     title: "Pennsylvania's Power: Why Local Authority Is the Key to AI Infrastructure Decisions",
     source: "Cella Sum, Maia Woluchem — Data & Society",
-    sourceUrl: "https://datasociety.net/library/pennsylvanias-power/",
+    sourceUrl: "https://datasociety.net/research-library/pennsylvanias-power-why-local-authority-is-the-key-to-ai-infrastructure-decisions/",
     category: "community", geography: "us",
     keyFinding: "Pennsylvania is becoming a national hub for data center and AI infrastructure, but state legislation aligned with federal AI industrial policy is eroding municipal authority and bypassing community input in decisions about where and how this infrastructure is built.",
     takeaways: [
