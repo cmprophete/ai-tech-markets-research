@@ -11,7 +11,7 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
-  let activeLens    = 'general'; // 'general' | 'economist'
+  let activeLens    = 'economist'; // 'general' | 'economist'. Lead with Focused; the toggle still widens to the full General set.
   const SORT_STATES = [
     { order: 'desc',   label: 'Newest first' },
     { order: 'asc',    label: 'Oldest first' },
