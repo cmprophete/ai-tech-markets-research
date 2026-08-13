@@ -15,11 +15,22 @@
      the promise cache in loadPayload plus the _built flag make repeat opens a
      no-op, and the real builder is assigned over this one once it exists. */
   factBankEnabled = true;
+  var _fbLoadTries = 0;
   initFactBank = function () {
     loadPayload('data/fact-bank-data.js')
       .then(() => { setupFactBank(); initFactBank(); })
       .catch(() => {
-        console.warn('fact-bank: payload failed to load — hiding the Fact Bank tab.');
+        // A single failed fetch of the 880 KB payload used to remove the tab
+        // for the whole session, so one network blip looked like the Fact Bank
+        // "disappearing" until a reload happened to succeed. loadPayload now
+        // drops its cache on error, so retry a few times with backoff before
+        // giving up. Only a payload that is genuinely missing (a partial
+        // checkout) exhausts the retries and hides the tab.
+        if (++_fbLoadTries < 4) {
+          setTimeout(initFactBank, 800 * _fbLoadTries);
+          return;
+        }
+        console.warn('fact-bank: payload failed to load after 4 tries; hiding the Fact Bank tab.');
         document.getElementById('viewFactBank')?.remove();
         factBankEnabled = false;
       });

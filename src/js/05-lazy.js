@@ -33,7 +33,17 @@
       s.src = src;
       s.charset = 'utf-8';
       s.onload = () => resolve(src);
-      s.onerror = () => reject(new Error('failed to load ' + src));
+      s.onerror = () => {
+        // Do not leave a rejected promise in the cache. A transient failure
+        // (a dropped connection partway through the 880 KB file, or the iframe
+        // being throttled) would otherwise be remembered for the rest of the
+        // session: every later open returns the same rejection and the feature
+        // never recovers without a full reload. Drop the cache entry and the
+        // dead node so the next loadPayload() retries from scratch.
+        delete _payloads[src];
+        s.remove();
+        reject(new Error('failed to load ' + src));
+      };
       document.head.appendChild(s);
     });
     return _payloads[src];

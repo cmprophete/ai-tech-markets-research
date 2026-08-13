@@ -1,0 +1,5 @@
+# This file disables Jekyll processing on GitHub Pages. Its presence is what
+# matters; GitHub ignores the contents. This is a static HTML/JS site with no
+# Jekyll sources, so Pages should serve every file verbatim -- including the
+# large data/*.js payloads -- rather than running them through a build that can
+# exclude, transform, or slow the deploy of files it does not understand.
