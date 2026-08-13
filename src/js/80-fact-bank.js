@@ -414,6 +414,13 @@
   });
 
   // ── init ─────────────────────────────────────────────────────
+  // Sync the lens UI to the default lens before the first route resolves, so
+  // the site leads with Focused. setLens is the single writer of that DOM state
+  // (body class, toggle buttons, masthead) and is otherwise only reached by a
+  // click; without this the default would filter the data (activeLens is read
+  // directly by filteredBase) but leave the General button visually active and
+  // the body without the lens-economist class.
+  setLens(activeLens);
   // R2: honor a deep link if one is present; otherwise land on About (home).
   if (!applyHashRoute()) setView('about');
   window.addEventListener('hashchange', applyHashRoute);
