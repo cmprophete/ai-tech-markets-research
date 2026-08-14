@@ -33,7 +33,23 @@ needs only a reload, not a rebuild.
 ## Rules with teeth
 
 - **No em-dashes in prose.** A style rule; use `&mdash;`/`&ndash;` HTML entities
-  where a dash is genuinely needed in page copy.
+  where a dash is genuinely needed in page copy. Exception: author-provided
+  policy-card prose is inserted verbatim (see the next rule), so its em-dashes
+  and every other character stay exactly as given.
+- **Policy-card prose is verbatim. Never edit it.** When the policy author gives
+  you text for a `POLICY_DATA` field in `data/tracker-data.js` (`title`,
+  `summary`, `rationale`, `precedent`, `feasibility`, `landscape`, `strengths`,
+  `risks`, and any `why` in `pairsWith`/`competesWith`), insert it exactly as
+  given. Do not reword, shorten, expand, copyedit, fix spelling or grammar,
+  restyle, reorder, expand acronyms, or normalize house style; add nothing (no
+  citations, links, or emphasis) the author did not write; never change a
+  number. The only changes allowed are mechanical encoding that leaves the
+  displayed text identical: escaping for the JS string (`"`, `\`) and for any
+  literal `<`/`&`, and writing the author's paragraph breaks as `<br><br>`.
+  After inserting, reconstruct the text and confirm it matches the source
+  character-for-character; report any difference instead of resolving it. If
+  which field a block belongs to is unclear, ask. Full workflow: the Policy
+  Card Rules, [`docs/policy-card-rules.md`](docs/policy-card-rules.md).
 - **No CDN, no modules, no bundler.** Classic `<script>` tags, `file://` has to
   keep working, and the deploy artifact is one self-contained document because
   it is embedded in an iframe.
