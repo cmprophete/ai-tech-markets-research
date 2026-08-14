@@ -105,13 +105,12 @@
     listSection('Risks', p.risks);
     relListSection('Pairs with', p.pairsWith);
     relListSection('Competes with', p.competesWith);
-    section('Where it stands', p.landscape);
-    section('Precedents and examples', p.precedent);
+    section('Precedents & landscape', p.landscape);
     if (Array.isArray(p.press) && p.press.length) {
       md.push('', '## Press & resources', '');
       p.press.forEach(it => md.push(`- ${it.label}: ${it.url}`));
     }
-    const fieldText = [p.summary, p.rationale, p.feasibility, p.landscape, p.precedent,
+    const fieldText = [p.summary, p.rationale, p.feasibility, p.landscape,
       ...(p.strengths || []), ...(p.risks || [])].join(' ');
     const citedIds = [...new Set([
       ...(p.paperIds || []),
@@ -608,22 +607,23 @@
         <div class="pol-modal-label">How it interacts</div>
         ${relInner}
       </div>` : '';
-    const landscapeHTML = p.landscape ? `
+    // Where it stands and Precedents and examples were merged into one
+    // section (single `landscape` field) so the modal doesn't split
+    // precedent and current politics across two labels that readers had to
+    // cross-reference themselves. basisHTML (the citation reference list)
+    // still hangs off this section, same as it did under the old
+    // "Precedents and examples" label.
+    const landscapeHTML = (p.landscape || basisHTML) ? `
       <div class="pol-modal-section">
-        <div class="pol-modal-label">Where it stands</div>
-        <div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>
+        <div class="pol-modal-label">Precedents & landscape</div>
+        ${p.landscape ? `<div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>` : ''}
+        ${basisHTML ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px">${basisHTML}</div>` : ''}
       </div>` : '';
     const pressHTML = (Array.isArray(p.press) && p.press.length) ? `
       <div class="pol-modal-section">
         <div class="pol-modal-label">Press & resources</div>
         <ul class="pol-press-list">${p.press.map(it => `<li><a href="${it.url}" target="_blank" rel="noopener noreferrer">${it.label}</a></li>`).join('')}</ul>
       </div>` : '';
-    const researchSection = `
-      <div class="pol-modal-section">
-        <div class="pol-modal-label">Precedents and examples</div>
-        ${p.precedent ? `<div class="pol-modal-text muted">${injectPolicyLinks(p.precedent, paperMap)}</div>` : ''}
-        ${basisHTML ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px">${basisHTML}</div>` : ''}
-      </div>`;
     const lastReviewedHTML = p.lastReviewed ? `<div class="pol-modal-lastreviewed">Last reviewed: ${fmtDate(p.lastReviewed)}</div>` : '';
     document.getElementById('polModalBody').innerHTML = `
       <div class="pol-modal-section">
@@ -637,7 +637,6 @@
       ${prosConsHTML}
       ${relHTML}
       ${landscapeHTML}
-      ${researchSection}
       ${pressHTML}
       ${lastReviewedHTML}`;
     const rbToggle = document.getElementById('polModalBody').querySelector('.pol-basis-toggle');
