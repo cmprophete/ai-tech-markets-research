@@ -384,7 +384,7 @@
     white-space: nowrap;
     /* Buttons default to line-height:normal but <a> inherits the body's 1.6.
        Pin both so a link tab (Solutions) is exactly as tall as a button tab
-       (Lab) — otherwise the taller link stretches its group and knocks the
+       (Map) — otherwise the taller link stretches its group and knocks the
        group label out of line with the neighbouring groups. */
     line-height: 1.25;
     display: block;
@@ -1569,7 +1569,7 @@
      ═══════════════════════════════════════════════════════════ */
   #factBankArea { display: none; }
   /* margin: 0, not 0 auto. Centring a 1140px column inside the 1352px
-     layout pushed this tab's masthead 78px right of Papers'/Lab's/Jobs',
+     layout pushed this tab's masthead 78px right of Papers'/Map's/Jobs',
      and the drift grew with the viewport. */
   .fact-bank-view #factBankArea {
     display: block; max-width: 1140px; margin: 0; width: 100%;
@@ -2151,7 +2151,7 @@
         </div>
         <div class="tab-group" data-group="policy" role="presentation">
           <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewPolicy" data-view="policy" role="tab" aria-selected="false" aria-controls="viewPanel">Lab</button>
+            <button class="header-nav-btn" id="viewPolicy" data-view="policy" role="tab" aria-selected="false" aria-controls="viewPanel">Map</button>
             <button class="header-nav-btn" id="viewSolutions" data-view="solutions" role="tab" aria-selected="false" aria-controls="viewPanel">Solutions</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Policy</div>
@@ -4198,7 +4198,7 @@
     if (ann) {
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Lab', solutions: 'Solutions', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
