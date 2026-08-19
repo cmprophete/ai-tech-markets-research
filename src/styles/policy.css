@@ -179,7 +179,7 @@
      ═══════════════════════════════════════════════════════════ */
   #factBankArea { display: none; }
   /* margin: 0, not 0 auto. Centring a 1140px column inside the 1352px
-     layout pushed this tab's masthead 78px right of Papers'/Lab's/Jobs',
+     layout pushed this tab's masthead 78px right of Papers'/Map's/Jobs',
      and the drift grew with the viewport. */
   .fact-bank-view #factBankArea {
     display: block; max-width: 1140px; margin: 0; width: 100%;
