@@ -150,7 +150,7 @@
     white-space: nowrap;
     /* Buttons default to line-height:normal but <a> inherits the body's 1.6.
        Pin both so a link tab (Solutions) is exactly as tall as a button tab
-       (Lab) — otherwise the taller link stretches its group and knocks the
+       (Map) — otherwise the taller link stretches its group and knocks the
        group label out of line with the neighbouring groups. */
     line-height: 1.25;
     display: block;
