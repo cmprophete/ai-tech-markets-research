@@ -162,7 +162,7 @@
     if (ann) {
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Lab', solutions: 'Solutions', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
