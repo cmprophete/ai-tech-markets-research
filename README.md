@@ -35,7 +35,7 @@ python3 tools/research.py check                 # validate; write nothing
 python3 tools/research.py build --sheet <url>   # pull a published Google Sheet first
 ```
 
-See **[`content/README.md`](content/README.md)**. Themes, the policy lab and the
+See **[`content/README.md`](content/README.md)**. Themes, the policy map and the
 solutions agenda live in `data/tracker-data.js` and are hand-edited; the fact
 bank is `data/fact-bank-data.js`. All `data/*.js` load at runtime, so a data
 change needs only a reload, and a fresh clone renders from the committed files.
