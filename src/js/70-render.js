@@ -30,7 +30,16 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
-    if (activeView === 'solutions') { return; }  // static: prose only
+    if (activeView === 'solutions') {
+      // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
+      // Replace the static content with a notice at runtime; the prose stays in
+      // 40-solutions.html, so flipping the flag restores it. Otherwise static.
+      if (solutionsHidden) {
+        const sa = document.getElementById('solutionsArea');
+        if (sa) sa.innerHTML = '<p class="sol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The solutions section is being updated and is temporarily unavailable.</p>';
+      }
+      return;
+    }
 
     // ── Research (cards) view ──
     const sig = cardsSig();
@@ -109,6 +118,14 @@
   };
   function getTabDesc(view) {
     const lens = activeLens === 'economist' ? 'economist' : 'general';
+    // While the policy cards are hidden (see 00-state.js), don't advertise
+    // "click any policy" in the masthead.
+    if (view === 'policy' && policyCardsHidden) {
+      return { lede: 'What could policy actually do about it?', text: 'Our policy interventions are being updated and are temporarily unavailable here.' };
+    }
+    if (view === 'solutions' && solutionsHidden) {
+      return { lede: 'What should we actually do?', text: 'Our solutions are being updated and are temporarily unavailable here.' };
+    }
     return (TAB_DESCS[view] || {})[lens] || null;
   }
 
