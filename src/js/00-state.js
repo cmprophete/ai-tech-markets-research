@@ -11,6 +11,14 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
+  // Policy cards are temporarily hidden in the Policy Map while their citations
+  // are being reworked (some cite non-AI sources not in the research tracker).
+  // The Map tab stays, but the cards are replaced by a short notice. Flip to
+  // false and rebuild to show them again. See buildPolicyView() + getTabDesc().
+  let policyCardsHidden = true;
+  // Solutions prose is hidden for now too (updated alongside the policy cards).
+  // Flip to false and rebuild to show it again. See render() + getTabDesc().
+  let solutionsHidden = true;
   let activeLens    = 'economist'; // 'general' | 'economist'. Lead with Focused; the toggle still widens to the full General set.
   const SORT_STATES = [
     { order: 'desc',   label: 'Newest first' },
