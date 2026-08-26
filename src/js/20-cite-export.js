@@ -159,6 +159,14 @@
   function buildPolicyView() {
     const area = document.getElementById('policyArea');
 
+    // Policy cards temporarily hidden (see policyCardsHidden in 00-state.js).
+    // Show a short notice instead of the Map/Links content; flip the flag to
+    // restore. Placed at the single render entry so both sub-views are covered.
+    if (policyCardsHidden) {
+      if (area) area.innerHTML = '<p class="pol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The policy cards are being updated and are temporarily unavailable.</p>';
+      return;
+    }
+
     // First visit: build the DOM. No intro bar: the masthead is
     // .header-tab-desc, fed from TAB_DESCS.policy.
     if (!area.hasChildNodes()) {
