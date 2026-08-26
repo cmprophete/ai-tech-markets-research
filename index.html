@@ -2532,6 +2532,14 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
+  // Policy cards are temporarily hidden in the Policy Map while their citations
+  // are being reworked (some cite non-AI sources not in the research tracker).
+  // The Map tab stays, but the cards are replaced by a short notice. Flip to
+  // false and rebuild to show them again. See buildPolicyView() + getTabDesc().
+  let policyCardsHidden = true;
+  // Solutions prose is hidden for now too (updated alongside the policy cards).
+  // Flip to false and rebuild to show it again. See render() + getTabDesc().
+  let solutionsHidden = true;
   let activeLens    = 'economist'; // 'general' | 'economist'. Lead with Focused; the toggle still widens to the full General set.
   const SORT_STATES = [
     { order: 'desc',   label: 'Newest first' },
@@ -3300,6 +3308,14 @@
   function buildPolicyView() {
     const area = document.getElementById('policyArea');
 
+    // Policy cards temporarily hidden (see policyCardsHidden in 00-state.js).
+    // Show a short notice instead of the Map/Links content; flip the flag to
+    // restore. Placed at the single render entry so both sub-views are covered.
+    if (policyCardsHidden) {
+      if (area) area.innerHTML = '<p class="pol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The policy cards are being updated and are temporarily unavailable.</p>';
+      return;
+    }
+
     // First visit: build the DOM. No intro bar: the masthead is
     // .header-tab-desc, fed from TAB_DESCS.policy.
     if (!area.hasChildNodes()) {
@@ -4066,7 +4082,16 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
-    if (activeView === 'solutions') { return; }  // static: prose only
+    if (activeView === 'solutions') {
+      // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
+      // Replace the static content with a notice at runtime; the prose stays in
+      // 40-solutions.html, so flipping the flag restores it. Otherwise static.
+      if (solutionsHidden) {
+        const sa = document.getElementById('solutionsArea');
+        if (sa) sa.innerHTML = '<p class="sol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The solutions section is being updated and is temporarily unavailable.</p>';
+      }
+      return;
+    }
 
     // ── Research (cards) view ──
     const sig = cardsSig();
@@ -4145,6 +4170,14 @@
   };
   function getTabDesc(view) {
     const lens = activeLens === 'economist' ? 'economist' : 'general';
+    // While the policy cards are hidden (see 00-state.js), don't advertise
+    // "click any policy" in the masthead.
+    if (view === 'policy' && policyCardsHidden) {
+      return { lede: 'What could policy actually do about it?', text: 'Our policy interventions are being updated and are temporarily unavailable here.' };
+    }
+    if (view === 'solutions' && solutionsHidden) {
+      return { lede: 'What should we actually do?', text: 'Our solutions are being updated and are temporarily unavailable here.' };
+    }
     return (TAB_DESCS[view] || {})[lens] || null;
   }
 
