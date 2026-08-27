@@ -3053,7 +3053,7 @@
   // deduplicated "related" set behind the toggle. Policies without paperIds keep
   // the old behavior (top few category matches visible, rest behind the toggle).
   function getResearchBasis(pol) {
-    const paperMap = Object.fromEntries(RESEARCH_DATA.map(r => [r.id, r]));
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const curated = (pol.paperIds || []).map(id => paperMap[id]).filter(Boolean);
     const curatedIds = new Set(curated.map(r => r.id));
     const cats = POL_TO_RESEARCH_CATS[pol.category] || [];
@@ -3107,8 +3107,8 @@
   // named in the prose; {{citep:ID}} renders a parenthetical (Author, Year).
   function injectCitations(html, paperMap) {
     if (!html) return html;
-    return html.replace(/ ?\{\{(citep?):(\d+)\}\}/g, (m, kind, id) => {
-      const p = paperMap[+id];
+    return html.replace(/ ?\{\{(citep?):([\w-]+)\}\}/g, (m, kind, id) => {
+      const p = paperMap[id];
       if (!p || !p.sourceUrl) return '';
       const year = p.date ? p.date.slice(0, 4) : 'n.d.';
       let label = year;
@@ -3180,8 +3180,8 @@
     if (!s) return '';
     return String(s)
       .replace(/<br\s*\/?\s*>/gi, '\n')
-      .replace(/ ?\{\{(citep?):(\d+)\}\}/g, (m, kind, id) => {
-        const p = paperMap[+id];
+      .replace(/ ?\{\{(citep?):([\w-]+)\}\}/g, (m, kind, id) => {
+        const p = paperMap[id];
         if (!p) return '';
         const year = p.date ? p.date.slice(0, 4) : 'n.d.';
         if (kind === 'citep') {
@@ -3225,7 +3225,7 @@
   // R1: assemble a policy card as a Markdown primer draft, with citations
   // resolved to (Author, Year) text and a References section of cited papers.
   function policyToMarkdown(p, lvl, catLabel) {
-    const paperMap = Object.fromEntries(RESEARCH_DATA.map(r => [r.id, r]));
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const plain = s => tokensToPlain(s, paperMap);
     const fmtD = s => { if (!s) return ''; const d = new Date(s + 'T00:00:00'); return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
     const md = [];
@@ -3263,7 +3263,7 @@
       ...(p.strengths || []), ...(p.risks || [])].join(' ');
     const citedIds = [...new Set([
       ...(p.paperIds || []),
-      ...[...fieldText.matchAll(/\{\{citep?:(\d+)\}\}/g)].map(m => +m[1]),
+      ...[...fieldText.matchAll(/\{\{citep?:([\w-]+)\}\}/g)].map(m => m[1]),
     ])];
     const cited = citedIds.map(id => paperMap[id]).filter(Boolean)
       .sort((a, b) => (a.source || '').localeCompare(b.source || ''));
@@ -3714,7 +3714,7 @@
   function openPolModal(p, lvl, catLabel, basisHTML) {
     const backdrop = document.getElementById('polModal');
     const modal    = backdrop.querySelector('.pol-modal');
-    const paperMap = Object.fromEntries(RESEARCH_DATA.map(r => [r.id, r]));
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     // Preserve the original trigger when navigating policy → policy via cross-links.
     if (!backdrop.classList.contains('open')) backdrop._lastFocus = document.activeElement;
     document.getElementById('polModalTitle').textContent     = p.title;
@@ -4537,19 +4537,20 @@
     const catIds = new Set(CATEGORIES.map(c => c.id));
     const ids = new Set();
     RESEARCH_DATA.forEach(e => {
-      if (ids.has(e.id)) problems.push(`duplicate entry id ${e.id}`);
-      ids.add(e.id);
+      if (ids.has(String(e.id))) problems.push(`duplicate entry id ${e.id}`);
+      ids.add(String(e.id));
       if (!catIds.has(e.category)) problems.push(`entry ${e.id}: unknown category "${e.category}"`);
       if (e.geography && !GEOGRAPHY_META[e.geography]) problems.push(`entry ${e.id}: unknown geography "${e.geography}"`);
       if (!e.date || isNaN(new Date(e.date + 'T00:00:00'))) problems.push(`entry ${e.id}: bad date "${e.date}"`);
       if (e.added && isNaN(new Date(e.added + 'T00:00:00'))) problems.push(`entry ${e.id}: bad added "${e.added}"`);
     });
+    (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
     THEMES.forEach(t => (t.papers || []).forEach(pid => {
-      if (!ids.has(pid)) problems.push(`theme ${t.id}: linked paper ${pid} not found`);
+      if (!ids.has(String(pid))) problems.push(`theme ${t.id}: linked paper ${pid} not found`);
     }));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
-      (p.paperIds || []).forEach(pid => { if (!ids.has(pid)) problems.push(`policy ${p.id}: paperId ${pid} not found`); });
+      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) problems.push(`policy ${p.id}: paperId ${pid} not found`); });
       if (!POLICY_CATEGORIES[p.category]) problems.push(`policy ${p.id}: unknown category "${p.category}"`);
       if (!DISRUPTION_LEVELS.some(l => l.id === p.level)) problems.push(`policy ${p.id}: unknown level "${p.level}"`);
       // A base category with no CATEGORY_MERGE_MAP entry drops its policies
@@ -4567,8 +4568,8 @@
     });
     const scanTokens = (obj, label) => {
       const s = JSON.stringify(obj);
-      for (const m of s.matchAll(/\{\{citep?:(\d+)\}\}/g)) {
-        if (!ids.has(+m[1])) problems.push(`${label}: cite token ${m[1]} resolves to no entry`);
+      for (const m of s.matchAll(/\{\{citep?:([\w-]+)\}\}/g)) {
+        if (!ids.has(m[1])) problems.push(`${label}: cite token ${m[1]} resolves to no entry`);
       }
       for (const m of s.matchAll(/\{\{pol:([a-z0-9-]+)\|/g)) {
         if (!polIds.has(m[1])) problems.push(`${label}: policy cross-reference "${m[1]}" resolves to no policy`);
