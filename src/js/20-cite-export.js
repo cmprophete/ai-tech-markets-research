@@ -31,8 +31,8 @@
     if (!s) return '';
     return String(s)
       .replace(/<br\s*\/?\s*>/gi, '\n')
-      .replace(/ ?\{\{(citep?):(\d+)\}\}/g, (m, kind, id) => {
-        const p = paperMap[+id];
+      .replace(/ ?\{\{(citep?):([\w-]+)\}\}/g, (m, kind, id) => {
+        const p = paperMap[id];
         if (!p) return '';
         const year = p.date ? p.date.slice(0, 4) : 'n.d.';
         if (kind === 'citep') {
@@ -76,7 +76,7 @@
   // R1: assemble a policy card as a Markdown primer draft, with citations
   // resolved to (Author, Year) text and a References section of cited papers.
   function policyToMarkdown(p, lvl, catLabel) {
-    const paperMap = Object.fromEntries(RESEARCH_DATA.map(r => [r.id, r]));
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const plain = s => tokensToPlain(s, paperMap);
     const fmtD = s => { if (!s) return ''; const d = new Date(s + 'T00:00:00'); return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
     const md = [];
@@ -114,7 +114,7 @@
       ...(p.strengths || []), ...(p.risks || [])].join(' ');
     const citedIds = [...new Set([
       ...(p.paperIds || []),
-      ...[...fieldText.matchAll(/\{\{citep?:(\d+)\}\}/g)].map(m => +m[1]),
+      ...[...fieldText.matchAll(/\{\{citep?:([\w-]+)\}\}/g)].map(m => m[1]),
     ])];
     const cited = citedIds.map(id => paperMap[id]).filter(Boolean)
       .sort((a, b) => (a.source || '').localeCompare(b.source || ''));
@@ -565,7 +565,7 @@
   function openPolModal(p, lvl, catLabel, basisHTML) {
     const backdrop = document.getElementById('polModal');
     const modal    = backdrop.querySelector('.pol-modal');
-    const paperMap = Object.fromEntries(RESEARCH_DATA.map(r => [r.id, r]));
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     // Preserve the original trigger when navigating policy → policy via cross-links.
     if (!backdrop.classList.contains('open')) backdrop._lastFocus = document.activeElement;
     document.getElementById('polModalTitle').textContent     = p.title;
