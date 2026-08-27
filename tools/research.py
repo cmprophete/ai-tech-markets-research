@@ -386,13 +386,12 @@ def category_ids(text):
 
 
 def _id_list(text, key):
-    """IDs inside every `<key>: [ ... ]` array of integers in `text`."""
+    """String ids inside every `<key>: [ ... ]` array in `text`. Handles both
+    quoted string ids ("nelp-uws-2025") and bare integers, mixed in one array."""
     ids = set()
-    for m in re.finditer(key + r":\s*\[([0-9,\s]*)\]", text):
-        for n in m.group(1).split(","):
-            n = n.strip()
-            if n:
-                ids.add(int(n))
+    for m in re.finditer(key + r":\s*\[([^\]]*)\]", text):
+        for tok in re.finditer(r'"([\w-]+)"|(\d+)', m.group(1)):
+            ids.add(tok.group(1) if tok.group(1) is not None else tok.group(2))
     return ids
 
 
@@ -408,8 +407,16 @@ def theme_paper_ids(text):
 
 
 def cite_token_ids(text):
-    """IDs referenced by {{cite:N}} / {{citep:N}} prose tokens, for orphan detection."""
-    return {int(m.group(1)) for m in re.finditer(r"\{\{cite[a-z]*:\s*(\d+)\s*\}\}", text)}
+    """IDs referenced by {{cite:ID}} / {{citep:ID}} prose tokens (numeric research
+    ids or string POLICY_SOURCES ids), for orphan detection."""
+    return set(re.findall(r"\{\{cite[a-z]*:\s*([\w-]+)\s*\}\}", text))
+
+
+def policy_source_ids(text):
+    """Ids declared in the hand-maintained POLICY_SOURCES array -- valid citation
+    targets that are NOT research-tracker entries (non-AI policy sources)."""
+    m = re.search(r"const POLICY_SOURCES\s*=\s*\[(.*?)\n\];", text, re.S)
+    return set(re.findall(r'\bid:\s*"([\w-]+)"', m.group(1))) if m else set()
 
 
 def fact_bank_paper_ids():
@@ -421,7 +428,7 @@ def fact_bank_paper_ids():
             fb = fh.read()
     except OSError:
         return set()
-    return {int(m.group(1)) for m in re.finditer(r"paperId:\s*(\d+)", fb)}
+    return set(re.findall(r"paperId:\s*(\d+)", fb))
 
 
 # ── validation ──────────────────────────────────────────────────────────────
@@ -583,17 +590,20 @@ def cmd_check(url=None):
     # behind. This is why the Fact Bank went blank once -- an archive with no
     # such warning left every fact pointing at a study that no longer rendered.
     live = [e for e in entries if not e.get("archived")]
-    live_ids = {e["id"] for e in live if e["id"] is not None}
+    # Valid citation targets, as strings: live research ids (numeric, from the
+    # Sheet) plus the hand-maintained POLICY_SOURCES string ids. Comparing in
+    # string space lets numeric research ids and string policy-source ids coexist.
+    valid = {str(e["id"]) for e in live if e["id"] is not None} | policy_source_ids(text)
 
     def note_orphans(label, referenced):
-        dangling = sorted(referenced - live_ids)
+        dangling = sorted(referenced - valid)
         if dangling:
-            print(f"  note: {label} reference research ids that are missing or "
-                  f"archived: {', '.join(map(str, dangling))}")
+            print(f"  note: {label} reference ids missing or archived "
+                  f"(not in the tracker or POLICY_SOURCES): {', '.join(dangling)}")
 
     note_orphans("POLICY_DATA paperIds", policy_paper_ids(text))
     note_orphans("THEMES papers", theme_paper_ids(text))
-    note_orphans("{{cite:N}} tokens", cite_token_ids(text))
+    note_orphans("{{cite:ID}} tokens", cite_token_ids(text))
     note_orphans("Fact Bank paperIds", fact_bank_paper_ids())
     archived = len(entries) - len(live)
     print(f"  ok  {len(live)} live entries valid"
