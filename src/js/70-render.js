@@ -485,19 +485,20 @@
     const catIds = new Set(CATEGORIES.map(c => c.id));
     const ids = new Set();
     RESEARCH_DATA.forEach(e => {
-      if (ids.has(e.id)) problems.push(`duplicate entry id ${e.id}`);
-      ids.add(e.id);
+      if (ids.has(String(e.id))) problems.push(`duplicate entry id ${e.id}`);
+      ids.add(String(e.id));
       if (!catIds.has(e.category)) problems.push(`entry ${e.id}: unknown category "${e.category}"`);
       if (e.geography && !GEOGRAPHY_META[e.geography]) problems.push(`entry ${e.id}: unknown geography "${e.geography}"`);
       if (!e.date || isNaN(new Date(e.date + 'T00:00:00'))) problems.push(`entry ${e.id}: bad date "${e.date}"`);
       if (e.added && isNaN(new Date(e.added + 'T00:00:00'))) problems.push(`entry ${e.id}: bad added "${e.added}"`);
     });
+    (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
     THEMES.forEach(t => (t.papers || []).forEach(pid => {
-      if (!ids.has(pid)) problems.push(`theme ${t.id}: linked paper ${pid} not found`);
+      if (!ids.has(String(pid))) problems.push(`theme ${t.id}: linked paper ${pid} not found`);
     }));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
-      (p.paperIds || []).forEach(pid => { if (!ids.has(pid)) problems.push(`policy ${p.id}: paperId ${pid} not found`); });
+      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) problems.push(`policy ${p.id}: paperId ${pid} not found`); });
       if (!POLICY_CATEGORIES[p.category]) problems.push(`policy ${p.id}: unknown category "${p.category}"`);
       if (!DISRUPTION_LEVELS.some(l => l.id === p.level)) problems.push(`policy ${p.id}: unknown level "${p.level}"`);
       // A base category with no CATEGORY_MERGE_MAP entry drops its policies
@@ -515,8 +516,8 @@
     });
     const scanTokens = (obj, label) => {
       const s = JSON.stringify(obj);
-      for (const m of s.matchAll(/\{\{citep?:(\d+)\}\}/g)) {
-        if (!ids.has(+m[1])) problems.push(`${label}: cite token ${m[1]} resolves to no entry`);
+      for (const m of s.matchAll(/\{\{citep?:([\w-]+)\}\}/g)) {
+        if (!ids.has(m[1])) problems.push(`${label}: cite token ${m[1]} resolves to no entry`);
       }
       for (const m of s.matchAll(/\{\{pol:([a-z0-9-]+)\|/g)) {
         if (!polIds.has(m[1])) problems.push(`${label}: policy cross-reference "${m[1]}" resolves to no policy`);
