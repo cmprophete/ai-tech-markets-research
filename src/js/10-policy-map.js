@@ -7,7 +7,7 @@
   // deduplicated "related" set behind the toggle. Policies without paperIds keep
   // the old behavior (top few category matches visible, rest behind the toggle).
   function getResearchBasis(pol) {
-    const paperMap = Object.fromEntries(RESEARCH_DATA.map(r => [r.id, r]));
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const curated = (pol.paperIds || []).map(id => paperMap[id]).filter(Boolean);
     const curatedIds = new Set(curated.map(r => r.id));
     const cats = POL_TO_RESEARCH_CATS[pol.category] || [];
@@ -61,8 +61,8 @@
   // named in the prose; {{citep:ID}} renders a parenthetical (Author, Year).
   function injectCitations(html, paperMap) {
     if (!html) return html;
-    return html.replace(/ ?\{\{(citep?):(\d+)\}\}/g, (m, kind, id) => {
-      const p = paperMap[+id];
+    return html.replace(/ ?\{\{(citep?):([\w-]+)\}\}/g, (m, kind, id) => {
+      const p = paperMap[id];
       if (!p || !p.sourceUrl) return '';
       const year = p.date ? p.date.slice(0, 4) : 'n.d.';
       let label = year;
