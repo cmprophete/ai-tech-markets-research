@@ -438,6 +438,55 @@
   #factBankArea .fact-footer .fc-cite { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 220px; }
   #factBankArea .fact-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 
+  /* ── REFINED CARD (shared by both views) ──
+     Placed last in the fact-bank block so its rules win equal-specificity ties
+     over the older .fc-quote-block / .rating-desc / .fact-caveat margins. */
+  #factBankArea .fc-claim { font-size: 15.5px; font-weight: 600; line-height: 1.5; color: var(--headline); }
+  #factBankArea .fc-scan {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 7px 14px; margin-top: 10px;
+    font-family: var(--grot); font-size: 11.5px; color: var(--purple);
+  }
+  #factBankArea .fc-src { font-weight: 600; color: var(--text); }
+  #factBankArea .fc-meter {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  #factBankArea .fc-scan .dots { letter-spacing: 1.5px; color: var(--green); font-size: 10px; text-transform: none; }
+  #factBankArea .fc-scan .expand-hint { margin-left: auto; }
+  #factBankArea .fc-detail {
+    display: flex; flex-direction: column; gap: 14px;
+    margin-top: 2px; padding-top: 14px; border-top: 1px solid var(--divider);
+  }
+  #factBankArea .fc-detail > * { margin: 0; }
+  #factBankArea .fc-chips { align-items: center; }
+  /* Sourcing demoted by weight, not cut: full text, smaller, recessed. */
+  #factBankArea .fact-methods {
+    background: var(--beige); border: 1px solid var(--divider); border-radius: var(--r-card); padding: 11px 14px;
+  }
+  #factBankArea .fact-methods > .lbl-grot { display: block; margin-bottom: 6px; color: var(--purple); }
+  #factBankArea .fact-methods .fact-meta { font-size: 12px; }
+  #factBankArea .fc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  /* All Facts: full quote + usage guidance shown up front (methods & ratings on expand). */
+  #factBankArea .fc-open { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  #factBankArea .fc-open > * { margin: 0; }
+  #factBankArea .fc-usage { font-size: 13px; line-height: 1.55; color: var(--text); }
+  #factBankArea .fc-usage .lbl-grot { display: block; margin-bottom: 3px; }
+  /* Surrounding-paragraph disclosure, nested inside the expanded detail. */
+  #factBankArea .fact-context-d > summary {
+    font-family: var(--grot); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em;
+    color: var(--purple); cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  #factBankArea .fact-context-d > summary::-webkit-details-marker { display: none; }
+  #factBankArea .fact-context-d > summary::before {
+    content: "\25B8"; color: var(--green); display: inline-block; transition: transform 0.18s ease;
+  }
+  #factBankArea .fact-context-d[open] > summary::before { transform: rotate(90deg); }
+  #factBankArea .fc-ctx-body {
+    margin-top: 8px; padding: 10px 14px;
+    border: 1px solid var(--divider); border-radius: var(--r-card); background: var(--beige);
+    font-size: 12.5px; line-height: 1.65; font-style: italic; color: var(--text);
+  }
+
   @media (max-width: 760px) {
     #factBankArea .mode-btn { min-width: 100%; }
     #factBankArea .fact-card, #factBankArea .simple-card { padding-left: 15px; padding-right: 15px; }
