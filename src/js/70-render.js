@@ -76,8 +76,6 @@
   function setLens(mode) {
     activeLens = mode;
     document.body.classList.toggle('lens-economist', mode === 'economist');
-    document.getElementById('lensGeneral').classList.toggle('active', mode === 'general');
-    document.getElementById('lensEconomist').classList.toggle('active', mode === 'economist');
     activeCat = 'all'; activeEvidence = 'all'; activeStatus = 'all'; activeGeo = 'all';
     searchQuery = '';
     const si = document.getElementById('searchInput');
@@ -216,18 +214,17 @@
 
   function openFindingModal(card) {
     const pid = +card.dataset.paperId;
-    const themeId = card.dataset.themeId;
     const paper = RESEARCH_DATA.find(r => r.id === pid);
     // Cards are built below from RESEARCH_DATA with data-paper-id always set,
     // so this cannot currently fire. Kept as a guard, not a handoff.
     if (!paper) return;
-    const theme = THEMES.find(t => t.id === themeId);
     const stat = card.querySelector('.key-finding-stat')?.textContent || '';
     const text = card.querySelector('.key-finding-text')?.textContent || '';
     const primaryCite = `<a class="finding-modal-source" href="${paper.sourceUrl}" target="_blank" rel="noopener noreferrer">${formatAPACitation(paper)}</a>`;
     const refLink = p => `<a class="theme-ref" href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">${formatAPACitation(p)}</a>`;
-    const related = (theme && theme.papers ? theme.papers : []).filter(id2 => id2 !== pid)
-      .map(id2 => RESEARCH_DATA.find(r => r.id === id2)).filter(Boolean)
+    // Related research now comes from the same research category (themes retired).
+    const related = RESEARCH_DATA
+      .filter(r => r.id !== pid && r.category === paper.category)
       .sort((a, b) => (a.source || '').localeCompare(b.source || '')).slice(0, 6);
     const relatedHTML = related.length
       ? `<div class="pol-modal-section"><div class="pol-modal-label">Related research</div><div class="theme-refs" style="grid-template-columns:1fr">${related.map(refLink).join('')}</div></div>`
@@ -265,22 +262,22 @@
     const band = document.getElementById('keyFindingsBand');
     const row  = document.getElementById('keyFindingsRow');
     if (!band || !row) return;
-    const themeMap = Object.fromEntries(THEMES.map(t => [t.id, t]));
+    const catMap = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
     const cards = RESEARCH_DATA
       .filter(p => p.highlight)
       .sort((a, b) => new Date(b.added || b.date) - new Date(a.added || a.date) || new Date(b.date) - new Date(a.date))
       .slice(0, 8)
       .map(p => {
-        const t = themeMap[p.highlight.themeId];
-        if (!t) return '';
+        const c = catMap[p.category];
+        if (!c) return '';
         const inst = (p.source || '').split(' \u2014 ').pop().trim();
         const year = p.date ? p.date.slice(0, 4) : '';
         const sourceLine = p.highlight.source || `${inst}, ${year}`;
-        return `<button class="key-finding-card" data-paper-id="${p.id}" data-theme-id="${p.highlight.themeId}" style="--kf-color:${t.color}">`
+        return `<button class="key-finding-card" data-paper-id="${p.id}" style="--kf-color:${c.color}">`
              + `<span class="key-finding-stat">${p.highlight.stat}</span>`
              + `<span class="key-finding-text">${p.highlight.text}</span>`
              + `<span class="key-finding-source">${sourceLine}</span>`
-             + `<span class="key-finding-link">${t.tag} \u2192</span>`
+             + `<span class="key-finding-link">${c.label} \u2192</span>`
              + `</button>`;
       }).join('');
     if (!cards) { band.style.display = 'none'; return; }
@@ -289,7 +286,7 @@
   }
 
   document.getElementById('keyFindingsBand').addEventListener('click', e => {
-    const card = e.target.closest('.key-finding-card[data-theme-id]');
+    const card = e.target.closest('.key-finding-card[data-paper-id]');
     if (!card) return;
     // Every card is built above with data-paper-id, so the modal is the only
     // path. The else branch handed off to the retired Themes page and threw.
@@ -446,10 +443,6 @@
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   })();
-
-  document.querySelectorAll('.lens-btn').forEach(btn => {
-    btn.addEventListener('click', () => setLens(btn.dataset.lens));
-  });
 
   // ── Home: the site title is the About page ───────────────────
   document.getElementById('homeTitleLink')?.addEventListener('click', e => {
