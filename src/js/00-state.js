@@ -19,7 +19,7 @@
   // Solutions prose is hidden for now too (updated alongside the policy cards).
   // Flip to false and rebuild to show it again. See render() + getTabDesc().
   let solutionsHidden = true;
-  let activeLens    = 'economist'; // 'general' | 'economist'. Lead with Focused; the toggle still widens to the full General set.
+  let activeLens    = 'general'; // Fixed to 'general': the General/Focused toggle was removed, so Papers shows all research. The economist-lens plumbing (filteredBase filter, ECON_CATS, economist masthead copy) is left dormant, reached only if this is set to 'economist', which nothing now does.
   const SORT_STATES = [
     { order: 'desc',   label: 'Newest first' },
     { order: 'asc',    label: 'Oldest first' },
