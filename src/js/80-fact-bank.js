@@ -109,12 +109,14 @@
     const modeAllBtn = document.getElementById('modeAll');
 
     /* ── Shared card fragments ── */
-    function ratingDescHTML(f) {
+    function ratingDescHTML(f, opts) {
+      const ev = (opts && opts.skipEvidence) ? '' :
+        `<div class="rd-row"><span class="rd-head">Evidence: ${esc(EV_LABELS[f.evidenceType] || f.evidenceType)}</span> — ${esc(f.methodNote)}</div>`;
       return `
       <div class="rating-desc">
         <div class="rd-row"><span class="rd-head">Political <span class="dots" aria-hidden="true">${dots(f.political)}</span><span class="sr-only">${f.political} of 5</span> ${f.political}/5</span> — ${esc(f.politicalWhy)}</div>
         <div class="rd-row"><span class="rd-head">Truth <span class="dots" aria-hidden="true">${dots(f.truth)}</span><span class="sr-only">${f.truth} of 5</span> ${f.truth}/5</span> — ${esc(f.truthWhy)}</div>
-        <div class="rd-row"><span class="rd-head">Evidence: ${esc(EV_LABELS[f.evidenceType] || f.evidenceType)}</span> — ${esc(f.methodNote)}</div>
+        ${ev}
       </div>`;
     }
     function kwChipsHTML(f) {
@@ -129,10 +131,11 @@
       return caution + access + foundational;
     }
     function metaHTML(f, opts) {
+      opts = opts || {};
       const rows = [];
-      if (!opts || !opts.skipMethod) rows.push(`<strong>Method:</strong> ${esc(f.methodNote)}`);
+      if (!opts.skipMethod) rows.push(`<strong>Method:</strong> ${esc(f.methodNote)}`);
       rows.push(`<strong>Where it comes from:</strong> ${esc(f.provenance)}`);
-      if (f.suggestedUse) rows.push(`<strong>Suggested use:</strong> ${esc(f.suggestedUse)}`);
+      if (f.suggestedUse && !opts.skipSuggestedUse) rows.push(`<strong>Suggested use:</strong> ${esc(f.suggestedUse)}`);
       if (f.foundational && f.foundationalWhy) rows.push(`<strong>Foundational source:</strong> ${esc(f.foundationalWhy)}`);
       rows.push(`<strong>Extracted and rated by:</strong> ${esc(f.model || 'unrecorded')}, ${esc(f.added || '')}`);
       return `<p class="fact-meta">${rows.join('<br>')}</p>`;
@@ -149,31 +152,88 @@
               ${pd ? `<span class="cite-date">Published ${esc(pd)}</span>` : ''}`;
     }
 
+    /* Short "Author et al. · year" source for the collapsed scan line. Author part
+       is everything before the " — " org separator in p.source. */
+    function shortSourceHTML(p, f) {
+      const authorPart = (p.source || '').split(' — ')[0].trim();
+      let name = authorPart;
+      if (authorPart.indexOf(',') > -1) name = authorPart.split(',')[0].trim() + ' et al.';
+      else if (authorPart.indexOf(' & ') > -1) name = authorPart.split(' & ')[0].trim() + ' et al.';
+      const yr = (pubDateOf(f) || '').slice(0, 4);
+      return esc(name) + (yr ? ' &middot; ' + yr : '');
+    }
+    /* Collapsed scan line: plain-English claim leads (built by the card); this row
+       carries source (all-facts view only — the by-paper group footer already shows it)
+       and the two rating dot-meters, with the expand chevron pushed to the end. */
+    function scanLineHTML(f, p, showSource) {
+      const src = showSource ? `<span class="fc-src">${shortSourceHTML(p, f)}</span>` : '';
+      return `<div class="fc-scan">
+        ${src}
+        <span class="fc-meter">Political <span class="dots" aria-hidden="true">${dots(f.political)}</span><span class="sr-only">${f.political} of 5</span></span>
+        <span class="fc-meter">Truth <span class="dots" aria-hidden="true">${dots(f.truth)}</span><span class="sr-only">${f.truth} of 5</span></span>
+        <span class="expand-hint"><span class="ui-chevron chev" aria-hidden="true"></span></span>
+      </div>`;
+    }
+    /* ── Composable detail pieces (the two views arrange these differently) ── */
+    function quoteBlockHTML(f) {
+      return `<div class="fc-quote-block">
+          <span class="lbl-grot">Verbatim quote</span>
+          <blockquote class="fact-quote">${esc(f.fact)}</blockquote>
+        </div>`;
+    }
+    function usageHTML(f) {
+      return f.suggestedUse
+        ? `<div class="fc-usage"><span class="lbl-grot">Suggested use</span>${esc(f.suggestedUse)}</div>`
+        : '';
+    }
+    function chipsRowHTML(f) {
+      return `<div class="chips fc-chips">
+          <span class="chip">${esc(EV_LABELS[f.evidenceType] || f.evidenceType)}</span>
+          ${statusChipsHTML(f)}${kwChipsHTML(f)}
+        </div>`;
+    }
+    function methodsPanelHTML(f, opts) {
+      return `<div class="fact-methods">
+          <span class="lbl-grot">Methods &amp; sourcing</span>
+          ${metaHTML(f, opts)}
+        </div>`;
+    }
+    function contextDiscHTML(f) {
+      return `<details class="fact-context-d">
+          <summary>Show surrounding paragraph</summary>
+          <div class="fc-ctx-body">${esc(f.context)}</div>
+        </details>`;
+    }
+    function actionsHTML(f, p) {
+      return `<div class="fc-actions">
+          <a class="act-btn" href="#entry/${esc(p.id)}">View in tracker</a>
+          <button class="act-btn" data-copy="${esc(f.id)}">Copy fact + citation</button>
+        </div>`;
+    }
+    /* Plain English expand: the whole story behind the one-line takeaway. */
+    function detailBodyHTML(f, p) {
+      return `<div class="fc-detail">
+        ${caveatHTML(f)}
+        ${quoteBlockHTML(f)}
+        ${ratingDescHTML(f, { skipEvidence: true })}
+        ${chipsRowHTML(f)}
+        ${methodsPanelHTML(f)}
+        ${contextDiscHTML(f)}
+        ${actionsHTML(f, p)}
+      </div>`;
+    }
+
     /* ── MODE 1: By-paper view ── */
     function simpleCardHTML(f) {
       const p = paperMap[f.paperId];
       return `
       <div class="cwrap" data-fid="${esc(f.id)}"><div class="cinner">
         <div class="simple-card" id="kf-card-${esc(f.id)}" tabindex="0" role="button" aria-expanded="false">
-          <div class="sc-top">
-            <p class="sc-plain">${esc(f.factPlain)}</p>
-            <span class="expand-hint"><span class="ui-chevron chev" aria-hidden="true"></span></span>
-          </div>
-          <div class="details"><div class="dinner"><div class="sc-body">
-            <div class="fc-quote-block">
-              <span class="lbl-grot">Full quote</span>
-              <blockquote class="fact-quote">${esc(f.fact)}</blockquote>
-            </div>
-            ${caveatHTML(f)}
-            ${ratingDescHTML(f)}
-            <div class="chips" style="margin-top:10px">${statusChipsHTML(f)}${kwChipsHTML(f)}</div>
-            <div style="margin-top:12px">${metaHTML(f, { skipMethod: true })}</div>
-            ${contextHTML(f)}
-            <div class="sc-actions">
-              <a class="act-btn" href="#entry/${esc(p.id)}">View in tracker</a>
-              <button class="act-btn" data-copy="${esc(f.id)}">Copy fact + citation</button>
-            </div>
-          </div></div></div>
+          <p class="fc-claim">${esc(f.factPlain)}</p>
+          ${scanLineHTML(f, p, false)}
+          <div class="details"><div class="dinner">
+            ${detailBodyHTML(f, p)}
+          </div></div>
         </div>
       </div></div>`;
     }
@@ -192,36 +252,32 @@
       </div></div>`;
     }
 
-    /* ── MODE 2: All-facts view ── */
+    /* ── MODE 2: All-facts view ──
+       The comprehensive lens: every fact carries its full quote and usage guidance
+       (caveat + suggested use) up front, which is what sets it apart from the plain
+       one-line takeaways; the card then expands for methods and ratings. Mirrors the
+       mode-toggle copy. */
     function factCardHTML(f) {
       const p = paperMap[f.paperId];
       return `
       <div class="cwrap" data-fid="${esc(f.id)}"><div class="cinner">
         <article class="fact-card" id="kf-all-${esc(f.id)}" tabindex="0" role="button" aria-expanded="false">
-          <p class="fc-plain">${esc(f.factPlain)}</p>
-          <div class="fc-quote-block">
-            <span class="lbl-grot">Full quote</span>
-            <blockquote class="fact-quote">${esc(f.fact)}</blockquote>
+          <p class="fc-claim">${esc(f.factPlain)}</p>
+          ${scanLineHTML(f, p, true)}
+          <div class="fc-open">
+            ${quoteBlockHTML(f)}
+            ${caveatHTML(f)}
+            ${usageHTML(f)}
           </div>
-          ${caveatHTML(f)}
-          <div class="details"><div class="dinner"><div class="fc-details-body">
-            <div class="chips">
-              <span class="chip chip-rating">Political <span class="dots" aria-hidden="true">${dots(f.political)}</span><span class="sr-only">${f.political} of 5</span></span>
-              <span class="chip chip-rating">Truth <span class="dots" aria-hidden="true">${dots(f.truth)}</span><span class="sr-only">${f.truth} of 5</span></span>
-              <span class="chip">${esc(EV_LABELS[f.evidenceType] || f.evidenceType)}</span>
-              ${statusChipsHTML(f)}${kwChipsHTML(f)}
+          <div class="details"><div class="dinner">
+            <div class="fc-detail">
+              ${ratingDescHTML(f, { skipEvidence: true })}
+              ${chipsRowHTML(f)}
+              ${methodsPanelHTML(f, { skipSuggestedUse: true })}
+              ${contextDiscHTML(f)}
+              ${actionsHTML(f, p)}
             </div>
-            ${metaHTML(f)}
-            ${contextHTML(f)}
-          </div></div></div>
-          <div class="fact-footer">
-            <div class="fc-cite">${citeHTML(p, f)}</div>
-            <div class="fact-actions">
-              <a class="act-btn" href="#entry/${esc(p.id)}">View in tracker</a>
-              <button class="act-btn" data-copy="${esc(f.id)}">Copy fact + citation</button>
-              <span class="expand-hint"><span class="ui-chevron chev" aria-hidden="true"></span> Details</span>
-            </div>
-          </div>
+          </div></div>
         </article>
       </div></div>`;
     }
@@ -321,7 +377,7 @@
           });
           return;
         }
-        if (e.target.closest('a, select, input')) return;
+        if (e.target.closest('a, select, input, summary')) return;
         const card = e.target.closest('.simple-card, .fact-card');
         if (card) toggleCard(card);
       });
@@ -414,12 +470,10 @@
   });
 
   // ── init ─────────────────────────────────────────────────────
-  // Sync the lens UI to the default lens before the first route resolves, so
-  // the site leads with Focused. setLens is the single writer of that DOM state
-  // (body class, toggle buttons, masthead) and is otherwise only reached by a
-  // click; without this the default would filter the data (activeLens is read
-  // directly by filteredBase) but leave the General button visually active and
-  // the body without the lens-economist class.
+  // One-time init of the masthead, filters, and body state before the first
+  // route resolves. The General/Focused toggle was removed, so activeLens is
+  // fixed to 'general' and setLens is no longer a user control; this call (and
+  // the entry router's now-dormant one) are all that remain of it.
   setLens(activeLens);
   // R2: honor a deep link if one is present; otherwise land on About (home).
   if (!applyHashRoute()) setView('about');
