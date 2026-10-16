@@ -3,7 +3,7 @@
 
      Routes
        #about #research #changelog #fact-bank #policy #solutions
-                                               ... the flat views, in VIEWS below
+       #california #taxi-drivers               ... the flat views, in VIEWS below
        #policy/<policy-id> #entry/<entry-id>   ... parameterised
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
@@ -31,11 +31,16 @@
     research:           { view: 'cards',     enter: () => setResearchSubview('database') },
     changelog:          { view: 'cards',     enter: () => setResearchSubview('changelog') },
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
+    /* Case Studies is two routes onto one view, like research/changelog
+       above: the view is the same, the sub-case is the difference. */
+    california:         { view: 'case-studies', enter: () => setCaseStudy('california') },
+    'taxi-drivers':     { view: 'case-studies', enter: () => setCaseStudy('taxi') },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
-  // `changelog` as the generic name for the cards view; the sub-view is
+  // `changelog` as the generic name for the cards view and `california`
+  // beats `taxi-drivers` for the case-studies view; both sub-views are
   // resolved explicitly below.
   const ROUTE_FOR_VIEW = {};
   for (const [route, cfg] of Object.entries(VIEWS)) {
@@ -53,6 +58,7 @@
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
     if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
+    if (activeView === 'case-studies') return activeCaseStudy === 'taxi' ? 'taxi-drivers' : 'california';
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 

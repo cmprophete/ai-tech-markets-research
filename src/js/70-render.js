@@ -30,6 +30,7 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
+    if (activeView === 'case-studies') { buildCaseStudies(); return; }
     if (activeView === 'solutions') {
       // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
       // Replace the static content with a notice at runtime; the prose stays in
@@ -111,6 +112,13 @@
       general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
       economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
     },
+    'case-studies': {
+      // Not displayed: .case-studies-view hides .header-tab-desc, and the
+      // visible lede/standfirst come from CASE_STUDIES so they can differ per
+      // case. Kept so every view has a row, per the note above.
+      general:   { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
+      economist: { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
+    },
     solutions: {
       general:   { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
       economist: { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
@@ -152,14 +160,22 @@
   }
 
   const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', about: 'homeTitleLink' };
+  /* Case Studies is the only view with two nav buttons, so which tab reads as
+     current depends on the sub-case as well as the view. One function answers
+     that for every view so setView has a single owner for the active tab;
+     setCaseStudy deliberately does not also toggle these. */
+  function activeTabIdFor(view) {
+    if (view === 'case-studies') return activeCaseStudy === 'taxi' ? 'viewCaseTaxi' : 'viewCaseCA';
+    return VIEW_TAB_IDS[view];
+  }
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi', 'viewPolicy', 'viewSolutions'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const active = id === VIEW_TAB_IDS[view];
+      const active = id === activeTabIdFor(view);
       el.classList.toggle('active', active);
       el.setAttribute('aria-selected', active ? 'true' : 'false');
     });
@@ -170,9 +186,10 @@
     document.body.classList.toggle('about-view',    view === 'about');
     document.body.classList.toggle('solutions-view', view === 'solutions');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
+    document.body.classList.toggle('case-studies-view', view === 'case-studies');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
     render();
-    const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
+    const activeTabId = activeTabIdFor(view) || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
     if (panel) panel.setAttribute('aria-labelledby', activeTabId);
     const ann = document.getElementById('viewAnnounce');
@@ -180,7 +197,12 @@
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
       const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
-      ann.textContent = (names[view] || view) + ' view';
+      // Case Studies has two labels for one view; announce the one the user
+      // actually clicked, not the view key.
+      const name = view === 'case-studies'
+        ? (activeCaseStudy === 'taxi' ? 'Taxi Drivers' : 'California Campaigns')
+        : (names[view] || view);
+      ann.textContent = name + ' view';
     }
     setHash(currentRoute());
   }
@@ -197,6 +219,7 @@
     if (!btn) return;
     const view = btn.dataset.view;
     if (view === 'cards') setResearchSubview('database');
+    if (view === 'case-studies') setCaseStudy(btn.dataset.case);
     setView(view);
   });
 

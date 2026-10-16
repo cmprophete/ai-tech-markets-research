@@ -294,12 +294,13 @@
 
      Each group carries its own accent via --group-accent, set per group
      below. ESP secondary palette on the Warm Navy band: Soft Green (the
-     C3 accent) for Research, Warm Gold for Economy, Warm Pink for
+     C3 accent) for Research, Warm Gold for Case Studies, Warm Pink for
      Policy. All three clear contrast on navy, and they stay graphic
      elements (rules, underlines, 10px labels) rather than body copy —
      the 75/15/10 balance holds because the band itself is navy. */
   .tab-group { display: flex; flex-direction: column; --group-accent: var(--green); }
   .tab-group[data-group="research"] { --group-accent: var(--green); }
+  .tab-group[data-group="case-studies"] { --group-accent: var(--gold); }
   .tab-group[data-group="policy"]   { --group-accent: var(--pink);  }
   .tab-group-btns { display: flex; align-items: flex-end; }
   .tab-group-label {
@@ -2103,6 +2104,194 @@
     .pol-cat-row-head { padding: 12px 14px 10px; }
   }
 
+  /* ── CASE STUDIES ───────────────────────────────────────────────────────
+     The Case Studies tab group carries Warm Gold, which is the accent the
+     retired Economy group used (see .tab-group[data-group] in shell.css).
+
+     COLOR CAUTION. --gold (#ebc382) fails contrast at small sizes on Beige,
+     so everything text-sized or hairline-thin here uses --gold-deep and the
+     pure token is reserved for the one large fill on the page, the state
+     outline. That split is the rule the token block in tokens.css sets out;
+     do not reach for --gold on a label because it looks brighter. */
+  #caseStudiesArea { display: none; }
+  .case-studies-view #caseStudiesArea  { display: block; }
+  .case-studies-view .sidebar          { display: none; }
+  .case-studies-view .inline-filters   { display: none; }
+  .case-studies-view .cards-grid       { display: none !important; }
+  .case-studies-view .empty-state      { display: none !important; }
+  .case-studies-view .lens-toggle      { display: none; }
+  .case-studies-view .header-tab-desc  { display: none; }
+  .case-studies-view .key-findings-band { display: none; }
+  .case-studies-view .app-layout       { grid-template-columns: 1fr; }
+  .case-studies-view .main-content     { grid-column: 1 / -1; }
+  .case-studies-view .cards-area       { padding-top: 0; }
+
+  .cs-intro { padding: var(--masthead-top) 0 0; }
+  .cs-intro .tab-standfirst { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+
+  /* ── stage ──────────────────────────────────────────────────────────
+     Two columns with the state outline behind both. The map is absolutely
+     positioned rather than a background-image so it can scale with the
+     column and still be a real <svg> we can recolor through CSS. */
+  .cs-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 40px;
+    margin-top: 28px;
+    max-width: 1140px;
+  }
+  /* Decorative. Pinned to the timeline column so the timeline reads as
+     running down the length of the state, and kept out of the detail
+     panel's way. pointer-events:none so it never eats a click meant for a
+     timeline point sitting on top of it. */
+  .cs-map {
+    position: absolute;
+    /* left:0, not a negative inset. The stage sits ~29px from the viewport
+       edge at 1024px, so bleeding the map left of the stage clipped the
+       coastline against the window. */
+    top: 0; left: 0;
+    width: 46%; height: 100%;
+    fill: var(--gold);
+    opacity: 0.16;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cs-timeline-col, .cs-detail-col { position: relative; z-index: 1; min-width: 0; }
+
+  /* ── timeline ───────────────────────────────────────────────────── */
+  .cs-timeline { list-style: none; margin: 0; padding: 0 0 0 26px; position: relative; }
+  /* The rail. Inset to pass through the centre of the .cs-event markers. */
+  .cs-timeline::before {
+    content: ''; position: absolute;
+    left: 5px; top: 6px; bottom: 6px; width: 2px;
+    background: color-mix(in srgb, var(--gold-deep) 42%, transparent);
+  }
+  .cs-phase {
+    display: flex; flex-direction: column; gap: 1px;
+    margin: 26px 0 10px; padding-left: 2px;
+  }
+  .cs-phase:first-child { margin-top: 0; }
+  .cs-phase-label {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-deep);
+  }
+  .cs-phase-span { font-family: var(--grot); font-size: 11px; color: var(--muted); }
+  .cs-row { position: relative; }
+
+  .cs-event {
+    position: relative;
+    display: block; width: 100%; text-align: left;
+    background: none; border: none; cursor: pointer;
+    padding: 7px 10px 7px 12px;
+    border-radius: var(--r-ctl);
+    transition: background 0.14s, color 0.14s;
+  }
+  /* The marker. Sits on the rail, so its left must track .cs-timeline's
+     padding (26px) minus the rail inset (5px) and half the dot. */
+  .cs-event::before {
+    content: ''; position: absolute;
+    left: -25px; top: 13px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--gold-deep);
+    transition: background 0.14s, transform 0.14s;
+  }
+  .cs-event:hover { background: color-mix(in srgb, var(--gold) 20%, transparent); }
+  .cs-event.active { background: color-mix(in srgb, var(--gold) 34%, transparent); }
+  .cs-event.active::before { background: var(--gold-deep); transform: scale(1.25); }
+  .cs-event--upcoming::before { border-style: dashed; }
+  .cs-event-date {
+    display: block;
+    font-family: var(--grot); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.04em; color: var(--muted);
+  }
+  .cs-event-title {
+    display: block; margin-top: 1px;
+    font-family: var(--sans); font-size: 14.5px; line-height: 1.4;
+    color: var(--text);
+  }
+  .cs-event.active .cs-event-title { color: var(--headline); font-weight: 600; }
+
+  /* ── detail panel ───────────────────────────────────────────────── */
+  .cs-detail {
+    position: sticky; top: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold-deep);
+    border-radius: var(--r-card);
+    padding: 24px 26px 22px;
+  }
+  .cs-detail-head { margin-bottom: 18px; }
+  .cs-detail-date {
+    font-family: var(--grot); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-deep);
+  }
+  .cs-upcoming {
+    display: inline-block; margin-left: 6px; padding: 2px 6px;
+    border: 1px solid var(--divider); border-radius: var(--r-tag);
+    font-size: 9.5px; letter-spacing: 0.08em; color: var(--muted);
+  }
+  .cs-detail-title {
+    font-family: var(--serif); font-size: 23px; line-height: 1.25;
+    font-weight: 500; letter-spacing: -0.01em; color: var(--headline);
+    margin: 5px 0 0;
+  }
+  .cs-detail-kicker {
+    font-family: var(--sans); font-size: 13.5px; color: var(--muted); margin-top: 5px;
+  }
+  .cs-detail-section { margin-top: 18px; }
+  .cs-detail-label {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .cs-detail-text {
+    font-family: var(--sans); font-size: 14.5px; line-height: 1.68; color: var(--text);
+    margin: 0;
+  }
+  .cs-bill { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 7px; }
+  .cs-bill-number {
+    font-family: var(--grot); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.04em; color: var(--headline);
+    background: color-mix(in srgb, var(--gold) 38%, transparent);
+    border-radius: var(--r-tag); padding: 3px 8px;
+  }
+  .cs-bill-author { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+  .cs-sources { list-style: none; margin: 0; padding: 0; }
+  .cs-sources li {
+    font-family: var(--sans); font-size: 13px; line-height: 1.55;
+    padding-left: 15px; text-indent: -15px; margin-bottom: 7px; color: var(--muted);
+  }
+  .cs-sources a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .cs-sources a:hover { color: var(--gold-deep); }
+  .cs-provenance {
+    margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--border);
+    font-family: var(--sans); font-size: 12.5px; line-height: 1.55;
+    font-style: italic; color: var(--muted);
+  }
+
+  /* ── TK ─────────────────────────────────────────────────────────── */
+  .cs-tk { margin-top: 36px; max-width: var(--lede-measure); }
+  .cs-tk-mark {
+    font-family: var(--serif); font-size: 72px; line-height: 1;
+    font-weight: 500; letter-spacing: 0.02em; color: var(--gold-deep);
+  }
+  .cs-tk-note {
+    margin-top: 14px;
+    font-family: var(--sans); font-size: 15px; line-height: 1.7; color: var(--muted);
+    max-width: 62ch;
+  }
+
+  @media (max-width: 900px) {
+    .cs-stage { grid-template-columns: 1fr; gap: 26px; }
+    /* One column: the outline becomes a corner watermark rather than a
+       backdrop for the timeline, or it sits under the detail panel's
+       surface and muddies it. */
+    .cs-map { left: auto; right: 0; top: 0; width: 38%; height: 320px; opacity: 0.12; }
+    .cs-detail { position: static; }
+  }
   /* ── FOCUS STYLES (Fix 1) ────────────────────────────────── */
   :focus-visible {
     outline: 2px solid var(--accent);
@@ -2124,6 +2313,7 @@
      DATA
      ═══════════════════════════════════════════════════════════ -->
 <script src="data/tracker-data.js"></script>
+<script src="data/case-studies-data.js"></script>
 <!-- NOT loaded here, fetched on first use by loadPayload() in src/js/05-lazy.js:
        data/fact-bank-data.js   880 KB, on first open of the Fact Bank view
      Off the critical path. -->
@@ -2148,6 +2338,13 @@
             <button class="header-nav-btn" id="viewFactBank" data-view="fact-bank" role="tab" aria-selected="false" aria-controls="viewPanel">Fact Bank</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Research</div>
+        </div>
+        <div class="tab-group" data-group="case-studies" role="presentation">
+          <div class="tab-group-btns" role="presentation">
+            <button class="header-nav-btn" id="viewCaseCA" data-view="case-studies" data-case="california" role="tab" aria-selected="false" aria-controls="viewPanel">California Campaigns</button>
+            <button class="header-nav-btn" id="viewCaseTaxi" data-view="case-studies" data-case="taxi" role="tab" aria-selected="false" aria-controls="viewPanel">Taxi Drivers</button>
+          </div>
+          <div class="tab-group-label" aria-hidden="true">Case Studies</div>
         </div>
         <div class="tab-group" data-group="policy" role="presentation">
           <div class="tab-group-btns" role="presentation">
@@ -2280,6 +2477,19 @@
         </div>
       </div>
 
+      <!-- ── CASE STUDIES TAB ── -->
+      <!-- Two case studies share one view and one area; the nav tabs
+           (California Campaigns / Taxi Drivers) switch between them through
+           setCaseStudy() in src/js/35-case-studies.js, the same way the Papers
+           tab switches Database / What's New. Everything inside is built at
+           runtime from CASE_STUDIES in data/case-studies-data.js. -->
+      <div id="caseStudiesArea">
+        <div class="cs-intro">
+          <h2 class="tab-lede" id="csLede"></h2>
+          <p class="tab-standfirst" id="csStandfirst"></p>
+        </div>
+        <div id="csBody"></div>
+      </div>
       <!-- ── SOLUTIONS TAB ── (static editorial view; shown by the
            .solutions-view body class, so render() early-returns on it.
            Three parts in ESP's order: the world we want, the policies that
@@ -2524,6 +2734,10 @@
   let activeView    = 'about';
   // Research sub-tab: 'database' | 'changelog'
   let researchSubview = 'database';
+  // Case Studies sub-tab: 'california' | 'taxi'. Both are one view
+  // ('case-studies') and differ only here, the way the two Research
+  // sub-tabs share the cards view.
+  let activeCaseStudy = 'california';
   let activeCat      = 'all';
   let activeStatus   = 'all';
   let activeGeo      = 'all';
@@ -3909,12 +4123,172 @@
 
   function applyPolFilters() {}
 
+  /* ── CASE STUDIES ────────────────────────────────────────────────────────
+     Two case studies (California Campaigns, Taxi Drivers) behind one view.
+     The nav tabs route to #california and #taxi-drivers; both land on
+     setView('case-studies') and differ only by activeCaseStudy, exactly the
+     way #research and #changelog share the cards view.
+
+     Content is CASE_STUDIES in data/case-studies-data.js and is authored
+     prose, so it is written with innerHTML the way THEMES and POLICY_DATA
+     are. Nothing here comes from a URL or a user, so there is nothing to
+     escape; if that ever changes, escape at the boundary, not here.
+
+     The California page is a decorative state outline behind a vertical
+     timeline. Clicking a timeline point fills the detail panel beside it.
+     The map is aria-hidden: it carries no information the timeline does not,
+     and announcing a 3 KB path to a screen reader helps nobody. */
+
+  let _csBuilt = {};   // case id -> true once its DOM exists
+
+  // The detail panel renders one event. Sections are omitted rather than left
+  // empty, because an empty "Bill" heading reads as missing data.
+  function csDetailHTML(ev) {
+    const bill = ev.bill ? `
+        <div class="cs-detail-section">
+          <div class="cs-detail-label">The bill</div>
+          <div class="cs-bill">
+            <span class="cs-bill-number">${ev.bill.number}</span>
+            <span class="cs-bill-author">${ev.bill.author}</span>
+          </div>
+          <p class="cs-detail-text">${ev.bill.summary}</p>
+        </div>` : '';
+    const sources = (ev.sources && ev.sources.length) ? `
+        <div class="cs-detail-section">
+          <div class="cs-detail-label">Sources</div>
+          <ul class="cs-sources">
+            ${ev.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a></li>`).join('')}
+          </ul>
+        </div>` : '';
+    // An event with no public source is from the internal retreat deck. Say so
+    // on the card rather than letting it sit next to sourced rows looking the
+    // same; see the header comment in data/case-studies-data.js.
+    const provenance = ev.origin === 'deck' ? `
+        <p class="cs-provenance">Internal: All Staff Retreat 2026 deck. Not published, not externally verified.</p>` :
+      ev.origin === 'mixed' ? `
+        <p class="cs-provenance">Media figures from the internal All Staff Retreat 2026 deck; the veto and its reasoning are public.</p>` : '';
+    return `
+      <div class="cs-detail-head">
+        <div class="cs-detail-date">${ev.dateLabel}${ev.upcoming ? ' <span class="cs-upcoming">upcoming</span>' : ''}</div>
+        <h3 class="cs-detail-title">${ev.title}</h3>
+        ${ev.kicker ? `<div class="cs-detail-kicker">${ev.kicker}</div>` : ''}
+      </div>
+      ${bill}
+      <div class="cs-detail-section">
+        <div class="cs-detail-label">What happened</div>
+        <p class="cs-detail-text">${ev.what}</p>
+      </div>
+      <div class="cs-detail-section">
+        <div class="cs-detail-label">ESP&rsquo;s role</div>
+        <p class="cs-detail-text">${ev.role}</p>
+      </div>
+      ${sources}
+      ${provenance}`;
+  }
+
+  function csSelect(area, id) {
+    const study = CASE_STUDIES.california;
+    const ev = study.events.find(e => e.id === id);
+    if (!ev) return;
+    area.querySelectorAll('.cs-event').forEach(b => {
+      const on = b.dataset.eventId === id;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    const panel = area.querySelector('#csDetail');
+    if (panel) panel.innerHTML = csDetailHTML(ev);
+  }
+
+  function buildCalifornia(study) {
+    const phases = {};
+    study.phases.forEach(p => { phases[p.id] = p; });
+    // Group events under their phase heading, in data order. The data file is
+    // already chronological, so this neither sorts nor reorders: it only
+    // inserts a heading when the phase changes.
+    let seen = null;
+    const rows = study.events.map(ev => {
+      let head = '';
+      if (ev.phase !== seen) {
+        seen = ev.phase;
+        const p = phases[ev.phase];
+        head = p ? `<li class="cs-phase"><span class="cs-phase-label">${p.label}</span><span class="cs-phase-span">${p.span}</span></li>` : '';
+      }
+      return head + `
+        <li class="cs-row">
+          <button type="button" class="cs-event${ev.upcoming ? ' cs-event--upcoming' : ''}"
+                  data-event-id="${ev.id}" aria-pressed="false">
+            <span class="cs-event-date">${ev.dateLabel}</span>
+            <span class="cs-event-title">${ev.title}</span>
+          </button>
+        </li>`;
+    }).join('');
+
+    return `
+      <div class="cs-stage">
+        <svg class="cs-map" viewBox="${study.map.viewBox}" aria-hidden="true" focusable="false"
+             preserveAspectRatio="xMidYMid meet">
+          <path d="${study.map.d}"/>
+        </svg>
+        <div class="cs-timeline-col">
+          <ol class="cs-timeline">${rows}</ol>
+        </div>
+        <div class="cs-detail-col">
+          <div class="cs-detail" id="csDetail" aria-live="polite"></div>
+        </div>
+      </div>`;
+  }
+
+  function buildTaxi(study) {
+    return `
+      <div class="cs-tk">
+        <div class="cs-tk-mark">TK</div>
+        <p class="cs-tk-note">${study.tkNote}</p>
+      </div>`;
+  }
+
+  /* Build on first open and cache. The California page is ~15 KB of DOM and
+     neither case depends on filters or lens, so there is nothing to
+     invalidate: unlike the cards view this never needs a re-render. */
+  function buildCaseStudies() {
+    const study = CASE_STUDIES[activeCaseStudy] || CASE_STUDIES.california;
+    const area  = document.getElementById('caseStudiesArea');
+    if (!area) return;
+    document.getElementById('csLede').innerHTML = study.lede;
+    document.getElementById('csStandfirst').innerHTML = study.standfirst;
+    const body = document.getElementById('csBody');
+    if (!body) return;
+    if (_csBuilt.id !== study.id) {
+      body.innerHTML = study.tk ? buildTaxi(study) : buildCalifornia(study);
+      _csBuilt.id = study.id;
+      // Open on the first event so the detail panel is never an empty box.
+      if (!study.tk && study.events.length) csSelect(area, study.events[0].id);
+    }
+  }
+
+  /* Sets the sub-case and nothing else. It does NOT toggle the two nav
+     buttons: activeTabIdFor() in 70-render.js owns that, and setView() always
+     runs after this (both the router's `enter` and the nav click handler call
+     them in that order). Two writers for one piece of DOM is the bug the
+     applyMastheadCopy note in 70-render.js records; don't reintroduce it. */
+  function setCaseStudy(which) {
+    activeCaseStudy = (which === 'taxi') ? 'taxi' : 'california';
+    if (activeView === 'case-studies') buildCaseStudies();
+  }
+
+  // One delegated listener, like the view nav. Timeline points are buttons, so
+  // Enter and Space already work; this only has to find which one was hit.
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.cs-event');
+    if (!btn) return;
+    const area = document.getElementById('caseStudiesArea');
+    if (area) csSelect(area, btn.dataset.eventId);
+  });
   /* ── ROUTER ──────────────────────────────────────────────────────────────
      One place that knows how location.hash and app state map onto each other.
 
      Routes
        #about #research #changelog #fact-bank #policy #solutions
-                                               ... the flat views, in VIEWS below
+       #california #taxi-drivers               ... the flat views, in VIEWS below
        #policy/<policy-id> #entry/<entry-id>   ... parameterised
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
@@ -3942,11 +4316,16 @@
     research:           { view: 'cards',     enter: () => setResearchSubview('database') },
     changelog:          { view: 'cards',     enter: () => setResearchSubview('changelog') },
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
+    /* Case Studies is two routes onto one view, like research/changelog
+       above: the view is the same, the sub-case is the difference. */
+    california:         { view: 'case-studies', enter: () => setCaseStudy('california') },
+    'taxi-drivers':     { view: 'case-studies', enter: () => setCaseStudy('taxi') },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
-  // `changelog` as the generic name for the cards view; the sub-view is
+  // `changelog` as the generic name for the cards view and `california`
+  // beats `taxi-drivers` for the case-studies view; both sub-views are
   // resolved explicitly below.
   const ROUTE_FOR_VIEW = {};
   for (const [route, cfg] of Object.entries(VIEWS)) {
@@ -3964,6 +4343,7 @@
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
     if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
+    if (activeView === 'case-studies') return activeCaseStudy === 'taxi' ? 'taxi-drivers' : 'california';
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 
@@ -4082,6 +4462,7 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
+    if (activeView === 'case-studies') { buildCaseStudies(); return; }
     if (activeView === 'solutions') {
       // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
       // Replace the static content with a notice at runtime; the prose stays in
@@ -4163,6 +4544,13 @@
       general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
       economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
     },
+    'case-studies': {
+      // Not displayed: .case-studies-view hides .header-tab-desc, and the
+      // visible lede/standfirst come from CASE_STUDIES so they can differ per
+      // case. Kept so every view has a row, per the note above.
+      general:   { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
+      economist: { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
+    },
     solutions: {
       general:   { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
       economist: { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
@@ -4204,14 +4592,22 @@
   }
 
   const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', about: 'homeTitleLink' };
+  /* Case Studies is the only view with two nav buttons, so which tab reads as
+     current depends on the sub-case as well as the view. One function answers
+     that for every view so setView has a single owner for the active tab;
+     setCaseStudy deliberately does not also toggle these. */
+  function activeTabIdFor(view) {
+    if (view === 'case-studies') return activeCaseStudy === 'taxi' ? 'viewCaseTaxi' : 'viewCaseCA';
+    return VIEW_TAB_IDS[view];
+  }
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi', 'viewPolicy', 'viewSolutions'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const active = id === VIEW_TAB_IDS[view];
+      const active = id === activeTabIdFor(view);
       el.classList.toggle('active', active);
       el.setAttribute('aria-selected', active ? 'true' : 'false');
     });
@@ -4222,9 +4618,10 @@
     document.body.classList.toggle('about-view',    view === 'about');
     document.body.classList.toggle('solutions-view', view === 'solutions');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
+    document.body.classList.toggle('case-studies-view', view === 'case-studies');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
     render();
-    const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
+    const activeTabId = activeTabIdFor(view) || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
     if (panel) panel.setAttribute('aria-labelledby', activeTabId);
     const ann = document.getElementById('viewAnnounce');
@@ -4232,7 +4629,12 @@
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
       const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
-      ann.textContent = (names[view] || view) + ' view';
+      // Case Studies has two labels for one view; announce the one the user
+      // actually clicked, not the view key.
+      const name = view === 'case-studies'
+        ? (activeCaseStudy === 'taxi' ? 'Taxi Drivers' : 'California Campaigns')
+        : (names[view] || view);
+      ann.textContent = name + ' view';
     }
     setHash(currentRoute());
   }
@@ -4249,6 +4651,7 @@
     if (!btn) return;
     const view = btn.dataset.view;
     if (view === 'cards') setResearchSubview('database');
+    if (view === 'case-studies') setCaseStudy(btn.dataset.case);
     setView(view);
   });
 

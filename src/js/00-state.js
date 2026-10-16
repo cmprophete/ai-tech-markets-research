@@ -3,6 +3,10 @@
   let activeView    = 'about';
   // Research sub-tab: 'database' | 'changelog'
   let researchSubview = 'database';
+  // Case Studies sub-tab: 'california' | 'taxi'. Both are one view
+  // ('case-studies') and differ only here, the way the two Research
+  // sub-tabs share the cards view.
+  let activeCaseStudy = 'california';
   let activeCat      = 'all';
   let activeStatus   = 'all';
   let activeGeo      = 'all';
