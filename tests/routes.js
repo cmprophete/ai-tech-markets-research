@@ -30,6 +30,8 @@ const ROUTES = [
   '', '#about', '#research', '#changelog', '#fact-bank', '#policy', '#solutions',
   // Case Studies: two routes onto one view, so both are pinned.
   '#california', '#taxi-drivers',
+  // Regulation: three routes onto one view.
+  '#regulate-tech', '#regulate-workers', '#regulate-cash',
   // Removed routes, pinned so their fall-through to About cannot regress
   // silently. The Economy tab (Data Tracker + Job Displacement) and its routes
   // were removed 2026-08; #adoption/#themes/#theme predate it (docs/adr/0005).
@@ -38,7 +40,9 @@ const ROUTES = [
   '#tracker/nonsense', '#nonsense',
 ];
 
-const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi', 'viewPolicy', 'viewSolutions'];
+const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi',
+                   'viewRegTech', 'viewRegWorkers', 'viewRegCash',
+                   'viewPolicy', 'viewSolutions'];
 
 const txt = el => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : null);
 

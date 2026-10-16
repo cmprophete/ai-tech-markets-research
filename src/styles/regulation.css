@@ -1,0 +1,284 @@
+  /* ── REGULATION ─────────────────────────────────────────────────────────
+     Accent: Deep Purple, the one ESP secondary the tracker had not used.
+
+     TWO TOKENS, ONE HUE. Deep Purple (#472b51) scores 1.02:1 against the
+     Warm Navy band, so it cannot be the nav accent; it scores 10.78:1 on
+     Beige, so it is ideal for marks and labels in the page body. The band
+     therefore gets --purple-light, the same hue raised in lightness
+     (5.43:1 on navy, between Soft Green's 4.77 and Warm Gold's 7.49).
+     This is the --gold-deep / --green-deep pattern from tokens.css run in
+     the opposite direction: those darken a light brand colour for use on
+     Beige, this lightens a dark one for use on Navy. Use --purple-light on
+     navy and --purple on beige; swapping them fails contrast both ways. */
+  #regulationArea { display: none; }
+  .regulation-view #regulationArea    { display: block; }
+  .regulation-view .sidebar           { display: none; }
+  .regulation-view .inline-filters    { display: none; }
+  .regulation-view .cards-grid        { display: none !important; }
+  .regulation-view .empty-state       { display: none !important; }
+  .regulation-view .lens-toggle       { display: none; }
+  .regulation-view .header-tab-desc   { display: none; }
+  .regulation-view .key-findings-band { display: none; }
+  .regulation-view .app-layout        { grid-template-columns: 1fr; }
+  .regulation-view .main-content      { grid-column: 1 / -1; }
+  .regulation-view .cards-area        { padding-top: 0; }
+
+  .reg-intro { padding: var(--masthead-top) 0 0; }
+  .reg-intro .tab-standfirst { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+
+  #regBody { max-width: 1140px; }
+  .reg-section { margin-top: 38px; }
+  .reg-h {
+    font-family: var(--grot); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
+    margin: 0 0 14px; padding-bottom: 7px;
+    border-bottom: 1px solid color-mix(in srgb, var(--purple) 28%, transparent);
+  }
+  .reg-note {
+    font-family: var(--sans); font-size: 13.5px; line-height: 1.65;
+    color: var(--muted); max-width: 72ch; margin: -4px 0 16px;
+  }
+  .reg-takeaway {
+    font-family: var(--sans); font-size: 15px; line-height: 1.7;
+    color: var(--text); max-width: 76ch; margin: 18px 0 0;
+  }
+
+  /* The pull quote each page opens on. */
+  .reg-frame { margin: 28px 0 0; padding: 0 0 0 20px; border-left: 3px solid var(--purple); }
+  .reg-frame-quote {
+    font-family: var(--serif); font-size: 21px; line-height: 1.38; font-weight: 500;
+    color: var(--headline); margin: 0; max-width: 58ch;
+  }
+  .reg-frame-attrib {
+    font-family: var(--grot); font-size: 11px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); margin-top: 8px;
+  }
+
+  .reg-source {
+    margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--border);
+    font-family: var(--sans); font-size: 13px; color: var(--muted);
+  }
+  .reg-source a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .reg-source a:hover { color: var(--purple); }
+
+  /* ── shared SVG chrome ──────────────────────────────────────────── */
+  /* Set the defaults on the <svg> root and let the text INHERIT them. The
+     obvious `.reg-svg text { fill: ... }` is specificity (0,1,1) and so beats
+     every single-class rule below it, which silently repainted the branch
+     headers dark-on-navy and greyed out every coloured label. Inheritance
+     loses to any declared value, which is exactly what is wanted here. */
+  .reg-svg {
+    display: block; width: 100%; height: auto; margin-top: 4px;
+    font-family: var(--sans); fill: var(--text);
+  }
+
+  /* ── 1. the stack ───────────────────────────────────────────────── */
+  .reg-band-bg { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
+  .reg-band-name {
+    font-family: var(--grot); font-size: 13.5px; font-weight: 700;
+    fill: var(--headline);
+  }
+  .reg-band-note { font-size: 10.5px; fill: var(--muted); }
+  .reg-pill rect { fill: var(--bg); stroke: var(--divider); stroke-width: 1; }
+  .reg-pill text { font-size: 11.5px; fill: var(--text); }
+  /* The three that recur up the stack are the ones the drawing is about. */
+  .reg-pill--int rect { fill: color-mix(in srgb, var(--purple) 15%, var(--bg)); stroke: var(--purple); }
+  .reg-pill--int text { fill: var(--purple); font-weight: 600; }
+  .reg-pill--wide rect { stroke-dasharray: 3 3; }
+  .reg-track-line { stroke: color-mix(in srgb, var(--purple) 35%, transparent); stroke-width: 2; }
+  .reg-dot { fill: var(--bg); stroke: var(--purple); stroke-width: 2; }
+  .reg-dot--on { fill: var(--purple); }
+  .reg-track-name {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.04em; fill: var(--purple);
+  }
+  .reg-gutter-label {
+    font-family: var(--grot); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; fill: var(--muted);
+  }
+
+  /* ── technology vs companies ────────────────────────────────────── */
+  .reg-vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 26px; align-items: start; }
+  .reg-vs-rule { width: 1px; align-self: stretch; background: var(--border); }
+  .reg-vs-label {
+    font-family: var(--grot); font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .reg-vs-col--tech  .reg-vs-label { color: var(--green-deep); }
+  .reg-vs-col--firms .reg-vs-label { color: var(--purple); }
+  .reg-vs-list { list-style: none; margin: 0; padding: 0; }
+  .reg-vs-list li {
+    font-family: var(--sans); font-size: 14.5px; line-height: 1.6;
+    color: var(--text); padding: 0 0 10px 17px; position: relative;
+  }
+  .reg-vs-list li::before {
+    content: ''; position: absolute; left: 0; top: 9px;
+    width: 7px; height: 7px; border-radius: 2px;
+  }
+  .reg-vs-col--tech  .reg-vs-list li::before { background: var(--green-deep); }
+  .reg-vs-col--firms .reg-vs-list li::before { background: var(--purple); }
+
+  /* ── three big things ───────────────────────────────────────────── */
+  .reg-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .reg-action {
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: 3px solid var(--purple); border-radius: var(--r-card);
+    padding: 20px 20px 18px;
+  }
+  .reg-action-n {
+    font-family: var(--serif); font-size: 30px; line-height: 1;
+    color: color-mix(in srgb, var(--purple) 55%, transparent); margin-bottom: 10px;
+  }
+  .reg-action-title {
+    font-family: var(--serif); font-size: 18px; line-height: 1.28; font-weight: 500;
+    color: var(--headline); margin: 0 0 8px;
+  }
+  .reg-action-text {
+    font-family: var(--sans); font-size: 13.5px; line-height: 1.65; color: var(--text); margin: 0;
+  }
+
+  /* ── 2. the fork ────────────────────────────────────────────────── */
+  .reg-node rect { fill: var(--navy); }
+  .reg-node text { fill: var(--beige); font-size: 14px; font-weight: 600; }
+  .reg-node--test rect { fill: var(--surface); stroke: var(--purple); stroke-width: 2; }
+  .reg-node--test text { fill: var(--headline); font-size: 15px; }
+  .reg-link { stroke: var(--divider); stroke-width: 2; fill: none; }
+  .reg-arrowhead { fill: var(--divider); }
+  .reg-link--default { stroke: var(--purple); stroke-width: 3.5; }
+  .reg-link--steered { stroke: var(--green-deep); stroke-width: 2; stroke-dasharray: 5 4; }
+  .reg-link-note {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.05em; fill: var(--purple);
+  }
+  .reg-link-note--alt { fill: var(--green-deep); }
+  .reg-branch-head { fill: var(--navy); }
+  .reg-branch-answer {
+    font-family: var(--grot); font-size: 13px; font-weight: 700;
+    fill: var(--gold); letter-spacing: 0.06em;
+  }
+  .reg-branch-label {
+    font-family: var(--grot); font-size: 13px; font-weight: 600; fill: var(--beige);
+  }
+  .reg-branch--for .reg-branch-answer { fill: var(--green); }
+  .reg-kind rect { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
+  .reg-branch--against .reg-kind rect { stroke: color-mix(in srgb, var(--purple) 45%, var(--border)); }
+  .reg-kind-name { font-size: 13.5px; font-weight: 700; fill: var(--headline); }
+  .reg-kind-note { font-size: 11.5px; fill: var(--muted); }
+  .reg-kind-flag {
+    font-family: var(--grot); font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase; fill: var(--purple);
+  }
+  .reg-branch--for .reg-kind-flag { fill: var(--green-deep); }
+
+  .reg-gravity .reg-takeaway { max-width: 80ch; }
+
+  /* ── levers ─────────────────────────────────────────────────────── */
+  .reg-levers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .reg-lever {
+    border-top: 3px solid var(--purple); padding-top: 12px;
+  }
+  .reg-lever-name {
+    font-family: var(--grot); font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.04em; color: var(--headline); margin: 0 0 9px;
+  }
+  .reg-lever-list { list-style: none; margin: 0; padding: 0; }
+  .reg-lever-list li {
+    font-family: var(--sans); font-size: 13px; line-height: 1.6;
+    color: var(--text); padding: 0 0 9px 15px; position: relative;
+  }
+  .reg-lever-list li::before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--purple);
+  }
+
+  /* ── 3. cash ────────────────────────────────────────────────────── */
+  .reg-base { stroke: var(--divider); stroke-width: 2; }
+  .reg-base-label, .reg-shock-label {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted);
+  }
+  .reg-shock { stroke: var(--purple); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .reg-shock-label { fill: var(--purple); }
+  .reg-path { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+  .reg-path--bad  { stroke: var(--purple); }
+  .reg-path--good { stroke: var(--green-deep); }
+  .reg-beat text { font-size: 11px; }
+  .reg-beat--bad  circle { fill: var(--purple); }
+  .reg-beat--bad  text   { fill: var(--purple); }
+  .reg-beat--good circle { fill: var(--green-deep); }
+  .reg-beat--good text   { fill: var(--green-deep); }
+  /* The shared beat belongs to neither path, so it takes the neutral mark. */
+  .reg-beat--shared circle { fill: var(--headline); }
+  .reg-beat--shared text   { fill: var(--headline); font-weight: 600; }
+  .reg-legend-key--bad  { fill: var(--purple); }
+  .reg-legend-key--good { fill: var(--green-deep); }
+  .reg-path-label {
+    font-family: var(--grot); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .reg-path-label--bad  { fill: var(--purple); }
+  .reg-path-label--good { fill: var(--green-deep); }
+
+  .reg-moments { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .reg-moments li {
+    font-family: var(--sans); font-size: 13.5px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--purple); border-radius: var(--r-ctl);
+    padding: 7px 12px;
+  }
+
+  .reg-scale { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .reg-scale-stat {
+    font-family: var(--serif); font-size: 27px; line-height: 1.1;
+    font-weight: 500; color: var(--purple);
+  }
+  .reg-scale-text {
+    font-family: var(--sans); font-size: 13px; line-height: 1.5;
+    color: var(--muted); margin-top: 5px;
+  }
+
+  .reg-evidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .reg-ev {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-card); padding: 18px 18px 16px;
+  }
+  /* The null result is the one card that argues against the others, so it is
+     marked rather than blended in. */
+  .reg-ev--null { border-style: dashed; background: var(--bg); }
+  .reg-ev-stat {
+    font-family: var(--serif); font-size: 25px; line-height: 1.1;
+    font-weight: 500; color: var(--purple);
+  }
+  .reg-ev--null .reg-ev-stat { color: var(--muted); }
+  .reg-ev-text {
+    font-family: var(--sans); font-size: 13.5px; line-height: 1.55;
+    color: var(--text); margin-top: 6px;
+  }
+  .reg-ev-where {
+    font-family: var(--grot); font-size: 11px; font-weight: 600;
+    color: var(--headline); margin-top: 10px;
+  }
+  .reg-ev-design {
+    font-family: var(--grot); font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); margin-top: 3px;
+  }
+  .reg-ev-caveat {
+    font-family: var(--sans); font-size: 12px; line-height: 1.55; font-style: italic;
+    color: var(--muted); margin: 10px 0 0; padding-top: 9px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 1000px) {
+    .reg-actions, .reg-evidence { grid-template-columns: repeat(2, 1fr); }
+    .reg-levers, .reg-scale     { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .reg-actions, .reg-evidence, .reg-levers, .reg-scale { grid-template-columns: 1fr; }
+    .reg-vs { grid-template-columns: 1fr; gap: 18px; }
+    .reg-vs-rule { display: none; }
+    /* The three drawings stop being readable much under 700px. Let them
+       scroll sideways at their authored width rather than compress the
+       labels into each other. */
+    .reg-svg { min-width: 680px; }
+    .reg-section:has(> .reg-svg) { overflow-x: auto; }
+  }

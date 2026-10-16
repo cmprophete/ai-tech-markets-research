@@ -7,6 +7,8 @@
   // ('case-studies') and differ only here, the way the two Research
   // sub-tabs share the cards view.
   let activeCaseStudy = 'california';
+  // Regulation sub-tab: 'tech' | 'workers' | 'cash'. Same arrangement again.
+  let activeRegulation = 'tech';
   let activeCat      = 'all';
   let activeStatus   = 'all';
   let activeGeo      = 'all';

@@ -3,7 +3,9 @@
 
      Routes
        #about #research #changelog #fact-bank #policy #solutions
-       #california #taxi-drivers               ... the flat views, in VIEWS below
+       #california #taxi-drivers
+       #regulate-tech #regulate-workers #regulate-cash
+                                               ... the flat views, in VIEWS below
        #policy/<policy-id> #entry/<entry-id>   ... parameterised
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
@@ -35,6 +37,10 @@
        above: the view is the same, the sub-case is the difference. */
     california:         { view: 'case-studies', enter: () => setCaseStudy('california') },
     'taxi-drivers':     { view: 'case-studies', enter: () => setCaseStudy('taxi') },
+    /* Regulation is three routes onto one view, same arrangement again. */
+    'regulate-tech':    { view: 'regulation', enter: () => setRegulation('tech') },
+    'regulate-workers': { view: 'regulation', enter: () => setRegulation('workers') },
+    'regulate-cash':    { view: 'regulation', enter: () => setRegulation('cash') },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
   };
@@ -59,6 +65,7 @@
   function currentRoute() {
     if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
     if (activeView === 'case-studies') return activeCaseStudy === 'taxi' ? 'taxi-drivers' : 'california';
+    if (activeView === 'regulation') return 'regulate-' + activeRegulation;
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 

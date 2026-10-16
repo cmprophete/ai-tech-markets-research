@@ -145,6 +145,13 @@
        used ONLY for dots, rules, small labels and chart lines. Large fills
        and display type still use the pure tokens. */
     --gold-deep:   #c99a3f;  /* Warm Gold, darkened */
+    /* The mirror of the two below: Deep Purple is the one ESP secondary that
+       is too DARK for the Warm Navy band (1.02:1 against it), so the
+       Regulation nav group gets a lightened sibling at Deep Purple's exact
+       hue (284.2 deg). 5.43:1 on navy, between Soft Green's 4.77 and Warm
+       Gold's 7.49. In the page body, on Beige, use --purple itself: it
+       scores 10.78:1 there and needs no sibling. */
+    --purple-light: #c39fd0;  /* Deep Purple, lightened for the navy band */
     --green-deep:  #4a8a70;  /* Soft Green, darkened */
     --red-deep:    #b0503a;  /* Warm Red, darkened — caution semantics only */
 

@@ -17,6 +17,7 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 | **a research entry** | `content/research.csv` | `python3 tools/research.py build` |
 | **a theme / policy / the agenda** | `data/tracker-data.js` (by hand) | reload; no build step |
 | **a case study** | `data/case-studies-data.js` (by hand) | reload; no build step |
+| **a regulation page** | `data/regulation-data.js` (by hand) | reload; no build step |
 | **prose or markup** | `src/views/<view>.html` | `python3 build.py` |
 | **styling** | `src/styles/<area>.css` | `python3 build.py` |
 | **app behaviour** | `src/js/<area>.js` | `python3 build.py` |
@@ -25,8 +26,8 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 rebuild. **Do not hand-edit the `RESEARCH_DATA` array** in `data/tracker-data.js`
 — it is generated from `content/research.csv`; see
 [`content/README.md`](content/README.md). `THEMES`, `POLICY_DATA`, `AGENDA_DATA`
-and `CATEGORIES` in that file, and `data/fact-bank-data.js`, are hand-maintained, as is
-`data/case-studies-data.js`.
+and `CATEGORIES` in that file, and `data/fact-bank-data.js`, are hand-maintained, as are
+`data/case-studies-data.js` and `data/regulation-data.js`.
 
 ## src/ layout
 
@@ -53,17 +54,18 @@ src/styles/cards.css         app layout, sidebar, filters, card grid, themes
 src/styles/modals.css        sources modal, policy pop-out
 src/styles/policy.css        policy map, columns, and the per-view show/hide rules
 src/styles/case-studies.css  case studies: nav accent, timeline, state outline
+src/styles/regulation.css    regulation: nav accent, the three diagrams
 src/styles/focus.css         :focus-visible, global
 src/views/00-data-scripts    the data/*.js <script> tags
 src/views/10-header          site header nav
 src/views/20-shell           <main>, sidebar, tab description, #viewPanel
-src/views/30-fact-bank       ... 35-case-studies, 40-solutions, 50-about,
-                                 80-papers, 90-modals
+src/views/30-fact-bank       ... 35-case-studies, 36-regulation,
+                                 40-solutions, 50-about, 80-papers, 90-modals
 src/js/00-state              data wiring, helpers, state
 src/js/05-lazy               lazy payload loader (Fact Bank)
 src/js/10-policy-map         ... 20-cite-export, 30-changelog, 35-case-studies,
-                                 40-router, 60-whats-new, 70-render,
-                                 80-fact-bank
+                                 36-regulation, 40-router, 60-whats-new,
+                                 70-render, 80-fact-bank
 ```
 
 The router is split: `src/js/40-router.js` owns hash mapping and the `VIEWS`

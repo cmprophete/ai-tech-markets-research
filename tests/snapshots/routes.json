@@ -154,6 +154,60 @@
     "announce": "Taxi Drivers view",
     "hash": "#taxi-drivers"
   },
+  "#regulate-tech": {
+    "errors": [
+      "console.error: [tracker] data validation: 14 problem(s) found"
+    ],
+    "bodyClasses": [
+      "lens-economist",
+      "regulation-view"
+    ],
+    "nav": [
+      "viewRegTech"
+    ],
+    "navSelected": [
+      "viewRegTech"
+    ],
+    "panelLabelledBy": "viewRegTech",
+    "announce": "The Tech view",
+    "hash": "#regulate-tech"
+  },
+  "#regulate-workers": {
+    "errors": [
+      "console.error: [tracker] data validation: 14 problem(s) found"
+    ],
+    "bodyClasses": [
+      "lens-economist",
+      "regulation-view"
+    ],
+    "nav": [
+      "viewRegWorkers"
+    ],
+    "navSelected": [
+      "viewRegWorkers"
+    ],
+    "panelLabelledBy": "viewRegWorkers",
+    "announce": "Workers view",
+    "hash": "#regulate-workers"
+  },
+  "#regulate-cash": {
+    "errors": [
+      "console.error: [tracker] data validation: 14 problem(s) found"
+    ],
+    "bodyClasses": [
+      "lens-economist",
+      "regulation-view"
+    ],
+    "nav": [
+      "viewRegCash"
+    ],
+    "navSelected": [
+      "viewRegCash"
+    ],
+    "panelLabelledBy": "viewRegCash",
+    "announce": "Cash view",
+    "hash": "#regulate-cash"
+  },
   "#job-displacement": {
     "errors": [
       "console.error: [tracker] data validation: 14 problem(s) found"

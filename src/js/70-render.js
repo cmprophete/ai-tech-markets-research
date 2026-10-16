@@ -31,6 +31,7 @@
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
     if (activeView === 'case-studies') { buildCaseStudies(); return; }
+    if (activeView === 'regulation')   { buildRegulation(); return; }
     if (activeView === 'solutions') {
       // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
       // Replace the static content with a notice at runtime; the prose stays in
@@ -112,6 +113,12 @@
       general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
       economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
     },
+    regulation: {
+      // Not displayed either: .regulation-view hides .header-tab-desc and the
+      // visible copy comes from REGULATION, which differs per page.
+      general:   { lede: 'What would it mean to regulate this?', text: 'Three arguments: the technology, the workers, and the cash.' },
+      economist: { lede: 'What would it mean to regulate this?', text: 'Three arguments: the technology, the workers, and the cash.' },
+    },
     'case-studies': {
       // Not displayed: .case-studies-view hides .header-tab-desc, and the
       // visible lede/standfirst come from CASE_STUDIES so they can differ per
@@ -164,15 +171,19 @@
      current depends on the sub-case as well as the view. One function answers
      that for every view so setView has a single owner for the active tab;
      setCaseStudy deliberately does not also toggle these. */
+  const REG_TAB_IDS = { tech: 'viewRegTech', workers: 'viewRegWorkers', cash: 'viewRegCash' };
   function activeTabIdFor(view) {
     if (view === 'case-studies') return activeCaseStudy === 'taxi' ? 'viewCaseTaxi' : 'viewCaseCA';
+    if (view === 'regulation')   return REG_TAB_IDS[activeRegulation] || 'viewRegTech';
     return VIEW_TAB_IDS[view];
   }
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi', 'viewPolicy', 'viewSolutions'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi',
+     'viewRegTech', 'viewRegWorkers', 'viewRegCash',
+     'viewPolicy', 'viewSolutions'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const active = id === activeTabIdFor(view);
@@ -187,6 +198,7 @@
     document.body.classList.toggle('solutions-view', view === 'solutions');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     document.body.classList.toggle('case-studies-view', view === 'case-studies');
+    document.body.classList.toggle('regulation-view',   view === 'regulation');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
     render();
     const activeTabId = activeTabIdFor(view) || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
@@ -199,8 +211,11 @@
       const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
       // Case Studies has two labels for one view; announce the one the user
       // actually clicked, not the view key.
+      const REG_NAMES = { tech: 'The Tech', workers: 'Workers', cash: 'Cash' };
       const name = view === 'case-studies'
         ? (activeCaseStudy === 'taxi' ? 'Taxi Drivers' : 'California Campaigns')
+        : view === 'regulation'
+        ? (REG_NAMES[activeRegulation] || 'The Tech')
         : (names[view] || view);
       ann.textContent = name + ' view';
     }
@@ -220,6 +235,7 @@
     const view = btn.dataset.view;
     if (view === 'cards') setResearchSubview('database');
     if (view === 'case-studies') setCaseStudy(btn.dataset.case);
+    if (view === 'regulation')   setRegulation(btn.dataset.reg);
     setView(view);
   });
 
