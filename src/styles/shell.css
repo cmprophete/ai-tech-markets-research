@@ -81,6 +81,8 @@
   .tab-group[data-group="case-studies"] { --group-accent: var(--gold); }
   .tab-group[data-group="regulation"]   { --group-accent: var(--purple-light); }
   .tab-group[data-group="policy"]   { --group-accent: var(--pink);  }
+  /* Beige, not a fifth brand colour: the workbench is not a content area. */
+  .tab-group[data-group="lab"]      { --group-accent: var(--beige); }
   .tab-group-btns { display: flex; align-items: flex-end; }
   .tab-group-label {
     margin-top: 3px; padding-top: 4px;

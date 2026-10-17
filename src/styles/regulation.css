@@ -27,12 +27,159 @@
   .reg-intro .tab-standfirst { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
 
   #regBody { max-width: 1140px; }
-  .reg-section { margin-top: 38px; }
-  .reg-h {
+
+  /* ── the act rail ───────────────────────────────────────────────── */
+  /* Sticky, because the page is long now and the three acts are the only
+     structure a reader needs to hold. */
+  .reg-rail {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin: 24px 0 8px; padding: 8px 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .reg-rail-btn {
+    display: flex; flex-direction: column; gap: 1px;
+    background: none; border: 1px solid transparent; cursor: pointer;
+    border-radius: var(--r-ctl); padding: 6px 12px; text-align: left;
+    transition: background 0.14s, border-color 0.14s;
+  }
+  .reg-rail-btn:hover { background: color-mix(in srgb, var(--purple) 10%, transparent); }
+  .reg-rail-btn.active {
+    background: color-mix(in srgb, var(--purple) 14%, transparent);
+    border-color: color-mix(in srgb, var(--purple) 40%, transparent);
+  }
+  .reg-rail-act {
+    font-family: var(--grot); font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
+  }
+  .reg-rail-name { font-family: var(--sans); font-size: 14px; color: var(--headline); }
+
+  /* ── acts ───────────────────────────────────────────────────────── */
+  .reg-act { margin-top: 32px; }
+  .reg-act:focus { outline: none; }
+  .reg-act-head { border-top: 3px solid var(--purple); padding-top: 14px; }
+  .reg-act-n {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
+  }
+  .reg-act-title {
+    font-family: var(--serif); font-size: clamp(22px, 2.6vw, 28px); line-height: 1.26;
+    font-weight: 500; letter-spacing: -0.01em; color: var(--headline);
+    margin: 6px 0 0; max-width: 24ch;
+  }
+  .reg-act-stand {
+    font-family: var(--sans); font-size: 15px; line-height: 1.7;
+    color: var(--muted); max-width: 76ch; margin: 10px 0 0;
+  }
+  /* The handoff between acts: this is the connective tissue that makes the
+     three one argument rather than three pages stacked. */
+  .reg-transition {
+    margin: 40px auto 0; padding: 18px 0 0; max-width: 62ch;
+    border-top: 1px solid var(--border);
+    font-family: var(--serif); font-size: 18px; line-height: 1.5;
+    color: var(--muted); text-align: center;
+  }
+  .reg-close {
+    margin: 48px 0 0; padding: 22px 0 0; border-top: 3px solid var(--purple);
+    font-family: var(--serif); font-size: 20px; line-height: 1.45;
+    color: var(--headline); max-width: 64ch;
+  }
+  .reg-sub {
     font-family: var(--grot); font-size: 11px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
-    margin: 0 0 14px; padding-bottom: 7px;
+    margin: 34px 0 14px; padding-bottom: 7px;
     border-bottom: 1px solid color-mix(in srgb, var(--purple) 28%, transparent);
+  }
+
+  /* ── the handoff between acts ───────────────────────────────────── */
+  /* The three acts are separate views, so each one carries the line that
+     leads into the next plus a button to it. Without this the pages read as
+     three unrelated tabs rather than one argument in order. */
+  .reg-handoff {
+    margin-top: 48px; padding-top: 22px;
+    border-top: 3px solid var(--purple);
+    display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
+  }
+  .reg-handoff .reg-transition {
+    margin: 0; padding: 0; border: none; max-width: 62ch; text-align: left;
+  }
+  .reg-next {
+    display: inline-flex; align-items: baseline; gap: 10px;
+    background: var(--navy); border: none; cursor: pointer;
+    border-radius: var(--r-ctl); padding: 11px 18px;
+    transition: background 0.14s;
+  }
+  .reg-next:hover { background: var(--headline); }
+  .reg-next-label {
+    font-family: var(--grot); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple-light);
+  }
+  .reg-next-name { font-family: var(--sans); font-size: 15px; color: #fff; }
+  .reg-next-arrow { color: var(--purple-light); font-size: 15px; }
+
+  /* ── hit targets and the detail panel ───────────────────────────── */
+  .reg-figure { margin-top: 20px; }
+  /* Fade-and-rise as the figure scrolls in. .reg-in is added by
+     regObserveFigures(); under reduced motion it is added immediately and
+     this transition is suppressed, so the diagram is simply there. */
+  @media (prefers-reduced-motion: no-preference) {
+    .reg-figure { opacity: 0; transform: translateY(10px);
+                  transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reg-figure.reg-in { opacity: 1; transform: none; }
+  }
+  .reg-hit { cursor: pointer; }
+  .reg-hit:focus { outline: none; }
+  /* The hit rect is the focus/hover surface; it is invisible until one of
+     those states, so the drawing stays clean at rest. */
+  .reg-track-hit, .reg-beat-hit { fill: transparent; }
+  .reg-hit:hover .reg-track-hit, .reg-hit:hover .reg-beat-hit,
+  .reg-hit:focus-visible .reg-track-hit, .reg-hit:focus-visible .reg-beat-hit {
+    fill: color-mix(in srgb, var(--purple) 10%, transparent);
+  }
+  .reg-hit:hover .reg-band-bg, .reg-hit:hover .reg-kind-bg {
+    stroke: var(--purple); stroke-width: 1.5;
+  }
+  .reg-hit:focus-visible .reg-band-bg, .reg-hit:focus-visible .reg-kind-bg,
+  .reg-hit:focus-visible .reg-track-hit, .reg-hit:focus-visible .reg-beat-hit {
+    stroke: var(--purple); stroke-width: 2;
+  }
+  .reg-hit--on .reg-band-bg, .reg-hit--on .reg-kind-bg {
+    stroke: var(--purple); stroke-width: 2;
+    fill: color-mix(in srgb, var(--purple) 9%, var(--surface));
+  }
+  .reg-hit--on .reg-track-hit, .reg-hit--on .reg-beat-hit {
+    fill: color-mix(in srgb, var(--purple) 13%, transparent);
+  }
+  .reg-prompt {
+    font-family: var(--grot); font-size: 11px; letter-spacing: 0.05em;
+    color: var(--muted); margin: 6px 0 0;
+  }
+  .reg-detail {
+    margin-top: 14px; padding: 20px 22px 18px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--purple); border-radius: var(--r-card);
+  }
+  .reg-detail[hidden] { display: none; }
+  .reg-d-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .reg-d-kicker {
+    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
+  }
+  .reg-d-close {
+    background: none; border: none; cursor: pointer; line-height: 1;
+    font-size: 20px; color: var(--muted); padding: 0 2px;
+  }
+  .reg-d-close:hover { color: var(--purple); }
+  .reg-d-row { margin-top: 14px; }
+  .reg-d-label {
+    font-family: var(--grot); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .reg-d-text {
+    font-family: var(--sans); font-size: 14.5px; line-height: 1.68;
+    color: var(--text); margin: 0; max-width: 78ch;
   }
   .reg-note {
     font-family: var(--sans); font-size: 13.5px; line-height: 1.65;
@@ -160,8 +307,8 @@
     font-family: var(--grot); font-size: 13px; font-weight: 600; fill: var(--beige);
   }
   .reg-branch--for .reg-branch-answer { fill: var(--green); }
-  .reg-kind rect { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
-  .reg-branch--against .reg-kind rect { stroke: color-mix(in srgb, var(--purple) 45%, var(--border)); }
+  .reg-kind-bg { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
+  .reg-branch--against .reg-kind-bg { stroke: color-mix(in srgb, var(--purple) 45%, var(--border)); }
   .reg-kind-name { font-size: 13.5px; font-weight: 700; fill: var(--headline); }
   .reg-kind-note { font-size: 11.5px; fill: var(--muted); }
   .reg-kind-flag {
@@ -280,5 +427,5 @@
        scroll sideways at their authored width rather than compress the
        labels into each other. */
     .reg-svg { min-width: 680px; }
-    .reg-section:has(> .reg-svg) { overflow-x: auto; }
+    .reg-figure { overflow-x: auto; }
   }

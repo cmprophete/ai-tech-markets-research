@@ -4,8 +4,12 @@ A curated research database and synthesis on AI, automation, and the economy,
 published as a single self-contained page (`index.html`) that is embedded as an
 iframe on the Economic Security Project site.
 
-Six views: **Papers**, **Fact Bank**, **Case Studies**, **Regulation**,
-**Lab**, **Solutions**.
+Seven views: **Papers**, **Fact Bank**, **Case Studies**, **Regulation**,
+**Lab**, **Solutions**, **Prototypes**.
+
+Regulation is one page in three acts (The Tech, Workers, Cash). Its three nav
+buttons and its three routes are act anchors: they scroll, they do not swap
+views. Every diagram on it is clickable.
 
 ## Setup (once per machine)
 
@@ -54,7 +58,8 @@ node tests/routes.js         # snapshot of every route
 src/            build inputs: head, styles/, views/, js/, the template
 content/        research.csv -- the curated source for the research list
 data/           the published payloads (research, fact bank, themes, policies,
-                case studies, regulation)
+                case studies, regulation, prototypes, and the BTOS / jobs
+                series the prototypes in prototypes/ still read)
 assets/         images loaded directly by the page
 tools/          research.py (sheet -> data) and helper scripts
 tests/          jsdom harness and route snapshot

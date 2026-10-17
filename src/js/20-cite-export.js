@@ -391,17 +391,31 @@
     });
     const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
 
-    // Edges = each policy's `pairsWith`, de-duplicating mutual A↔B pairs
-    // (most are authored on both sides) into a single edge.
+    /* Edges = each policy's `pairsWith` AND its `competesWith`, de-duplicating
+       mutual A-B pairs (most are authored on both sides) into a single edge.
+
+       competesWith used to be dropped here, so the graph drew reinforcement
+       only and every tension in the data was invisible. A policy map that can
+       only show agreement is the less useful half of the argument.
+
+       `kind` separates the two and `proposed` marks an edge whose `why` was
+       drafted rather than authored (see docs/policy-card-rules.md: these are
+       normally the author's to supply). Both are rendered differently, so
+       nothing drafted is passed off as confirmed. An edge that is authored on
+       one side and proposed on the other counts as authored. */
     const edgeMap = new Map();
-    POLICY_DATA.forEach(p => {
-      (p.pairsWith || []).forEach(l => {
+    const collect = (field, kind) => POLICY_DATA.forEach(p => {
+      (p[field] || []).forEach(l => {
         if (!nodeById[l.id]) return; // guard against a stale id
-        const key = [p.id, l.id].sort().join('|');
-        if (!edgeMap.has(key)) edgeMap.set(key, { a: p.id, b: l.id, whys: [] });
-        if (l.why) edgeMap.get(key).whys.push(l.why);
+        const key = kind + '|' + [p.id, l.id].sort().join('|');
+        if (!edgeMap.has(key)) edgeMap.set(key, { a: p.id, b: l.id, kind, whys: [], proposed: true });
+        const e = edgeMap.get(key);
+        if (l.why) e.whys.push(l.why);
+        if (!l.proposed) e.proposed = false;
       });
     });
+    collect('pairsWith', 'pairs');
+    collect('competesWith', 'competes');
     const edges = [...edgeMap.values()];
 
     // ── Physics: repel + spring + soft per-band gravity, cooled over a
@@ -425,7 +439,11 @@
         const a = nodeById[e.a], b = nodeById[e.b];
         let dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-        const force = SPRING_K * (dist - SPRING_LEN) * alpha;
+        // Only reinforcement pulls nodes together. A tension edge that sprang
+        // like a pair would place competing policies next to each other and
+        // read as "these belong together", which is the opposite of the claim.
+        const force = (e.kind === 'competes' ? SPRING_K * 0.25 : SPRING_K)
+          * (dist - SPRING_LEN) * alpha;
         dx /= dist; dy /= dist;
         a.vx += dx * force; a.vy += dy * force;
         b.vx -= dx * force; b.vy -= dy * force;
@@ -473,11 +491,13 @@
     const edgeEls = edges.map(e => {
       const a = nodeById[e.a], b = nodeById[e.b];
       const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('class', 'pol-links-edge');
+      line.setAttribute('class', 'pol-links-edge pol-links-edge--' + e.kind
+        + (e.proposed ? ' pol-links-edge--proposed' : ''));
       line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
       line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
       const title = document.createElementNS(svgNS, 'title');
-      title.textContent = e.whys.join(' ');
+      title.textContent = (e.kind === 'competes' ? 'Competes with. ' : 'Pairs with. ')
+        + (e.proposed ? '(Proposed, not yet reviewed.) ' : '') + e.whys.join(' ');
       line.appendChild(title);
       edgeGroup.appendChild(line);
       return { el: line, a: e.a, b: e.b };
@@ -555,7 +575,11 @@
       .filter(([catId]) => POLICY_DATA.some(p => p.category === catId))
       .map(([catId, catLabel]) =>
       `<span class="pol-links-legend-item"><span class="pol-links-legend-dot" style="background:${POL_CAT_COLORS[catId]}"></span>${catLabel}</span>`
-    ).join('');
+    ).join('') + `
+      <span class="pol-links-legend-sep" aria-hidden="true"></span>
+      <span class="pol-links-legend-item"><svg class="pol-links-legend-line" viewBox="0 0 22 4" aria-hidden="true"><line class="pol-links-edge pol-links-edge--pairs" x1="0" y1="2" x2="22" y2="2"/></svg>Pairs with</span>
+      <span class="pol-links-legend-item"><svg class="pol-links-legend-line" viewBox="0 0 22 4" aria-hidden="true"><line class="pol-links-edge pol-links-edge--competes" x1="0" y1="2" x2="22" y2="2"/></svg>Competes with</span>
+      <span class="pol-links-legend-item"><svg class="pol-links-legend-line" viewBox="0 0 22 4" aria-hidden="true"><line class="pol-links-edge pol-links-edge--pairs pol-links-edge--proposed" x1="0" y1="2" x2="22" y2="2"/></svg>Proposed, not yet reviewed</span>`;
     outer.appendChild(legend);
 
     container.innerHTML = '';

@@ -673,6 +673,22 @@
     fill: var(--muted); opacity: 0.75;
   }
   .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
+  /* Reinforcement and tension read differently, and a drafted link reads
+     differently again. competesWith was not drawn at all until 2026-10-17,
+     so the graph could only show agreement. Dashed = proposed: the `why` was
+     drafted rather than authored (docs/policy-card-rules.md), and it stays
+     dashed until the policy author confirms or cuts it. */
+  .pol-links-edge--competes {
+    stroke: var(--red-deep);
+    stroke-opacity: 0.55;
+  }
+  .pol-links-edge--proposed { stroke-dasharray: 4 4; stroke-opacity: 0.45; }
+  .pol-links-legend-sep {
+    display: inline-block; width: 1px; height: 13px;
+    background: var(--border); margin: 0 4px;
+  }
+  .pol-links-legend-line { width: 22px; height: 4px; overflow: visible; }
+
   .pol-links-edge.dimmed { stroke-opacity: 0.08; }
   .pol-links-edge.lit { stroke: var(--accent); stroke-opacity: 0.85; }
   .pol-links-node-dot {

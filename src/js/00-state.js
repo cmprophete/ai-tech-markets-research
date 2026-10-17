@@ -17,11 +17,17 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
-  // Policy cards are temporarily hidden in the Policy Map while their citations
-  // are being reworked (some cite non-AI sources not in the research tracker).
-  // The Map tab stays, but the cards are replaced by a short notice. Flip to
-  // false and rebuild to show them again. See buildPolicyView() + getTabDesc().
-  let policyCardsHidden = true;
+  // Re-enabled 2026-10-16 after an audit of the citation rework this flag was
+  // raised for. POLICY_DATA resolves cleanly: all 68 paperIds and all 62
+  // {{cite}} tokens point at live research entries, and the runtime guard in
+  // 70-render.js reports no policy problems. What the original note described
+  // ("cite non-AI sources not in the research tracker") is the untokenised
+  // precedent in the `precedent` fields, which names non-AI programmes
+  // (Taiwan's NHI 1995, India's NREGA, Canada's CCB 2016, Levy 2018). Those
+  // are deliberate historical precedent, not tracker entries, and an AI
+  // research tracker is not where they would live. Flip back to true to hide
+  // the cards again. See buildPolicyView() + getTabDesc().
+  let policyCardsHidden = false;
   // Solutions prose is hidden for now too (updated alongside the policy cards).
   // Flip to false and rebuild to show it again. See render() + getTabDesc().
   let solutionsHidden = true;

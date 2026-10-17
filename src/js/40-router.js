@@ -41,6 +41,7 @@
     'regulate-tech':    { view: 'regulation', enter: () => setRegulation('tech') },
     'regulate-workers': { view: 'regulation', enter: () => setRegulation('workers') },
     'regulate-cash':    { view: 'regulation', enter: () => setRegulation('cash') },
+    prototypes:         { view: 'prototypes' },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
   };
