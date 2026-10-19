@@ -17,6 +17,20 @@
 
 const PROTOTYPES = [
   {
+    file: 'prototypes/transition-stories/index.html',
+    title: 'How the transition takes shape',
+    eyebrow: 'Second set · The Tech · Workers · Cash · Guided narratives',
+    desc: 'A slower set of three visual stories, revealed one beat at a time. Follow corporate development vertically through the AI stack, then deployment horizontally into the economy; follow a saved hour through a workplace bargain; and follow cash through the weeks after job loss.',
+    status: 'ok'
+  },
+  {
+    file: 'prototypes/transition/index.html',
+    title: 'The choices inside the AI transition',
+    eyebrow: 'The Tech · Workers · Cash · Interactive policy sketches',
+    desc: 'Three connected experiments: assign public decision rights over an AI deployment, decide who receives the time saved at work, and move a cash payment along a household transition. Explicit assumptions, policy alternatives, and sources accompany each mechanism.',
+    status: 'ok'
+  },
+  {
     file: 'prototypes/policy-links-prototypes.html',
     title: 'Six ways to draw how policies reinforce each other',
     eyebrow: 'Policy Map · Links · Prototype set',
