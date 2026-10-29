@@ -30,9 +30,6 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
-    if (activeView === 'case-studies') { buildCaseStudies(); return; }
-    if (activeView === 'regulation')   { buildRegulation(); return; }
-    if (activeView === 'prototypes')   { buildPrototypes(); return; }
     if (activeView === 'solutions') {
       // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
       // Replace the static content with a notice at runtime; the prose stays in
@@ -97,14 +94,6 @@
   // Solutions read this table for display — the other three hide
   // .header-tab-desc and carry their own markup — but every entry keeps
   // a lede so the pattern survives a tab being switched over later.
-  /* The Policy Map masthead, counted from the data rather than typed out, so
-     adding a policy or a category cannot leave the sentence stale. */
-  function policyBlurb() {
-    const rows = new Set(POLICY_DATA.map(p => CATEGORY_MERGE_MAP[p.category]).filter(Boolean)).size;
-    const n = POLICY_DATA.length;
-    return `${n} policy interventions grouped into ${rows} policy area${rows === 1 ? '' : 's'}, `
-         + 'listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.';
-  }
   const TAB_DESCS = {
     cards: {
       general:   { lede: 'What does the research actually show?', text: 'A curated database of peer-reviewed studies, policy reports, and investigative journalism on AI, automation, and labor markets.' },
@@ -115,33 +104,12 @@
       economist: { lede: 'Which numbers can you actually cite?', text: 'Short, number-bearing statements quoted verbatim from sources in the research database, each rated for political noteworthiness and for the rigour of its evidence.' },
     },
     policy: {
-      // Counts come from the data. The literal "Twenty-seven" sat here while
-      // POLICY_DATA grew to 32, so the masthead was quietly wrong; derive it.
-      general:   { lede: 'What could policy actually do about it?', text: policyBlurb() },
-      economist: { lede: 'What could policy actually do about it?', text: policyBlurb() },
+      general:   { lede: 'What could policy actually do about it?', text: 'Twenty-seven policy interventions grouped into four policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.' },
+      economist: { lede: 'What could policy actually do about it?', text: 'Twenty-seven policy interventions grouped into four policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.' },
     },
     about: {
       general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
       economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
-    },
-    prototypes: {
-      // Not displayed: .prototypes-view hides .header-tab-desc and the view
-      // carries its own intro.
-      general:   { lede: 'The workbench', text: 'Every prototype behind the tracker, including the ones that lost their argument.' },
-      economist: { lede: 'The workbench', text: 'Every prototype behind the tracker, including the ones that lost their argument.' },
-    },
-    regulation: {
-      // Not displayed either: .regulation-view hides .header-tab-desc and the
-      // visible copy comes from REGULATION, which differs per page.
-      general:   { lede: 'What would it mean to regulate this?', text: 'Three arguments: the technology, the workers, and the cash.' },
-      economist: { lede: 'What would it mean to regulate this?', text: 'Three arguments: the technology, the workers, and the cash.' },
-    },
-    'case-studies': {
-      // Not displayed: .case-studies-view hides .header-tab-desc, and the
-      // visible lede/standfirst come from CASE_STUDIES so they can differ per
-      // case. Kept so every view has a row, per the note above.
-      general:   { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
-      economist: { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
     },
     solutions: {
       general:   { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
@@ -183,27 +151,15 @@
     if (t)  t.textContent  = desc.text;
   }
 
-  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', prototypes: 'viewPrototypes', about: 'homeTitleLink' };
-  /* Case Studies is the only view with two nav buttons, so which tab reads as
-     current depends on the sub-case as well as the view. One function answers
-     that for every view so setView has a single owner for the active tab;
-     setCaseStudy deliberately does not also toggle these. */
-  const REG_TAB_IDS = { tech: 'viewRegTech', workers: 'viewRegWorkers', cash: 'viewRegCash' };
-  function activeTabIdFor(view) {
-    if (view === 'case-studies') return activeCaseStudy === 'taxi' ? 'viewCaseTaxi' : 'viewCaseCA';
-    if (view === 'regulation')   return REG_TAB_IDS[activeRegulation] || 'viewRegTech';
-    return VIEW_TAB_IDS[view];
-  }
+  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', about: 'homeTitleLink' };
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi',
-     'viewRegTech', 'viewRegWorkers', 'viewRegCash',
-     'viewPolicy', 'viewSolutions', 'viewPrototypes'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const active = id === activeTabIdFor(view);
+      const active = id === VIEW_TAB_IDS[view];
       el.classList.toggle('active', active);
       el.setAttribute('aria-selected', active ? 'true' : 'false');
     });
@@ -214,28 +170,17 @@
     document.body.classList.toggle('about-view',    view === 'about');
     document.body.classList.toggle('solutions-view', view === 'solutions');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
-    document.body.classList.toggle('case-studies-view', view === 'case-studies');
-    document.body.classList.toggle('regulation-view',   view === 'regulation');
-    document.body.classList.toggle('prototypes-view',   view === 'prototypes');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
     render();
-    const activeTabId = activeTabIdFor(view) || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
+    const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
     if (panel) panel.setAttribute('aria-labelledby', activeTabId);
     const ann = document.getElementById('viewAnnounce');
     if (ann) {
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', prototypes: 'Prototypes', about: 'About' };
-      // Case Studies has two labels for one view; announce the one the user
-      // actually clicked, not the view key.
-      const REG_NAMES = { tech: 'The Tech', workers: 'Workers', cash: 'Cash' };
-      const name = view === 'case-studies'
-        ? (activeCaseStudy === 'taxi' ? 'Taxi Drivers' : 'California Campaigns')
-        : view === 'regulation'
-        ? (REG_NAMES[activeRegulation] || 'The Tech')
-        : (names[view] || view);
-      ann.textContent = name + ' view';
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
+      ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
   }
@@ -252,8 +197,6 @@
     if (!btn) return;
     const view = btn.dataset.view;
     if (view === 'cards') setResearchSubview('database');
-    if (view === 'case-studies') setCaseStudy(btn.dataset.case);
-    if (view === 'regulation')   setRegulation(btn.dataset.reg);
     setView(view);
   });
 

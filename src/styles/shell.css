@@ -7,22 +7,14 @@
   }
   .site-header::before { display: none; }
   .site-header::after  { display: none; }
-  /* Wraps, because the nav outgrew the band. With four tab groups the nav
-     wants ~876px; at 1024px that left the brand 41px and folded the title
-     into a one-word-per-line column. flex-wrap drops the nav onto its own
-     row instead once the two cannot sit side by side, which is also what
-     happens on a phone. */
   .header-inner {
     max-width: calc(var(--sidebar-w) + 1100px);
     margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
     position: relative;
   }
 
-  /* Keeps a floor under the title so it cannot be crushed to a column; it
-     may still shrink past this if the viewport genuinely cannot hold it. */
-  .header-brand { display: flex; align-items: center; gap: 18px; flex: 1 1 auto; min-width: 240px; }
+  .header-brand { display: flex; align-items: center; gap: 18px; min-width: 0; }
   .header-brand img { height: 42px; width: auto; flex-shrink: 0; }
   .header-text { min-width: 0; }
 
@@ -57,13 +49,9 @@
     .header-proto-tag { margin-left: 8px; font-size: 9.5px; padding: 3px 6px; }
     .header-proto-note { font-size: 11px; }
   }
-  /* max-width caps the nav at the width of its flex line. Without it,
-     flex-shrink:0 lets it take max-content (683px with four groups) and
-     push a horizontal scrollbar onto the whole page at phone widths,
-     because .header-tabs then never reaches its wrap point. */
   .header-nav {
     display: flex; align-items: center; gap: 6px;
-    flex-shrink: 0; flex-wrap: wrap; max-width: 100%;
+    flex-shrink: 0; flex-wrap: wrap;
   }
   .header-tabs { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 0 22px; }
 
@@ -72,17 +60,13 @@
 
      Each group carries its own accent via --group-accent, set per group
      below. ESP secondary palette on the Warm Navy band: Soft Green (the
-     C3 accent) for Research, Warm Gold for Case Studies, lightened Deep
-     Purple for Regulation, Warm Pink for Policy. All four clear contrast on navy, and they stay graphic
+     C3 accent) for Research, Warm Gold for Economy, Warm Pink for
+     Policy. All three clear contrast on navy, and they stay graphic
      elements (rules, underlines, 10px labels) rather than body copy —
      the 75/15/10 balance holds because the band itself is navy. */
   .tab-group { display: flex; flex-direction: column; --group-accent: var(--green); }
   .tab-group[data-group="research"] { --group-accent: var(--green); }
-  .tab-group[data-group="case-studies"] { --group-accent: var(--gold); }
-  .tab-group[data-group="regulation"]   { --group-accent: var(--purple-light); }
   .tab-group[data-group="policy"]   { --group-accent: var(--pink);  }
-  /* Beige, not a fifth brand colour: the workbench is not a content area. */
-  .tab-group[data-group="lab"]      { --group-accent: var(--beige); }
   .tab-group-btns { display: flex; align-items: flex-end; }
   .tab-group-label {
     margin-top: 3px; padding-top: 4px;

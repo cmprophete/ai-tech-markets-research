@@ -183,13 +183,6 @@
        used ONLY for dots, rules, small labels and chart lines. Large fills
        and display type still use the pure tokens. */
     --gold-deep:   #c99a3f;  /* Warm Gold, darkened */
-    /* The mirror of the two below: Deep Purple is the one ESP secondary that
-       is too DARK for the Warm Navy band (1.02:1 against it), so the
-       Regulation nav group gets a lightened sibling at Deep Purple's exact
-       hue (284.2 deg). 5.43:1 on navy, between Soft Green's 4.77 and Warm
-       Gold's 7.49. In the page body, on Beige, use --purple itself: it
-       scores 10.78:1 there and needs no sibling. */
-    --purple-light: #c39fd0;  /* Deep Purple, lightened for the navy band */
     --green-deep:  #4a8a70;  /* Soft Green, darkened */
     --red-deep:    #b0503a;  /* Warm Red, darkened — caution semantics only */
 
@@ -248,22 +241,14 @@
   }
   .site-header::before { display: none; }
   .site-header::after  { display: none; }
-  /* Wraps, because the nav outgrew the band. With four tab groups the nav
-     wants ~876px; at 1024px that left the brand 41px and folded the title
-     into a one-word-per-line column. flex-wrap drops the nav onto its own
-     row instead once the two cannot sit side by side, which is also what
-     happens on a phone. */
   .header-inner {
     max-width: calc(var(--sidebar-w) + 1100px);
     margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
     position: relative;
   }
 
-  /* Keeps a floor under the title so it cannot be crushed to a column; it
-     may still shrink past this if the viewport genuinely cannot hold it. */
-  .header-brand { display: flex; align-items: center; gap: 18px; flex: 1 1 auto; min-width: 240px; }
+  .header-brand { display: flex; align-items: center; gap: 18px; min-width: 0; }
   .header-brand img { height: 42px; width: auto; flex-shrink: 0; }
   .header-text { min-width: 0; }
 
@@ -298,13 +283,9 @@
     .header-proto-tag { margin-left: 8px; font-size: 9.5px; padding: 3px 6px; }
     .header-proto-note { font-size: 11px; }
   }
-  /* max-width caps the nav at the width of its flex line. Without it,
-     flex-shrink:0 lets it take max-content (683px with four groups) and
-     push a horizontal scrollbar onto the whole page at phone widths,
-     because .header-tabs then never reaches its wrap point. */
   .header-nav {
     display: flex; align-items: center; gap: 6px;
-    flex-shrink: 0; flex-wrap: wrap; max-width: 100%;
+    flex-shrink: 0; flex-wrap: wrap;
   }
   .header-tabs { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 0 22px; }
 
@@ -313,17 +294,13 @@
 
      Each group carries its own accent via --group-accent, set per group
      below. ESP secondary palette on the Warm Navy band: Soft Green (the
-     C3 accent) for Research, Warm Gold for Case Studies, lightened Deep
-     Purple for Regulation, Warm Pink for Policy. All four clear contrast on navy, and they stay graphic
+     C3 accent) for Research, Warm Gold for Economy, Warm Pink for
+     Policy. All three clear contrast on navy, and they stay graphic
      elements (rules, underlines, 10px labels) rather than body copy —
      the 75/15/10 balance holds because the band itself is navy. */
   .tab-group { display: flex; flex-direction: column; --group-accent: var(--green); }
   .tab-group[data-group="research"] { --group-accent: var(--green); }
-  .tab-group[data-group="case-studies"] { --group-accent: var(--gold); }
-  .tab-group[data-group="regulation"]   { --group-accent: var(--purple-light); }
   .tab-group[data-group="policy"]   { --group-accent: var(--pink);  }
-  /* Beige, not a fifth brand colour: the workbench is not a content area. */
-  .tab-group[data-group="lab"]      { --group-accent: var(--beige); }
   .tab-group-btns { display: flex; align-items: flex-end; }
   .tab-group-label {
     margin-top: 3px; padding-top: 4px;
@@ -2086,22 +2063,6 @@
     fill: var(--muted); opacity: 0.75;
   }
   .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
-  /* Reinforcement and tension read differently, and a drafted link reads
-     differently again. competesWith was not drawn at all until 2026-10-17,
-     so the graph could only show agreement. Dashed = proposed: the `why` was
-     drafted rather than authored (docs/policy-card-rules.md), and it stays
-     dashed until the policy author confirms or cuts it. */
-  .pol-links-edge--competes {
-    stroke: var(--red-deep);
-    stroke-opacity: 0.55;
-  }
-  .pol-links-edge--proposed { stroke-dasharray: 4 4; stroke-opacity: 0.45; }
-  .pol-links-legend-sep {
-    display: inline-block; width: 1px; height: 13px;
-    background: var(--border); margin: 0 4px;
-  }
-  .pol-links-legend-line { width: 22px; height: 4px; overflow: visible; }
-
   .pol-links-edge.dimmed { stroke-opacity: 0.08; }
   .pol-links-edge.lit { stroke: var(--accent); stroke-opacity: 0.85; }
   .pol-links-node-dot {
@@ -2142,737 +2103,6 @@
     .pol-cat-row-head { padding: 12px 14px 10px; }
   }
 
-  /* ── CASE STUDIES ───────────────────────────────────────────────────────
-     The Case Studies tab group carries Warm Gold, which is the accent the
-     retired Economy group used (see .tab-group[data-group] in shell.css).
-
-     COLOR CAUTION. --gold (#ebc382) fails contrast at small sizes on Beige,
-     so everything text-sized or hairline-thin here uses --gold-deep and the
-     pure token is reserved for the one large fill on the page, the state
-     outline. That split is the rule the token block in tokens.css sets out;
-     do not reach for --gold on a label because it looks brighter. */
-  #caseStudiesArea { display: none; }
-  .case-studies-view #caseStudiesArea  { display: block; }
-  .case-studies-view .sidebar          { display: none; }
-  .case-studies-view .inline-filters   { display: none; }
-  .case-studies-view .cards-grid       { display: none !important; }
-  .case-studies-view .empty-state      { display: none !important; }
-  .case-studies-view .lens-toggle      { display: none; }
-  .case-studies-view .header-tab-desc  { display: none; }
-  .case-studies-view .key-findings-band { display: none; }
-  .case-studies-view .app-layout       { grid-template-columns: 1fr; }
-  .case-studies-view .main-content     { grid-column: 1 / -1; }
-  .case-studies-view .cards-area       { padding-top: 0; }
-
-  .cs-intro { padding: var(--masthead-top) 0 0; }
-  .cs-intro .tab-standfirst { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-
-  /* ── stage ──────────────────────────────────────────────────────────
-     Two columns with the state outline behind both. The map is absolutely
-     positioned rather than a background-image so it can scale with the
-     column and still be a real <svg> we can recolor through CSS. */
-  .cs-stage {
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    gap: 40px;
-    margin-top: 28px;
-    max-width: 1140px;
-  }
-  /* Decorative. Pinned to the timeline column so the timeline reads as
-     running down the length of the state, and kept out of the detail
-     panel's way. pointer-events:none so it never eats a click meant for a
-     timeline point sitting on top of it. */
-  .cs-map {
-    position: absolute;
-    /* left:0, not a negative inset. The stage sits ~29px from the viewport
-       edge at 1024px, so bleeding the map left of the stage clipped the
-       coastline against the window. */
-    top: 0; left: 0;
-    width: 46%; height: 100%;
-    fill: var(--gold);
-    opacity: 0.16;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .cs-timeline-col, .cs-detail-col { position: relative; z-index: 1; min-width: 0; }
-
-  /* ── timeline ───────────────────────────────────────────────────── */
-  .cs-timeline { list-style: none; margin: 0; padding: 0 0 0 26px; position: relative; }
-  /* The rail. Inset to pass through the centre of the .cs-event markers. */
-  .cs-timeline::before {
-    content: ''; position: absolute;
-    left: 5px; top: 6px; bottom: 6px; width: 2px;
-    background: color-mix(in srgb, var(--gold-deep) 42%, transparent);
-  }
-  .cs-phase {
-    display: flex; flex-direction: column; gap: 1px;
-    margin: 26px 0 10px; padding-left: 2px;
-  }
-  .cs-phase:first-child { margin-top: 0; }
-  .cs-phase-label {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-deep);
-  }
-  .cs-phase-span { font-family: var(--grot); font-size: 11px; color: var(--muted); }
-  .cs-row { position: relative; }
-
-  .cs-event {
-    position: relative;
-    display: block; width: 100%; text-align: left;
-    background: none; border: none; cursor: pointer;
-    padding: 7px 10px 7px 12px;
-    border-radius: var(--r-ctl);
-    transition: background 0.14s, color 0.14s;
-  }
-  /* The marker. Sits on the rail, so its left must track .cs-timeline's
-     padding (26px) minus the rail inset (5px) and half the dot. */
-  .cs-event::before {
-    content: ''; position: absolute;
-    left: -25px; top: 13px;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--gold-deep);
-    transition: background 0.14s, transform 0.14s;
-  }
-  .cs-event:hover { background: color-mix(in srgb, var(--gold) 20%, transparent); }
-  .cs-event.active { background: color-mix(in srgb, var(--gold) 34%, transparent); }
-  .cs-event.active::before { background: var(--gold-deep); transform: scale(1.25); }
-  .cs-event--upcoming::before { border-style: dashed; }
-  .cs-event-date {
-    display: block;
-    font-family: var(--grot); font-size: 11px; font-weight: 500;
-    letter-spacing: 0.04em; color: var(--muted);
-  }
-  .cs-event-title {
-    display: block; margin-top: 1px;
-    font-family: var(--sans); font-size: 14.5px; line-height: 1.4;
-    color: var(--text);
-  }
-  .cs-event.active .cs-event-title { color: var(--headline); font-weight: 600; }
-
-  /* ── detail panel ───────────────────────────────────────────────── */
-  .cs-detail {
-    position: sticky; top: 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: 3px solid var(--gold-deep);
-    border-radius: var(--r-card);
-    padding: 24px 26px 22px;
-  }
-  .cs-detail-head { margin-bottom: 18px; }
-  .cs-detail-date {
-    font-family: var(--grot); font-size: 11px; font-weight: 500;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-deep);
-  }
-  .cs-upcoming {
-    display: inline-block; margin-left: 6px; padding: 2px 6px;
-    border: 1px solid var(--divider); border-radius: var(--r-tag);
-    font-size: 9.5px; letter-spacing: 0.08em; color: var(--muted);
-  }
-  .cs-detail-title {
-    font-family: var(--serif); font-size: 23px; line-height: 1.25;
-    font-weight: 500; letter-spacing: -0.01em; color: var(--headline);
-    margin: 5px 0 0;
-  }
-  .cs-detail-kicker {
-    font-family: var(--sans); font-size: 13.5px; color: var(--muted); margin-top: 5px;
-  }
-  .cs-detail-section { margin-top: 18px; }
-  .cs-detail-label {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .cs-detail-text {
-    font-family: var(--sans); font-size: 14.5px; line-height: 1.68; color: var(--text);
-    margin: 0;
-  }
-  .cs-bill { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 7px; }
-  .cs-bill-number {
-    font-family: var(--grot); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.04em; color: var(--headline);
-    background: color-mix(in srgb, var(--gold) 38%, transparent);
-    border-radius: var(--r-tag); padding: 3px 8px;
-  }
-  .cs-bill-author { font-family: var(--sans); font-size: 13px; color: var(--muted); }
-  .cs-sources { list-style: none; margin: 0; padding: 0; }
-  .cs-sources li {
-    font-family: var(--sans); font-size: 13px; line-height: 1.55;
-    padding-left: 15px; text-indent: -15px; margin-bottom: 7px; color: var(--muted);
-  }
-  .cs-sources a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
-  .cs-sources a:hover { color: var(--gold-deep); }
-  .cs-provenance {
-    margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--border);
-    font-family: var(--sans); font-size: 12.5px; line-height: 1.55;
-    font-style: italic; color: var(--muted);
-  }
-
-  /* ── TK ─────────────────────────────────────────────────────────── */
-  .cs-tk { margin-top: 36px; max-width: var(--lede-measure); }
-  .cs-tk-mark {
-    font-family: var(--serif); font-size: 72px; line-height: 1;
-    font-weight: 500; letter-spacing: 0.02em; color: var(--gold-deep);
-  }
-  .cs-tk-note {
-    margin-top: 14px;
-    font-family: var(--sans); font-size: 15px; line-height: 1.7; color: var(--muted);
-    max-width: 62ch;
-  }
-
-  @media (max-width: 900px) {
-    .cs-stage { grid-template-columns: 1fr; gap: 26px; }
-    /* One column: the outline becomes a corner watermark rather than a
-       backdrop for the timeline, or it sits under the detail panel's
-       surface and muddies it. */
-    .cs-map { left: auto; right: 0; top: 0; width: 38%; height: 320px; opacity: 0.12; }
-    .cs-detail { position: static; }
-  }
-  /* ── REGULATION ─────────────────────────────────────────────────────────
-     Accent: Deep Purple, the one ESP secondary the tracker had not used.
-
-     TWO TOKENS, ONE HUE. Deep Purple (#472b51) scores 1.02:1 against the
-     Warm Navy band, so it cannot be the nav accent; it scores 10.78:1 on
-     Beige, so it is ideal for marks and labels in the page body. The band
-     therefore gets --purple-light, the same hue raised in lightness
-     (5.43:1 on navy, between Soft Green's 4.77 and Warm Gold's 7.49).
-     This is the --gold-deep / --green-deep pattern from tokens.css run in
-     the opposite direction: those darken a light brand colour for use on
-     Beige, this lightens a dark one for use on Navy. Use --purple-light on
-     navy and --purple on beige; swapping them fails contrast both ways. */
-  #regulationArea { display: none; }
-  .regulation-view #regulationArea    { display: block; }
-  .regulation-view .sidebar           { display: none; }
-  .regulation-view .inline-filters    { display: none; }
-  .regulation-view .cards-grid        { display: none !important; }
-  .regulation-view .empty-state       { display: none !important; }
-  .regulation-view .lens-toggle       { display: none; }
-  .regulation-view .header-tab-desc   { display: none; }
-  .regulation-view .key-findings-band { display: none; }
-  .regulation-view .app-layout        { grid-template-columns: 1fr; }
-  .regulation-view .main-content      { grid-column: 1 / -1; }
-  .regulation-view .cards-area        { padding-top: 0; }
-
-  .reg-intro { padding: var(--masthead-top) 0 0; }
-  .reg-intro .tab-standfirst { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-
-  #regBody { max-width: 1140px; }
-
-  /* ── the act rail ───────────────────────────────────────────────── */
-  /* Sticky, because the page is long now and the three acts are the only
-     structure a reader needs to hold. */
-  .reg-rail {
-    position: sticky; top: 0; z-index: 5;
-    display: flex; gap: 6px; flex-wrap: wrap;
-    margin: 24px 0 8px; padding: 8px 0;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-  }
-  .reg-rail-btn {
-    display: flex; flex-direction: column; gap: 1px;
-    background: none; border: 1px solid transparent; cursor: pointer;
-    border-radius: var(--r-ctl); padding: 6px 12px; text-align: left;
-    transition: background 0.14s, border-color 0.14s;
-  }
-  .reg-rail-btn:hover { background: color-mix(in srgb, var(--purple) 10%, transparent); }
-  .reg-rail-btn.active {
-    background: color-mix(in srgb, var(--purple) 14%, transparent);
-    border-color: color-mix(in srgb, var(--purple) 40%, transparent);
-  }
-  .reg-rail-act {
-    font-family: var(--grot); font-size: 9.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
-  }
-  .reg-rail-name { font-family: var(--sans); font-size: 14px; color: var(--headline); }
-
-  /* ── acts ───────────────────────────────────────────────────────── */
-  .reg-act { margin-top: 32px; }
-  .reg-act:focus { outline: none; }
-  .reg-act-head { border-top: 3px solid var(--purple); padding-top: 14px; }
-  .reg-act-n {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
-  }
-  .reg-act-title {
-    font-family: var(--serif); font-size: clamp(22px, 2.6vw, 28px); line-height: 1.26;
-    font-weight: 500; letter-spacing: -0.01em; color: var(--headline);
-    margin: 6px 0 0; max-width: 24ch;
-  }
-  .reg-act-stand {
-    font-family: var(--sans); font-size: 15px; line-height: 1.7;
-    color: var(--muted); max-width: 76ch; margin: 10px 0 0;
-  }
-  /* The handoff between acts: this is the connective tissue that makes the
-     three one argument rather than three pages stacked. */
-  .reg-transition {
-    margin: 40px auto 0; padding: 18px 0 0; max-width: 62ch;
-    border-top: 1px solid var(--border);
-    font-family: var(--serif); font-size: 18px; line-height: 1.5;
-    color: var(--muted); text-align: center;
-  }
-  .reg-close {
-    margin: 48px 0 0; padding: 22px 0 0; border-top: 3px solid var(--purple);
-    font-family: var(--serif); font-size: 20px; line-height: 1.45;
-    color: var(--headline); max-width: 64ch;
-  }
-  .reg-sub {
-    font-family: var(--grot); font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
-    margin: 34px 0 14px; padding-bottom: 7px;
-    border-bottom: 1px solid color-mix(in srgb, var(--purple) 28%, transparent);
-  }
-
-  /* ── the handoff between acts ───────────────────────────────────── */
-  /* The three acts are separate views, so each one carries the line that
-     leads into the next plus a button to it. Without this the pages read as
-     three unrelated tabs rather than one argument in order. */
-  .reg-handoff {
-    margin-top: 48px; padding-top: 22px;
-    border-top: 3px solid var(--purple);
-    display: flex; flex-direction: column; align-items: flex-start; gap: 16px;
-  }
-  .reg-handoff .reg-transition {
-    margin: 0; padding: 0; border: none; max-width: 62ch; text-align: left;
-  }
-  .reg-next {
-    display: inline-flex; align-items: baseline; gap: 10px;
-    background: var(--navy); border: none; cursor: pointer;
-    border-radius: var(--r-ctl); padding: 11px 18px;
-    transition: background 0.14s;
-  }
-  .reg-next:hover { background: var(--headline); }
-  .reg-next-label {
-    font-family: var(--grot); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple-light);
-  }
-  .reg-next-name { font-family: var(--sans); font-size: 15px; color: #fff; }
-  .reg-next-arrow { color: var(--purple-light); font-size: 15px; }
-
-  /* ── hit targets and the detail panel ───────────────────────────── */
-  .reg-figure { margin-top: 20px; }
-  /* Fade-and-rise as the figure scrolls in. .reg-in is added by
-     regObserveFigures(); under reduced motion it is added immediately and
-     this transition is suppressed, so the diagram is simply there. */
-  @media (prefers-reduced-motion: no-preference) {
-    .reg-figure { opacity: 0; transform: translateY(10px);
-                  transition: opacity 0.5s ease, transform 0.5s ease; }
-    .reg-figure.reg-in { opacity: 1; transform: none; }
-  }
-  .reg-hit { cursor: pointer; }
-  .reg-hit:focus { outline: none; }
-  /* The hit rect is the focus/hover surface; it is invisible until one of
-     those states, so the drawing stays clean at rest. */
-  .reg-track-hit, .reg-beat-hit { fill: transparent; }
-  .reg-hit:hover .reg-track-hit, .reg-hit:hover .reg-beat-hit,
-  .reg-hit:focus-visible .reg-track-hit, .reg-hit:focus-visible .reg-beat-hit {
-    fill: color-mix(in srgb, var(--purple) 10%, transparent);
-  }
-  .reg-hit:hover .reg-band-bg, .reg-hit:hover .reg-kind-bg {
-    stroke: var(--purple); stroke-width: 1.5;
-  }
-  .reg-hit:focus-visible .reg-band-bg, .reg-hit:focus-visible .reg-kind-bg,
-  .reg-hit:focus-visible .reg-track-hit, .reg-hit:focus-visible .reg-beat-hit {
-    stroke: var(--purple); stroke-width: 2;
-  }
-  .reg-hit--on .reg-band-bg, .reg-hit--on .reg-kind-bg {
-    stroke: var(--purple); stroke-width: 2;
-    fill: color-mix(in srgb, var(--purple) 9%, var(--surface));
-  }
-  .reg-hit--on .reg-track-hit, .reg-hit--on .reg-beat-hit {
-    fill: color-mix(in srgb, var(--purple) 13%, transparent);
-  }
-  .reg-prompt {
-    font-family: var(--grot); font-size: 11px; letter-spacing: 0.05em;
-    color: var(--muted); margin: 6px 0 0;
-  }
-  .reg-detail {
-    margin-top: 14px; padding: 20px 22px 18px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-left: 3px solid var(--purple); border-radius: var(--r-card);
-  }
-  .reg-detail[hidden] { display: none; }
-  .reg-d-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .reg-d-kicker {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--purple);
-  }
-  .reg-d-close {
-    background: none; border: none; cursor: pointer; line-height: 1;
-    font-size: 20px; color: var(--muted); padding: 0 2px;
-  }
-  .reg-d-close:hover { color: var(--purple); }
-  .reg-d-row { margin-top: 14px; }
-  .reg-d-label {
-    font-family: var(--grot); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
-    margin-bottom: 4px;
-  }
-  .reg-d-text {
-    font-family: var(--sans); font-size: 14.5px; line-height: 1.68;
-    color: var(--text); margin: 0; max-width: 78ch;
-  }
-  .reg-note {
-    font-family: var(--sans); font-size: 13.5px; line-height: 1.65;
-    color: var(--muted); max-width: 72ch; margin: -4px 0 16px;
-  }
-  .reg-takeaway {
-    font-family: var(--sans); font-size: 15px; line-height: 1.7;
-    color: var(--text); max-width: 76ch; margin: 18px 0 0;
-  }
-
-  /* The pull quote each page opens on. */
-  .reg-frame { margin: 28px 0 0; padding: 0 0 0 20px; border-left: 3px solid var(--purple); }
-  .reg-frame-quote {
-    font-family: var(--serif); font-size: 21px; line-height: 1.38; font-weight: 500;
-    color: var(--headline); margin: 0; max-width: 58ch;
-  }
-  .reg-frame-attrib {
-    font-family: var(--grot); font-size: 11px; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--muted); margin-top: 8px;
-  }
-
-  .reg-source {
-    margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--border);
-    font-family: var(--sans); font-size: 13px; color: var(--muted);
-  }
-  .reg-source a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
-  .reg-source a:hover { color: var(--purple); }
-
-  /* ── shared SVG chrome ──────────────────────────────────────────── */
-  /* Set the defaults on the <svg> root and let the text INHERIT them. The
-     obvious `.reg-svg text { fill: ... }` is specificity (0,1,1) and so beats
-     every single-class rule below it, which silently repainted the branch
-     headers dark-on-navy and greyed out every coloured label. Inheritance
-     loses to any declared value, which is exactly what is wanted here. */
-  .reg-svg {
-    display: block; width: 100%; height: auto; margin-top: 4px;
-    font-family: var(--sans); fill: var(--text);
-  }
-
-  /* ── 1. the stack ───────────────────────────────────────────────── */
-  .reg-band-bg { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
-  .reg-band-name {
-    font-family: var(--grot); font-size: 13.5px; font-weight: 700;
-    fill: var(--headline);
-  }
-  .reg-band-note { font-size: 10.5px; fill: var(--muted); }
-  .reg-pill rect { fill: var(--bg); stroke: var(--divider); stroke-width: 1; }
-  .reg-pill text { font-size: 11.5px; fill: var(--text); }
-  /* The three that recur up the stack are the ones the drawing is about. */
-  .reg-pill--int rect { fill: color-mix(in srgb, var(--purple) 15%, var(--bg)); stroke: var(--purple); }
-  .reg-pill--int text { fill: var(--purple); font-weight: 600; }
-  .reg-pill--wide rect { stroke-dasharray: 3 3; }
-  .reg-track-line { stroke: color-mix(in srgb, var(--purple) 35%, transparent); stroke-width: 2; }
-  .reg-dot { fill: var(--bg); stroke: var(--purple); stroke-width: 2; }
-  .reg-dot--on { fill: var(--purple); }
-  .reg-track-name {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 600;
-    letter-spacing: 0.04em; fill: var(--purple);
-  }
-  .reg-gutter-label {
-    font-family: var(--grot); font-size: 10px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; fill: var(--muted);
-  }
-
-  /* ── technology vs companies ────────────────────────────────────── */
-  .reg-vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 26px; align-items: start; }
-  .reg-vs-rule { width: 1px; align-self: stretch; background: var(--border); }
-  .reg-vs-label {
-    font-family: var(--grot); font-size: 12.5px; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;
-  }
-  .reg-vs-col--tech  .reg-vs-label { color: var(--green-deep); }
-  .reg-vs-col--firms .reg-vs-label { color: var(--purple); }
-  .reg-vs-list { list-style: none; margin: 0; padding: 0; }
-  .reg-vs-list li {
-    font-family: var(--sans); font-size: 14.5px; line-height: 1.6;
-    color: var(--text); padding: 0 0 10px 17px; position: relative;
-  }
-  .reg-vs-list li::before {
-    content: ''; position: absolute; left: 0; top: 9px;
-    width: 7px; height: 7px; border-radius: 2px;
-  }
-  .reg-vs-col--tech  .reg-vs-list li::before { background: var(--green-deep); }
-  .reg-vs-col--firms .reg-vs-list li::before { background: var(--purple); }
-
-  /* ── three big things ───────────────────────────────────────────── */
-  .reg-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .reg-action {
-    background: var(--surface); border: 1px solid var(--border);
-    border-top: 3px solid var(--purple); border-radius: var(--r-card);
-    padding: 20px 20px 18px;
-  }
-  .reg-action-n {
-    font-family: var(--serif); font-size: 30px; line-height: 1;
-    color: color-mix(in srgb, var(--purple) 55%, transparent); margin-bottom: 10px;
-  }
-  .reg-action-title {
-    font-family: var(--serif); font-size: 18px; line-height: 1.28; font-weight: 500;
-    color: var(--headline); margin: 0 0 8px;
-  }
-  .reg-action-text {
-    font-family: var(--sans); font-size: 13.5px; line-height: 1.65; color: var(--text); margin: 0;
-  }
-
-  /* ── 2. the fork ────────────────────────────────────────────────── */
-  .reg-node rect { fill: var(--navy); }
-  .reg-node text { fill: var(--beige); font-size: 14px; font-weight: 600; }
-  .reg-node--test rect { fill: var(--surface); stroke: var(--purple); stroke-width: 2; }
-  .reg-node--test text { fill: var(--headline); font-size: 15px; }
-  .reg-link { stroke: var(--divider); stroke-width: 2; fill: none; }
-  .reg-arrowhead { fill: var(--divider); }
-  .reg-link--default { stroke: var(--purple); stroke-width: 3.5; }
-  .reg-link--steered { stroke: var(--green-deep); stroke-width: 2; stroke-dasharray: 5 4; }
-  .reg-link-note {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 600;
-    letter-spacing: 0.05em; fill: var(--purple);
-  }
-  .reg-link-note--alt { fill: var(--green-deep); }
-  .reg-branch-head { fill: var(--navy); }
-  .reg-branch-answer {
-    font-family: var(--grot); font-size: 13px; font-weight: 700;
-    fill: var(--gold); letter-spacing: 0.06em;
-  }
-  .reg-branch-label {
-    font-family: var(--grot); font-size: 13px; font-weight: 600; fill: var(--beige);
-  }
-  .reg-branch--for .reg-branch-answer { fill: var(--green); }
-  .reg-kind-bg { fill: var(--surface); stroke: var(--border); stroke-width: 1; }
-  .reg-branch--against .reg-kind-bg { stroke: color-mix(in srgb, var(--purple) 45%, var(--border)); }
-  .reg-kind-name { font-size: 13.5px; font-weight: 700; fill: var(--headline); }
-  .reg-kind-note { font-size: 11.5px; fill: var(--muted); }
-  .reg-kind-flag {
-    font-family: var(--grot); font-size: 9.5px; font-weight: 700;
-    letter-spacing: 0.07em; text-transform: uppercase; fill: var(--purple);
-  }
-  .reg-branch--for .reg-kind-flag { fill: var(--green-deep); }
-
-  .reg-gravity .reg-takeaway { max-width: 80ch; }
-
-  /* ── levers ─────────────────────────────────────────────────────── */
-  .reg-levers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  .reg-lever {
-    border-top: 3px solid var(--purple); padding-top: 12px;
-  }
-  .reg-lever-name {
-    font-family: var(--grot); font-size: 12.5px; font-weight: 700;
-    letter-spacing: 0.04em; color: var(--headline); margin: 0 0 9px;
-  }
-  .reg-lever-list { list-style: none; margin: 0; padding: 0; }
-  .reg-lever-list li {
-    font-family: var(--sans); font-size: 13px; line-height: 1.6;
-    color: var(--text); padding: 0 0 9px 15px; position: relative;
-  }
-  .reg-lever-list li::before {
-    content: ''; position: absolute; left: 0; top: 8px;
-    width: 6px; height: 6px; border-radius: 50%; background: var(--purple);
-  }
-
-  /* ── 3. cash ────────────────────────────────────────────────────── */
-  .reg-base { stroke: var(--divider); stroke-width: 2; }
-  .reg-base-label, .reg-shock-label {
-    font-family: var(--grot); font-size: 10.5px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted);
-  }
-  .reg-shock { stroke: var(--purple); stroke-width: 1.5; stroke-dasharray: 4 4; }
-  .reg-shock-label { fill: var(--purple); }
-  .reg-path { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
-  .reg-path--bad  { stroke: var(--purple); }
-  .reg-path--good { stroke: var(--green-deep); }
-  .reg-beat text { font-size: 11px; }
-  .reg-beat--bad  circle { fill: var(--purple); }
-  .reg-beat--bad  text   { fill: var(--purple); }
-  .reg-beat--good circle { fill: var(--green-deep); }
-  .reg-beat--good text   { fill: var(--green-deep); }
-  /* The shared beat belongs to neither path, so it takes the neutral mark. */
-  .reg-beat--shared circle { fill: var(--headline); }
-  .reg-beat--shared text   { fill: var(--headline); font-weight: 600; }
-  .reg-legend-key--bad  { fill: var(--purple); }
-  .reg-legend-key--good { fill: var(--green-deep); }
-  .reg-path-label {
-    font-family: var(--grot); font-size: 12px; font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-  .reg-path-label--bad  { fill: var(--purple); }
-  .reg-path-label--good { fill: var(--green-deep); }
-
-  .reg-moments { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-  .reg-moments li {
-    font-family: var(--sans); font-size: 13.5px; color: var(--text);
-    background: var(--surface); border: 1px solid var(--border);
-    border-left: 3px solid var(--purple); border-radius: var(--r-ctl);
-    padding: 7px 12px;
-  }
-
-  .reg-scale { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-  .reg-scale-stat {
-    font-family: var(--serif); font-size: 27px; line-height: 1.1;
-    font-weight: 500; color: var(--purple);
-  }
-  .reg-scale-text {
-    font-family: var(--sans); font-size: 13px; line-height: 1.5;
-    color: var(--muted); margin-top: 5px;
-  }
-
-  .reg-evidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .reg-ev {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 18px 18px 16px;
-  }
-  /* The null result is the one card that argues against the others, so it is
-     marked rather than blended in. */
-  .reg-ev--null { border-style: dashed; background: var(--bg); }
-  .reg-ev-stat {
-    font-family: var(--serif); font-size: 25px; line-height: 1.1;
-    font-weight: 500; color: var(--purple);
-  }
-  .reg-ev--null .reg-ev-stat { color: var(--muted); }
-  .reg-ev-text {
-    font-family: var(--sans); font-size: 13.5px; line-height: 1.55;
-    color: var(--text); margin-top: 6px;
-  }
-  .reg-ev-where {
-    font-family: var(--grot); font-size: 11px; font-weight: 600;
-    color: var(--headline); margin-top: 10px;
-  }
-  .reg-ev-design {
-    font-family: var(--grot); font-size: 10px; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--muted); margin-top: 3px;
-  }
-  .reg-ev-caveat {
-    font-family: var(--sans); font-size: 12px; line-height: 1.55; font-style: italic;
-    color: var(--muted); margin: 10px 0 0; padding-top: 9px;
-    border-top: 1px solid var(--border);
-  }
-
-  @media (max-width: 1000px) {
-    .reg-actions, .reg-evidence { grid-template-columns: repeat(2, 1fr); }
-    .reg-levers, .reg-scale     { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 700px) {
-    .reg-actions, .reg-evidence, .reg-levers, .reg-scale { grid-template-columns: 1fr; }
-    .reg-vs { grid-template-columns: 1fr; gap: 18px; }
-    .reg-vs-rule { display: none; }
-    /* The three drawings stop being readable much under 700px. Let them
-       scroll sideways at their authored width rather than compress the
-       labels into each other. */
-    .reg-svg { min-width: 680px; }
-    .reg-figure { overflow-x: auto; }
-  }
-  /* ── PROTOTYPES ─────────────────────────────────────────────────────────
-     The workbench. Its nav group takes Beige rather than a palette accent:
-     the three content groups own Soft Green, Warm Gold and Warm Pink, and
-     Deep Purple is spoken for by Regulation. A neutral says "this is not a
-     content area" without inventing a sixth brand colour. */
-  #prototypesArea { display: none; }
-  .prototypes-view #prototypesArea    { display: block; }
-  .prototypes-view .sidebar           { display: none; }
-  .prototypes-view .inline-filters    { display: none; }
-  .prototypes-view .cards-grid        { display: none !important; }
-  .prototypes-view .empty-state       { display: none !important; }
-  .prototypes-view .lens-toggle       { display: none; }
-  .prototypes-view .header-tab-desc   { display: none; }
-  .prototypes-view .key-findings-band { display: none; }
-  .prototypes-view .app-layout        { grid-template-columns: 1fr; }
-  .prototypes-view .main-content      { grid-column: 1 / -1; }
-  .prototypes-view .cards-area        { padding-top: 0; }
-
-  .proto-intro { padding: var(--masthead-top) 0 0; }
-  .proto-intro .tab-standfirst { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-
-  #protoBody { max-width: 1140px; }
-  .proto-count {
-    font-family: var(--grot); font-size: 11.5px; letter-spacing: 0.04em;
-    color: var(--muted); margin: 20px 0 14px;
-  }
-  .proto-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px;
-  }
-  .proto-card {
-    display: flex; flex-direction: column;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 16px 18px 15px;
-  }
-  /* Stale is marked on the card, not hidden: a prototype that no longer runs
-     is still part of the record, and the reason is more useful than the
-     sketch. */
-  .proto-card--stale { background: var(--bg); border-style: dashed; }
-  .proto-card-head {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
-  }
-  .proto-eyebrow {
-    font-family: var(--grot); font-size: 9.5px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
-  }
-  .proto-status {
-    font-family: var(--grot); font-size: 9px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    border-radius: var(--r-tag); padding: 3px 7px; white-space: nowrap;
-  }
-  .proto-status--ok    { color: var(--green-deep); border: 1px solid var(--green-deep); }
-  .proto-status--stale { color: var(--muted);      border: 1px solid var(--divider); }
-  .proto-title {
-    font-family: var(--serif); font-size: 17px; line-height: 1.3; font-weight: 500;
-    color: var(--headline); margin: 8px 0 0;
-  }
-  .proto-desc {
-    font-family: var(--sans); font-size: 13.5px; line-height: 1.6;
-    color: var(--text); margin: 8px 0 0;
-  }
-  .proto-why {
-    font-family: var(--sans); font-size: 12.5px; line-height: 1.55; font-style: italic;
-    color: var(--muted); margin: 10px 0 0; padding-top: 9px;
-    border-top: 1px solid var(--border);
-  }
-  .proto-actions { display: flex; gap: 8px; align-items: center; margin-top: auto; padding-top: 14px; }
-  .proto-open {
-    font-family: var(--grot); font-size: 12px; font-weight: 600;
-    background: var(--navy); color: #fff; border: none; cursor: pointer;
-    border-radius: var(--r-ctl); padding: 7px 13px;
-  }
-  .proto-open:hover { background: var(--headline); }
-  .proto-open.active { background: var(--green-deep); }
-  .proto-new {
-    font-family: var(--grot); font-size: 12px; color: var(--accent);
-    text-decoration: underline; text-underline-offset: 2px;
-  }
-  .proto-new:hover { color: var(--green-deep); }
-
-  /* ── the stage ──────────────────────────────────────────────────── */
-  .proto-stage { margin-top: 24px; }
-  .proto-stage[hidden] { display: none; }
-  .proto-stage-bar {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    background: var(--navy); color: var(--beige);
-    border-radius: var(--r-card) var(--r-card) 0 0; padding: 10px 14px;
-  }
-  .proto-stage-title { font-family: var(--sans); font-size: 14px; color: #fff; }
-  .proto-stage-file {
-    font-family: var(--grot); font-size: 11px; color: var(--divider);
-    margin-right: auto;
-  }
-  .proto-stage-close {
-    font-family: var(--grot); font-size: 11.5px; font-weight: 600;
-    background: none; color: var(--beige); cursor: pointer;
-    border: 1px solid color-mix(in srgb, var(--beige) 45%, transparent);
-    border-radius: var(--r-ctl); padding: 5px 11px;
-  }
-  .proto-stage-close:hover { background: color-mix(in srgb, var(--beige) 15%, transparent); }
-  /* Tall, because most of these are full pages and a short frame turns every
-     one of them into a scroll-within-a-scroll. */
-  .proto-frame {
-    display: block; width: 100%; height: 78vh; min-height: 520px;
-    border: 1px solid var(--border); border-top: none;
-    border-radius: 0 0 var(--r-card) var(--r-card);
-    background: #fff;
-  }
-
-  @media (max-width: 700px) {
-    .proto-grid { grid-template-columns: 1fr; }
-    .proto-frame { height: 70vh; min-height: 420px; }
-  }
   /* ── FOCUS STYLES (Fix 1) ────────────────────────────────── */
   :focus-visible {
     outline: 2px solid var(--accent);
@@ -2894,9 +2124,6 @@
      DATA
      ═══════════════════════════════════════════════════════════ -->
 <script src="data/tracker-data.js"></script>
-<script src="data/case-studies-data.js"></script>
-<script src="data/regulation-data.js"></script>
-<script src="data/prototypes-data.js"></script>
 <!-- NOT loaded here, fetched on first use by loadPayload() in src/js/05-lazy.js:
        data/fact-bank-data.js   880 KB, on first open of the Fact Bank view
      Off the critical path. -->
@@ -2922,33 +2149,12 @@
           </div>
           <div class="tab-group-label" aria-hidden="true">Research</div>
         </div>
-        <div class="tab-group" data-group="case-studies" role="presentation">
-          <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewCaseCA" data-view="case-studies" data-case="california" role="tab" aria-selected="false" aria-controls="viewPanel">California Campaigns</button>
-            <button class="header-nav-btn" id="viewCaseTaxi" data-view="case-studies" data-case="taxi" role="tab" aria-selected="false" aria-controls="viewPanel">Taxi Drivers</button>
-          </div>
-          <div class="tab-group-label" aria-hidden="true">Case Studies</div>
-        </div>
-        <div class="tab-group" data-group="regulation" role="presentation">
-          <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewRegTech" data-view="regulation" data-reg="tech" role="tab" aria-selected="false" aria-controls="viewPanel">The Tech</button>
-            <button class="header-nav-btn" id="viewRegWorkers" data-view="regulation" data-reg="workers" role="tab" aria-selected="false" aria-controls="viewPanel">Workers</button>
-            <button class="header-nav-btn" id="viewRegCash" data-view="regulation" data-reg="cash" role="tab" aria-selected="false" aria-controls="viewPanel">Cash</button>
-          </div>
-          <div class="tab-group-label" aria-hidden="true">Regulation</div>
-        </div>
         <div class="tab-group" data-group="policy" role="presentation">
           <div class="tab-group-btns" role="presentation">
             <button class="header-nav-btn" id="viewPolicy" data-view="policy" role="tab" aria-selected="false" aria-controls="viewPanel">Map</button>
             <button class="header-nav-btn" id="viewSolutions" data-view="solutions" role="tab" aria-selected="false" aria-controls="viewPanel">Solutions</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Policy</div>
-        </div>
-        <div class="tab-group" data-group="lab" role="presentation">
-          <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewPrototypes" data-view="prototypes" role="tab" aria-selected="false" aria-controls="viewPanel">Prototypes</button>
-          </div>
-          <div class="tab-group-label" aria-hidden="true">Lab</div>
         </div>
       </div>
     </nav>
@@ -3074,43 +2280,6 @@
         </div>
       </div>
 
-      <!-- ── CASE STUDIES TAB ── -->
-      <!-- Two case studies share one view and one area; the nav tabs
-           (California Campaigns / Taxi Drivers) switch between them through
-           setCaseStudy() in src/js/35-case-studies.js, the same way the Papers
-           tab switches Database / What's New. Everything inside is built at
-           runtime from CASE_STUDIES in data/case-studies-data.js. -->
-      <div id="caseStudiesArea">
-        <div class="cs-intro">
-          <h2 class="tab-lede" id="csLede"></h2>
-          <p class="tab-standfirst" id="csStandfirst"></p>
-        </div>
-        <div id="csBody"></div>
-      </div>
-      <!-- ── REGULATION TAB ── -->
-      <!-- Three pages (The Tech / Workers / Cash) behind one view, switched by
-           setRegulation() in src/js/36-regulation.js, the same shape as the
-           Case Studies tab. Everything inside is built at runtime from
-           REGULATION in data/regulation-data.js. -->
-      <div id="regulationArea">
-        <div class="reg-intro">
-          <h2 class="tab-lede" id="regLede"></h2>
-          <p class="tab-standfirst" id="regStandfirst"></p>
-        </div>
-        <div id="regBody"></div>
-      </div>
-      <!-- ── PROTOTYPES TAB ── -->
-      <!-- A shelf of the working sketches in prototypes/, each embedded in an
-           iframe because each is already a complete standalone document with
-           its own stylesheet. Built at runtime from PROTOTYPES in
-           data/prototypes-data.js. See the note at the top of that file. -->
-      <div id="prototypesArea">
-        <div class="proto-intro">
-          <h2 class="tab-lede">The workbench</h2>
-          <p class="tab-standfirst">Every prototype behind the tracker, including the ones that lost their argument. These are working sketches, not published work: several predate the current design, and the ones marked stale no longer run against today&rsquo;s data. Nothing here has been fact-checked to the standard of the rest of the site.</p>
-        </div>
-        <div id="protoBody"></div>
-      </div>
       <!-- ── SOLUTIONS TAB ── (static editorial view; shown by the
            .solutions-view body class, so render() early-returns on it.
            Three parts in ESP's order: the world we want, the policies that
@@ -3355,12 +2524,6 @@
   let activeView    = 'about';
   // Research sub-tab: 'database' | 'changelog'
   let researchSubview = 'database';
-  // Case Studies sub-tab: 'california' | 'taxi'. Both are one view
-  // ('case-studies') and differ only here, the way the two Research
-  // sub-tabs share the cards view.
-  let activeCaseStudy = 'california';
-  // Regulation sub-tab: 'tech' | 'workers' | 'cash'. Same arrangement again.
-  let activeRegulation = 'tech';
   let activeCat      = 'all';
   let activeStatus   = 'all';
   let activeGeo      = 'all';
@@ -3369,17 +2532,11 @@
   let sortOrder     = 'desc';   // 'desc' | 'asc' | 'status'
   let factBankEnabled = false;      // set true by the Fact Bank module if data is present
   let initFactBank = function () {}; // replaced with the real builder when data is present
-  // Re-enabled 2026-10-16 after an audit of the citation rework this flag was
-  // raised for. POLICY_DATA resolves cleanly: all 68 paperIds and all 62
-  // {{cite}} tokens point at live research entries, and the runtime guard in
-  // 70-render.js reports no policy problems. What the original note described
-  // ("cite non-AI sources not in the research tracker") is the untokenised
-  // precedent in the `precedent` fields, which names non-AI programmes
-  // (Taiwan's NHI 1995, India's NREGA, Canada's CCB 2016, Levy 2018). Those
-  // are deliberate historical precedent, not tracker entries, and an AI
-  // research tracker is not where they would live. Flip back to true to hide
-  // the cards again. See buildPolicyView() + getTabDesc().
-  let policyCardsHidden = false;
+  // Policy cards are temporarily hidden in the Policy Map while their citations
+  // are being reworked (some cite non-AI sources not in the research tracker).
+  // The Map tab stays, but the cards are replaced by a short notice. Flip to
+  // false and rebuild to show them again. See buildPolicyView() + getTabDesc().
+  let policyCardsHidden = true;
   // Solutions prose is hidden for now too (updated alongside the policy cards).
   // Flip to false and rebuild to show it again. See render() + getTabDesc().
   let solutionsHidden = true;
@@ -4383,31 +3540,17 @@
     });
     const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
 
-    /* Edges = each policy's `pairsWith` AND its `competesWith`, de-duplicating
-       mutual A-B pairs (most are authored on both sides) into a single edge.
-
-       competesWith used to be dropped here, so the graph drew reinforcement
-       only and every tension in the data was invisible. A policy map that can
-       only show agreement is the less useful half of the argument.
-
-       `kind` separates the two and `proposed` marks an edge whose `why` was
-       drafted rather than authored (see docs/policy-card-rules.md: these are
-       normally the author's to supply). Both are rendered differently, so
-       nothing drafted is passed off as confirmed. An edge that is authored on
-       one side and proposed on the other counts as authored. */
+    // Edges = each policy's `pairsWith`, de-duplicating mutual A↔B pairs
+    // (most are authored on both sides) into a single edge.
     const edgeMap = new Map();
-    const collect = (field, kind) => POLICY_DATA.forEach(p => {
-      (p[field] || []).forEach(l => {
+    POLICY_DATA.forEach(p => {
+      (p.pairsWith || []).forEach(l => {
         if (!nodeById[l.id]) return; // guard against a stale id
-        const key = kind + '|' + [p.id, l.id].sort().join('|');
-        if (!edgeMap.has(key)) edgeMap.set(key, { a: p.id, b: l.id, kind, whys: [], proposed: true });
-        const e = edgeMap.get(key);
-        if (l.why) e.whys.push(l.why);
-        if (!l.proposed) e.proposed = false;
+        const key = [p.id, l.id].sort().join('|');
+        if (!edgeMap.has(key)) edgeMap.set(key, { a: p.id, b: l.id, whys: [] });
+        if (l.why) edgeMap.get(key).whys.push(l.why);
       });
     });
-    collect('pairsWith', 'pairs');
-    collect('competesWith', 'competes');
     const edges = [...edgeMap.values()];
 
     // ── Physics: repel + spring + soft per-band gravity, cooled over a
@@ -4431,11 +3574,7 @@
         const a = nodeById[e.a], b = nodeById[e.b];
         let dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-        // Only reinforcement pulls nodes together. A tension edge that sprang
-        // like a pair would place competing policies next to each other and
-        // read as "these belong together", which is the opposite of the claim.
-        const force = (e.kind === 'competes' ? SPRING_K * 0.25 : SPRING_K)
-          * (dist - SPRING_LEN) * alpha;
+        const force = SPRING_K * (dist - SPRING_LEN) * alpha;
         dx /= dist; dy /= dist;
         a.vx += dx * force; a.vy += dy * force;
         b.vx -= dx * force; b.vy -= dy * force;
@@ -4483,13 +3622,11 @@
     const edgeEls = edges.map(e => {
       const a = nodeById[e.a], b = nodeById[e.b];
       const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('class', 'pol-links-edge pol-links-edge--' + e.kind
-        + (e.proposed ? ' pol-links-edge--proposed' : ''));
+      line.setAttribute('class', 'pol-links-edge');
       line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
       line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
       const title = document.createElementNS(svgNS, 'title');
-      title.textContent = (e.kind === 'competes' ? 'Competes with. ' : 'Pairs with. ')
-        + (e.proposed ? '(Proposed, not yet reviewed.) ' : '') + e.whys.join(' ');
+      title.textContent = e.whys.join(' ');
       line.appendChild(title);
       edgeGroup.appendChild(line);
       return { el: line, a: e.a, b: e.b };
@@ -4567,11 +3704,7 @@
       .filter(([catId]) => POLICY_DATA.some(p => p.category === catId))
       .map(([catId, catLabel]) =>
       `<span class="pol-links-legend-item"><span class="pol-links-legend-dot" style="background:${POL_CAT_COLORS[catId]}"></span>${catLabel}</span>`
-    ).join('') + `
-      <span class="pol-links-legend-sep" aria-hidden="true"></span>
-      <span class="pol-links-legend-item"><svg class="pol-links-legend-line" viewBox="0 0 22 4" aria-hidden="true"><line class="pol-links-edge pol-links-edge--pairs" x1="0" y1="2" x2="22" y2="2"/></svg>Pairs with</span>
-      <span class="pol-links-legend-item"><svg class="pol-links-legend-line" viewBox="0 0 22 4" aria-hidden="true"><line class="pol-links-edge pol-links-edge--competes" x1="0" y1="2" x2="22" y2="2"/></svg>Competes with</span>
-      <span class="pol-links-legend-item"><svg class="pol-links-legend-line" viewBox="0 0 22 4" aria-hidden="true"><line class="pol-links-edge pol-links-edge--pairs pol-links-edge--proposed" x1="0" y1="2" x2="22" y2="2"/></svg>Proposed, not yet reviewed</span>`;
+    ).join('');
     outer.appendChild(legend);
 
     container.innerHTML = '';
@@ -4776,702 +3909,11 @@
 
   function applyPolFilters() {}
 
-  /* ── CASE STUDIES ────────────────────────────────────────────────────────
-     Two case studies (California Campaigns, Taxi Drivers) behind one view.
-     The nav tabs route to #california and #taxi-drivers; both land on
-     setView('case-studies') and differ only by activeCaseStudy, exactly the
-     way #research and #changelog share the cards view.
-
-     Content is CASE_STUDIES in data/case-studies-data.js and is authored
-     prose, so it is written with innerHTML the way THEMES and POLICY_DATA
-     are. Nothing here comes from a URL or a user, so there is nothing to
-     escape; if that ever changes, escape at the boundary, not here.
-
-     The California page is a decorative state outline behind a vertical
-     timeline. Clicking a timeline point fills the detail panel beside it.
-     The map is aria-hidden: it carries no information the timeline does not,
-     and announcing a 3 KB path to a screen reader helps nobody. */
-
-  let _csBuilt = {};   // case id -> true once its DOM exists
-
-  // The detail panel renders one event. Sections are omitted rather than left
-  // empty, because an empty "Bill" heading reads as missing data.
-  function csDetailHTML(ev) {
-    const bill = ev.bill ? `
-        <div class="cs-detail-section">
-          <div class="cs-detail-label">The bill</div>
-          <div class="cs-bill">
-            <span class="cs-bill-number">${ev.bill.number}</span>
-            <span class="cs-bill-author">${ev.bill.author}</span>
-          </div>
-          <p class="cs-detail-text">${ev.bill.summary}</p>
-        </div>` : '';
-    const sources = (ev.sources && ev.sources.length) ? `
-        <div class="cs-detail-section">
-          <div class="cs-detail-label">Sources</div>
-          <ul class="cs-sources">
-            ${ev.sources.map(s => `<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a></li>`).join('')}
-          </ul>
-        </div>` : '';
-    // An event with no public source is from the internal retreat deck. Say so
-    // on the card rather than letting it sit next to sourced rows looking the
-    // same; see the header comment in data/case-studies-data.js.
-    const provenance = ev.origin === 'deck' ? `
-        <p class="cs-provenance">Internal: All Staff Retreat 2026 deck. Not published, not externally verified.</p>` :
-      ev.origin === 'mixed' ? `
-        <p class="cs-provenance">Media figures from the internal All Staff Retreat 2026 deck; the veto and its reasoning are public.</p>` : '';
-    return `
-      <div class="cs-detail-head">
-        <div class="cs-detail-date">${ev.dateLabel}${ev.upcoming ? ' <span class="cs-upcoming">upcoming</span>' : ''}</div>
-        <h3 class="cs-detail-title">${ev.title}</h3>
-        ${ev.kicker ? `<div class="cs-detail-kicker">${ev.kicker}</div>` : ''}
-      </div>
-      ${bill}
-      <div class="cs-detail-section">
-        <div class="cs-detail-label">What happened</div>
-        <p class="cs-detail-text">${ev.what}</p>
-      </div>
-      <div class="cs-detail-section">
-        <div class="cs-detail-label">ESP&rsquo;s role</div>
-        <p class="cs-detail-text">${ev.role}</p>
-      </div>
-      ${sources}
-      ${provenance}`;
-  }
-
-  function csSelect(area, id) {
-    const study = CASE_STUDIES.california;
-    const ev = study.events.find(e => e.id === id);
-    if (!ev) return;
-    area.querySelectorAll('.cs-event').forEach(b => {
-      const on = b.dataset.eventId === id;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    const panel = area.querySelector('#csDetail');
-    if (panel) panel.innerHTML = csDetailHTML(ev);
-  }
-
-  function buildCalifornia(study) {
-    const phases = {};
-    study.phases.forEach(p => { phases[p.id] = p; });
-    // Group events under their phase heading, in data order. The data file is
-    // already chronological, so this neither sorts nor reorders: it only
-    // inserts a heading when the phase changes.
-    let seen = null;
-    const rows = study.events.map(ev => {
-      let head = '';
-      if (ev.phase !== seen) {
-        seen = ev.phase;
-        const p = phases[ev.phase];
-        head = p ? `<li class="cs-phase"><span class="cs-phase-label">${p.label}</span><span class="cs-phase-span">${p.span}</span></li>` : '';
-      }
-      return head + `
-        <li class="cs-row">
-          <button type="button" class="cs-event${ev.upcoming ? ' cs-event--upcoming' : ''}"
-                  data-event-id="${ev.id}" aria-pressed="false">
-            <span class="cs-event-date">${ev.dateLabel}</span>
-            <span class="cs-event-title">${ev.title}</span>
-          </button>
-        </li>`;
-    }).join('');
-
-    return `
-      <div class="cs-stage">
-        <svg class="cs-map" viewBox="${study.map.viewBox}" aria-hidden="true" focusable="false"
-             preserveAspectRatio="xMidYMid meet">
-          <path d="${study.map.d}"/>
-        </svg>
-        <div class="cs-timeline-col">
-          <ol class="cs-timeline">${rows}</ol>
-        </div>
-        <div class="cs-detail-col">
-          <div class="cs-detail" id="csDetail" aria-live="polite"></div>
-        </div>
-      </div>`;
-  }
-
-  function buildTaxi(study) {
-    return `
-      <div class="cs-tk">
-        <div class="cs-tk-mark">TK</div>
-        <p class="cs-tk-note">${study.tkNote}</p>
-      </div>`;
-  }
-
-  /* Build on first open and cache. The California page is ~15 KB of DOM and
-     neither case depends on filters or lens, so there is nothing to
-     invalidate: unlike the cards view this never needs a re-render. */
-  function buildCaseStudies() {
-    const study = CASE_STUDIES[activeCaseStudy] || CASE_STUDIES.california;
-    const area  = document.getElementById('caseStudiesArea');
-    if (!area) return;
-    document.getElementById('csLede').innerHTML = study.lede;
-    document.getElementById('csStandfirst').innerHTML = study.standfirst;
-    const body = document.getElementById('csBody');
-    if (!body) return;
-    if (_csBuilt.id !== study.id) {
-      body.innerHTML = study.tk ? buildTaxi(study) : buildCalifornia(study);
-      _csBuilt.id = study.id;
-      // Open on the first event so the detail panel is never an empty box.
-      if (!study.tk && study.events.length) csSelect(area, study.events[0].id);
-    }
-  }
-
-  /* Sets the sub-case and nothing else. It does NOT toggle the two nav
-     buttons: activeTabIdFor() in 70-render.js owns that, and setView() always
-     runs after this (both the router's `enter` and the nav click handler call
-     them in that order). Two writers for one piece of DOM is the bug the
-     applyMastheadCopy note in 70-render.js records; don't reintroduce it. */
-  function setCaseStudy(which) {
-    activeCaseStudy = (which === 'taxi') ? 'taxi' : 'california';
-    if (activeView === 'case-studies') buildCaseStudies();
-  }
-
-  // One delegated listener, like the view nav. Timeline points are buttons, so
-  // Enter and Space already work; this only has to find which one was hit.
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.cs-event');
-    if (!btn) return;
-    const area = document.getElementById('caseStudiesArea');
-    if (area) csSelect(area, btn.dataset.eventId);
-  });
-  /* ── REGULATION ──────────────────────────────────────────────────────────
-     THREE PAGES, one argument: The Tech, Workers, Cash. Each act is its own
-     view, reached by #regulate-tech / #regulate-workers / #regulate-cash and
-     by the act rail at the top. They were briefly a single scrolling page;
-     that put roughly 35,000px between Act 1 and Act 3, which is not a page
-     anyone reads, so each act renders on its own again.
-
-     The argument still runs across them. Acts 1 and 2 close on a handoff line
-     and a button to the next act, Act 3 closes the argument, and the rail is
-     always visible, so the three read as a sequence rather than as three
-     unrelated tabs.
-
-     EVERY DIAGRAM IS CLICKABLE. A layer of the stack, a branch of the fork, a
-     beat on either cash path: each is a hit target carrying data-act and
-     data-detail, resolved against REGULATION[act].details by one delegated
-     listener. The hit targets are <g role="button" tabindex="0"> rather than
-     <a>, so they are reachable and operable from the keyboard; SVG elements
-     do not fire a click on Enter the way a <button> does, hence the keydown
-     handler at the bottom.
-
-     Prose comes from REGULATION in data/regulation-data.js and is authored,
-     so it is written with innerHTML the way THEMES and CASE_STUDIES are.
-
-     COLOR. --purple-light on the navy band, --purple (true Deep Purple) for
-     marks on beige. See the note in tokens.css: Deep Purple scores 1.02:1 on
-     navy and cannot be the band accent. Do not swap one for the other. */
-
-  let _regBuilt = {};   // act id -> true once that act's DOM exists
-
-  // ── small SVG helpers ───────────────────────────────────────────────
-  // Rough advance width. Good enough to lay out pills and wrap labels
-  // without measuring the DOM, which we cannot do before insertion.
-  function regTextW(s, size) { return String(s).replace(/&[a-z]+;/g, 'x').length * size * 0.545; }
-
-  function regWrap(s, maxChars) {
-    const words = String(s).split(' ');
-    const lines = []; let cur = '';
-    for (const w of words) {
-      if (cur && (cur + ' ' + w).length > maxChars) { lines.push(cur); cur = w; }
-      else cur = cur ? cur + ' ' + w : w;
-    }
-    if (cur) lines.push(cur);
-    return lines;
-  }
-
-  function regTspans(s, x, y, lh, maxChars) {
-    return regWrap(s, maxChars).map((l, i) =>
-      `<tspan x="${x}" y="${y + i * lh}">${l}</tspan>`).join('');
-  }
-
-  // Attributes that turn any <g> into a keyboard-operable hit target.
-  function regHit(act, id, label) {
-    return `class="reg-hit" role="button" tabindex="0" data-act="${act}" data-detail="${id}" aria-label="${label}"`;
-  }
-
-  /* ── ACT 1: the stack ─────────────────────────────────────────────── */
-  function regStackSVG(d) {
-    const BAND_H = 70, GAP = 14, TOP = 34;
-    const PILL_X = 160, PILL_MAX = 596;
-    // Authored bottom-to-top (chips first); drawn top-down like a stack.
-    const layers = d.stack.slice().reverse();
-    const H = TOP + layers.length * BAND_H + (layers.length - 1) * GAP + 10;
-
-    const bands = layers.map((layer, i) => {
-      const y = TOP + i * (BAND_H + GAP);
-      let cx = PILL_X, row = 0;
-      const pills = layer.firms.map(f => {
-        const w = Math.round(regTextW(f.name, 11.5)) + 24;
-        if (cx + w > PILL_MAX && row === 0) { row = 1; cx = PILL_X; }
-        const px = cx; cx += w + 8;
-        const py = y + (row === 0 ? 20 : 48);
-        const cls = 'reg-pill' + (f.integrated ? ' reg-pill--int' : '') + (f.wide ? ' reg-pill--wide' : '');
-        return `<g class="${cls}">
-            <rect x="${px}" y="${py}" width="${w}" height="24" rx="5"/>
-            <text x="${px + w / 2}" y="${py + 16}" text-anchor="middle">${f.name}</text>
-          </g>`;
-      }).join('');
-      return `<g ${regHit('tech', layer.id, layer.name + ' layer. Open details.')}>
-          <rect class="reg-band-bg" x="0" y="${y}" width="${PILL_MAX + 10}" height="${BAND_H}" rx="7"/>
-          <text class="reg-band-name" x="14" y="${y + 27}">${layer.name}</text>
-          ${regWrap(layer.note, 22).map((l, k) =>
-            `<text class="reg-band-note" x="14" y="${y + 45 + k * 13}">${l}</text>`).join('')}
-          ${pills}
-        </g>`;
-    }).join('');
-
-    /* The integration gutter: one track per parent that appears at more than
-       one layer, filled where present and hollow where not. This is the
-       argument the drawing exists to make, so it gets its own column rather
-       than connector lines threaded through the pills. */
-    const INT = [{ key: 'google', name: 'Google' }, { key: 'amazon', name: 'Amazon' }, { key: 'microsoft', name: 'Microsoft' }];
-    const tracks = INT.map((p, j) => {
-      const x = 642 + j * 58;
-      const dots = layers.map((layer, i) => {
-        const y = TOP + i * (BAND_H + GAP) + BAND_H / 2;
-        // 'giants' is the applications layer's catch-all for the same three
-        // parents, so it counts as a presence for each of them.
-        const here = layer.firms.some(f => f.key === p.key || f.key === 'giants');
-        return `<circle class="reg-dot${here ? ' reg-dot--on' : ''}" cx="${x}" cy="${y}" r="5"/>`;
-      }).join('');
-      const y0 = TOP + BAND_H / 2;
-      const y1 = TOP + (layers.length - 1) * (BAND_H + GAP) + BAND_H / 2;
-      return `<g ${regHit('tech', p.key, p.name + '. Open details.')}>
-          <rect class="reg-track-hit" x="${x - 26}" y="${TOP - 22}" width="52" height="${y1 - y0 + BAND_H}" rx="6"/>
-          <line class="reg-track-line" x1="${x}" y1="${y0}" x2="${x}" y2="${y1}"/>
-          ${dots}
-          <text class="reg-track-name" x="${x}" y="${TOP - 12}" text-anchor="middle">${p.name}</text>
-        </g>`;
-    }).join('');
-
-    return `<svg class="reg-svg reg-svg--stack" viewBox="0 0 820 ${H}" role="group"
-         aria-label="The AI stack in four layers from applications down to chips, with Google, Amazon and Microsoft present at nearly every layer. Each layer and each firm opens a detail panel.">
-        <text class="reg-gutter-label" x="700" y="${TOP - 26}" text-anchor="middle">Present at every layer</text>
-        ${bands}${tracks}
-      </svg>`;
-  }
-
-  /* ── ACT 2: the fork ──────────────────────────────────────────────── */
-  function regForkSVG(d) {
-    const W = 820;
-    const left = d.branches.find(b => b.tone === 'against');
-    const right = d.branches.find(b => b.tone === 'for');
-    const KIND_H = 56, KIND_GAP = 10, BRANCH_Y = 206, KIND_Y = 262;
-    const H = KIND_Y + Math.max(left.kinds.length, right.kinds.length) * (KIND_H + KIND_GAP) + 16;
-
-    const branchCol = (b, cx, cw) => {
-      const x = cx - cw / 2;
-      const kinds = b.kinds.map((k, i) => {
-        const y = KIND_Y + i * (KIND_H + KIND_GAP);
-        return `<g ${regHit('workers', k.id, k.name + '. Open details.')}>
-            <rect class="reg-kind-bg" x="${x}" y="${y}" width="${cw}" height="${KIND_H}" rx="7"/>
-            <text class="reg-kind-name" x="${x + 14}" y="${y + 21}">${k.name}</text>
-            ${regWrap(k.note, 42).map((l, j) =>
-              `<text class="reg-kind-note" x="${x + 14}" y="${y + 37 + j * 13}">${l}</text>`).join('')}
-            ${k.flag ? `<text class="reg-kind-flag" x="${x + cw - 14}" y="${y + 21}" text-anchor="end">${k.flag}</text>` : ''}
-          </g>`;
-      }).join('');
-      return `<g class="reg-branch reg-branch--${b.tone}">
-          <rect class="reg-branch-head" x="${x}" y="${BRANCH_Y}" width="${cw}" height="40" rx="7"/>
-          <text class="reg-branch-answer" x="${x + 14}" y="${BRANCH_Y + 25}">${b.answer}</text>
-          <text class="reg-branch-label" x="${x + cw - 14}" y="${BRANCH_Y + 25}" text-anchor="end">${b.label}</text>
-          ${kinds}
-        </g>`;
-    };
-
-    const CW = 376, LX = 202, RX = 618;
-    return `<svg class="reg-svg reg-svg--flow" viewBox="0 0 ${W} ${H}" role="group"
-         aria-label="A flow diagram. A new AI capability meets one test: does it make human skills and expertise more valuable. No leads to labor-replacing technologies, yes to pro-worker ones. Each of the five categories opens a detail panel.">
-        <defs>
-          <marker id="regArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" class="reg-arrowhead"/>
-          </marker>
-        </defs>
-        <g class="reg-node reg-node--start">
-          <rect x="310" y="8" width="200" height="40" rx="7"/>
-          <text x="410" y="33" text-anchor="middle">A new AI capability</text>
-        </g>
-        <line class="reg-link" x1="410" y1="48" x2="410" y2="74" marker-end="url(#regArrow)"/>
-        <g class="reg-node reg-node--test">
-          <rect x="190" y="78" width="440" height="56" rx="7"/>
-          ${regWrap(d.test, 46).map((l, i) =>
-            `<text x="410" y="${103 + i * 18}" text-anchor="middle">${l}</text>`).join('')}
-        </g>
-        <!-- The default is drawn heavier than the alternative: the paper's
-             point is that this is not a 50/50 fork. -->
-        <path class="reg-link reg-link--default" d="M410,134 L410,168 L${LX},168 L${LX},${BRANCH_Y - 6}" marker-end="url(#regArrow)"/>
-        <path class="reg-link reg-link--steered" d="M410,134 L410,168 L${RX},168 L${RX},${BRANCH_Y - 6}" marker-end="url(#regArrow)"/>
-        <text class="reg-link-note" x="${LX + 90}" y="156">where the money points</text>
-        <text class="reg-link-note reg-link-note--alt" x="${RX - 90}" y="156" text-anchor="end">needs steering</text>
-        ${branchCol(left, LX, CW)}
-        ${branchCol(right, RX, CW)}
-      </svg>`;
-  }
-
-  /* ── ACT 3: one shock, two paths ──────────────────────────────────── */
-  function regCashSVG(d) {
-    const W = 820, H = 358;
-    const X0 = 40, SHOCK = 268, FORK = 344, XE = 742, BASE = 112;
-    const bad = d.diagram.paths.find(p => p.tone === 'bad');
-    const good = d.diagram.paths.find(p => p.tone === 'good');
-    /* The y values are a shape, not a quantity: the diagram carries no units
-       and must not be read as one. Bad labels hang below their dot and good
-       labels sit above, so the sets cannot collide where the lines cross. */
-    const XS = [FORK + 126, FORK + 258, XE];
-    const badY = [196, 254, 300], goodY = [138, 112, BASE - 26];
-    const FORK_Y = 150, LH = 12;
-
-    const path = (ys) => `M${SHOCK},${BASE} L${FORK},${FORK_Y} ` + XS.map((x, i) => `L${x},${ys[i]}`).join(' ');
-    const beats = (p, ys, isBad) => XS.map((x, i) => {
-      const b = p.beats[i];
-      // Above-the-point labels grow downward from their start, so lift them
-      // by the extra lines or the last line lands on the path.
-      const lines = regWrap(b.label, 16).length;
-      const dy = isBad ? 22 : -16 - (lines - 1) * LH;
-      const last = i === XS.length - 1;
-      return `<g ${regHit('cash', b.id, b.label + '. Open details.')}>
-          <rect class="reg-beat-hit" x="${x - 54}" y="${Math.min(ys[i], ys[i] + dy) - 12}" width="108" height="${Math.abs(dy) + lines * LH + 16}" rx="6"/>
-          <g class="reg-beat reg-beat--${isBad ? 'bad' : 'good'}">
-            <circle cx="${x}" cy="${ys[i]}" r="5"/>
-            <text text-anchor="${last ? 'end' : 'middle'}">${regTspans(b.label, last ? x - 10 : x, ys[i] + dy, LH, 16)}</text>
-          </g>
-        </g>`;
-    }).join('');
-
-    const sh = d.diagram.shared;
-    return `<svg class="reg-svg reg-svg--cash" viewBox="0 0 ${W} ${H}" role="group"
-         aria-label="A line diagram. A household runs along a stable baseline until a transition, where income drops. Without cash the path steps down to lasting insecurity; with cash it dips and returns to baseline. Each point opens a detail panel.">
-        <g class="reg-legend">
-          <rect class="reg-legend-key reg-legend-key--good" x="${W - 250}" y="14" width="16" height="4" rx="2"/>
-          <text class="reg-path-label reg-path-label--good" x="${W - 228}" y="21">${good.label}</text>
-          <rect class="reg-legend-key reg-legend-key--bad" x="${W - 250}" y="36" width="16" height="4" rx="2"/>
-          <text class="reg-path-label reg-path-label--bad" x="${W - 228}" y="43">${bad.label}</text>
-        </g>
-        <line class="reg-base" x1="${X0}" y1="${BASE}" x2="${SHOCK}" y2="${BASE}"/>
-        <text class="reg-base-label" x="${X0}" y="${BASE - 14}">${d.diagram.baseline}</text>
-        <line class="reg-shock" x1="${SHOCK}" y1="62" x2="${SHOCK}" y2="${H - 22}"/>
-        <text class="reg-shock-label" x="${SHOCK - 8}" y="56" text-anchor="end">${d.diagram.shock}</text>
-        <path class="reg-path reg-path--bad"  d="${path(badY)}"/>
-        <path class="reg-path reg-path--good" d="${path(goodY)}"/>
-        <!-- The shared beat: one event, one label, both lines through it. -->
-        <g ${regHit('cash', sh.id, sh.label + '. Open details.')}>
-          <rect class="reg-beat-hit" x="${FORK - 54}" y="${FORK_Y - 44}" width="108" height="62" rx="6"/>
-          <g class="reg-beat reg-beat--shared">
-            <circle cx="${FORK}" cy="${FORK_Y}" r="5"/>
-            <text text-anchor="middle">${regTspans(sh.label, FORK,
-              FORK_Y - 16 - (regWrap(sh.label, 16).length - 1) * LH, LH, 16)}</text>
-          </g>
-        </g>
-        ${beats(bad, badY, true)}
-        ${beats(good, goodY, false)}
-      </svg>`;
-  }
-
-  /* ── the shared detail panel ──────────────────────────────────────── */
-  // Field order differs per act, so each gets its own row list. Rows whose
-  // field is absent are dropped rather than rendered empty.
-  const REG_ROWS = {
-    tech:    [['what', 'What it is'], ['who', 'Who is there'], ['chokepoint', 'Why it is a chokepoint'], ['policy', 'What applies here']],
-    workers: [['what', 'What it is'], ['why', 'Why it matters'], ['lever', 'The lever']],
-    cash:    [['what', 'What is happening'], ['evidence', 'The evidence'], ['design', 'Design limit']]
-  };
-
-  function regDetailHTML(act, id) {
-    const det = (REGULATION[act].details || {})[id];
-    if (!det) return '';
-    const rows = REG_ROWS[act].filter(([k]) => det[k]).map(([k, label]) =>
-      `<div class="reg-d-row"><div class="reg-d-label">${label}</div><p class="reg-d-text">${det[k]}</p></div>`).join('');
-    return `<div class="reg-d-head">
-          <span class="reg-d-kicker">${det.kicker || ''}</span>
-          <button type="button" class="reg-d-close" data-reg-close="${act}" aria-label="Close details">&times;</button>
-        </div>${rows}`;
-  }
-
-  function regSelect(act, id) {
-    const panel = document.getElementById('regDetail-' + act);
-    if (!panel) return;
-    const html = regDetailHTML(act, id);
-    if (!html) return;
-    // Mark the selected hit target in this act only.
-    document.querySelectorAll(`#regAct-${act} .reg-hit`).forEach(g => {
-      const on = g.dataset.detail === id;
-      g.classList.toggle('reg-hit--on', on);
-      g.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-    panel.innerHTML = html;
-    panel.hidden = false;
-  }
-
-  function regCloseDetail(act) {
-    const panel = document.getElementById('regDetail-' + act);
-    if (!panel) return;
-    panel.hidden = true; panel.innerHTML = '';
-    document.querySelectorAll(`#regAct-${act} .reg-hit`).forEach(g => {
-      g.classList.remove('reg-hit--on'); g.setAttribute('aria-pressed', 'false');
-    });
-  }
-
-  /* ── act bodies ───────────────────────────────────────────────────── */
-  function regActBody(act, d) {
-    const diagram = act === 'tech' ? regStackSVG(d) : act === 'workers' ? regForkSVG(d) : regCashSVG(d);
-    const prompt = act === 'tech' ? 'Click any layer, or any firm on the right, to open it up.'
-                 : act === 'workers' ? 'Click any of the five categories to open it up.'
-                 : 'Click any point on either path to open it up.';
-    const figure = `
-      <div class="reg-figure">
-        ${diagram}
-        <p class="reg-prompt">${prompt}</p>
-        <div class="reg-detail" id="regDetail-${act}" aria-live="polite" hidden></div>
-      </div>`;
-
-    if (act === 'tech') {
-      const col = (c, tone) => `
-        <div class="reg-vs-col reg-vs-col--${tone}">
-          <div class="reg-vs-label">${c.label}</div>
-          <ul class="reg-vs-list">${c.points.map(p => `<li>${p}</li>`).join('')}</ul>
-        </div>`;
-      return `${figure}
-        <p class="reg-takeaway">${d.stackTakeaway}</p>
-        <h4 class="reg-sub">${d.contrast.heading}</h4>
-        <div class="reg-vs">${col(d.contrast.tech, 'tech')}<div class="reg-vs-rule" aria-hidden="true"></div>${col(d.contrast.firms, 'firms')}</div>
-        <p class="reg-takeaway">${d.contrast.close}</p>
-        <h4 class="reg-sub">${d.actionsLabel}</h4>
-        <div class="reg-actions">${d.actions.map(a => `
-          <article class="reg-action">
-            <div class="reg-action-n">${a.n}</div>
-            <h5 class="reg-action-title">${a.title}</h5>
-            <p class="reg-action-text">${a.text}</p>
-          </article>`).join('')}</div>`;
-    }
-
-    if (act === 'workers') {
-      return `${figure}
-        <h4 class="reg-sub">${d.gravity.heading}</h4>
-        <p class="reg-takeaway">${d.gravity.text}</p>
-        <h4 class="reg-sub">${d.leversLabel}</h4>
-        <p class="reg-note">${d.leverNote}</p>
-        <div class="reg-levers">${d.leverGroups.map(g => `
-          <article class="reg-lever">
-            <h5 class="reg-lever-name">${g.name}</h5>
-            <ul class="reg-lever-list">${g.items.map(i => `<li>${i}</li>`).join('')}</ul>
-          </article>`).join('')}</div>`;
-    }
-
-    return `${figure}
-      <p class="reg-takeaway">${d.diagram.note}</p>
-      <h4 class="reg-sub">${d.momentsLabel}</h4>
-      <ul class="reg-moments">${d.moments.map(m => `<li>${m}</li>`).join('')}</ul>
-      <h4 class="reg-sub">${d.scaleLabel}</h4>
-      <div class="reg-scale">${d.scale.map(s => `
-        <div class="reg-scale-item"><div class="reg-scale-stat">${s.stat}</div><div class="reg-scale-text">${s.text}</div></div>`).join('')}</div>
-      <h4 class="reg-sub">${d.evidenceLabel}</h4>
-      <p class="reg-note">${d.evidenceNote}</p>
-      <div class="reg-evidence">${d.evidence.map(e => `
-        <article class="reg-ev${e.nullResult ? ' reg-ev--null' : ''}">
-          <div class="reg-ev-stat">${e.stat}</div>
-          <div class="reg-ev-text">${e.text}</div>
-          <div class="reg-ev-where">${e.where}</div>
-          <div class="reg-ev-design">${e.design}</div>
-          ${e.caveat ? `<p class="reg-ev-caveat">${e.caveat}</p>` : ''}
-        </article>`).join('')}</div>
-      <h4 class="reg-sub">${d.politicsLabel}</h4>
-      <p class="reg-takeaway">${d.politics}</p>`;
-  }
-
-  /* Fades each figure in as it comes into view. Gated on reduced-motion, and
-     gated on IntersectionObserver existing: without either, the figures are
-     simply visible from the start, which is the correct no-JS-frills state
-     rather than a blank diagram. */
-  function regObserveFigures() {
-    const figs = document.querySelectorAll('#regBody .reg-figure');
-    const reduce = window.matchMedia
-      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce || !('IntersectionObserver' in window)) {
-      figs.forEach(f => f.classList.add('reg-in'));
-      return;
-    }
-    const io = new IntersectionObserver((entries, obs) => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return;
-        e.target.classList.add('reg-in');
-        obs.unobserve(e.target);
-      });
-    }, { rootMargin: '0px 0px -12% 0px' });
-    figs.forEach(f => io.observe(f));
-  }
-
-  function buildRegulation() {
-    const area = document.getElementById('regulationArea');
-    if (!area) return;
-    const P = REGULATION.page, k = activeRegulation, d = REGULATION[k];
-    document.getElementById('regLede').innerHTML = P.lede;
-    document.getElementById('regStandfirst').innerHTML = P.standfirst;
-
-    const rail = `<nav class="reg-rail" aria-label="The three acts">
-        ${P.order.map(a => `<button type="button" class="reg-rail-btn${a === k ? ' active' : ''}"
-            data-reg-jump="${a}" aria-current="${a === k ? 'page' : 'false'}">
-            <span class="reg-rail-act">${REGULATION[a].act}</span>
-            <span class="reg-rail-name">${REGULATION[a].label}</span>
-          </button>`).join('')}
-      </nav>`;
-
-    /* The handoff. Acts 1 and 2 end on the line that leads into the next act
-       plus a button to it, so the three pages still read as one argument;
-       Act 3 ends on the argument's own closing line. */
-    const i = P.order.indexOf(k), next = P.order[i + 1];
-    const foot = next
-      ? `<div class="reg-handoff">
-           <p class="reg-transition">${P.transitions[k] || ''}</p>
-           <button type="button" class="reg-next" data-reg-jump="${next}">
-             <span class="reg-next-label">${REGULATION[next].act}</span>
-             <span class="reg-next-name">${REGULATION[next].label}</span>
-             <span class="reg-next-arrow" aria-hidden="true">&rarr;</span>
-           </button>
-         </div>`
-      : `<p class="reg-close">${P.close}</p>`;
-
-    document.getElementById('regBody').innerHTML = rail + `
-      <section class="reg-act" id="regAct-${k}" tabindex="-1" aria-labelledby="regActH-${k}">
-        <div class="reg-act-head">
-          <span class="reg-act-n">${d.act}</span>
-          <h3 class="reg-act-title" id="regActH-${k}">${d.question}</h3>
-          <p class="reg-act-stand">${d.standfirst}</p>
-        </div>
-        <figure class="reg-frame">
-          <blockquote class="reg-frame-quote">&ldquo;${d.frame.quote}&rdquo;</blockquote>
-          <figcaption class="reg-frame-attrib">${d.frame.attrib}</figcaption>
-        </figure>
-        ${regActBody(k, d)}
-        <p class="reg-source">Built on <a href="${d.source.url}" target="_blank" rel="noopener noreferrer">${d.source.label}</a></p>
-      </section>` + foot;
-    _regBuilt[k] = true;
-    regObserveFigures();
-  }
-
-  /* Each act is its own view. activeRegulation drives both which act renders
-     and which nav tab reads as current (activeTabIdFor in 70-render.js).
-
-     The router runs `enter` BEFORE setView, so at setRegulation() time
-     activeView may not be 'regulation' yet and #regulationArea is not on
-     screen; in that case just set the state and let render() build. */
-  function setRegulation(which) {
-    activeRegulation = REGULATION[which] && REGULATION[which].act ? which : 'tech';
-    if (activeView !== 'regulation') return;
-    buildRegulation();
-    // Switching act is a page change, so start at the top of it rather than
-    // wherever the previous act had been scrolled to.
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }
-
-  // One delegated listener for every hit target, the rail, and the close
-  // buttons. SVG <g> does not fire click on Enter the way <button> does, so
-  // keydown is handled alongside.
-  function regActivate(t) {
-    const jump = t.closest('[data-reg-jump]');
-    if (jump) {
-      setRegulation(jump.dataset.regJump);
-      // setView syncs the top nav tab, the panel label, the announcement and
-      // the hash for the act we just switched to.
-      if (typeof setView === 'function') setView('regulation');
-      return true;
-    }
-    const close = t.closest('[data-reg-close]');
-    if (close) { regCloseDetail(close.dataset.regClose); return true; }
-    const hit = t.closest('.reg-hit');
-    if (hit) { regSelect(hit.dataset.act, hit.dataset.detail); return true; }
-    return false;
-  }
-  document.addEventListener('click', e => { regActivate(e.target); });
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const hit = e.target.closest && e.target.closest('.reg-hit');
-    if (!hit) return;
-    e.preventDefault();
-    regSelect(hit.dataset.act, hit.dataset.detail);
-  });
-  /* ── PROTOTYPES ──────────────────────────────────────────────────────────
-     The workbench tab. Lists every sketch in PROTOTYPES and opens one at a
-     time in an iframe.
-
-     WHY AN IFRAME, not inlined markup: each prototype is a whole document
-     with its own <style>, and several predate the current token set. Eleven
-     of them inlined into index.html would collide on class names and on
-     cascade order, and the cascade order here is load-bearing (see the note
-     in CONTRIBUTING.md). An iframe gives each one the document it already
-     assumes it has.
-
-     The frames are created on demand rather than up front: the eleven
-     prototypes pull several megabytes of payload between them, and the app
-     should not pay that to render a list of links. That is also why the
-     iframe carries no loading="lazy" -- it only exists once the reader has
-     asked for it, so there is nothing left to defer, and the attribute on a
-     freshly inserted below-the-fold frame left it parked on about:blank. */
-
-  let _protoBuilt = false;
-
-  function protoCardHTML(p, i) {
-    const stale = p.status === 'stale';
-    return `<article class="proto-card${stale ? ' proto-card--stale' : ''}">
-        <div class="proto-card-head">
-          <span class="proto-eyebrow">${p.eyebrow}</span>
-          <span class="proto-status proto-status--${p.status}">${stale ? 'Stale' : 'Runs'}</span>
-        </div>
-        <h3 class="proto-title">${p.title}</h3>
-        <p class="proto-desc">${p.desc}</p>
-        ${p.why ? `<p class="proto-why">${p.why}</p>` : ''}
-        <div class="proto-actions">
-          <button type="button" class="proto-open" data-proto="${i}">Open here</button>
-          <a class="proto-new" href="${p.file}" target="_blank" rel="noopener noreferrer">New tab</a>
-        </div>
-      </article>`;
-  }
-
-  function buildPrototypes() {
-    const area = document.getElementById('prototypesArea');
-    if (!area || _protoBuilt) return;
-    const ok = PROTOTYPES.filter(p => p.status !== 'stale').length;
-    document.getElementById('protoBody').innerHTML = `
-      <p class="proto-count">${PROTOTYPES.length} prototypes &middot; ${ok} run against today&rsquo;s data &middot; ${PROTOTYPES.length - ok} are stale and say why</p>
-      <div class="proto-grid">${PROTOTYPES.map(protoCardHTML).join('')}</div>
-      <div class="proto-stage" id="protoStage" hidden></div>`;
-    _protoBuilt = true;
-  }
-
-  function protoOpen(i) {
-    const p = PROTOTYPES[+i];
-    const stage = document.getElementById('protoStage');
-    if (!p || !stage) return;
-    stage.hidden = false;
-    stage.innerHTML = `
-      <div class="proto-stage-bar">
-        <span class="proto-stage-title">${p.title}</span>
-        <span class="proto-stage-file">${p.file}</span>
-        <button type="button" class="proto-stage-close" data-proto-close>Close</button>
-      </div>
-      <iframe class="proto-frame" src="${p.file}" title="${p.title}"></iframe>`;
-    document.querySelectorAll('.proto-open').forEach(b =>
-      b.classList.toggle('active', b.dataset.proto === String(i)));
-    stage.scrollIntoView({ block: 'nearest' });
-  }
-
-  document.addEventListener('click', e => {
-    const open = e.target.closest('.proto-open');
-    if (open) { protoOpen(open.dataset.proto); return; }
-    if (e.target.closest('[data-proto-close]')) {
-      const stage = document.getElementById('protoStage');
-      if (stage) { stage.hidden = true; stage.innerHTML = ''; }
-      document.querySelectorAll('.proto-open').forEach(b => b.classList.remove('active'));
-    }
-  });
   /* ── ROUTER ──────────────────────────────────────────────────────────────
      One place that knows how location.hash and app state map onto each other.
 
      Routes
        #about #research #changelog #fact-bank #policy #solutions
-       #california #taxi-drivers
-       #regulate-tech #regulate-workers #regulate-cash
                                                ... the flat views, in VIEWS below
        #policy/<policy-id> #entry/<entry-id>   ... parameterised
      Anything else falls through to About, including the retired #tracker,
@@ -5500,21 +3942,11 @@
     research:           { view: 'cards',     enter: () => setResearchSubview('database') },
     changelog:          { view: 'cards',     enter: () => setResearchSubview('changelog') },
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
-    /* Case Studies is two routes onto one view, like research/changelog
-       above: the view is the same, the sub-case is the difference. */
-    california:         { view: 'case-studies', enter: () => setCaseStudy('california') },
-    'taxi-drivers':     { view: 'case-studies', enter: () => setCaseStudy('taxi') },
-    /* Regulation is three routes onto one view, same arrangement again. */
-    'regulate-tech':    { view: 'regulation', enter: () => setRegulation('tech') },
-    'regulate-workers': { view: 'regulation', enter: () => setRegulation('workers') },
-    'regulate-cash':    { view: 'regulation', enter: () => setRegulation('cash') },
-    prototypes:         { view: 'prototypes' },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
-  // `changelog` as the generic name for the cards view and `california`
-  // beats `taxi-drivers` for the case-studies view; both sub-views are
+  // `changelog` as the generic name for the cards view; the sub-view is
   // resolved explicitly below.
   const ROUTE_FOR_VIEW = {};
   for (const [route, cfg] of Object.entries(VIEWS)) {
@@ -5532,8 +3964,6 @@
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
     if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
-    if (activeView === 'case-studies') return activeCaseStudy === 'taxi' ? 'taxi-drivers' : 'california';
-    if (activeView === 'regulation') return 'regulate-' + activeRegulation;
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 
@@ -5652,9 +4082,6 @@
 
     if (activeView === 'policy') { buildPolicyView(); return; }
     if (activeView === 'about')  { return; }
-    if (activeView === 'case-studies') { buildCaseStudies(); return; }
-    if (activeView === 'regulation')   { buildRegulation(); return; }
-    if (activeView === 'prototypes')   { buildPrototypes(); return; }
     if (activeView === 'solutions') {
       // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
       // Replace the static content with a notice at runtime; the prose stays in
@@ -5719,14 +4146,6 @@
   // Solutions read this table for display — the other three hide
   // .header-tab-desc and carry their own markup — but every entry keeps
   // a lede so the pattern survives a tab being switched over later.
-  /* The Policy Map masthead, counted from the data rather than typed out, so
-     adding a policy or a category cannot leave the sentence stale. */
-  function policyBlurb() {
-    const rows = new Set(POLICY_DATA.map(p => CATEGORY_MERGE_MAP[p.category]).filter(Boolean)).size;
-    const n = POLICY_DATA.length;
-    return `${n} policy interventions grouped into ${rows} policy area${rows === 1 ? '' : 's'}, `
-         + 'listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.';
-  }
   const TAB_DESCS = {
     cards: {
       general:   { lede: 'What does the research actually show?', text: 'A curated database of peer-reviewed studies, policy reports, and investigative journalism on AI, automation, and labor markets.' },
@@ -5737,33 +4156,12 @@
       economist: { lede: 'Which numbers can you actually cite?', text: 'Short, number-bearing statements quoted verbatim from sources in the research database, each rated for political noteworthiness and for the rigour of its evidence.' },
     },
     policy: {
-      // Counts come from the data. The literal "Twenty-seven" sat here while
-      // POLICY_DATA grew to 32, so the masthead was quietly wrong; derive it.
-      general:   { lede: 'What could policy actually do about it?', text: policyBlurb() },
-      economist: { lede: 'What could policy actually do about it?', text: policyBlurb() },
+      general:   { lede: 'What could policy actually do about it?', text: 'Twenty-seven policy interventions grouped into four policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.' },
+      economist: { lede: 'What could policy actually do about it?', text: 'Twenty-seven policy interventions grouped into four policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.' },
     },
     about: {
       general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
       economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
-    },
-    prototypes: {
-      // Not displayed: .prototypes-view hides .header-tab-desc and the view
-      // carries its own intro.
-      general:   { lede: 'The workbench', text: 'Every prototype behind the tracker, including the ones that lost their argument.' },
-      economist: { lede: 'The workbench', text: 'Every prototype behind the tracker, including the ones that lost their argument.' },
-    },
-    regulation: {
-      // Not displayed either: .regulation-view hides .header-tab-desc and the
-      // visible copy comes from REGULATION, which differs per page.
-      general:   { lede: 'What would it mean to regulate this?', text: 'Three arguments: the technology, the workers, and the cash.' },
-      economist: { lede: 'What would it mean to regulate this?', text: 'Three arguments: the technology, the workers, and the cash.' },
-    },
-    'case-studies': {
-      // Not displayed: .case-studies-view hides .header-tab-desc, and the
-      // visible lede/standfirst come from CASE_STUDIES so they can differ per
-      // case. Kept so every view has a row, per the note above.
-      general:   { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
-      economist: { lede: 'What does a campaign actually look like?', text: 'Long-running fights, told as timelines.' },
     },
     solutions: {
       general:   { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
@@ -5805,27 +4203,15 @@
     if (t)  t.textContent  = desc.text;
   }
 
-  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', prototypes: 'viewPrototypes', about: 'homeTitleLink' };
-  /* Case Studies is the only view with two nav buttons, so which tab reads as
-     current depends on the sub-case as well as the view. One function answers
-     that for every view so setView has a single owner for the active tab;
-     setCaseStudy deliberately does not also toggle these. */
-  const REG_TAB_IDS = { tech: 'viewRegTech', workers: 'viewRegWorkers', cash: 'viewRegCash' };
-  function activeTabIdFor(view) {
-    if (view === 'case-studies') return activeCaseStudy === 'taxi' ? 'viewCaseTaxi' : 'viewCaseCA';
-    if (view === 'regulation')   return REG_TAB_IDS[activeRegulation] || 'viewRegTech';
-    return VIEW_TAB_IDS[view];
-  }
+  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', about: 'homeTitleLink' };
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewCaseCA', 'viewCaseTaxi',
-     'viewRegTech', 'viewRegWorkers', 'viewRegCash',
-     'viewPolicy', 'viewSolutions', 'viewPrototypes'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const active = id === activeTabIdFor(view);
+      const active = id === VIEW_TAB_IDS[view];
       el.classList.toggle('active', active);
       el.setAttribute('aria-selected', active ? 'true' : 'false');
     });
@@ -5836,28 +4222,17 @@
     document.body.classList.toggle('about-view',    view === 'about');
     document.body.classList.toggle('solutions-view', view === 'solutions');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
-    document.body.classList.toggle('case-studies-view', view === 'case-studies');
-    document.body.classList.toggle('regulation-view',   view === 'regulation');
-    document.body.classList.toggle('prototypes-view',   view === 'prototypes');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
     render();
-    const activeTabId = activeTabIdFor(view) || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
+    const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
     if (panel) panel.setAttribute('aria-labelledby', activeTabId);
     const ann = document.getElementById('viewAnnounce');
     if (ann) {
       // Must match the visible nav labels in src/views/10-header.html: this is
       // what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', prototypes: 'Prototypes', about: 'About' };
-      // Case Studies has two labels for one view; announce the one the user
-      // actually clicked, not the view key.
-      const REG_NAMES = { tech: 'The Tech', workers: 'Workers', cash: 'Cash' };
-      const name = view === 'case-studies'
-        ? (activeCaseStudy === 'taxi' ? 'Taxi Drivers' : 'California Campaigns')
-        : view === 'regulation'
-        ? (REG_NAMES[activeRegulation] || 'The Tech')
-        : (names[view] || view);
-      ann.textContent = name + ' view';
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
+      ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
   }
@@ -5874,8 +4249,6 @@
     if (!btn) return;
     const view = btn.dataset.view;
     if (view === 'cards') setResearchSubview('database');
-    if (view === 'case-studies') setCaseStudy(btn.dataset.case);
-    if (view === 'regulation')   setRegulation(btn.dataset.reg);
     setView(view);
   });
 

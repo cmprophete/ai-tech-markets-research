@@ -3,8 +3,6 @@
 
      Routes
        #about #research #changelog #fact-bank #policy #solutions
-       #california #taxi-drivers
-       #regulate-tech #regulate-workers #regulate-cash
                                                ... the flat views, in VIEWS below
        #policy/<policy-id> #entry/<entry-id>   ... parameterised
      Anything else falls through to About, including the retired #tracker,
@@ -33,21 +31,11 @@
     research:           { view: 'cards',     enter: () => setResearchSubview('database') },
     changelog:          { view: 'cards',     enter: () => setResearchSubview('changelog') },
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
-    /* Case Studies is two routes onto one view, like research/changelog
-       above: the view is the same, the sub-case is the difference. */
-    california:         { view: 'case-studies', enter: () => setCaseStudy('california') },
-    'taxi-drivers':     { view: 'case-studies', enter: () => setCaseStudy('taxi') },
-    /* Regulation is three routes onto one view, same arrangement again. */
-    'regulate-tech':    { view: 'regulation', enter: () => setRegulation('tech') },
-    'regulate-workers': { view: 'regulation', enter: () => setRegulation('workers') },
-    'regulate-cash':    { view: 'regulation', enter: () => setRegulation('cash') },
-    prototypes:         { view: 'prototypes' },
     policy:             { view: 'policy' },
     solutions:          { view: 'solutions' },
   };
   // Reverse map, for currentRoute(). First key wins, so `research` beats
-  // `changelog` as the generic name for the cards view and `california`
-  // beats `taxi-drivers` for the case-studies view; both sub-views are
+  // `changelog` as the generic name for the cards view; the sub-view is
   // resolved explicitly below.
   const ROUTE_FOR_VIEW = {};
   for (const [route, cfg] of Object.entries(VIEWS)) {
@@ -65,8 +53,6 @@
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
     if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
-    if (activeView === 'case-studies') return activeCaseStudy === 'taxi' ? 'taxi-drivers' : 'california';
-    if (activeView === 'regulation') return 'regulate-' + activeRegulation;
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 
