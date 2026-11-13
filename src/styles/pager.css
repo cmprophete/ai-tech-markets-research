@@ -1,0 +1,32 @@
+  /* ═══════════════════════════════════════════════════════════
+     PAGER
+     Under the Papers list and the Fact Bank list, which show PAGE_SIZE (50) cards at a time, and under the Legislation
+     tab's bills table, which shows LEG_PAGE_SIZE (10) rows at a time. Drawn by
+     renderPager() in 00-state.js: Previous, the page numbers, Next. Below 560px the numbers give way to
+     "Page 3 of 8" so the row holds on a phone. The current page is filled navy, like a chosen keyword chip.
+     ═══════════════════════════════════════════════════════════ */
+  .pager {
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 10px;
+    margin: 28px 0 8px; padding-top: 18px; border-top: 1px solid var(--divider);
+  }
+  .pager[hidden] { display: none; }
+  .pager-nums { display: inline-flex; align-items: center; gap: 6px; }
+  .pager-btn {
+    min-width: 36px; height: 34px; padding: 0 11px;
+    background: var(--light-beige); border: 1px solid var(--divider); border-radius: var(--r-ctl);
+    font-family: var(--sans); font-size: 13px; font-weight: 400; color: var(--text);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .pager-step { padding: 0 14px; }
+  .pager-btn:hover:not(:disabled):not(.is-current) { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
+  .pager-btn.is-current { background: var(--navy); border-color: var(--navy); color: #fff; cursor: default; }
+  .pager-btn:disabled { opacity: 0.45; cursor: default; }
+  .pager-gap { padding: 0 2px; color: var(--muted); }
+  .pager-status { display: none; font-size: 13px; color: var(--text); }
+  /* After a page change the list takes focus, so a reader starts at its first card; it is not a tab stop. */
+  #allFactsView:focus, #cardsGrid:focus { outline: none; }
+  @media (max-width: 560px) {
+    .pager-nums { display: none; }
+    .pager-status { display: inline; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pager-btn { transition: none; } }
