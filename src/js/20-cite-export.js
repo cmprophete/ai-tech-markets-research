@@ -54,25 +54,6 @@
     return p.sourceUrl ? `${apa} ${p.sourceUrl}` : apa;
   }
 
-  // BibTeX record for a research entry.
-  function formatBibTeX(p) {
-    const year = p.date ? p.date.slice(0, 4) : 'n.d.';
-    const src = (p.source || '').trim();
-    const author = src.includes(' — ') ? src.split(' — ')[0].trim() : src;
-    const org = src.includes(' — ') ? src.split(' — ').slice(1).join(' — ').trim() : '';
-    const lines = [
-      `@misc{aitracker${p.id},`,
-      `  author = {${author}},`,
-      `  title = {${p.title}},`,
-      `  year = {${year}},`,
-    ];
-    if (org) lines.push(`  publisher = {${org}},`);
-    if (p.sourceUrl) lines.push(`  howpublished = {\\url{${p.sourceUrl}}},`);
-    lines.push(`  note = {Via AI Tracker: Research and Policy, entry ${p.id}}`);
-    lines.push('}');
-    return lines.join('\n');
-  }
-
   // R1: assemble a policy card as a Markdown primer draft, with citations
   // resolved to (Author, Year) text and a References section of cited papers.
   function policyToMarkdown(p, lvl, catLabel) {
@@ -112,11 +93,15 @@
     }
     const fieldText = [p.summary, p.rationale, p.feasibility, p.landscape,
       ...(p.strengths || []), ...(p.risks || [])].join(' ');
+    // paperIds are numbers (or slugs) and {{cite}} tokens are always strings, so read them all as strings, or a paper that is
+    // both is listed twice; then list a paper once even when it has two ids (a slug and its tracker number), by its link.
     const citedIds = [...new Set([
-      ...(p.paperIds || []),
+      ...(p.paperIds || []).map(String),
       ...[...fieldText.matchAll(/\{\{citep?:([\w-]+)\}\}/g)].map(m => m[1]),
     ])];
+    const seenLinks = new Set();
     const cited = citedIds.map(id => paperMap[id]).filter(Boolean)
+      .filter(r => { const k = r.sourceUrl || r.id; if (seenLinks.has(k)) return false; seenLinks.add(k); return true; })
       .sort((a, b) => (a.source || '').localeCompare(b.source || ''));
     if (cited.length) {
       md.push('', '## References', '');
@@ -358,8 +343,6 @@
       });
 
     }
-
-    applyPolFilters();
   }
 
   // ── Policy Links graph (test run) ───────────────────────────────────
