@@ -48,15 +48,19 @@
     --navy:        #2c3254;  /* Warm Navy — anchor */
     --beige:       #f4f2e4;  /* Beige — anchor */
     --light-beige: #fffdf2;  /* Light Beige — card surface */
+    --source-band: color-mix(in srgb, var(--navy) 8%, var(--light-beige));  /* a source's header band: the Fact Bank's and the Papers rows' */
     --green:       #70ad8f;  /* Soft Green — C3 accent */
     --green-hover: #84cca8;
     --purple:      #472b51;  /* Deep Purple — secondary */
     --gold:        #ebc382;  /* Warm Gold — secondary */
+    --gold-deep:   #b4781f;  /* Warm Gold, darkened for fills (rating bars): 3.65:1 on the card; --gold itself is 1.63:1 */
     --pink:        #ffbfa7;  /* Warm Pink — secondary */
     --headline:    #232849;  /* Headline Black */
     --divider:     #caccd4;  /* Divider Grey */
     --serif:  'Publico Banner', Georgia, serif;
     --grot:   'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
+    /* Haas Grotesk ships in Roman only, so a bold request never rendered as a real bold. Use it for small uppercase labels
+       (.lbl-grot, kickers, counts), never for a heading: headings are Public Sans, as the Fact Bank's are. */
     --sans:   'Public Sans', -apple-system, 'Segoe UI', system-ui, sans-serif;
 
     /* ── TAB LEDE SCALE ──────────────────────────────────────────
@@ -96,9 +100,8 @@
        width — an inset that drifts with the viewport.
 
        Left-flush, not centred: it is the only inset that is
-       invariant to window width, and the only one that survives the
-       Papers sidebar (a centred masthead there would align to
-       neither the sidebar nor the card grid).
+       invariant to window width, and the only one that keeps the
+       masthead on the same left edge as the content column below it.
 
        The closing rule is --lede-measure wide, not the content
        width, so it hugs the text it closes. Content below the rule
@@ -128,7 +131,12 @@
     --accent:   var(--navy);
     --tooltip-bg: #2c3254;
     --tooltip-fg: #f4f2e4;
-    --sidebar-w: 252px;
+    /* The page column: the header band and the app layout stop here. It was a 252px sidebar plus a
+       1100px main column while the Papers tab had a sidebar; the total is unchanged. */
+    --layout-max: 1352px;
+    /* The content column inside it: the Fact Bank, the Papers list and its bar, and the Papers
+       masthead (so its toggle ends where the bar and the list end) stop here. */
+    --content-max: 1140px;
 
     /* One radius scale. Anything the user clicks is --r-ctl, so tabs,
        toggles, filter pills, date/sort controls and action buttons are
