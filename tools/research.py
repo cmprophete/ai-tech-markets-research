@@ -8,7 +8,7 @@ research.py -- curate the research database from a spreadsheet.
                                                                snapshot it to research.csv, then regenerate
     python3 tools/research.py check      validate the sheet without writing anything;
                                          also flags dangling id references (POLICY_DATA,
-                                         THEMES, {{cite}} tokens, Fact Bank) to archived or
+                                         {{cite}} tokens, Fact Bank) to archived or
                                          missing studies. (also accepts --sheet <url>)
     python3 tools/research.py selftest   prove the parser/serializer round-trips losslessly
 
@@ -20,7 +20,7 @@ ids in the sheet: a new row can leave `id` blank and `build` gives it a stable i
 by matching its sourceUrl to the last snapshot, so re-pulling never reshuffles ids.
 The published page never fetches the sheet -- only this build step does.
 
-WHAT THIS OWNS. Only the RESEARCH_DATA array inside data/tracker-data.js. THEMES,
+WHAT THIS OWNS. Only the RESEARCH_DATA array inside data/tracker-data.js.
 POLICY_DATA, AGENDA_DATA and CATEGORIES stay hand-edited in that file and are left
 byte-for-byte untouched. This is NOT one of the analysis/ econometric payloads --
 it is editorial content, and content/research.csv is its reproducible source.
@@ -400,12 +400,6 @@ def policy_paper_ids(text):
     return _id_list(text, "paperIds")
 
 
-def theme_paper_ids(text):
-    """IDs referenced by THEMES `papers:` arrays, for orphan detection.
-    (`papers:` cannot match `paperIds:`, so the two never overlap.)"""
-    return _id_list(text, "papers")
-
-
 def cite_token_ids(text):
     """IDs referenced by {{cite:ID}} / {{citep:ID}} prose tokens (numeric research
     ids or string POLICY_SOURCES ids), for orphan detection."""
@@ -581,9 +575,9 @@ def cmd_check(url=None):
         for e in errors:
             print("  - " + e, file=sys.stderr)
         return 1
-    # Four hand-maintained regions reference research by id: POLICY_DATA and
-    # THEMES id arrays, {{cite:N}} tokens in prose, and Fact Bank facts.
-    # Archiving a study leaves any of these dangling -- the policy/theme silently
+    # Three hand-maintained regions reference research by id: POLICY_DATA id
+    # arrays, {{cite:N}} tokens in prose, and Fact Bank facts.
+    # Archiving a study leaves any of these dangling -- the policy silently
     # drops it, a {{cite}} renders raw, and a fact whose paper is archived is
     # hidden by the runtime guard in 80-fact-bank.js. None corrupts the build, so
     # these are notes (not errors): the checklist of hand-edits an archive leaves
@@ -602,7 +596,6 @@ def cmd_check(url=None):
                   f"(not in the tracker or POLICY_SOURCES): {', '.join(dangling)}")
 
     note_orphans("POLICY_DATA paperIds", policy_paper_ids(text))
-    note_orphans("THEMES papers", theme_paper_ids(text))
     note_orphans("{{cite:ID}} tokens", cite_token_ids(text))
     note_orphans("Fact Bank paperIds", fact_bank_paper_ids())
     archived = len(entries) - len(live)
