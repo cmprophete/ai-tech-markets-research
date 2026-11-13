@@ -29,8 +29,8 @@ Extract **one to three** facts per paper. If a paper genuinely has none (pure th
 
 But **you must still read the body of the paper** before finalizing a fact, for four reasons:
 
-1. **Scope.** The abstract's headline number often has a quieter definition in the methods section (exposure vs. displacement, tasks vs. jobs, projection vs. measurement, subgroup vs. population). The `caveat` and `factPlain` fields depend on knowing the real scope.
-2. **Context.** The `context` field is the verbatim paragraph around the fact, and the richest version of a finding sometimes sits in the results section with detail the abstract compresses away.
+1. **Scope.** The abstract's headline number often has a quieter definition in the methods section (exposure vs. displacement, tasks vs. jobs, projection vs. measurement, subgroup vs. population). The `caveat` field depends on knowing the real scope.
+2. **Context.** The `context` paragraph (stored in `data/fact-bank-context.js`) is the verbatim paragraph around the fact, and the richest version of a finding sometimes sits in the results section with detail the abstract compresses away.
 3. **Methodology.** The `truth` rating and `methodNote` cannot be assessed from an abstract. Skim methods, sample, and limitations before rating.
 4. **Caveat.** The `caveat` field is there to provide context and limitations of the fact, and to understand this it needs to be assessed from the full research picture.
 
@@ -100,7 +100,7 @@ The single most protective field for non-expert users is the distinction between
 
 ## Schema
 
-Records live in `data/fact-bank-data.js` in a `const FACT_BANK = [...]` array, loaded as a classic script (no build step, works on `file://`), same conventions as `tracker-data.js`.
+Records live in `data/fact-bank-data.js` in a `const FACT_BANK = [...]` array, loaded as a classic script (no build step, works on `file://`), same conventions as `tracker-data.js`. One field of each record is kept in a second file: the verbatim `context` paragraph goes in `data/fact-bank-context.js`, as an entry of `const FACT_CONTEXT = { "<record id>": "..." }` keyed by the record's `id`, because it is a quarter of the bytes and only a card that is opened shows it. Add the record to the first file and its `context` to the second, in the same edit.
 
 ```js
 {
@@ -108,8 +108,8 @@ Records live in `data/fact-bank-data.js` in a `const FACT_BANK = [...]` array, l
   paperId: 94,                 // must exist in RESEARCH_DATA
   pubDate: "2020-10-01",       // source publication date, copied from the tracker entry's `date`
   fact: "...",                 // VERBATIM quote, 1-2 sentences, contains the number
-  factPlain: "...",            // plain-English restatement, fact-sheet ready
-  context: "...",              // VERBATIM surrounding paragraph from the source
+  // context: VERBATIM surrounding paragraph from the source. NOT a field here: it goes in
+  // data/fact-bank-context.js as FACT_CONTEXT["kf-94-1"] = "...".
   provenance: "...",           // where in the paper + data basis, e.g. "Results, p. 449; commercial risk scores for 49,618 patients"
   keywords: ["discrimination", "healthcare"],
   evidenceType: "audit-study",
@@ -134,7 +134,6 @@ Field notes:
 - **`pubDate`** is mandatory. It is the source's publication date, copied verbatim from the matching tracker entry's `date` field (do not invent or re-derive it). It powers the "Published" label and the newest-first sort in the Fact Bank, and it keeps each fact's recency legible without a lookup back into the tracker.
 - **`model`** is mandatory. Record the model that performed the extraction and ratings (e.g. "Fable 5", "Sonnet 5", "Haiku 4.5") — in a fan-out run, the model the subagents ran on. This lets maintainers compare extraction and rating quality across models and re-rate selectively if one model's ratings drift.
 - **`caveat`** is mandatory and essential. This is the note to the reader about the limitations and potential vulnerabilities of the fact. An essential part of any research advisor is knowing the limitations of what one knows and protecting the person using this knowledge from being embarrassed in the future. Provide that here. This is the one line that keeps anyone from overclaiming: say "exposed to automation," not "will lose their jobs"; say "a projection by Goldman Sachs," not "research shows"; note when a finding is short-run, one country, or one sector. If a fact genuinely needs no caveat, write "None needed" deliberately, not by omission.
-- **`factPlain`** should read aloud well at a rally or in a one-pager: short sentences, no jargon, no em-dashes, keep the number.
 - **`suggestedUse`** is one concrete deployment, not a list.
 - **`foundational`** flags a source so dense with facts that the 1-3 cap leaves real material on the table. The cap still holds: extract the top three, do not raise it. Set `foundational: true` on every record from that source (denormalized, like `pubDate`) and write `foundationalWhy` once and copy it to each: one line on what else is in there and where, then 3-5 one-line stubs of the strongest unextracted candidates (number + topic, no verbatim verification needed, e.g. "ch. 4: union coverage fell 8pp in adopting firms"). The stubs are breadcrumbs for a maintainer-requested deep pass, which needs no schema change, ids just continue kf-<paperId>-4, -5, and so on. Reserve the flag for genuine wellsprings, roughly one source in ten or fewer; if most sources are foundational, none are. The Fact Bank badges these records.
 
@@ -148,7 +147,7 @@ When a source is not fully readable, append it to `PENDING_SOURCES.md` in the re
 - Sentence case for labels. Keep written sentences to roughly 42 words or fewer.
 - Every record needs `added:` with the extraction date.
 - Every record needs `pubDate:` copied from the source's tracker `date`.
-- After editing `fact-bank-data.js`, open `index.html`, switch to the Fact Bank tab, and check the console: the page validates that every `paperId` resolves, ids are unique, and vocabularies are respected.
+- After editing `fact-bank-data.js` and `fact-bank-context.js`, open `index.html`, switch to the Fact Bank tab, and check the console: the page validates that every `paperId` resolves, ids are unique, and vocabularies are respected.
 
 ## When to use this vs. research-intake
 
