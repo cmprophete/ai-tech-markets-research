@@ -1,9 +1,9 @@
   /* ═══════════════════════════════════════════════════════════
      FACT BANK MODULE
-     Self-contained in its own closure so its helpers (esc, dots,
+     Self-contained in its own closure so its helpers (esc, barHTML,
      formatAPACitation, paperMap, …) don't collide with the engine's.
      Exposes only factBankEnabled + initFactBank to the engine.
-     The DOM for the two views is built lazily on the first tab open.
+     The list is built lazily on the first tab open, and only a page of it (PAGE_SIZE cards) at a time.
      ═══════════════════════════════════════════════════════════ */
   /* The 880 KB payload is fetched on first open of the tab rather than at page
      load (see 05-lazy.js). So the tab is enabled optimistically here and this
@@ -95,28 +95,55 @@
     function esc(s) {
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-    function dots(n) { return '●'.repeat(n) + '○'.repeat(5 - n); }
+    /* Rating bar: five segments drawn by CSS from --n, so a bar is one element with no
+       per-segment markup. A Truth rating of 2 or lower is the caution case and turns
+       amber: the same threshold that adds the "Use with caution" chip and warms the
+       take-note. A bar that sits beside its own number ("2/5") is decorative; the
+       standalone ones carry the value for assistive tech. */
+    function barHTML(n, low, decorative) {
+      const v = Math.max(0, Math.min(5, Math.round(+n) || 0));
+      const a11y = decorative ? ' aria-hidden="true"' : ` role="img" aria-label="${v} of 5"`;
+      return `<span class="fc-bar${low ? ' is-low' : ''}" style="--n:${v}"${a11y}></span>`;
+    }
 
     /* ── State ── */
-    let q = '', evType = 'all', minPol = 1, minTruth = 1, sortBy = 'date', mode = 'paper', onlyFoundational = false;
+    let q = '', evType = 'all', minPol = 1, minTruth = 1, sortBy = 'date', onlyFoundational = false;
     const activeKw = new Set();
+    // The list is shown PAGE_SIZE cards at a time (see "Pages" below). A card, and a source's header, is
+    // built the first time its page is shown and then kept, so an open card stays open when the reader pages
+    // away and back. Only the current page is ever in the document.
+    let page = 1;
+    let ordered = null;                    // liveFacts in the current sort order; cleared when the sort changes
+    const wrapById = {}, headerByPaper = {};
+    const factsByPaper = {};
+    liveFacts.forEach(f => { (factsByPaper[f.paperId] = factsByPaper[f.paperId] || []).push(f); });
+    const factById = Object.fromEntries(liveFacts.map(f => [f.id, f]));
 
-    const byPaperView = document.getElementById('byPaperView');
     const allFactsView = document.getElementById('allFactsView');
     const emptyState = document.getElementById('kfEmptyState');
+    const pager = document.getElementById('kfPager');
     const resultLine = document.getElementById('kfResultLine');
-    const modePaperBtn = document.getElementById('modePaper');
-    const modeAllBtn = document.getElementById('modeAll');
+    const moreCount = document.getElementById('kfMoreCount');
+    const clearBtn = document.getElementById('kfClear');
 
     /* ── Shared card fragments ── */
-    function ratingDescHTML(f, opts) {
-      const ev = (opts && opts.skipEvidence) ? '' :
-        `<div class="rd-row"><span class="rd-head">Evidence: ${esc(EV_LABELS[f.evidenceType] || f.evidenceType)}</span> — ${esc(f.methodNote)}</div>`;
-      return `
-      <div class="rating-desc">
-        <div class="rd-row"><span class="rd-head">Political <span class="dots" aria-hidden="true">${dots(f.political)}</span><span class="sr-only">${f.political} of 5</span> ${f.political}/5</span> — ${esc(f.politicalWhy)}</div>
-        <div class="rd-row"><span class="rd-head">Truth <span class="dots" aria-hidden="true">${dots(f.truth)}</span><span class="sr-only">${f.truth} of 5</span> ${f.truth}/5</span> — ${esc(f.truthWhy)}</div>
-        ${ev}
+    /* One rating explained: a rail (the scale's name, a small bar, the score) beside the
+       sentence that justifies it. The sentence keeps its own column, so it starts at the
+       same x on every row and wraps with a hanging edge instead of running on from the
+       label. The bar is decorative here: the score beside it says the value. */
+    function ratingRowHTML(label, n, low, why) {
+      return `<div class="rd-row">
+        <div class="rd-rail">
+          <span class="lbl-grot">${label}</span>
+          <span class="rd-meter">${barHTML(n, low, true)}<span class="rd-score">${esc(n)}/5</span></span>
+        </div>
+        <p class="rd-why">${esc(why)}</p>
+      </div>`;
+    }
+    function ratingDescHTML(f) {
+      return `<div class="rating-desc">
+        ${ratingRowHTML('Political noteworthiness', f.political, false, f.politicalWhy)}
+        ${ratingRowHTML('Truth', f.truth, f.truth <= 2, f.truthWhy)}
       </div>`;
     }
     function kwChipsHTML(f) {
@@ -133,15 +160,14 @@
     function metaHTML(f, opts) {
       opts = opts || {};
       const rows = [];
+      // The source's own citation (a link to the original), when the caller passes the paper.
+      if (opts.paper) rows.push(`<strong>Source:</strong> ${citeHTML(opts.paper, f)}`);
       if (!opts.skipMethod) rows.push(`<strong>Method:</strong> ${esc(f.methodNote)}`);
       rows.push(`<strong>Where it comes from:</strong> ${esc(f.provenance)}`);
       if (f.suggestedUse && !opts.skipSuggestedUse) rows.push(`<strong>Suggested use:</strong> ${esc(f.suggestedUse)}`);
       if (f.foundational && f.foundationalWhy) rows.push(`<strong>Foundational source:</strong> ${esc(f.foundationalWhy)}`);
       rows.push(`<strong>Extracted and rated by:</strong> ${esc(f.model || 'unrecorded')}, ${esc(f.added || '')}`);
       return `<p class="fact-meta">${rows.join('<br>')}</p>`;
-    }
-    function contextHTML(f) {
-      return `<div class="fact-context"><span class="lbl-grot">Surrounding paragraph from the source</span>${esc(f.context)}</div>`;
     }
     function caveatHTML(f) {
       return `<div class="fact-caveat${f.truth <= 2 ? ' warn' : ''}"><span class="lbl-grot">Take note</span>${esc(f.caveat)}</div>`;
@@ -152,34 +178,51 @@
               ${pd ? `<span class="cite-date">Published ${esc(pd)}</span>` : ''}`;
     }
 
-    /* Short "Author et al. · year" source for the collapsed scan line. Author part
-       is everything before the " — " org separator in p.source. */
-    function shortSourceHTML(p, f) {
-      const authorPart = (p.source || '').split(' — ')[0].trim();
-      let name = authorPart;
-      if (authorPart.indexOf(',') > -1) name = authorPart.split(',')[0].trim() + ' et al.';
-      else if (authorPart.indexOf(' & ') > -1) name = authorPart.split(' & ')[0].trim() + ' et al.';
+    /* Byline for the collapsed card: the author or writer first (bold), then the
+       organization or outlet, then the year. p.source reads "Authors - Organization"
+       with a spaced em dash. A list of people is cut to the first author plus "et al.".
+       A source with no organization part is itself an organization, so it is shown
+       whole: cutting "National Partnership for Women & Families" at the ampersand
+       would print a name that does not exist. */
+    function bylineHTML(p, f) {
+      const src = (p.source || '').trim();
+      const cut = src.indexOf(' \u2014 ');
+      const people = (cut > -1 ? src.slice(0, cut) : src).trim();
+      const org = cut > -1 ? src.slice(cut + 3).trim() : '';
+      let name = people;
+      if (cut > -1) {
+        if (people.indexOf(',') > -1) name = people.split(',')[0].trim() + ' et al.';
+        else if (people.indexOf(' & ') > -1) name = people.split(' & ')[0].trim() + ' et al.';
+      }
       const yr = (pubDateOf(f) || '').slice(0, 4);
-      return esc(name) + (yr ? ' &middot; ' + yr : '');
+      return `<span class="fc-author">${esc(name)}</span>` + (org ? ' &middot; ' + esc(org) : '') + (yr ? ' &middot; ' + yr : '');
     }
-    /* Collapsed scan line: plain-English claim leads (built by the card); this row
-       carries source (all-facts view only — the by-paper group footer already shows it)
-       and the two rating dot-meters, with the expand chevron pushed to the end. */
-    function scanLineHTML(f, p, showSource) {
-      const src = showSource ? `<span class="fc-src">${shortSourceHTML(p, f)}</span>` : '';
-      return `<div class="fc-scan">
-        ${src}
-        <span class="fc-meter">Political <span class="dots" aria-hidden="true">${dots(f.political)}</span><span class="sr-only">${f.political} of 5</span></span>
-        <span class="fc-meter">Truth <span class="dots" aria-hidden="true">${dots(f.truth)}</span><span class="sr-only">${f.truth} of 5</span></span>
+    /* The source, as a band across the top of a card that has no source header of its own (a source with one
+       matching fact): the paper's title and its byline, on the same tint as a header, so a lone fact is
+       attributed as loudly as a group of them. A card under a source header hides it (the header says the
+       same). The title is shown here for the first time: a lone fact used to carry only a small byline. */
+    function sourceBandHTML(p, f) {
+      return `<div class="fc-source"><div class="fc-source-text"><div class="fc-source-title">${esc(p.title)}</div><div class="fc-source-by">${bylineHTML(p, f)}</div></div><a class="act-btn" href="#entry/${esc(p.id)}">View Summary →</a></div>`;
+    }
+    /* Card header, under the verbatim quote. Left: the category pills. Right: the two rating bars, stacked
+       so they share a left edge and sit at the same x on every card; a reader can scan
+       down the column and compare the two ratings. Then the expand chevron. */
+    function headHTML(f, p) {
+      return `<div class="fc-head">
+        <div class="fc-head-main">
+          ${chipsRowHTML(f)}
+        </div>
+        <div class="fc-rate">
+          <span class="fc-rate-lbl">Political noteworthiness</span>${barHTML(f.political, false)}
+          <span class="fc-rate-lbl">Truth</span>${barHTML(f.truth, f.truth <= 2)}
+        </div>
         <span class="expand-hint"><span class="ui-chevron chev" aria-hidden="true"></span></span>
       </div>`;
     }
-    /* ── Composable detail pieces (the two views arrange these differently) ── */
-    function quoteBlockHTML(f) {
-      return `<div class="fc-quote-block">
-          <span class="lbl-grot">Verbatim quote</span>
-          <blockquote class="fact-quote">${esc(f.fact)}</blockquote>
-        </div>`;
+    /* ── Composable detail pieces (assembled by factCardHTML) ── */
+    /* The verbatim quote is the card's lead: it is the text a reader would cite. */
+    function leadQuoteHTML(f) {
+      return `<blockquote class="fact-quote fc-lead">${esc(f.fact)}</blockquote>`;
     }
     function usageHTML(f) {
       return f.suggestedUse
@@ -198,83 +241,69 @@
           ${metaHTML(f, opts)}
         </div>`;
     }
+    /* The surrounding paragraph of each fact lives in its own file (data/fact-bank-context.js, FACT_CONTEXT, keyed
+       by the record's id) and is loaded the first time a card is opened: it was a quarter of the Fact Bank's bytes,
+       and a collapsed card never shows it. A card built before the file arrives shows a placeholder, and
+       fillContexts() replaces it in every card built so far, on the page or kept for another page. A failed load
+       says so in place of the paragraph. */
+    let ctxState = typeof FACT_CONTEXT !== 'undefined' ? 'ready' : 'idle';   // idle | loading | ready | failed
+    function ctxText(f) {
+      if (ctxState === 'ready') return FACT_CONTEXT[f.id] || '';
+      if (ctxState === 'failed') return 'The surrounding paragraph could not be loaded. Open the source to read it in place.';
+      return 'Loading the surrounding paragraph\u2026';
+    }
+    function fillContexts() {
+      Object.keys(wrapById).forEach(id => {
+        const body = wrapById[id].querySelector('.fc-ctx-body');
+        if (body) body.textContent = ctxText(factById[id]);
+      });
+    }
+    function ensureContext() {
+      if (ctxState !== 'idle') return;
+      ctxState = 'loading';
+      loadPayload('data/fact-bank-context.js')
+        .then(() => { ctxState = 'ready'; }, () => { ctxState = 'failed'; })
+        .then(fillContexts);
+    }
+    /* Starts open: the surrounding paragraph is the context to check before citing a
+       number, so it should not cost a click. Its summary row collapses it. */
     function contextDiscHTML(f) {
-      return `<details class="fact-context-d">
-          <summary>Show surrounding paragraph</summary>
-          <div class="fc-ctx-body">${esc(f.context)}</div>
+      return `<details class="fact-context-d" open>
+          <summary><span class="lbl-grot">Surrounding paragraph</span><span class="ui-chevron chev" aria-hidden="true"></span></summary>
+          <div class="fc-ctx-body">${esc(ctxText(f))}</div>
         </details>`;
     }
     function actionsHTML(f, p) {
       return `<div class="fc-actions">
-          <a class="act-btn" href="#entry/${esc(p.id)}">View in tracker</a>
+          <a class="act-btn" href="#entry/${esc(p.id)}">View Summary →</a>
           <button class="act-btn" data-copy="${esc(f.id)}">Copy fact + citation</button>
         </div>`;
     }
-    /* Plain English expand: the whole story behind the one-line takeaway. */
-    function detailBodyHTML(f, p) {
-      return `<div class="fc-detail">
-        ${caveatHTML(f)}
-        ${quoteBlockHTML(f)}
-        ${ratingDescHTML(f, { skipEvidence: true })}
-        ${chipsRowHTML(f)}
-        ${methodsPanelHTML(f)}
-        ${contextDiscHTML(f)}
-        ${actionsHTML(f, p)}
-      </div>`;
-    }
 
-    /* ── MODE 1: By-paper view ── */
-    function simpleCardHTML(f) {
-      const p = paperMap[f.paperId];
-      return `
-      <div class="cwrap" data-fid="${esc(f.id)}"><div class="cinner">
-        <div class="simple-card" id="kf-card-${esc(f.id)}" tabindex="0" role="button" aria-expanded="false">
-          <p class="fc-claim">${esc(f.factPlain)}</p>
-          ${scanLineHTML(f, p, false)}
-          <div class="details"><div class="dinner">
-            ${detailBodyHTML(f, p)}
-          </div></div>
-        </div>
-      </div></div>`;
-    }
-    function paperGroupHTML(pid, facts) {
-      const p = paperMap[pid];
-      const n = facts.length;
-      return `
-      <div class="cwrap pg-wrap" data-pid="${esc(String(pid))}"><div class="cinner">
-        <section class="paper-group" aria-label="${esc(p.title)}">
-          <div class="pg-facts">${facts.map(simpleCardHTML).join('')}</div>
-          <div class="pg-footer">
-            <div class="pg-cite">${citeHTML(p, facts[0])}</div>
-            <span class="pg-count">${facts.some(f => f.foundational) ? `<span class="chip chip-foundational" title="${esc((facts.find(f => f.foundational) || {}).foundationalWhy || '')}">Foundational source</span> &middot; ` : ''}${n} fact${n === 1 ? '' : 's'} &middot; <a class="cite-link" href="#entry/${esc(p.id)}">View in tracker</a></span>
-          </div>
-        </section>
-      </div></div>`;
-    }
-
-    /* ── MODE 2: All-facts view ──
-       The comprehensive lens: every fact carries its full quote and usage guidance
-       (caveat + suggested use) up front, which is what sets it apart from the plain
-       one-line takeaways; the card then expands for methods and ratings. Mirrors the
-       mode-toggle copy. */
+    /* ── The fact card ──
+       The verbatim quote leads (under a source band when the card has no source header), then a header
+       (category pills on the left, the two rating bars on the right), then usage guidance (take note + suggested
+       use), all visible up front. The card expands for the rating rationale, the
+       surrounding paragraph (a panel that starts expanded; its summary row collapses it),
+       then methods and sourcing, including a link to the original source, and the
+       actions. */
     function factCardHTML(f) {
       const p = paperMap[f.paperId];
       return `
       <div class="cwrap" data-fid="${esc(f.id)}"><div class="cinner">
         <article class="fact-card" id="kf-all-${esc(f.id)}" tabindex="0" role="button" aria-expanded="false">
-          <p class="fc-claim">${esc(f.factPlain)}</p>
-          ${scanLineHTML(f, p, true)}
+          ${sourceBandHTML(p, f)}
+          ${leadQuoteHTML(f)}
+          ${headHTML(f, p)}
           <div class="fc-open">
-            ${quoteBlockHTML(f)}
             ${caveatHTML(f)}
             ${usageHTML(f)}
           </div>
           <div class="details"><div class="dinner">
             <div class="fc-detail">
-              ${ratingDescHTML(f, { skipEvidence: true })}
-              ${chipsRowHTML(f)}
-              ${methodsPanelHTML(f, { skipSuggestedUse: true })}
+              ${ratingDescHTML(f)}
               ${contextDiscHTML(f)}
+              ${methodsPanelHTML(f, { skipSuggestedUse: true, paper: p })}
               ${actionsHTML(f, p)}
             </div>
           </div></div>
@@ -282,38 +311,64 @@
       </div></div>`;
     }
 
-    /* ── Sorting / grouping ── */
+    /* ── Sorting ── */
     function factSorter(a, b) {
       const da = pubDateOf(a), db = pubDateOf(b);
       if (sortBy === 'political') return b.political - a.political || b.truth - a.truth || db.localeCompare(da);
       if (sortBy === 'truth') return b.truth - a.truth || b.political - a.political || db.localeCompare(da);
-      return db.localeCompare(da) || b.political - a.political;
+      // Newest source first, then the source itself (so a source's facts stay together under its
+      // header), then the strongest fact first within it.
+      return db.localeCompare(da) || String(a.paperId).localeCompare(String(b.paperId), undefined, { numeric: true }) ||
+        b.political - a.political || b.truth - a.truth;
     }
 
-    const byPaper = {};
-    liveFacts.forEach(f => { (byPaper[f.paperId] = byPaper[f.paperId] || []).push(f); });
-    let paperOrder = Object.keys(byPaper);
-    paperOrder.sort((a, b) => {
-      const da = byPaper[a].map(f => pubDateOf(f)).sort().pop() || '';
-      const db = byPaper[b].map(f => pubDateOf(f)).sort().pop() || '';
-      return db.localeCompare(da);
-    });
-
-    function resortAll() {
-      const wraps = Object.fromEntries([...allFactsView.children].map(w => [w.dataset.fid, w]));
-      [...liveFacts].sort(factSorter).forEach(f => allFactsView.appendChild(wraps[f.id]));
+    /* ── Pages ──
+       At most PAGE_SIZE cards a page. Under the default sort a source's matching facts form one block (its
+       header and its cards), and a block is never split across two pages: a page fills with whole blocks, so
+       it can hold a few fewer than fifty. No source has more than five facts, so a block always fits. The two
+       ranking sorts stay flat, because a source's facts are scattered through a ranking (a median of 88 to 141
+       cards apart) and grouping would drag weak siblings up beside the strong fact; every page of those but
+       the last holds fifty. */
+    function layoutPages(shown) {
+      const grouped = sortBy === 'date';
+      const blocks = [];
+      shown.forEach(f => {
+        const last = blocks[blocks.length - 1];
+        if (grouped && last && last[0].paperId === f.paperId) last.push(f); else blocks.push([f]);
+      });
+      const pages = [[]];
+      let n = 0;
+      blocks.forEach(b => {
+        if (n && n + b.length > PAGE_SIZE) { pages.push([]); n = 0; }
+        pages[pages.length - 1].push(b);
+        n += b.length;
+      });
+      return pages;
     }
-    function resortPapers() {
-      const metric = pid => {
-        const fs = byPaper[pid];
-        if (sortBy === 'political') return Math.max(...fs.map(f => f.political));
-        if (sortBy === 'truth') return Math.max(...fs.map(f => f.truth));
-        return 0;
-      };
-      const latest = pid => byPaper[pid].map(f => pubDateOf(f)).sort().pop() || '';
-      const wraps = Object.fromEntries([...byPaperView.children].map(w => [w.dataset.pid, w]));
-      [...paperOrder].sort((a, b) => metric(b) - metric(a) || latest(b).localeCompare(latest(a)))
-        .forEach(pid => byPaperView.appendChild(wraps[pid]));
+    function wrapFor(f) {
+      let w = wrapById[f.id];
+      if (!w) {
+        const tpl = document.createElement('template');
+        tpl.innerHTML = factCardHTML(f).trim();
+        w = wrapById[f.id] = tpl.content.firstElementChild;
+      }
+      return w;
+    }
+    /* One header per source that has two or more matching facts on the page. The facts keep their own cards;
+       the header carries what they share (title, byline, count, View Summary), and the cards beneath it drop
+       the repeated byline. The count reads "N facts", or "k of N facts" when a filter hides some of them. */
+    function headerFor(pid, visible) {
+      let h = headerByPaper[pid];
+      if (!h) {
+        const p = paperMap[pid];
+        h = headerByPaper[pid] = document.createElement('div');
+        h.className = 'g-head';
+        h.innerHTML = `<div class="g-main"><h3 class="g-title">${esc(p.title)}</h3><div class="g-meta">${bylineHTML(p, factsByPaper[pid][0])}</div></div>
+          <div class="g-right"><span class="g-count"></span><a class="act-btn" href="#entry/${esc(p.id)}">View Summary →</a></div>`;
+      }
+      const total = factsByPaper[pid].length;
+      h.querySelector('.g-count').textContent = visible === total ? `${visible} facts` : `${visible} of ${total} facts`;
+      return h;
     }
 
     /* ── Filtering ── */
@@ -324,44 +379,79 @@
       if (activeKw.size && ![...activeKw].every(k => (f.keywords || []).includes(k))) return false;
       if (q) {
         const p = paperMap[f.paperId] || {};
-        const hay = [f.fact, f.factPlain, f.caveat, f.provenance, f.suggestedUse, f.foundationalWhy, (f.keywords || []).join(' '), p.title, p.source].join(' ').toLowerCase();
+        const hay = [f.fact, f.caveat, f.provenance, f.suggestedUse, f.foundationalWhy, (f.keywords || []).join(' '), p.title, p.source].join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     }
-    function applyFilters() {
-      const shown = new Set(liveFacts.filter(matches).map(f => f.id));
-      [...allFactsView.querySelectorAll(':scope > .cwrap')].forEach(w => {
-        w.classList.toggle('hidden', !shown.has(w.dataset.fid));
-      });
-      let visiblePapers = 0;
-      [...byPaperView.querySelectorAll(':scope > .pg-wrap')].forEach(gw => {
-        let any = 0;
-        [...gw.querySelectorAll('.cwrap[data-fid]')].forEach(w => {
-          const on = shown.has(w.dataset.fid);
-          w.classList.toggle('hidden', !on);
-          if (on) any++;
+    /* Every filter sits inside the "More filters" panel (Evidence, the two rating minimums,
+       keywords, Foundational); only search and Sort stay in view, and neither is counted. The badge
+       counts what is switched on, and "Clear filters" shows exactly when the badge does. */
+    function refreshMore() {
+      const inPanel = (evType !== 'all' ? 1 : 0) + (minPol > 1 ? 1 : 0) + (minTruth > 1 ? 1 : 0) + activeKw.size + (onlyFoundational ? 1 : 0);
+      moreCount.hidden = inPanel === 0;
+      moreCount.textContent = inPanel;
+      clearBtn.hidden = inPanel === 0;
+    }
+    /* The filter bar's live height, for the pinned source headers (--kf-bar-h, read by .g-head in policy.css). A
+       ResizeObserver follows the bar as it changes (More filters opens, a narrow screen wraps it); a render also
+       re-reads it, because the result line it fills is part of the bar and an observer can lag a frame behind.
+       The height is read exactly, not as offsetHeight: the page is zoomed (body zoom, tokens.css), so the bar is a
+       fractional height (85.76px, not 86), and the whole number left the pinned header a quarter pixel below the bar,
+       where the cards scrolling past could show through. A rect is in zoomed pixels and the sticky offset is in the
+       header's own, hence the division by the zoom. */
+    function syncBarHeight() {
+      const bar = document.querySelector('#factBankArea .controls');
+      if (!bar) return;
+      const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
+      document.getElementById('factBankArea').style.setProperty('--kf-bar-h', (bar.getBoundingClientRect().height / zoom).toFixed(2) + 'px');
+    }
+    /* Draws the current page: the facts that match, in order, cut into pages of whole blocks, and the page the
+       reader is on built into the list. */
+    function renderPage() {
+      const shownFacts = (ordered || (ordered = [...liveFacts].sort(factSorter))).filter(matches);
+      const pages = layoutPages(shownFacts);
+      page = Math.min(Math.max(page, 1), pages.length);
+      const grouped = sortBy === 'date';
+      allFactsView.classList.toggle('grouped', grouped);
+      const frag = document.createDocumentFragment();
+      let onPage = 0;
+      pages[page - 1].forEach(block => {
+        const together = grouped && block.length >= 2;
+        // A source with two or more facts is a section holding its header and its cards, so the header can stay
+        // pinned while its cards scroll and goes with them (see .g-head in policy.css); a lone fact sits in the list.
+        let into = frag;
+        if (together) {
+          into = document.createElement('section');
+          into.className = 'g-group';
+          into.appendChild(headerFor(block[0].paperId, block.length));
+          frag.appendChild(into);
+        }
+        block.forEach(f => {
+          const w = wrapFor(f);
+          w.classList.toggle('in-group', together);
+          into.appendChild(w);
         });
-        gw.classList.toggle('hidden', any === 0);
-        if (any) visiblePapers++;
+        onPage += block.length;
       });
-      const nPapers = mode === 'paper' ? visiblePapers : new Set(liveFacts.filter(matches).map(f => f.paperId)).size;
-      resultLine.textContent = `${shown.size} of ${liveFacts.length} facts, drawn from ${nPapers} sources.`;
-      emptyState.hidden = shown.size !== 0;
+      allFactsView.textContent = '';
+      allFactsView.appendChild(frag);
+      const before = pages.slice(0, page - 1).reduce((n, pg) => n + pg.reduce((m, b) => m + b.length, 0), 0);
+      const nSources = new Set(shownFacts.map(f => f.paperId)).size;
+      resultLine.textContent = `${shownFacts.length} of ${liveFacts.length} facts, drawn from ${nSources} source${nSources === 1 ? '' : 's'}.` +
+        (pages.length > 1 ? ` Showing ${before + 1} to ${before + onPage}.` : '');
+      emptyState.hidden = shownFacts.length !== 0;
+      renderPager(pager, { page, pages: pages.length, noun: 'facts', onPage: n => { page = n; renderPage(); showListTop(allFactsView); } });
+      refreshMore();
+      syncBarHeight();
     }
-
-    function setMode(m) {
-      mode = m;
-      modePaperBtn.setAttribute('aria-pressed', String(m === 'paper'));
-      modeAllBtn.setAttribute('aria-pressed', String(m === 'all'));
-      byPaperView.hidden = m !== 'paper';
-      allFactsView.hidden = m !== 'all';
-      applyFilters();
-    }
+    // Any change to the filters, the search or the sort starts the list again at page 1.
+    function applyFilters() { page = 1; renderPage(); }
 
     function toggleCard(card) {
       const open = card.classList.toggle('open');
       card.setAttribute('aria-expanded', String(open));
+      if (open) ensureContext();
     }
     function handleCardEvents(root) {
       root.addEventListener('click', e => {
@@ -378,11 +468,11 @@
           return;
         }
         if (e.target.closest('a, select, input, summary')) return;
-        const card = e.target.closest('.simple-card, .fact-card');
+        const card = e.target.closest('.fact-card');
         if (card) toggleCard(card);
       });
       root.addEventListener('keydown', e => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.simple-card, .fact-card')) {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.fact-card')) {
           e.preventDefault();
           toggleCard(e.target);
         }
@@ -390,6 +480,14 @@
     }
 
     let kfBuilt = false;
+    // A #fact-bank/<paper-id> link, applied once the view exists (see 40-router.js).
+    applyFactBankQuery = function () {
+      const box = document.getElementById('kfSearch');
+      if (!box) return;
+      box.value = factBankQuery;
+      q = factBankQuery.toLowerCase();
+      if (kfBuilt) applyFilters();
+    };
     initFactBank = function () {
       if (kfBuilt) return;
       kfBuilt = true;
@@ -402,32 +500,53 @@
         evSelect.appendChild(o);
       });
 
-      // Build keyword pills.
+      // Keyword options: an "All" chip (pressed when nothing is selected) plus one chip per
+      // keyword, most common first. A fact must carry every selected keyword.
       const kwCounts = {};
       liveFacts.forEach(f => (f.keywords || []).forEach(k => { kwCounts[k] = (kwCounts[k] || 0) + 1; }));
       const pillWrap = document.getElementById('kwPills');
-      const kwActiveCount = document.getElementById('kwActiveCount');
-      Object.keys(kwCounts).sort((a, b) => kwCounts[b] - kwCounts[a]).forEach(k => {
+      const kwChips = [];                                   // { k, btn }; k === null is "All"
+      const refreshKw = () => {
+        kwChips.forEach(({ k, btn }) => btn.setAttribute('aria-pressed', String(k === null ? activeKw.size === 0 : activeKw.has(k))));
+      };
+      const addKwChip = (k, html) => {
         const b = document.createElement('button');
         b.className = 'kw-pill';
-        b.setAttribute('aria-pressed', 'false');
-        b.dataset.kw = k;
-        b.innerHTML = `${esc(KW_LABELS[k] || k)} <span class="kw-count">${kwCounts[k]}</span>`;
+        b.dataset.kw = k === null ? 'all' : k;
+        b.innerHTML = html;
         b.addEventListener('click', () => {
-          if (activeKw.has(k)) { activeKw.delete(k); b.setAttribute('aria-pressed', 'false'); }
-          else { activeKw.add(k); b.setAttribute('aria-pressed', 'true'); }
-          kwActiveCount.hidden = activeKw.size === 0;
-          kwActiveCount.textContent = activeKw.size;
+          if (k === null) activeKw.clear();
+          else if (activeKw.has(k)) activeKw.delete(k);
+          else activeKw.add(k);
+          refreshKw();
           applyFilters();
         });
         pillWrap.appendChild(b);
+        kwChips.push({ k, btn: b });
+      };
+      addKwChip(null, 'All');
+      Object.keys(kwCounts).sort((a, b) => kwCounts[b] - kwCounts[a]).forEach(k => {
+        addKwChip(k, `${esc(KW_LABELS[k] || k)} <span class="kw-count">${kwCounts[k]}</span>`);
       });
+      refreshKw();
 
-      const kwToggle = document.getElementById('kwToggle');
-      const kwPanel = document.getElementById('kwPanel');
-      kwToggle.addEventListener('click', () => {
-        const open = kwPanel.classList.toggle('open');
-        kwToggle.setAttribute('aria-expanded', String(open));
+      // The Foundational checkbox only appears when some fact is marked foundational; with none
+      // it could only ever return an empty list.
+      const foundationalBox = document.getElementById('kfFoundational');
+      foundationalBox.closest('.ctl-check').hidden = !liveFacts.some(f => f.foundational);
+
+      // "More filters" holds Evidence, the two rating minimums, the keyword chips and (when it applies) Foundational.
+      wireMoreFilters('kfMoreToggle', 'kfMorePanel');
+
+      // "Clear filters" resets every filter. It leaves the search text and the sort alone.
+      clearBtn.addEventListener('click', () => {
+        evType = 'all'; minPol = 1; minTruth = 1; onlyFoundational = false; activeKw.clear();
+        evSelect.value = 'all';
+        document.getElementById('kfMinPol').value = '1';
+        document.getElementById('kfMinTruth').value = '1';
+        foundationalBox.checked = false;
+        refreshKw();
+        applyFilters();
       });
 
       document.getElementById('kfSearch').addEventListener('input', e => { q = e.target.value.toLowerCase(); applyFilters(); });
@@ -435,57 +554,24 @@
       document.getElementById('kfMinPol').addEventListener('change', e => { minPol = +e.target.value; applyFilters(); });
       document.getElementById('kfMinTruth').addEventListener('change', e => { minTruth = +e.target.value; applyFilters(); });
       document.getElementById('kfFoundational').addEventListener('change', e => { onlyFoundational = e.target.checked; applyFilters(); });
-      document.getElementById('kfSort').addEventListener('change', e => { sortBy = e.target.value; resortAll(); resortPapers(); applyFilters(); });
+      document.getElementById('kfSort').addEventListener('change', e => { sortBy = e.target.value; ordered = null; applyFilters(); });
 
-      byPaperView.innerHTML = paperOrder.map(pid => paperGroupHTML(pid, byPaper[pid])).join('');
-      allFactsView.innerHTML = [...liveFacts].sort(factSorter).map(factCardHTML).join('');
-
-      handleCardEvents(byPaperView);
       handleCardEvents(allFactsView);
 
-      modePaperBtn.addEventListener('click', () => setMode('paper'));
-      modeAllBtn.addEventListener('click', () => setMode('all'));
+      // A pinned source header sticks just under the filter bar, whose height changes (More filters opens, the bar
+      // wraps on a narrow screen), so the bar's height is read into --kf-bar-h rather than guessed.
+      const bar = document.querySelector('#factBankArea .controls');
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncBarHeight).observe(bar);
+      syncBarHeight();
 
-      setMode('paper');
+      // A source's facts link may have arrived before this view was built. applyFilters() draws page 1.
+      if (factBankQuery) { document.getElementById('kfSearch').value = factBankQuery; q = factBankQuery.toLowerCase(); }
+      applyFilters();
     };
   }   // setupFactBank
 
-  // ── Research sub-tabs: Database / What's New ─────────────────
-  document.getElementById('resSubviewDatabase')?.addEventListener('click', () => {
-    setResearchSubview('database');
-    setView('cards');
-  });
-  document.getElementById('resSubviewChangelog')?.addEventListener('click', () => {
-    setResearchSubview('changelog');
-    setView('cards');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  // Entry links inside the log route through the hash router, which drops
-  // back to the database sub-tab and flashes the card.
-  document.getElementById('changelogArea')?.addEventListener('click', e => {
-    const a = e.target.closest('a[href^="#entry/"]');
-    if (!a) return;
-    e.preventDefault();
-    location.hash = a.getAttribute('href').slice(1);
-  });
-
   // ── init ─────────────────────────────────────────────────────
-  // One-time init of the masthead, filters, and body state before the first
-  // route resolves. The General/Focused toggle was removed, so activeLens is
-  // fixed to 'general' and setLens is no longer a user control; this call (and
-  // the entry router's now-dormant one) are all that remain of it.
-  setLens(activeLens);
   // R2: honor a deep link if one is present; otherwise land on About (home).
   if (!applyHashRoute()) setView('about');
   window.addEventListener('hashchange', applyHashRoute);
-
-  // What's new: pulse the count pill once per page load when there is
-  // something unseen (skipped if a #changelog deep link already cleared it).
-  updateWhatsChangedPill();
-  (() => {
-    const pill = document.getElementById('whatsChangedPill');
-    if (!pill || pill.hidden) return;
-    pill.classList.add('pulse');
-    pill.addEventListener('animationend', () => pill.classList.remove('pulse'), { once: true });
-  })();
 
