@@ -1,0 +1,121 @@
+  /* ═══════════════════════════════════════════════════════════
+     FILTER BAR
+     The search-and-filters bar at the top of the Papers list and of the Fact Bank list, and under the Legislation tab's toolbar: one
+     component, three uses, sticky in all three. Search and Sort share a row, a "More filters" toggle opens every filter,
+     and a result line with "Clear filters" closes the bar. Each tab brings its own facets
+     (Papers: Methodology, Category, Region; Fact Bank: Evidence, the two ratings, keywords) and its
+     own script, and shares this markup shape and these styles, so the three bars cannot drift apart.
+     Scoped under .controls so the generic class names below cannot leak into the rest of the app.
+     ═══════════════════════════════════════════════════════════ */
+  .controls {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--beige); border-bottom: 1px solid var(--divider);
+    padding: 12px 0 10px;
+  }
+  .controls .controls-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  /* A label and its select wrap as one unit, so a label is never stranded at the end of a
+     row with its dropdown on the next (the long "Political noteworthiness" label made that
+     happen at desktop widths; it already happened at tablet widths). */
+  .controls .ctl-pair { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; }
+  /* A long option (a Papers category runs to 50 characters) shrinks its select instead of widening
+     the page: the select truncates its shown text, the label keeps its width. */
+  .controls .ctl-pair select { min-width: 0; text-overflow: ellipsis; }
+  .controls .ctl-pair .ctl-label { flex: none; }
+  .controls .search-wrap { position: relative; flex: 1; min-width: 220px; }
+  .controls .search-wrap svg {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--text); opacity: 0.55; pointer-events: none;
+  }
+  .controls input[type="search"] {
+    width: 100%; background: var(--light-beige); border: 1px solid var(--divider);
+    color: var(--text); border-radius: var(--r-ctl); padding: 8px 12px 8px 34px;
+    font-size: 13.5px; outline: none; transition: border-color 0.18s; font-family: var(--sans);
+  }
+  .controls input[type="search"]:focus { border-color: var(--green); }
+  .controls input[type="search"]::placeholder { color: var(--text); opacity: 0.5; }
+  .controls select {
+    /* native OS triangle suppressed; same chevron as every other control */
+    appearance: none; -webkit-appearance: none;
+    background-color: var(--light-beige);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3254' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    background-size: 12px 12px;
+    border: 1px solid var(--divider); color: var(--text);
+    border-radius: var(--r-ctl); padding: 8px 28px 8px 10px; font-size: 13px; font-family: var(--sans);
+    outline: none; cursor: pointer;
+  }
+  .controls select:focus { border-color: var(--green); }
+  .controls .ctl-label {
+    font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em;
+    color: var(--headline); white-space: nowrap;
+  }
+  /* More filters: a tab's filters sit behind one toggle, so the bar stays one row of search and
+     Sort. (Fact Bank: Evidence, the two rating minimums, the keyword chips and, when it applies,
+     Foundational. Papers: Methodology, Category and Region.) The badge counts what is switched on
+     inside the panel, and "Clear filters" shows whenever it does. */
+  /* The toggle sits in the same row as the selects and reads as one more dropdown, so it is
+     formatted like them: same border, fill, type, text colour and chevron colour. */
+  .controls .more-toggle {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    background: var(--light-beige); border: 1px solid var(--divider); border-radius: var(--r-ctl);
+    padding: 8px 9px 8px 10px; font-family: var(--sans); font-size: 13px; font-weight: 400;
+    color: var(--text); white-space: nowrap; transition: background 0.15s;
+  }
+  .controls .more-toggle:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
+  .controls .more-toggle .chev { color: var(--navy); }
+  .controls .more-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .controls .more-count {
+    background: var(--navy); color: #fff; border-radius: var(--r-tag);
+    font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 17px;
+  }
+  /* Closed, the panel is also visibility:hidden, so its controls are out of the tab order and the
+     accessibility tree instead of being clipped but still focusable. The delay on the way out lets
+     the collapse finish before it hides; on the way in it shows at once. */
+  .controls .more-panel {
+    display: grid; grid-template-rows: 0fr; visibility: hidden;
+    transition: grid-template-rows 0.25s ease, visibility 0s linear 0.25s;
+  }
+  .controls .more-panel.open { grid-template-rows: 1fr; visibility: visible; transition-delay: 0s; }
+  .controls .more-panel > div { overflow: hidden; min-height: 0; }
+  .controls .more-body {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider);
+  }
+  .controls .pill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .controls .pill-row > .kw-label { margin-right: 4px; }   /* type comes from .ctl-label, like Evidence, Truth and Sort */
+  /* display:flex / inline-flex would otherwise override the hidden attribute on these */
+  .controls .ctl-check[hidden], .controls .more-count[hidden], .controls .clear-filters[hidden] { display: none; }
+  .controls .kw-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--grot); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+    background: var(--light-beige); border: 1px solid var(--navy); border-radius: var(--r-ctl);
+    padding: 4px 12px; color: var(--navy);
+    transition: background 0.15s;
+  }
+  .controls .kw-pill:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
+  .controls .kw-pill[aria-pressed="true"] {
+    background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 600;
+  }
+  .controls .kw-count { font-size: 11px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+  /* A chip with nothing behind it (Legislation's topic chips, counted against the search and the other chips) stays put but cannot be chosen. */
+  .controls .kw-pill:disabled { opacity: 0.45; cursor: default; }
+  .controls .kw-pill:disabled:hover { background: var(--light-beige); }
+  .controls .result-line {
+    font-family: var(--grot); font-size: 12px; letter-spacing: 0.02em;
+    color: var(--text); padding: 10px 0 0;
+  }
+  .controls .result-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 14px; }
+  .controls .clear-filters {
+    font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+    color: var(--navy); text-decoration: underline; text-underline-offset: 2px;
+    background: none; border: 0; padding: 10px 0 0; cursor: pointer;
+  }
+  .controls .clear-filters:hover { color: var(--headline); }
+
+  /* The Foundational checkbox (Fact Bank, only when some fact is marked foundational) */
+  .controls .ctl-check { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--headline); cursor: pointer; white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .controls .more-panel, .controls .more-toggle .chev { transition: none; }
+  }
