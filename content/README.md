@@ -29,7 +29,7 @@ One row per study. Columns:
 | `sourceUrl` | Link to the study. |
 | `keyFinding` | One paragraph: the headline finding. |
 | `takeaways` | The bullet points. **One per line inside the cell** (Alt+Enter in Excel, Ctrl+Enter / a line break in Google Sheets). At least one. |
-| `extra_json` | Machine-managed. A few featured studies carry extra data (e.g. a `highlight`) here as JSON. **Leave it alone** unless you know what it is. |
+| `extra_json` | Machine-managed. A few featured studies carry extra data (e.g. a `highlight`) here as JSON. The Marquee research band that displayed `highlight` was removed 2026-11-11, so it is kept but no longer shown. **Leave it alone** unless you know what it is. |
 
 To **add** a study: add a row, fill everything except `id` and `added`, save, run `build`.
 To **edit** one: change the cell, save, run `build`.
