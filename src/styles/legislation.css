@@ -1,0 +1,244 @@
+  /* ── LEGISLATION TAB ─────────────────────────────────────────────────────────────────────────────────────────
+     A map of the states and two tables (src/js/60-legislation.js builds them). The type is the site's: the section titles and the
+     panel title are the 20px bold of the Landscape area titles, the small labels are the header's group-label spec, text is 14px,
+     the chips are the Papers chips and the layer toggle is the Landscape Map/Links toggle. The fills are the site's palette:
+     navy for the strongest state of a layer, tints of it below, gold hatching for "uncalled". The variables live on the area
+     so the tables and the legend can use them too. */
+  #legislationArea {
+    --leg-none: color-mix(in srgb, var(--navy) 7%, var(--light-beige));
+    --leg-gain: var(--navy);
+    --leg-hold: color-mix(in srgb, var(--navy) 34%, var(--light-beige));
+    --leg-rhold: color-mix(in srgb, var(--pink) 78%, var(--light-beige));
+    --leg-rgain: var(--pink);
+    --leg-b1: color-mix(in srgb, var(--green) 32%, var(--light-beige));
+    --leg-b2: color-mix(in srgb, var(--green) 62%, var(--light-beige));
+    --leg-b3: color-mix(in srgb, var(--green-deep) 65%, var(--navy));
+    padding-bottom: 72px;
+  }
+  .leg-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin: 0; }
+  .leg-controls .pol-subview-toggle { margin: 0; }
+  .leg-select-pair { display: flex; align-items: center; gap: 8px; }
+  .leg-ctl-label { font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em; color: var(--text); }
+  .leg-select {
+    appearance: none; -webkit-appearance: none;
+    background-color: var(--light-beige);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3254' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 9px center; background-size: 12px 12px;
+    border: 1px solid var(--divider); color: var(--text);
+    border-radius: var(--r-ctl); padding: 8px 28px 8px 10px; font-size: 13px; font-family: var(--sans);
+    outline: none; cursor: pointer; min-width: 190px;
+  }
+  .leg-select:focus { border-color: var(--green); }
+  /* The Fact Bank's pill, value for value (.act-btn in this file). */
+  .leg-clear {
+    background: var(--light-beige); border: 1px solid var(--navy); color: var(--navy);
+    border-radius: var(--r-ctl); padding: 4px 12px; font-family: var(--grot);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .leg-clear:hover { background: var(--navy); color: var(--beige); }
+  .leg-clear[hidden] { display: none; }
+  /* The toolbar (the layers, the office toggle, the Show menu, Clear) and the filter bar stick together at the top of the window, as the filter bars on Papers and the Fact Bank do (the owner's
+     requests, 2026-11-12: first the search and filters, then "include the jurisdictions and toggles in the sticky bar as well"), while the map and the tables scroll under them. One wrapper does the
+     sticking, so the shared .controls bar (filterbar.css), which sticks by itself on the other two tabs, is not sticky inside it and gives its background, border and padding to the wrapper. On the
+     results layer the filter bar is out of view and the wrapper holds the toolbar alone. Not stuck, the toolbar sits where it did (the wrapper's 10px of margin and 12px of padding are the 22px it
+     had). The note explaining the topics sits under the chips. */
+  .leg-sticky { position: sticky; top: 0; z-index: 100; margin-top: 10px; padding: 12px 0 10px; background: var(--beige); border-bottom: 1px solid var(--divider); }
+  #legislationArea .controls { position: static; margin: 12px 0 0; padding: 0; background: none; border-bottom: 0; }
+  /* An open "More filters" panel is tall (the topic chips): in the sticky bar it would fill a phone's whole window, so its body scrolls inside a share of the window's height instead. */
+  #legSticky .more-panel > div { max-height: 45vh; overflow-y: auto; overscroll-behavior: contain; }
+  .leg-topic-note { margin: 0; max-width: 72ch; font-family: var(--grot); font-size: 12px; line-height: 1.5; letter-spacing: 0.02em; color: var(--text); opacity: 0.85; }
+
+  .leg-stage { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; margin-top: 18px; }
+  .leg-map-wrap { min-width: 0; }
+  .leg-map { display: block; width: 100%; height: auto; }
+  .leg-state { fill: var(--leg-none); stroke: var(--divider); stroke-width: 0.9; stroke-linejoin: round; cursor: pointer; transition: fill 0.15s; }
+  /* The fill follows a class set from the data: fill-d-gain and friends for a Senate or governor race, fill-h-* for a House delegation
+     (which party won more of its seats), fill-b1 to fill-b3 for the number of bills. Navy is the strongest, then its tints. */
+  .leg-state.fill-d-gain, .leg-state.fill-h-d { fill: var(--leg-gain); }
+  .leg-state.fill-d-hold, .leg-state.fill-h-even { fill: var(--leg-hold); }
+  .leg-state.fill-r-hold { fill: var(--leg-rhold); }
+  .leg-state.fill-r-gain, .leg-state.fill-h-r { fill: var(--leg-rgain); }
+  .leg-state.fill-uncalled, .leg-state.fill-h-none { fill: url(#legHatch); }
+  .leg-state.fill-b1 { fill: var(--leg-b1); }
+  .leg-state.fill-b2 { fill: var(--leg-b2); }
+  .leg-state.fill-b3 { fill: var(--leg-b3); }
+  .leg-hatch-bg   { fill: color-mix(in srgb, var(--gold) 30%, var(--light-beige)); }
+  .leg-hatch-line { stroke: var(--gold-deep); stroke-width: 2; }
+  /* A ring is a pink halo under a navy line, so it shows on a navy state, on a pale one and on the gold hatching of a race not yet called (gold, the nav accent of this tab's group, would vanish on that). */
+  .leg-ring-halo { fill: none; stroke: var(--pink); stroke-width: 5.5; stroke-linejoin: round; pointer-events: none; }
+  .leg-ring-halo.is-pinned { stroke-width: 7; }
+  .leg-ring { fill: none; stroke: var(--navy); stroke-width: 1.6; stroke-linejoin: round; pointer-events: none; }
+  .leg-ring.is-pinned { stroke-width: 2.2; }
+  .leg-hit { fill: transparent; cursor: pointer; }
+  /* The map and, in a gutter at its right edge, one button for each state too small to point at (LEG_SMALL in src/js/60-legislation.js):
+     nine, north to south, from Vermont to DC. A button wears its state's colour and gets the map's pink-and-navy ring when its state is
+     pointed at or pinned, or when the button has the keyboard's focus. On a phone the gutter goes and the buttons become a row under the
+     map. The type is the Clear pill's (.leg-clear above). */
+  .leg-map-box { position: relative; padding-right: 46px; }
+  /* The column is nine buttons of 24px and eight gaps of 3px, 240px in all. It starts 14% down the map, level with the Northeast, but
+     never lower than the map's height less its own (244px, with a little to spare), so on a short map, with the panel beside it or in
+     a narrow window, it cannot run on past the bottom into the legend. */
+  .leg-tiles { position: absolute; top: min(14%, calc(100% - 244px)); right: 0; width: 40px; display: flex; flex-direction: column; gap: 3px; }
+  .leg-tiles[hidden] { display: none; }
+  .leg-tiles-label { display: none; font-family: var(--grot); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .leg-tile {
+    box-sizing: border-box; flex: none; height: 24px; padding: 0; cursor: pointer;
+    font-family: var(--grot); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; line-height: 1; color: var(--headline);
+    background: var(--leg-none); border: 1px solid color-mix(in srgb, var(--navy) 25%, transparent); border-radius: var(--r-tag);
+    transition: background 0.15s;
+  }
+  .leg-tile.fill-d-gain, .leg-tile.fill-h-d, .leg-tile.fill-b3 { color: var(--light-beige); }
+  .leg-tile:hover, .leg-tile.is-hover, .leg-tile:focus-visible { outline: none; box-shadow: 0 0 0 1.5px var(--navy), 0 0 0 4.5px var(--pink); }
+  .leg-tile.is-pinned { box-shadow: 0 0 0 2px var(--navy), 0 0 0 5.5px var(--pink); }
+  .leg-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 2px 0; font-size: 13px; line-height: 1.4; color: var(--text); }
+  .leg-legend-item { display: inline-flex; align-items: center; gap: 7px; }
+  .leg-muted-count { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .leg-swatch { width: 14px; height: 14px; flex: none; border-radius: var(--r-tag); border: 1px solid color-mix(in srgb, var(--navy) 25%, transparent); background: var(--leg-none); }
+  .leg-swatch.fill-d-gain, .leg-swatch.fill-h-d, .leg-tile.fill-d-gain, .leg-tile.fill-h-d { background: var(--leg-gain); }
+  .leg-swatch.fill-d-hold, .leg-swatch.fill-h-even, .leg-tile.fill-d-hold, .leg-tile.fill-h-even { background: var(--leg-hold); }
+  .leg-swatch.fill-r-hold, .leg-tile.fill-r-hold { background: var(--leg-rhold); }
+  .leg-swatch.fill-r-gain, .leg-swatch.fill-h-r, .leg-tile.fill-r-gain, .leg-tile.fill-h-r { background: var(--leg-rgain); }
+  .leg-swatch.fill-uncalled, .leg-swatch.fill-h-none, .leg-tile.fill-uncalled, .leg-tile.fill-h-none { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--gold) 30%, var(--light-beige)) 0 3px, var(--gold-deep) 3px 5px); }
+  .leg-swatch.fill-b1, .leg-tile.fill-b1 { background: var(--leg-b1); }
+  .leg-swatch.fill-b2, .leg-tile.fill-b2 { background: var(--leg-b2); }
+  .leg-swatch.fill-b3, .leg-tile.fill-b3 { background: var(--leg-b3); }
+
+  .leg-map-source { margin: 14px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+  .leg-map-source a { color: var(--accent); text-underline-offset: 2px; }
+  .leg-map-source a:hover { text-decoration-thickness: 2px; }
+
+  .leg-panel { background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); padding: 18px 18px 16px; min-height: 220px; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+  /* The card never grows taller than the map column beside it. Its slot is a grid item that is stretched to the row's height, which the map sets, and that
+     takes no height from its content (contain: size); the card inside is as tall as its content, up to the slot, and scrolls beyond that. Without this a state
+     with long bill titles in its card (Tennessee's ran to 554 characters) made the card, and with it the row and everything under it, twice as tall as the map, and the page
+     jumped as the pointer crossed states. The card no longer lists bills (the owner had the previews taken out, 2026-11-12); the cap stays for the stats and results it does hold.
+     Where contain: size is not understood the card simply grows, as it used to. A pinned card scrolls, and so does a hovered one the pointer has reached (LEG_CARD_GRACE). */
+  .leg-panel-slot { align-self: stretch; contain: size; min-width: 0; }
+
+  .leg-panel-title { font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--headline); margin: 0 0 14px; }
+  .leg-label { font-family: var(--grot); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 0 0 7px; }
+  .leg-block + .leg-block { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .leg-panel p { font-size: 14px; line-height: 1.6; color: var(--text); margin: 0; }
+  .leg-panel p + p { margin-top: 8px; }
+  .leg-panel .leg-muted { color: var(--muted); }
+  .leg-office { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 0 10px; align-items: start; }
+  .leg-office + .leg-office { margin-top: 10px; }
+  .leg-office-name { padding-top: 2px; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--headline); }
+  .leg-office-body > * { font-size: 14px; line-height: 1.5; color: var(--text); margin: 0; }
+  .leg-office-body > * + * { margin-top: 4px; }
+  .leg-office-body > .leg-muted { color: var(--muted); }
+  .leg-office-toggle[hidden] { display: none; }
+  .leg-chip {
+    display: inline-flex; align-items: center; white-space: nowrap;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6;
+    border-radius: var(--r-tag); padding: 2.5px 9px;
+    background: var(--beige); border: 1px solid var(--divider); color: var(--text);
+  }
+  .leg-chip--d-gain   { background: var(--leg-gain); border-color: var(--leg-gain); color: var(--light-beige); }
+  .leg-chip--d-hold   { background: var(--leg-hold); border-color: color-mix(in srgb, var(--navy) 40%, var(--divider)); color: var(--headline); }
+  .leg-chip--r-hold   { background: var(--leg-rhold); border-color: color-mix(in srgb, var(--pink) 60%, var(--divider)); color: var(--headline); }
+  .leg-chip--r-gain   { background: var(--leg-rgain); border-color: var(--leg-rgain); color: var(--headline); }
+  .leg-chip--uncalled { background: color-mix(in srgb, var(--gold) 30%, var(--light-beige)); border-color: var(--gold); color: var(--headline); }
+
+  .leg-section { margin-top: 38px; }
+  /* The 2026 Midterm results layer shows only the results: the bills' filter bar and table are hidden by the script (legPaint). */
+  #legFilters[hidden], #legBillsSection[hidden] { display: none; }
+  /* Whatever display a rule in this tab gives an element (the map stage is a grid, the Show menu a flex row), the hidden attribute wins: the script hides each layer's
+     other content with it (legPaint), and the bills' filter bar and table, hidden on the results layer, would otherwise still draw there. */
+  #legislationArea [hidden] { display: none; }
+  .leg-section-title {
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
+    font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--headline);
+  }
+  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now the size and weight of a column title in the Policy
+     tab (15px bold, .pol-col-title), in navy and in the same family as the title, so it reads as part of it. */
+  .leg-scope { font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--navy); font-variant-numeric: tabular-nums; }
+  /* The Bills section's title has no words of its own: it is the jurisdiction and the count ("New York · 8 bills"), at the size, weight and colour of a section title
+     (the owner's request, 2026-11-12), so the span takes everything from the heading around it. */
+  .leg-scope--title { font-size: inherit; font-weight: inherit; letter-spacing: inherit; color: inherit; }
+  /* The stats bar under the Bills title: where the bills in view stand, in the five stages of the Status menu. The bar and its key share one line across the table (the owner's
+     requests, 2026-11-12: the bar the length of the table, and the text on the bar's line): the key, each stage's count and share, at the right on one line, the bar filling the rest.
+     A window too narrow for that wraps the key beside the bar (the bar keeps 220px); where the map goes single-column (860px) they stack, the bar across the full width. */
+  .leg-stats { display: flex; align-items: center; gap: 10px 22px; margin: 0 0 12px; }
+  .leg-stats-bar { display: flex; flex: 1 1 0; min-width: 220px; height: 14px; border-radius: 7px; overflow: hidden; background: var(--leg-none); }
+  .leg-stats-seg { flex-basis: 0; min-width: 2px; }
+  .leg-stats-seg + .leg-stats-seg { box-shadow: -1px 0 0 var(--bg); }   /* a hairline between stages, so the two palest greens read apart */
+  .leg-stats-key { flex: 0 1 auto; display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0; padding: 0; list-style: none; font-family: var(--grot); font-size: 12px; letter-spacing: 0.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+  .leg-stats-key li { display: inline-flex; align-items: center; gap: 6px; }
+  .leg-stats-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+  .leg-stats [data-stage] { background: var(--leg-b2); }
+  .leg-stats [data-stage="introduced"] { background: var(--leg-b1); }
+  .leg-stats [data-stage="committee"] { background: color-mix(in srgb, var(--green) 47%, var(--light-beige)); }
+  .leg-stats [data-stage="one-chamber"] { background: var(--leg-b2); }
+  .leg-stats [data-stage="both-chambers"] { background: var(--leg-b3); }
+  .leg-stats [data-stage="enacted"] { background: var(--navy); }
+  /* The same stats in a jurisdiction's card (legCardStats), stacked to the card's width: the total, the bar across the card, each stage on its own line. */
+  .leg-card-total { font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--headline); margin: 0 0 8px; }
+  .leg-stats--card { flex-direction: column; align-items: stretch; gap: 8px; margin: 0 0 14px; }
+  .leg-stats--card .leg-stats-bar { flex: none; min-width: 0; height: 10px; border-radius: 5px; }
+  .leg-stats--card .leg-stats-key { flex-direction: column; flex-wrap: nowrap; gap: 4px; }
+  /* The card's link to the details below: a button that reads as a link, in the prose size and a semibold weight so it is not missed. */
+  .leg-more { margin: 12px 0 0; }
+  .leg-more-link { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+  .leg-more-link:hover { color: var(--headline); text-decoration-thickness: 2px; }
+  .leg-table-wrap { overflow-x: auto; background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); }
+  /* After a page change the table takes focus (so a keyboard reader starts at its first row); it is not a tab stop. */
+  #legBillsTable:focus, #legResultsTable:focus { outline: none; }
+  /* A title scrolled to (the pager, the card's link) would land under the sticky bar, so its margin is the bar's live height (--leg-bar-h, set by legSyncBarHeight) and a little more. */
+  .leg-section-title { scroll-margin-top: calc(var(--leg-bar-h, 0px) + 16px); }
+  .leg-table { width: 100%; min-width: 760px; border-collapse: collapse; }
+  .leg-table th {
+    text-align: left; white-space: nowrap; padding: 10px 14px; background: var(--source-band); border-bottom: 1px solid var(--border);
+    font-family: var(--grot); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  }
+  .leg-table td { padding: 12px 14px; vertical-align: top; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.55; color: var(--text); }
+  .leg-table tbody tr:first-child td { border-top: none; }
+  .leg-table td:first-child { white-space: nowrap; }
+  .leg-table .leg-num { font-size: 13px; font-weight: 600; color: var(--headline); white-space: nowrap; }
+  .leg-table .leg-empty-row td { color: var(--muted); }
+  /* The results table's columns are one size whether a state or all fifty are showing, in the order State, Senate, House, Governor, Source.
+     Left to its content they were not: with fifty rows the Senate column grew to 44% of the table, because Alaska's note is long, and with
+     one state it was 17%. Source is the least needed column, so it gets the smallest share that keeps its one line of links ("AP: Senate,
+     House, Governor", 214px with its padding) whole at a normal desktop width, 19% (229px at a 1280px window); in a narrower window it
+     wraps rather than take room from the three results columns, which carry the notes. The minimums are the widest thing that cannot
+     wrap, so the columns also agree in a narrow window: the longest state name (New Hampshire, 131px with its padding) and the widest
+     result chip (127px). */
+  .leg-table--results th:nth-child(1) { width: 12%; min-width: 134px; }
+  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 130px; }
+  .leg-table--results th:nth-child(3) { width: 29%; }
+  .leg-table--results th:nth-child(5) { width: 19%; }
+  .leg-status-note { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  /* A column keeps a minimum width, so that a long summary does not squeeze the others into a narrow tower: the status column when a bill has
+     status words (a federal bill's committees), the title, the last action and, above all, the summary. The wrapper scrolls sideways if all of
+     it does not fit. */
+  .leg-table .leg-col-status { min-width: 168px; }
+  .leg-table .leg-col-title { min-width: 210px; }
+  .leg-table .leg-col-last { min-width: 140px; }
+  .leg-table .leg-col-summary { min-width: 300px; }
+  .leg-table a { color: var(--accent); text-underline-offset: 2px; }
+  .leg-table a:hover { text-decoration-thickness: 2px; }
+  .leg-source { max-width: var(--lede-measure); margin: 12px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+
+  @media (max-width: 860px) {
+    .leg-stage { grid-template-columns: minmax(0, 1fr); }
+    /* one column: the card sits under the map, so there is nothing for it to stay within */
+    .leg-panel-slot { contain: none; }
+    .leg-panel { max-height: none; }
+    .leg-select-pair { flex: 1 1 240px; }
+    .leg-select { min-width: 0; flex: 1 1 auto; }
+    .leg-table-wrap { margin-right: 0; }
+    .leg-stats { flex-direction: column; align-items: stretch; }
+    .leg-stats-bar { flex: none; min-width: 0; }
+  }
+  /* Below this the map is too small to leave room beside it: the buttons become a labelled row under it, each a comfortable thumb target. */
+  @media (max-width: 520px) {
+    .leg-map-box { padding-right: 0; }
+    .leg-tiles { position: static; width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 14px; }
+    .leg-tiles-label { display: block; flex: 0 0 100%; margin: 0 0 -4px; }
+    .leg-tile { width: 44px; height: 34px; }
+    /* two views in one pill group: a little tighter, so "2026 Midterm results" and "Bills" fit a phone's width */
+    .leg-controls .pol-subview-toggle { max-width: 100%; }
+    .leg-controls .pol-subview-btn { padding-left: 9px; padding-right: 9px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-clear, .leg-tile { transition: none; } }
