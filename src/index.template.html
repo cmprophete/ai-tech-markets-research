@@ -10,8 +10,11 @@
   @@include src/styles/tokens.css@@
   @@include src/styles/shell.css@@
   @@include src/styles/cards.css@@
+  @@include src/styles/filterbar.css@@
+  @@include src/styles/pager.css@@
   @@include src/styles/modals.css@@
   @@include src/styles/policy.css@@
+  @@include src/styles/legislation.css@@
   @@include src/styles/focus.css@@
 </style>
 </head>
@@ -26,8 +29,10 @@
       <div id="policyArea"></div>
 
       @@include src/views/30-fact-bank.html@@
-      @@include src/views/40-solutions.html@@
+      @@include src/views/40-agenda.html@@
       @@include src/views/50-about.html@@
+      @@include src/views/60-legislation.html@@
+      @@include src/views/65-enforcement.html@@
 @@include src/views/80-papers.html@@
 
   </div><!-- /main-content -->
@@ -36,10 +41,7 @@
 
 <footer>
   AI Tracker: Research and Policy ·
-  Economic Security Project ·
-  Last updated <span id="headerLastUpdated"></span> ·
-  <a class="footer-changelog-link" href="#about">About</a> ·
-  <a class="footer-changelog-link" href="#changelog">What's New</a>
+  Economic Security Project
 </footer>
 
 
@@ -53,9 +55,8 @@
   @@include src/js/05-lazy.js@@
   @@include src/js/10-policy-map.js@@
   @@include src/js/20-cite-export.js@@
-  @@include src/js/30-changelog.js@@
   @@include src/js/40-router.js@@
-  @@include src/js/60-whats-new.js@@
+  @@include src/js/60-legislation.js@@
   @@include src/js/70-render.js@@
   @@include src/js/80-fact-bank.js@@
 })();
