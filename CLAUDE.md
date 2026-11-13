@@ -26,8 +26,15 @@ python3 tools/research.py check                 # validate the sheet, write noth
 
 Do not hand-edit the `RESEARCH_DATA` array; the next build overwrites it. See
 [`content/README.md`](content/README.md). The rest of `tracker-data.js`
-(`THEMES`, `POLICY_DATA`, `AGENDA_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
-are still hand-maintained. All `data/*.js` load at runtime, so a data change
+(`POLICY_DATA`, `AGENDA_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
+(with `data/fact-bank-context.js`) are still hand-maintained. Two more data files are generated and never hand-edited: `data/us-map.js` by
+`tools/us_map.py`, and the Legislation tab's bills, `data/legislation-bills.js`, by `tools/legislation.py`: the federal list from the Brennan
+Center's tracker, each federal bill's record from GovInfo, and the state bills from an Open States search of the legislatures' own records
+(`tools/openstates_fetch.py`; it needs a free key in `~/.openstates_key`, which never goes in the repo or in chat). For the states Open States has
+no summary for (Illinois, New Jersey) each legislature's own summary is read from its site by `tools/state_summaries.py` into
+`content/legislation-state-summaries.json`, which is likewise generated and never hand-edited. See
+[`docs/legislation-sources.md`](docs/legislation-sources.md). Nothing is taken from NCSL, whose terms forbid copying its material without
+permission, and no tracker's own descriptions are copied (a legislature's own summary of its own bill is public record, and is shown as it wrote it). All `data/*.js` load at runtime, so a data change
 needs only a reload, not a rebuild.
 
 ## Rules with teeth
@@ -75,8 +82,15 @@ browser against a local server) over reasoning about whether it would work.
 
 ## Conventions worth matching
 
-- Routes are declared in `VIEWS` in `src/js/40-router.js`; a flat view is a row
-  there and nothing else. `setView()` lives in `src/js/70-render.js`.
+- Routes are declared in `VIEWS` in `src/js/40-router.js`; a flat view's route is
+  a row there and nothing else. `setView()` lives in `src/js/70-render.js`, and
+  adding a tab also means its button in `src/views/10-header.html`, its area in
+  `src/views/`, its show/hide rule in `src/styles/policy.css`, and the view lists
+  in `setView()`. The Government action group is a worked example of all of these: its
+  Legislation tab has an area, a script and a stylesheet of its own
+  (`60-legislation.html`, `60-legislation.js`, `legislation.css`) and two views
+  switched inside it, and the Agenda and Enforcement placeholders
+  (`40-agenda.html`, `65-enforcement.html`) are the smallest examples.
 - Ordering is significant and lives in `src/index.template.html`: CSS cascade
   order and JS execution order inside the app IIFE are just the order the
   `@@include@@` directives appear.
