@@ -1,15 +1,4 @@
   /* ── render ──────────────────────────────────────────────────── */
-  function updateFilterBadge() {
-    const btn   = document.getElementById('filterToggleBtn');
-    const badge = document.getElementById('filterBadge');
-    if (!btn || !badge) return;
-    const count = (activeCat !== 'all' ? 1 : 0) +
-                  (activeGeo !== 'all' ? 1 : 0) +
-                  (activeEvidence !== 'all' ? 1 : 0) +
-                  (searchQuery.trim() ? 1 : 0);
-    badge.textContent = count;
-    badge.style.display = count > 0 ? 'inline' : 'none';
-  }
 
   // View-DOM cache. Each view's DOM is built once and re-shown on tab switch;
   // it rebuilds only when its inputs (its "signature") change. This stops
@@ -17,131 +6,215 @@
   // tab-switch jank. (Dataset cloning,
   // ~0.5ms/render, was never the bottleneck; DOM construction is.)
   let _cardsSig  = null;   // null = never built
-  const cardsSig  = () => [activeLens, activeCat, activeStatus, activeGeo, activeEvidence, sortOrder, searchQuery.trim()].join('');
+  const cardsSig  = () => [activeCat, activeGeo, activeEvidence, sortOrder, searchQuery.trim(), papersPage].join('\x01');
 
   function render() {
     const grid  = document.getElementById('cardsGrid');
     const empty = document.getElementById('emptyState');
 
-    updateWhatsChangedPill();
-
     document.body.classList.toggle('cards-view', activeView === 'cards');
-    document.body.classList.toggle('changelog-subview', activeView === 'cards' && researchSubview === 'changelog');
 
-    if (activeView === 'policy') { buildPolicyView(); return; }
-    if (activeView === 'about')  { return; }
-    if (activeView === 'solutions') {
-      // Solutions prose temporarily hidden (see solutionsHidden in 00-state.js).
-      // Replace the static content with a notice at runtime; the prose stays in
-      // 40-solutions.html, so flipping the flag restores it. Otherwise static.
-      if (solutionsHidden) {
-        const sa = document.getElementById('solutionsArea');
-        if (sa) sa.innerHTML = '<p class="sol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The solutions section is being updated and is temporarily unavailable.</p>';
-      }
+    if (activeView === 'policy') {
+      // The Policy tab is the map, built by buildPolicyView(); its cards can be hidden behind a notice (policyCardsHidden
+      // in 00-state.js).
+      buildPolicyView();
       return;
     }
+    // About, Agenda and Enforcement are static markup, and Legislation is drawn by its own script (60-legislation.js): there is nothing to build here.
+    if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'legislation') { return; }
 
-    // ── Research (cards) view ──
+    // ── Papers (cards) view ──
     const sig = cardsSig();
     if (_cardsSig === sig) return;   // cached: DOM already reflects these inputs
     _cardsSig = sig;
 
-    // Sidebar nav + inline filters are hidden by CSS on every other view, so
-    // build them only when the cards view is actually (re)rendering.
-    buildCatNav();
-    buildInlineFilters();
-    updateFilterBadge();
+    const visible = getVisible();
+    // Fifty rows at a time. A filter that leaves fewer pages than the reader was on puts them on the last one.
+    const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+    papersPage = Math.min(Math.max(papersPage, 1), pages);
+    _cardsSig = cardsSig();
+    const first = (papersPage - 1) * PAGE_SIZE;
+    const onPage = visible.slice(first, first + PAGE_SIZE);
+    refreshPapersBar(visible.length, pages > 1 ? [first + 1, first + onPage.length] : null);
+
+    empty.classList.toggle('visible', visible.length === 0);
+    const hasFilters = activeCat !== 'all' || activeGeo !== 'all' || activeEvidence !== 'all' || searchQuery.trim();
+    ppEl('emptyStateClear').style.display = visible.length === 0 && hasFilters ? 'inline-block' : 'none';
 
     grid.innerHTML = '';
-    const visible = getVisible();
-    const econPool = activeLens === 'economist' ? RESEARCH_DATA.filter(isEconRelevant).length : RESEARCH_DATA.length;
-    document.getElementById('resultCount').textContent =
-      visible.length === econPool
-        ? `${visible.length} entries`
-        : `${visible.length} of ${econPool}`;
-
-    const hasFilters = activeCat !== 'all' || activeGeo !== 'all' || activeEvidence !== 'all' || searchQuery.trim();
-    empty.classList.toggle('visible', visible.length === 0);
-    const clearBtn = document.getElementById('emptyStateClear');
-    clearBtn.style.display = visible.length === 0 && hasFilters ? 'inline-block' : 'none';
-    clearBtn.onclick = () => {
-      activeCat = 'all'; activeStatus = 'all'; activeGeo = 'all'; activeEvidence = 'all';
-      searchQuery = ''; document.getElementById('searchInput').value = '';
-      render();
-    };
-    visible.forEach((e, i) => grid.appendChild(buildCard(e, i)));
+    const rows = document.createDocumentFragment();
+    onPage.forEach(e => rows.appendChild(buildSourceRow(e)));
+    grid.appendChild(rows);
+    renderPager(ppEl('ppPager'), { page: papersPage, pages, noun: 'papers', onPage: goToPapersPage });
+    loadFactCounts();
   }
 
-  // ── lens control ─────────────────────────────────────────────
-  function setLens(mode) {
-    activeLens = mode;
-    document.body.classList.toggle('lens-economist', mode === 'economist');
-    activeCat = 'all'; activeEvidence = 'all'; activeStatus = 'all'; activeGeo = 'all';
-    searchQuery = '';
-    const si = document.getElementById('searchInput');
-    if (si) si.value = '';
-    // Refresh tab description for new lens
-    applyMastheadCopy();
-    render();
+  /* ── Papers bar ───────────────────────────────────────────────
+     The search-and-filters bar above the list. It is the Fact Bank's bar (same markup shape, same
+     styles: src/styles/filterbar.css) with this tab's facets: search and Sort in view, Methodology,
+     Category and Region behind "More filters". The select options are built once and
+     refreshPapersBar() only rewrites their labels, so a select that is in use keeps its focus. */
+  const ppEl = id => document.getElementById(id);
+  const ppSearch = ppEl('ppSearch'), ppSort = ppEl('ppSort'), ppMethod = ppEl('ppMethod');
+  const ppCategory = ppEl('ppCategory'), ppRegion = ppEl('ppRegion');
+  const ppMoreCount = ppEl('ppMoreCount'), ppClear = ppEl('ppClear'), ppResultLine = ppEl('ppResultLine');
+
+  [[ppMethod, Object.entries(EVIDENCE_META).map(([k, m]) => [k, m.label])],
+   [ppCategory, CATEGORIES.map(c => [c.id, c.label])],
+   [ppRegion, Object.entries(GEOGRAPHY_META).map(([k, g]) => [k, g.label])]].forEach(([select, options]) => {
+    options.forEach(([value, label]) => {
+      const o = document.createElement('option');
+      o.value = value; o.dataset.label = label; o.textContent = label;
+      select.appendChild(o);
+    });
+  });
+
+  // Put the controls back in step with the state, for the places that change the state from
+  // outside them ("Clear filters", a #entry/<id> link).
+  function syncPapersControls() {
+    ppSearch.value = searchQuery;
+    ppSort.value = sortOrder;
+    ppMethod.value = activeEvidence;
+    ppCategory.value = activeCat;
+    ppRegion.value = activeGeo;
   }
+  // The three filters "Clear filters" resets. Search and sort are left alone, as in the Fact Bank;
+  // a link to one paper resets them too and puts the paper's title in the search (see the router).
+  function resetPaperFilters({ search = false } = {}) {
+    activeEvidence = 'all'; activeCat = 'all'; activeGeo = 'all';
+    if (search) searchQuery = '';
+    syncPapersControls();
+  }
+
+  function refreshPapersBar(shown, range) {
+    // Each option carries a count taken with every other filter applied, so it says what choosing
+    // it would leave. An option with nothing behind it is disabled unless it is the current choice.
+    const tally = (rows, key) => rows.reduce((m, r) => { const k = key(r); m[k] = (m[k] || 0) + 1; return m; }, {});
+    const relabel = (select, current, counts) => [...select.options].forEach(o => {
+      if (o.value === 'all') return;
+      const count = counts[o.value] || 0;
+      o.textContent = `${o.dataset.label} (${count})`;
+      o.disabled = count === 0 && o.value !== current;
+    });
+    relabel(ppMethod,   activeEvidence, tally(filteredBase({ excludeEvidence: true }), getEvidenceType));
+    relabel(ppCategory, activeCat,      tally(filteredBase({ excludeCat: true }), r => r.category));
+    relabel(ppRegion,   activeGeo,      tally(filteredBase({ excludeGeo: true }), r => r.geography || 'us'));
+    // The badge counts what is switched on inside "More filters" (Methodology, Category, Region).
+    // Sort stays in view and is not a filter.
+    const inPanel = (activeEvidence !== 'all' ? 1 : 0) + (activeCat !== 'all' ? 1 : 0) + (activeGeo !== 'all' ? 1 : 0);
+    ppMoreCount.hidden = inPanel === 0;
+    ppMoreCount.textContent = inPanel;
+    ppClear.hidden = inPanel === 0;
+    ppResultLine.textContent = `${shown} of ${RESEARCH_DATA.length} papers.` + (range ? ` Showing ${range[0]} to ${range[1]}.` : '');
+  }
+
+  wireMoreFilters('ppMoreToggle', 'ppMorePanel');
+  // Paging. Any change to what the list holds starts it again at page 1; the pager is the one thing that
+  // moves between pages.
+  const papersChanged = () => { papersPage = 1; render(); };
+  function goToPapersPage(n) { papersPage = n; render(); showListTop(ppEl('cardsGrid')); }
+  let ppSearchTimer;
+  ppSearch.addEventListener('input', e => {
+    clearTimeout(ppSearchTimer);
+    ppSearchTimer = setTimeout(() => { searchQuery = e.target.value; papersChanged(); }, 200);
+  });
+  ppMethod.addEventListener('change',   e => { activeEvidence = e.target.value; papersChanged(); });
+  ppCategory.addEventListener('change', e => { activeCat = e.target.value; papersChanged(); });
+  ppRegion.addEventListener('change',   e => { activeGeo = e.target.value; papersChanged(); });
+  ppSort.addEventListener('change',     e => { sortOrder = e.target.value; papersChanged(); });
+  ppClear.addEventListener('click', () => { resetPaperFilters(); papersChanged(); });
+  // The empty state's button also clears the search, since either can be why nothing matched.
+  ppEl('emptyStateClear').addEventListener('click', () => { resetPaperFilters({ search: true }); papersChanged(); });
+
+  // Papers rows: open and close, and the copy button in an open row, through one
+  // delegated listener. A row's body is built the first time it opens.
+  function setSourceRowOpen(row, open) {
+    const body = row.querySelector('.src-body');
+    if (open && !body.firstChild) {
+      body.innerHTML = buildSourceBody(RESEARCH_DATA.find(r => r.id === +row.dataset.entryId));
+    }
+    row.classList.toggle('open', open);
+    row.querySelector('.src-toggle').setAttribute('aria-expanded', String(open));
+    body.hidden = !open;
+  }
+  document.getElementById('cardsGrid').addEventListener('click', e => {
+    const toggle = e.target.closest('.src-toggle');
+    if (toggle) {
+      const row = toggle.closest('.src-row');
+      setSourceRowOpen(row, !row.classList.contains('open'));
+      return;
+    }
+    const act = e.target.closest('button[data-fmt]');
+    if (!act) return;
+    copyText(summaryWithCitation(RESEARCH_DATA.find(r => r.id === +act.closest('.src-row').dataset.entryId)), act);
+  });
 
   // ── topbar controls ──────────────────────────────────────────
   // `lede` is the question or statement the tab opens on, set at the
   // shared --lede-size; `text` is the standfirst underneath, which
-  // carries the masthead's closing hairline. Cards, Policy Map and
-  // Solutions read this table for display — the other three hide
+  // carries the masthead's closing hairline. Papers, Policy and Legislation read this
+  // table for display — the other two hide
   // .header-tab-desc and carry their own markup — but every entry keeps
   // a lede so the pattern survives a tab being switched over later.
   const TAB_DESCS = {
-    cards: {
-      general:   { lede: 'What does the research actually show?', text: 'A curated database of peer-reviewed studies, policy reports, and investigative journalism on AI, automation, and labor markets.' },
-      economist: { lede: 'What does the research actually show?', text: 'Filtered to peer-reviewed research, institutional analysis, and official reports — organized around economic outcome domains.' },
+    cards: { lede: 'What does the research show?', text: 'A curated database of peer-reviewed studies, policy reports, and investigative journalism on AI, automation, and labor markets.' },
+    'fact-bank': { lede: 'Which numbers can you cite?', text: 'Short, number-bearing statements quoted verbatim from sources in the research database, each rated for political noteworthiness and for the rigour of its evidence.' },
+    // The Policy tab's masthead is the map's own; getTabDesc swaps in a notice while the map's cards are hidden.
+    policyMap: {
+      lede: 'What could policy do about it?',
+      // The counts come from the data the map is drawn from, not from here: this line once said "Twenty-seven" while the
+      // map listed 32. A getter, so every reader of .text gets the figures as they stand when it asks.
+      get text() {
+        const c = policyMapCounts();
+        return `${capitalizeFirst(spellNumber(c.policies))} policy interventions grouped into ${spellNumber(c.areas)} policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.`;
+      },
     },
-    'fact-bank': {
-      general:   { lede: 'Which numbers can you actually cite?', text: 'Short, number-bearing statements quoted verbatim from sources in the research database, each rated for political noteworthiness and for the rigour of its evidence.' },
-      economist: { lede: 'Which numbers can you actually cite?', text: 'Short, number-bearing statements quoted verbatim from sources in the research database, each rated for political noteworthiness and for the rigour of its evidence.' },
-    },
-    policy: {
-      general:   { lede: 'What could policy actually do about it?', text: 'Twenty-seven policy interventions grouped into four policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.' },
-      economist: { lede: 'What could policy actually do about it?', text: 'Twenty-seven policy interventions grouped into four policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.' },
-    },
-    about: {
-      general:   { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
-      economist: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
-    },
-    solutions: {
-      general:   { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
-      economist: { lede: 'What should we actually do?', text: 'A first pass at our policy agenda, in three parts: the world we are aiming at, the policies worth fighting for either way, and the ideas worth building toward if this technology is as disruptive as its builders promise.' },
-    },
+    about: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
+    // A placeholder tab, first in the Policy group: this masthead and the one note under it (src/views/40-agenda.html) are all it says. Replace both when there is an agenda.
+    agenda: { lede: 'What is our policy agenda?', text: 'Coming soon.' },
+    // A placeholder tab, first in the Government action group: this masthead and the one note under it (src/views/65-enforcement.html) are all it says. Replace both when there is something to list.
+    enforcement: { lede: 'What has been enforced, and what have the courts said?', text: 'Coming soon: enforcement actions and key cases.' },
+    // What is loaded, said from the data (legislationMasthead() in 60-legislation.js), so it cannot go stale.
+    // Getters, so the question and the standfirst follow the layer: the bills on Bills, the 2026 midterm results on 2026 Midterm results.
+    legislation: { get lede() { return legislationLede(); }, get text() { return legislationMasthead(); } },
   };
+  /* Counts quoted in copy are computed from the data they describe, never typed. spellNumber() is the house style (small
+     numbers in words; 100 and over fall back to digits). policyMapCounts() applies the rule buildPolicyView() draws the
+     map by, so the masthead cannot disagree with the page: a policy is listed when its category maps to one of the
+     four rows (MERGED_POLICY_CATEGORIES), and a row with no policies is not drawn. */
+  function spellNumber(n) {
+    const ones = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+      'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    if (!Number.isInteger(n) || n < 0 || n > 99) return String(n);
+    if (n < 20) return ones[n];
+    return tens[Math.floor(n / 10)] + (n % 10 ? '-' + ones[n % 10] : '');
+  }
+  const capitalizeFirst = str => str.charAt(0).toUpperCase() + str.slice(1);
+  function policyMapCounts() {
+    const rows = new Map();
+    POLICY_DATA.forEach(p => {
+      const row = CATEGORY_MERGE_MAP[p.category];
+      if (row in MERGED_POLICY_CATEGORIES) rows.set(row, (rows.get(row) || 0) + 1);
+    });
+    return { policies: [...rows.values()].reduce((a, b) => a + b, 0), areas: rows.size };
+  }
   function getTabDesc(view) {
-    const lens = activeLens === 'economist' ? 'economist' : 'general';
-    // While the policy cards are hidden (see 00-state.js), don't advertise
-    // "click any policy" in the masthead.
-    if (view === 'policy' && policyCardsHidden) {
-      return { lede: 'What could policy actually do about it?', text: 'Our policy interventions are being updated and are temporarily unavailable here.' };
+    if (view === 'policy') {
+      // The map hidden (see 00-state.js): one "being updated" line.
+      if (policyCardsHidden) {
+        return { lede: 'What should we do?', text: 'Our policy work is being updated and is temporarily unavailable here.' };
+      }
+      return TAB_DESCS.policyMap;
     }
-    if (view === 'solutions' && solutionsHidden) {
-      return { lede: 'What should we actually do?', text: 'Our solutions are being updated and are temporarily unavailable here.' };
-    }
-    return (TAB_DESCS[view] || {})[lens] || null;
+    return TAB_DESCS[view] || null;
   }
 
-  /* The only writer of the masthead's copy. A view switch, a lens switch and
-     a sub-tab switch all change it, and the Research sub-tab handler runs
-     setResearchSubview() before setView(), so with three independent writers
-     the last one to run won — which silently dropped the What's New copy.
-     Read the state, don't push to it.
-
-     What's New is inlined rather than added to TAB_DESCS because it is a
-     sub-view of cards, not a view of its own, and TAB_DESCS is keyed by
-     view. */
+  /* The only writer of the masthead's copy. A view switch changes it (as did a lens switch and a Research
+     sub-tab switch, until both were removed), so it reads the state and writes the copy in one place. Read the
+     state, don't push to it. */
   function applyMastheadCopy() {
-    const clog = activeView === 'cards' && researchSubview === 'changelog';
-    const desc = clog
-      ? { lede: 'What has changed lately?',
-          text: 'Every dated change to the tracker: research entries added, by intake date, and Policy Map review passes. Click any entry to jump to its card in the database.' }
-      : getTabDesc(activeView);
+    const desc = getTabDesc(activeView);
     if (!desc) return;
     const ld = document.getElementById('headerTabDescLede');
     const t  = document.getElementById('headerTabDescText');
@@ -149,12 +222,12 @@
     if (t)  t.textContent  = desc.text;
   }
 
-  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', policy: 'viewPolicy', solutions: 'viewSolutions', about: 'homeTitleLink' };
+  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', agenda: 'viewAgenda', policy: 'viewPolicy', legislation: 'viewLegislation', enforcement: 'viewEnforcement', about: 'homeTitleLink' };
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewAgenda', 'viewPolicy', 'viewLegislation', 'viewEnforcement'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const active = id === VIEW_TAB_IDS[view];
@@ -163,21 +236,23 @@
     });
     // Update header tab description
     applyMastheadCopy();
-    const _sb = document.getElementById('sortBtn'); if (_sb) _sb.style.display = view === 'cards' ? '' : 'none';
     document.body.classList.toggle('policy-view',   view === 'policy');
     document.body.classList.toggle('about-view',    view === 'about');
-    document.body.classList.toggle('solutions-view', view === 'solutions');
+    document.body.classList.toggle('agenda-view',   view === 'agenda');
+    document.body.classList.toggle('enforcement-view', view === 'enforcement');
+    document.body.classList.toggle('legislation-view', view === 'legislation');
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
+    if (view === 'legislation' && typeof legLoadBills === 'function') legLoadBills();   // the bills are a file of their own, fetched on first open
     render();
     const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
     if (panel) panel.setAttribute('aria-labelledby', activeTabId);
     const ann = document.getElementById('viewAnnounce');
     if (ann) {
-      // Must match the visible nav labels in src/views/10-header.html: this is
-      // what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', policy: 'Map', solutions: 'Solutions', about: 'About' };
+      // Must match the tabs' accessible names in src/views/10-header.html (the visible label, plus an aria-label
+      // where the tab needs its group to make sense): this is what a screen reader announces on a view change.
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', legislation: 'Legislation', enforcement: 'Enforcement actions and key cases', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
@@ -185,198 +260,15 @@
   /* One delegated listener for the whole view nav, keyed on data-view in
      src/views/10-header.html. This replaced six near-identical listeners that
      had to be edited in lockstep with the markup; now adding a view button is
-     a data-view attribute and a VIEWS row in 40-router.js.
-
-     Clicking Papers resets the research sub-view to Database. That belongs on
-     the click and not in setView, because #changelog routes through
-     setView('cards') too and must keep its sub-view. */
+     a data-view attribute and a VIEWS row in 40-router.js. */
   document.addEventListener('click', e => {
     const btn = e.target.closest('.header-nav-btn[data-view]');
     if (!btn) return;
     const view = btn.dataset.view;
-    if (view === 'cards') setResearchSubview('database');
+    if (view === 'fact-bank') clearFactBankLink();
+    if (view === 'cards') clearPapersLink();
     setView(view);
   });
-
-  // Key findings band: open a source-excerpt modal.
-  //
-  // There used to be a goToTheme() here that handed off to the retired Themes
-  // page. It called goToThemesPage(), which was never defined anywhere in the
-  // repo, so every path through it threw a ReferenceError. Removed 2026-08-01
-  // with its three call sites; see docs/adr/0005.
-
-  function closeFindingModal() {
-    const backdrop = document.getElementById('findingModal');
-    backdrop.classList.remove('open');
-    document.body.style.overflow = '';
-    if (backdrop._lastFocus) { backdrop._lastFocus.focus(); backdrop._lastFocus = null; }
-  }
-
-  function openFindingModal(card) {
-    const pid = +card.dataset.paperId;
-    const paper = RESEARCH_DATA.find(r => r.id === pid);
-    // Cards are built below from RESEARCH_DATA with data-paper-id always set,
-    // so this cannot currently fire. Kept as a guard, not a handoff.
-    if (!paper) return;
-    const stat = card.querySelector('.key-finding-stat')?.textContent || '';
-    const text = card.querySelector('.key-finding-text')?.textContent || '';
-    const primaryCite = `<a class="finding-modal-source" href="${paper.sourceUrl}" target="_blank" rel="noopener noreferrer">${formatAPACitation(paper)}</a>`;
-    const refLink = p => `<a class="theme-ref" href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">${formatAPACitation(p)}</a>`;
-    // Related research now comes from the same research category (themes retired).
-    const related = RESEARCH_DATA
-      .filter(r => r.id !== pid && r.category === paper.category)
-      .sort((a, b) => (a.source || '').localeCompare(b.source || '')).slice(0, 6);
-    const relatedHTML = related.length
-      ? `<div class="pol-modal-section"><div class="pol-modal-label">Related research</div><div class="theme-refs" style="grid-template-columns:1fr">${related.map(refLink).join('')}</div></div>`
-      : '';
-    // No theme link: the "Explore the <tag> theme" button used to live here and
-    // led to the retired Themes page via a function that did not exist, so it
-    // threw on every click. Removed 2026-08-01; see docs/adr/0005.
-    document.getElementById('findingModalStat').textContent = stat;
-    document.getElementById('findingModalTitle').textContent = text;
-    document.getElementById('findingModalBody').innerHTML = `
-      <div class="pol-modal-section">
-        <div class="pol-modal-label">From the research</div>
-        ${primaryCite}
-        <div class="pol-modal-text">${card.dataset.excerpt || paper.keyFinding}</div>
-      </div>
-      ${relatedHTML}`;
-    const backdrop = document.getElementById('findingModal');
-    backdrop._lastFocus = document.activeElement;
-    backdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => { const cb = document.getElementById('findingModalClose'); if (cb) cb.focus(); });
-  }
-
-  (function() {
-    const backdrop = document.getElementById('findingModal');
-    document.getElementById('findingModalClose').addEventListener('click', closeFindingModal);
-    backdrop.addEventListener('click', e => { if (e.target === backdrop) closeFindingModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && backdrop.classList.contains('open')) closeFindingModal(); });
-  })();
-
-  // Build the band from the most recently added papers that carry a `highlight`
-  // field (capped at 8). Click handling uses event delegation so cards added
-  // after script-load still respond.
-  function buildKeyFindingsBand() {
-    const band = document.getElementById('keyFindingsBand');
-    const row  = document.getElementById('keyFindingsRow');
-    if (!band || !row) return;
-    const catMap = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
-    const cards = RESEARCH_DATA
-      .filter(p => p.highlight)
-      .sort((a, b) => new Date(b.added || b.date) - new Date(a.added || a.date) || new Date(b.date) - new Date(a.date))
-      .slice(0, 8)
-      .map(p => {
-        const c = catMap[p.category];
-        if (!c) return '';
-        const inst = (p.source || '').split(' \u2014 ').pop().trim();
-        const year = p.date ? p.date.slice(0, 4) : '';
-        const sourceLine = p.highlight.source || `${inst}, ${year}`;
-        return `<button class="key-finding-card" data-paper-id="${p.id}" style="--kf-color:${c.color}">`
-             + `<span class="key-finding-stat">${p.highlight.stat}</span>`
-             + `<span class="key-finding-text">${p.highlight.text}</span>`
-             + `<span class="key-finding-source">${sourceLine}</span>`
-             + `<span class="key-finding-link">${c.label} \u2192</span>`
-             + `</button>`;
-      }).join('');
-    if (!cards) { band.style.display = 'none'; return; }
-    row.innerHTML = cards;
-    band.style.display = '';
-  }
-
-  document.getElementById('keyFindingsBand').addEventListener('click', e => {
-    const card = e.target.closest('.key-finding-card[data-paper-id]');
-    if (!card) return;
-    // Every card is built above with data-paper-id, so the modal is the only
-    // path. The else branch handed off to the retired Themes page and threw.
-    if (card.dataset.paperId) openFindingModal(card);
-  });
-
-  buildKeyFindingsBand();
-
-  function updateSortBtn() {
-    const btn = document.getElementById('sortBtn');
-    if (!btn) return;
-    const s = SORT_STATES[sortIdx];
-    const lbl = document.getElementById('sortLabel');
-    if (lbl) lbl.textContent = s.label;
-    btn.classList.toggle('sort-active', sortIdx !== 0);
-    const icons = {
-      desc:   '<path d="M3 6h18M7 12h10M11 18h2"/>',
-      asc:    '<path d="M11 6h2M7 12h10M3 18h18"/>',
-      status: '<path d="M3 6h18M3 12h18M3 18h18"/>',
-    };
-    const svg = btn.querySelector('svg');
-    if (svg) svg.innerHTML = icons[s.order] || icons.desc;
-  }
-  updateSortBtn();
-
-  let searchTimer;
-  document.getElementById('searchInput').addEventListener('input', e => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => { searchQuery = e.target.value; render(); }, 200);
-  });
-
-  // ── mobile sidebar ───────────────────────────────────────────
-  const sidebar   = document.getElementById('sidebar');
-  const backdrop  = document.getElementById('sidebarBackdrop');
-  const toggleBtn = document.getElementById('sidebarToggle');
-  function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('visible'); }
-  toggleBtn.addEventListener('click', () => {
-    const open = sidebar.classList.toggle('open');
-    backdrop.classList.toggle('visible', open);
-  });
-  backdrop.addEventListener('click', closeSidebar);
-
-  // ── mobile filter drawer toggle ───────────────────────────────
-  const filterToggleBtn = document.getElementById('filterToggleBtn');
-  if (filterToggleBtn) {
-    filterToggleBtn.addEventListener('click', () => {
-      const bar = document.getElementById('inlineFilters');
-      const isOpen = bar.classList.toggle('mobile-open');
-      filterToggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
-  }
-
-  // ── sidebar collapsible sections ─────────────────────────────
-  function updateSectionCounts() {
-    const catActive   = filteredBase({ excludeCat: true });
-    const statusActive = filteredBase({ excludeStatus: true });
-    const geoActive   = filteredBase({ excludeGeo: true });
-    const el = id => document.getElementById(id);
-    if (activeCat !== 'all') {
-      const cat = getCat(activeCat);
-      el('secCategoryCount').textContent = cat.label;
-    } else {
-      el('secCategoryCount').textContent = '';
-    }
-    if (activeStatus !== 'all') {
-      el('secStatusCount').textContent = STATUS_META[activeStatus]?.label || '';
-    } else {
-      el('secStatusCount').textContent = '';
-    }
-    if (activeGeo !== 'all') {
-      el('secGeoCount').textContent = GEOGRAPHY_META[activeGeo]?.label || '';
-    } else {
-      el('secGeoCount').textContent = '';
-    }
-  }
-
-  document.querySelectorAll('.sidebar-heading[data-sec]').forEach(heading => {
-    heading.addEventListener('click', () => {
-      const sec = document.getElementById(heading.dataset.sec);
-      sec.classList.toggle('collapsed');
-    });
-  });
-
-  // ── footer ───────────────────────────────────────────────────
-  const latest  = new Date(Math.max(
-    ...RESEARCH_DATA.map(r => new Date(r.date + 'T00:00:00')),
-    new Date(LAST_CONTENT_UPDATE + 'T00:00:00')
-  ));
-  const latestStr = latest.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  document.getElementById('headerLastUpdated').textContent = latestStr;
 
   // ── sources modal ─────────────────────────────────────────────
   (function() {
@@ -486,9 +378,6 @@
       if (e.added && isNaN(new Date(e.added + 'T00:00:00'))) problems.push(`entry ${e.id}: bad added "${e.added}"`);
     });
     (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
-    THEMES.forEach(t => (t.papers || []).forEach(pid => {
-      if (!ids.has(String(pid))) problems.push(`theme ${t.id}: linked paper ${pid} not found`);
-    }));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
       (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) problems.push(`policy ${p.id}: paperId ${pid} not found`); });
@@ -516,7 +405,14 @@
         if (!polIds.has(m[1])) problems.push(`${label}: policy cross-reference "${m[1]}" resolves to no policy`);
       }
     };
-    scanTokens(THEMES, 'themes');
+    // Paper summaries (the pilot, data/paper-summaries.js): shape and house rules
+    (typeof PAPER_SUMMARIES !== 'undefined' ? Object.entries(PAPER_SUMMARIES) : []).forEach(([id, s]) => {
+      if (!RESEARCH_DATA.some(e => String(e.id) === id)) problems.push(`summary ${id}: no such paper`);
+      if (!s.lede || !s.body) problems.push(`summary ${id}: needs a lede and a body paragraph`);
+      if (s.basis !== 'full text' && s.basis !== 'abstract only') problems.push(`summary ${id}: basis must be "full text" or "abstract only"`);
+      if (s.basis === 'abstract only' && s.note) problems.push(`summary ${id}: a summary written from the abstract only carries no "Take note" paragraph`);
+      [s.lede, s.body, s.note].forEach(txt => { if (txt && /\u2014/.test(txt)) problems.push(`summary ${id}: an em-dash in the prose`); });
+    });
     scanTokens(POLICY_DATA, 'policies');
     if (problems.length) {
       console.error(`[tracker] data validation: ${problems.length} problem(s) found`);
