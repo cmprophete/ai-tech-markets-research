@@ -17,7 +17,7 @@
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 18px; flex-shrink: 0;
   }
-  .modal-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; font-family: var(--grot); }
+  .modal-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; font-family: var(--sans); }
 
   .modal-close {
     background: none; border: none; cursor: pointer;
@@ -105,7 +105,7 @@
     border-bottom: 1px solid var(--border);
   }
   .pol-modal-title {
-    font-family: var(--grot);
+    font-family: var(--sans);
     font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
     color: var(--text); line-height: 1.25; flex: 1; margin-right: 12px;
   }
@@ -148,7 +148,7 @@
   }
   .pol-modal-section:last-child { padding-bottom: 0; border-bottom: none; }
   .pol-modal-label {
-    font-family: var(--grot);
+    font-family: var(--sans);
     font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
     color: var(--text);
   }
@@ -176,18 +176,4 @@
   .g-competes .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-compete) 55%, var(--border)); }
   .pol-rel-item .pol-xref { font-size: 13.5px; font-weight: 600; }
   .pol-rel-why { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
-  .finding-modal-stat {
-    font-family: var(--serif);
-    font-size: 30px; font-weight: 700; line-height: 1; color: var(--accent);
-    margin-bottom: 8px;
-  }
-  .finding-modal-source {
-    display: block; font-size: 13px; line-height: 1.55; color: var(--text);
-    text-decoration: none; margin-bottom: 10px;
-    padding-left: 16px; text-indent: -16px;
-  }
-  .finding-modal-source em { font-style: italic; }
-  .finding-modal-source:hover { color: var(--accent); }
-  /* .finding-theme-link removed 2026-08-01 with the button it styled; see
-     docs/adr/0005. */
 
