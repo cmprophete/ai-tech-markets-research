@@ -8,7 +8,7 @@
   .site-header::before { display: none; }
   .site-header::after  { display: none; }
   .header-inner {
-    max-width: calc(var(--sidebar-w) + 1100px);
+    max-width: var(--layout-max);
     margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between; gap: 24px;
     position: relative;
@@ -54,19 +54,26 @@
     flex-shrink: 0; flex-wrap: wrap;
   }
   .header-tabs { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 0 22px; }
+  /* The title and the six tabs (597px) leave the title under about 330px, so that it breaks into three lines, below about 1040px; so below 1040px the tabs go
+     under the title, centred (the rest of the stacked header, for 900px and under, is in cards.css). */
+  @media (max-width: 1040px) {
+    .header-inner { flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .header-text { flex-basis: 100%; text-align: center; }
+  }
 
-  /* Grouped nav tabs: a continuous rule under a pair of tabs, with a
-     shared group label below it (e.g. Research / Economy).
+  /* Grouped nav tabs: a rule under each group's tabs, with the group's label below it (Research, Policy, Government action),
+     so the tabs sit above their label. (It was flat for a day on 2026-11-11 and went back to groups at the owner's
+     request; Legislation left Policy for a group of its own on 2026-11-12, also at the owner's request, and the group has been called Government action since that evening.)
 
-     Each group carries its own accent via --group-accent, set per group
-     below. ESP secondary palette on the Warm Navy band: Soft Green (the
-     C3 accent) for Research, Warm Gold for Economy, Warm Pink for
-     Policy. All three clear contrast on navy, and they stay graphic
-     elements (rules, underlines, 10px labels) rather than body copy —
-     the 75/15/10 balance holds because the band itself is navy. */
+     Each group carries its own accent via --group-accent, set per group below: Soft Green (the C3 accent) for
+     Research, Warm Pink for Policy, Warm Gold for Government action. All three clear 4.5:1 on the navy band (4.8, 7.8 and
+     7.5), and they stay graphic elements (rules, underlines, 10px labels) rather than body copy, so the 75/15/10
+     balance holds because the band itself is navy. A new group needs a line of its own here: without one it takes
+     the green default of the first rule, and a test checks that every group has one. */
   .tab-group { display: flex; flex-direction: column; --group-accent: var(--green); }
-  .tab-group[data-group="research"] { --group-accent: var(--green); }
-  .tab-group[data-group="policy"]   { --group-accent: var(--pink);  }
+  .tab-group[data-group="research"]    { --group-accent: var(--green); }
+  .tab-group[data-group="policy"]      { --group-accent: var(--pink);  }
+  .tab-group[data-group="government"]  { --group-accent: var(--gold);  }
   .tab-group-btns { display: flex; align-items: flex-end; }
   .tab-group-label {
     margin-top: 3px; padding-top: 4px;
@@ -77,7 +84,6 @@
     letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--group-accent);
   }
-  .tab-group-label--empty { border-top-color: transparent; color: transparent; user-select: none; }
 
   /* ── SHARED TAB OPENER ───────────────────────────────────────────
      The one type spec for the question or statement at the top of a
@@ -95,32 +101,19 @@
   }
   .tab-standfirst {
     font-family: var(--sans);
-    font-size: 15px; line-height: 1.7; color: var(--muted);
+    font-size: 15px; line-height: 1.7; color: var(--text);
     max-width: var(--lede-measure);
     margin-top: 10px;
   }
 
-  /* Papers, Policy Map and Solutions. No background and no bottom
+  /* Papers and Policy. No background and no bottom
      border: this is an invisible container, and the masthead is closed
      by the hairline on .header-tab-desc-text like every other tab. The
-     old --surface panel made these two read as a distinct site section,
-     and on Papers it was cream-on-cream with the .key-finding-cards,
-     which are --surface too. */
+     old --surface panel made these two read as a distinct site section. */
   .header-tab-desc {
     position: relative;
     padding: var(--masthead-top) var(--masthead-inset) 14px;
     display: flex; flex-direction: column; gap: 3px;
-  }
-  /* Empty now that the eyebrow is gone — the row survives only as the
-     lens toggle's anchor, so it must not add height above the lede. */
-  .header-tab-desc-row { margin-bottom: 0; }
-  /* Out of flow, so a taller control cannot push the lede under it down.
-     Papers is the only tab with a lens toggle, and while it sat in the
-     flow of this row it forked Papers' masthead from the other five. */
-  .header-tab-desc-row .lens-toggle {
-    position: absolute;
-    top: var(--masthead-top);
-    right: var(--masthead-inset);
   }
   .header-tab-desc-lede {
     font-family: var(--serif);
@@ -135,7 +128,7 @@
   .header-tab-desc-lede:empty { display: none; }
   /* Carries the shared closing hairline — see --masthead-top. */
   .header-tab-desc-text {
-    font-size: 15px; color: var(--muted); line-height: 1.7;
+    font-size: 15px; color: var(--text); line-height: 1.7;
     max-width: var(--lede-measure);
     font-family: var(--sans);
     padding-bottom: 8px; border-bottom: 1px solid var(--border);
@@ -149,16 +142,13 @@
     transition: color 0.15s, border-color 0.15s;
     white-space: nowrap;
     /* Buttons default to line-height:normal but <a> inherits the body's 1.6.
-       Pin both so a link tab (Solutions) is exactly as tall as a button tab
-       (Map) — otherwise the taller link stretches its group and knocks the
-       group label out of line with the neighbouring groups. */
+       Pin both so a link tab is exactly as tall as a button tab. */
     line-height: 1.25;
     display: block;
   }
   a.header-nav-btn { text-decoration: none; }
-  /* Hover previews the same underline the active state uses, so the group's
-     color reads before the click as well as after. Hover is the softer of the
-     two: a partial-strength rule, no weight change (which would reflow the
+  /* Hover previews the same underline the active state uses, so the group's color reads before the click as well as
+     after. Hover is the softer of the two: a partial-strength rule, no weight change (which would reflow the
      tab), and beige text rather than white. */
   .header-nav-btn:hover {
     color: var(--beige);
