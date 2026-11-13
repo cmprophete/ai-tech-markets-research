@@ -4,7 +4,7 @@ A curated research database and synthesis on AI, automation, and the economy,
 published as a single self-contained page (`index.html`) that is embedded as an
 iframe on the Economic Security Project site.
 
-Four views: **Papers**, **Fact Bank**, **Lab**, **Solutions**.
+Six tabs in three groups, plus an **About** page that opens the site: Research (**Fact Bank** and **Papers**), Policy (**Agenda**, a placeholder for now, and **Landscape**, the policy map) and Government action (**Enforcement**, a placeholder for enforcement actions and key cases; and **Legislation**, a map of the states with a table of bills and one of the 2026 midterm results).
 
 ## Setup (once per machine)
 
@@ -35,10 +35,10 @@ python3 tools/research.py check                 # validate; write nothing
 python3 tools/research.py build --sheet <url>   # pull a published Google Sheet first
 ```
 
-See **[`content/README.md`](content/README.md)**. Themes, the policy map and the
-solutions agenda live in `data/tracker-data.js` and are hand-edited; the fact
-bank is `data/fact-bank-data.js`. All `data/*.js` load at runtime, so a data
-change needs only a reload, and a fresh clone renders from the committed files.
+See **[`content/README.md`](content/README.md)**. Themes and the policy map live
+in `data/tracker-data.js` and are hand-edited; the fact bank is `data/fact-bank-data.js`; the Legislation tabs' stages, midterm results and filter topics are `data/legislation-data.js` (its enforcement actions and key cases, by hand, `data/legislation-actions.js`), its state outlines are generated into `data/us-map.js` by `tools/us_map.py`, and its bills into `data/legislation-bills.js` by `tools/legislation.py` (the federal list from the Brennan Center's tracker, each federal bill's record from GovInfo, the state bills from an Open States search, fetched by `tools/openstates_fetch.py`; see `docs/legislation-sources.md`). All
+`data/*.js` load at runtime, so a data change needs only a reload, and a fresh
+clone renders from the committed files.
 
 ## Tests
 
