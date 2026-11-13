@@ -1,44 +1,75 @@
-  /* ── POLICY MAP VIEW ─────────────────────────────────────── */
-  .policy-view .sidebar              { display: none; }
-  .policy-view .inline-filters       { display: none; }
-
-
-  .policy-view .cards-grid           { display: none !important; }
-  .policy-view .empty-state          { display: none !important; }
-  .policy-view .app-layout           { max-width: calc(var(--sidebar-w) + 1100px); grid-template-columns: 1fr; }
-  .policy-view .main-content         { grid-column: 1 / -1; }
+  /* ── POLICY VIEW ─────────────────────────────────────── */
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
   .policy-view #policyArea           { display: block; }
+  /* Agenda and Enforcement: placeholder tabs. The shared masthead leads each (copy in TAB_DESCS.agenda and TAB_DESCS.enforcement) and one note sits under it, in the
+     Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. Each area takes the
+     masthead's inset from .cards-area. */
+  #agendaArea, #enforcementArea      { display: none; }
+  .agenda-view #agendaArea           { display: block; }
+  .enforcement-view #enforcementArea { display: block; }
+  .agenda-view .cards-area, .enforcement-view .cards-area { padding-top: 0; }
+  .placeholder-note {
+    max-width: var(--lede-measure); margin: 24px 0 0; padding: 9px 14px;
+    background: rgba(235,195,130,0.16); border-left: 3px solid var(--gold); border-radius: 0 var(--r-card) var(--r-card) 0;
+    font-size: 13px; line-height: 1.55; color: var(--text);
+  }
+  .placeholder-note-label {
+    display: block; margin-bottom: 2px;
+    font-family: var(--grot); font-weight: 600; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--headline);
+  }
+  /* The one link on the page: the site's navy, not the browser's blue. */
+  .placeholder-note a { color: var(--accent); text-underline-offset: 2px; }
+  .placeholder-note a:hover { text-decoration-thickness: 2px; }
   #aboutArea                         { display: none; }
   .about-view #aboutArea             { display: block; }
-  .about-view .sidebar               { display: none; }
-  .about-view .inline-filters        { display: none; }
-
-  .about-view .cards-grid            { display: none; }
-  .about-view .lens-toggle           { display: none; }
   .about-view .header-tab-desc       { display: none; }
-  .about-view .app-layout            { grid-template-columns: 1fr; }
-  .about-view .main-content          { grid-column: 1 / -1; }
-  .about-content {
-    max-width: 660px; margin: 0 auto; padding: 40px 28px 60px;
-  }
-  .about-section {
-    border-bottom: 1px solid var(--border);
-    padding: 20px 0 24px;
-  }
-  .about-section:last-child { border-bottom: none; }
+  /* Legislation: the map and tables (legislation.css). The area takes the masthead's inset from .cards-area. */
+  #legislationArea                   { display: none; }
+  .legislation-view #legislationArea { display: block; }
+  .legislation-view .cards-area      { padding-top: 0; }
+  /* ── ABOUT: the front page ───────────────────────────────────────────────────────────────────────────────────
+     It sets its text in the styles the other tabs already use, bar one (the part headings, below): the shared
+     masthead opener (the display serif lede and the 15px standfirst), then numbered parts that each open with a
+     heading, then paragraphs, the first of which opens with its question in bold. Every paragraph is the masthead
+     standfirst's 15px; the build note and the credit are 13px. The display serif belongs to the lede
+     alone, as on every other tab. Each of the three parts takes its nav group's accent from the header (Research
+     green, Policy pink, Government action gold) as a graphic only: a rule above the part and, for the two
+     unknowns the intro names, an underline under the matching phrase. Pink and gold fail contrast as text on Beige, so no text is set in an accent. */
+  .about-content { max-width: 680px; margin: 0 auto; padding: 44px 28px 72px; counter-reset: about-part; }
+  .about-section { --group-accent: var(--navy); padding: 0 0 44px; }
+  .about-section[data-group="research"], .about-mark[data-group="research"] { --group-accent: var(--green); }
+  .about-section[data-group="policy"],   .about-mark[data-group="policy"]   { --group-accent: var(--pink); }
+  .about-section[data-group="government"] { --group-accent: var(--gold); }
+  .about-section[data-group] { border-top: 3px solid var(--group-accent); padding-top: 18px; }
+  .about-section.about-intro { padding-bottom: 38px; }
+  .about-section.about-closing { border-top: 1px solid var(--border); padding: 22px 0 0; }
+  /* A part's heading: its number in a navy circle (as the old numbered list had it) and its name in title case, at 20px bold,
+     the size of the Policy modal's title and the largest bold the app sets in Public Sans. It is the one About style no
+     tab uses, set larger at the owner's request so the heading stays above the 17px lead sentence beneath it. The
+     numbers are a CSS counter, so the heading's own text stays "Research" and "Policy". */
   .about-section-label {
-    font-family: var(--grot);
-    font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
-    color: var(--text); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 11px;
+    font-family: var(--sans); font-size: 20px; font-weight: 700; line-height: 1.3;
+    letter-spacing: -0.01em; color: var(--headline); margin: 0 0 14px;
+  }
+  .about-section-label::before {
+    counter-increment: about-part; content: counter(about-part);
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--navy); color: var(--light-beige);
+    font-family: var(--grot); font-size: 12px; font-weight: 600; letter-spacing: 0;
   }
   .about-section-text {
-    font-size: 14px; line-height: 1.75; color: var(--text);
-    font-family: 'Public Sans', sans-serif;
+    font-size: 15px; line-height: 1.7; color: var(--text);
+    font-family: var(--sans); text-wrap: pretty;
   }
   .about-section-text em { font-style: italic; }
   .about-section-text + .about-section-text { margin-top: 12px; }
+  /* The one link in the prose: the site's navy, not the browser's blue. */
+  .about-section-text a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .about-section-text a:hover { text-decoration-thickness: 2px; }
   /* Alias of .tab-lede — was 24px grotesk 700. */
   .about-lede {
     font-family: var(--serif);
@@ -49,150 +80,56 @@
     color: var(--headline);
     max-width: var(--lede-measure);
     margin-bottom: 14px;
+    text-wrap: balance;
   }
-  .about-questions {
-    list-style: none; counter-reset: aq; margin: 16px 0 0; padding: 0;
+  /* The two unknowns the intro names are underlined in the colour of the part that answers each. */
+  .about-mark {
+    text-decoration: underline; text-decoration-color: var(--group-accent);
+    text-decoration-thickness: 3px; text-underline-offset: 4px; text-decoration-skip-ink: none;
   }
-  .about-questions li {
-    counter-increment: aq; position: relative;
-    padding-left: 34px; margin-bottom: 16px;
-    font-size: 14px; line-height: 1.75; color: var(--text);
-    font-family: 'Public Sans', sans-serif;
-  }
-  .about-questions li:last-child { margin-bottom: 0; }
-  .about-questions li::before {
-    content: counter(aq); position: absolute; left: 0; top: 2px;
-    font-family: var(--grot); font-size: 12px; font-weight: 700;
-    width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--navy); color: #fff;
-  }
+  /* A part's question is the first paragraph of the part: the statement it starts from, in bold, runs on into the questions
+     that follow from it. The spans only mark the sentences, they do not lay them out. */
+  .q-lead { font-weight: 700; color: var(--headline); }
   .about-note {
     border-left: 3px solid var(--purple);
     background: rgba(0,0,0,0.02);
-    padding: 14px 16px; margin-top: 16px;
+    padding: 14px 16px; margin-top: 18px;
     font-size: 13px; line-height: 1.7; color: var(--muted);
-    font-family: 'Public Sans', sans-serif;
+    font-family: var(--sans);
   }
-  .about-note strong { color: var(--text); }
+  .about-note strong { color: var(--text); font-weight: 600; }   /* semibold, as the other tabs' 13px labels */
+  /* Each part ends by pointing at its tabs. The pill is the Fact Bank's (.act-btn in this file), value for value. */
+  .about-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .about-link {
+    background: var(--light-beige); border: 1px solid var(--navy); color: var(--navy);
+    border-radius: var(--r-ctl); padding: 4px 12px; font-family: var(--grot);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+    white-space: nowrap; text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .about-link:hover { background: var(--navy); color: var(--beige); }
+  .about-link:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .about-link { transition: none; } }
   .about-credit {
     font-size: 13px; line-height: 1.7; color: var(--muted);
-    font-family: 'Public Sans', sans-serif;
+    font-family: var(--sans); text-wrap: balance;
   }
-
-  /* ── SOLUTIONS TAB ── (static editorial view, modeled on About) */
-  #solutionsArea                          { display: none; }
-  .solutions-view #solutionsArea          { display: block; }
-  .solutions-view .sidebar                { display: none; }
-  .solutions-view .inline-filters         { display: none; }
-  .solutions-view .cards-grid             { display: none !important; }
-  .solutions-view .empty-state            { display: none !important; }
-  .solutions-view .lens-toggle            { display: none; }
-  /* Solutions keeps .header-tab-desc — it opens on the fourth of the four
-     questions ("What should we actually do?", from TAB_DESCS.solutions),
-     and a tab with no masthead would be the one exception in the set. */
-  .solutions-view .key-findings-band      { display: none; }
-  .solutions-view .app-layout             { grid-template-columns: 1fr; }
-  .solutions-view .main-content           { grid-column: 1 / -1; }
-  /* The masthead carries the top structure, so the prose column opens
-     tight against it rather than floating in its own gap. */
-  .solutions-view .cards-area             { padding-top: 0; }
-  /* No horizontal padding and no centring: .cards-area already insets by
-     --masthead-inset, so a left-flush column lands on the masthead's left
-     edge at every width. Adding 28px here (as the old placeholder card
-     did) doubles the inset and the two stop lining up. */
-  .sol-content {
-    max-width: var(--lede-measure);
-    padding: 4px 0 80px;
-  }
-  /* One accent per part, inherited by the kicker, the number chip and each
-     item's left stripe, so a part's color is set in exactly one place.
-     Green for the North Star, navy for the policies we defend either way,
-     deepened gold for the exploratory set (gold and green both fail
-     contrast at text size on Beige; see tokens.css). */
-  .sol-part {
-    --sol-accent: var(--navy);
-    border-top: 1px solid var(--border);
-    padding: 28px 0 6px;
-  }
-  .sol-part:first-of-type { border-top: none; padding-top: 12px; }
-  .sol-part--north   { --sol-accent: var(--green-deep); }
-  .sol-part--provoke { --sol-accent: var(--gold-deep); }
-
-  .sol-kick {
-    display: flex; align-items: baseline; gap: 9px;
-    font-family: var(--grot); font-size: 11px; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--sol-accent); margin-bottom: 11px;
-  }
-  .sol-kn {
-    background: var(--sol-accent); color: var(--light-beige);
-    border-radius: var(--r-tag); padding: 1px 6px;
-    letter-spacing: 0.06em; font-variant-numeric: tabular-nums;
-  }
-  /* The North Star is the one display line on the tab. Held below the
-     masthead lede so the tab still reads top-down. */
-  .sol-statement {
-    font-family: var(--serif);
-    font-size: clamp(20px, 2.4vw, 25px); line-height: 1.38;
-    font-weight: 500; letter-spacing: -0.01em;
-    color: var(--headline); margin-bottom: 14px;
-  }
-  .sol-head {
-    font-family: var(--grot); font-size: 17px; font-weight: 700;
-    letter-spacing: -0.01em; color: var(--headline); margin-bottom: 9px;
-  }
-  .sol-prose p { font-size: 14px; line-height: 1.75; color: var(--text); }
-  .sol-prose p + p { margin-top: 12px; }
-
-  .sol-list { list-style: none; counter-reset: sol; margin: 18px 0 0; padding: 0; }
-  .sol-item {
-    counter-increment: sol;
-    border-left: 3px solid color-mix(in srgb, var(--sol-accent) 38%, var(--border));
-    padding: 11px 0 11px 15px;
-    font-size: 14px; line-height: 1.7; color: var(--text);
-  }
-  .sol-item + .sol-item { margin-top: 7px; }
-  .sol-item-t {
-    display: block; margin-bottom: 3px;
-    font-family: var(--grot); font-size: 14.5px; font-weight: 700;
-    letter-spacing: -0.005em; color: var(--headline);
-  }
-  .sol-item-t::before {
-    content: counter(sol); margin-right: 8px;
-    color: var(--sol-accent); font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-  .sol-foot {
-    border-left: 3px solid var(--purple);
-    background: rgba(0,0,0,0.02);
-    padding: 14px 16px; margin-top: 32px;
-    font-size: 13px; line-height: 1.7; color: var(--muted);
-  }
-  .sol-foot b { color: var(--text); font-weight: 600; }
 
   /* ═══════════════════════════════════════════════════════════
      FACT BANK TAB
      All component styles are scoped under #factBankArea so the
-     generic class names (.controls, .chip, .empty-state, …) cannot
-     leak into the rest of the app.
+     generic class names (.chip, .empty-state, …) cannot
+     leak into the rest of the app. (The search-and-filters bar is the exception: the Papers
+     tab shares it, so it lives in filterbar.css.)
      ═══════════════════════════════════════════════════════════ */
   #factBankArea { display: none; }
   /* margin: 0, not 0 auto. Centring a 1140px column inside the 1352px
      layout pushed this tab's masthead 78px right of Papers'/Map's/Jobs',
      and the drift grew with the viewport. */
   .fact-bank-view #factBankArea {
-    display: block; max-width: 1140px; margin: 0; width: 100%;
+    display: block; max-width: var(--content-max); margin: 0; width: 100%;
   }
-  .fact-bank-view .sidebar            { display: none; }
-  .fact-bank-view .inline-filters     { display: none; }
-  .fact-bank-view .cards-grid         { display: none !important; }
-  .fact-bank-view .empty-state        { display: none !important; }
-  .fact-bank-view .lens-toggle        { display: none; }
   .fact-bank-view .header-tab-desc    { display: none; }
-  .fact-bank-view .key-findings-band  { display: none; }
-  .fact-bank-view .app-layout         { grid-template-columns: 1fr; }
-  .fact-bank-view .main-content       { grid-column: 1 / -1; }
   .fact-bank-view .cards-area         { padding-top: 0; }
 
   #factBankArea .intro-bar { padding: var(--masthead-top) 0 0; }
@@ -206,116 +143,15 @@
     max-width: var(--lede-measure);
     margin-bottom: 10px;
   }
-  #factBankArea .intro-text { font-size: 15px; line-height: 1.7; max-width: var(--lede-measure); }
-  /* Last element in the masthead, so it carries the closing hairline. It
-     also gains the shared measure — it was the one line on this tab
-     running the full 1140px while everything above it stopped at 760. */
-  #factBankArea .intro-note {
-    font-size: 12.5px; font-style: italic; color: var(--purple); margin-top: 8px;
-    max-width: var(--lede-measure);
-    padding-bottom: 8px; border-bottom: 1px solid var(--border);
-  }
-
-  /* ── MODE TOGGLE ── */
-  #factBankArea .mode-toggle { display: flex; gap: 10px; padding: 18px 0 4px; flex-wrap: wrap; }
-  #factBankArea .mode-btn {
-    flex: 1; min-width: 240px; text-align: left; cursor: pointer;
-    background: var(--light-beige); border: 1.5px solid var(--navy);
-    border-radius: var(--r-card); padding: 13px 18px 12px;
-    font-family: var(--grot); color: var(--text);
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
-  }
-  #factBankArea .mode-btn .mode-name {
-    display: block; font-size: 16px; font-weight: 600; letter-spacing: 0.01em;
-    color: var(--headline); margin-bottom: 2px;
-  }
-  #factBankArea .mode-btn .mode-desc { display: block; font-family: var(--sans); font-size: 12.5px; }
-  #factBankArea .mode-btn:hover { border-color: var(--green); }
-  #factBankArea .mode-btn[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
-  #factBankArea .mode-btn[aria-pressed="true"] .mode-name { color: #fff; }
-  #factBankArea .mode-btn[aria-pressed="true"] .mode-name::before {
-    content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
-    background: var(--green); margin-right: 8px; vertical-align: 1px;
-  }
-  #factBankArea .mode-btn[aria-pressed="true"] .mode-desc { color: var(--divider); }
-
-  /* ── CONTROLS ── */
-  #factBankArea .controls {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--beige); border-bottom: 1px solid var(--divider);
-    padding: 12px 0 10px;
-  }
-  #factBankArea .controls-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  #factBankArea .controls-row2 { margin-top: 8px; }
-  #factBankArea .search-wrap { position: relative; flex: 1; min-width: 220px; }
-  #factBankArea .search-wrap svg {
-    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
-    color: var(--text); opacity: 0.55; pointer-events: none;
-  }
-  #factBankArea input[type="search"] {
-    width: 100%; background: var(--light-beige); border: 1px solid var(--divider);
-    color: var(--text); border-radius: var(--r-ctl); padding: 8px 12px 8px 34px;
-    font-size: 13.5px; outline: none; transition: border-color 0.18s; font-family: var(--sans);
-  }
-  #factBankArea input[type="search"]:focus { border-color: var(--green); }
-  #factBankArea input[type="search"]::placeholder { color: var(--text); opacity: 0.5; }
-  #factBankArea select {
-    /* native OS triangle suppressed; same chevron as every other control */
-    appearance: none; -webkit-appearance: none;
-    background-color: var(--light-beige);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3254' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 9px center;
-    background-size: 12px 12px;
-    border: 1px solid var(--divider); color: var(--text);
-    border-radius: var(--r-ctl); padding: 8px 28px 8px 10px; font-size: 13px; font-family: var(--sans);
-    outline: none; cursor: pointer;
-  }
-  #factBankArea select:focus { border-color: var(--green); }
-  #factBankArea .ctl-label {
-    font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em;
-    color: var(--headline); white-space: nowrap;
-  }
-  #factBankArea .kw-toggle {
-    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
-    background: var(--light-beige); border: 1px solid var(--navy); border-radius: var(--r-ctl);
-    padding: 8px 13px; font-family: var(--grot); font-size: 13px; font-weight: 500;
-    color: var(--headline); white-space: nowrap; transition: background 0.15s;
-  }
-  #factBankArea .kw-toggle:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
-  #factBankArea .kw-toggle .chev { /* see .ui-chevron */ }
-  #factBankArea .kw-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
-  #factBankArea .kw-toggle .kw-active-count {
-    background: var(--green); color: var(--headline); border-radius: var(--r-tag);
-    font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 17px;
-  }
-  #factBankArea .kw-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
-  #factBankArea .kw-panel.open { grid-template-rows: 1fr; }
-  #factBankArea .kw-panel > div { overflow: hidden; min-height: 0; }
-  #factBankArea .pill-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 2px 4px; }
-  #factBankArea .kw-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: var(--grot); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
-    background: var(--light-beige); border: 1px solid var(--navy); border-radius: var(--r-ctl);
-    padding: 4px 12px; color: var(--navy);
-    transition: background 0.15s;
-  }
-  #factBankArea .kw-pill:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
-  #factBankArea .kw-pill[aria-pressed="true"] {
-    background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 600;
-  }
-  #factBankArea .kw-count { font-size: 11px; opacity: 0.7; font-variant-numeric: tabular-nums; }
-  #factBankArea .result-line {
-    font-family: var(--grot); font-size: 12px; letter-spacing: 0.02em;
-    color: var(--text); padding: 10px 0 0;
-  }
+  /* text-wrap: pretty keeps a one-word last line (a stranded "is.") off the paragraph. */
+  #factBankArea .intro-text { font-size: 15px; line-height: 1.7; max-width: var(--lede-measure); text-wrap: pretty; }
+  /* Last element in the masthead, so it carries the closing hairline, at the shared measure. The note
+     inside is the same caution callout as a fact's "Take note" (.fact-caveat.warn: gold rule, tinted
+     ground, small uppercase label, regular type), so the pilot caveat reads as part of this page. */
+  #factBankArea .intro-note { max-width: var(--lede-measure); padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 
   /* ── COLLAPSE MACHINERY ── */
-  #factBankArea .cwrap {
-    display: grid; grid-template-rows: 1fr;
-    transition: grid-template-rows 0.3s ease, opacity 0.22s ease; opacity: 1;
-  }
-  #factBankArea .cwrap.hidden { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
+  #factBankArea .cwrap { display: grid; grid-template-rows: 1fr; }
   #factBankArea .cwrap > .cinner { overflow: hidden; min-height: 0; }
   #factBankArea .details { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.28s ease; }
   #factBankArea .details > .dinner { overflow: hidden; min-height: 0; }
@@ -347,26 +183,28 @@
     background: var(--beige); border: 1px solid var(--divider); color: var(--text);
   }
   #factBankArea .chip-rating { color: var(--headline); font-weight: 600; }
-  #factBankArea .chip .dots { letter-spacing: 1.5px; color: var(--green); font-size: 10px; }
   #factBankArea .chip-caution { background: rgba(235,195,130,0.3); border-color: var(--gold); color: var(--headline); font-weight: 600; }
   #factBankArea .chip-access { font-style: italic; }
   #factBankArea .chip-kw { background: rgba(112,173,143,0.16); border-color: rgba(112,173,143,0.55); color: var(--headline); }
   #factBankArea .chip-foundational { background: rgba(235,195,130,0.18); border-color: var(--gold); color: var(--headline); font-weight: 600; cursor: help; }
-  #factBankArea .ctl-check { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--headline); cursor: pointer; white-space: nowrap; }
   #factBankArea .fact-meta { font-size: 12.5px; color: var(--text); line-height: 1.6; }
   #factBankArea .fact-meta strong { font-weight: 600; color: var(--headline); }
-  #factBankArea .fact-context {
-    margin-top: 10px; padding: 10px 14px;
-    border: 1px solid var(--divider); border-radius: var(--r-card); background: var(--beige);
-    font-size: 12.5px; line-height: 1.65; font-style: italic;
+  #factBankArea .fact-meta .cite-link { font-size: inherit; }
+  /* Rating rationale: a two-column table. The rail on the left holds the scale's name, a small
+     bar and the score; the sentence keeps its own column, so it starts at the same x on every
+     row and wraps with a hanging edge. */
+  #factBankArea .rating-desc { margin-top: 12px; display: flex; flex-direction: column; }
+  #factBankArea .rd-row {
+    display: grid; grid-template-columns: 184px minmax(0, 1fr); column-gap: 26px; align-items: start;
+    padding: 10px 0; border-top: 1px solid var(--divider);
   }
-  #factBankArea .fact-context .lbl-grot { display: block; font-style: normal; margin-bottom: 3px; }
-  #factBankArea .rating-desc { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-  #factBankArea .rating-desc .rd-row { font-size: 12.5px; line-height: 1.55; }
-  #factBankArea .rating-desc .rd-row .rd-head {
-    font-family: var(--grot); font-weight: 600; font-size: 12px; letter-spacing: 0.03em; color: var(--headline);
-  }
-  #factBankArea .rating-desc .rd-row .rd-head .dots { letter-spacing: 1.5px; color: var(--green); font-size: 10px; }
+  #factBankArea .rd-row:first-child { border-top: 0; padding-top: 0; }
+  #factBankArea .rd-row:last-child { padding-bottom: 0; }
+  #factBankArea .rd-rail { display: flex; flex-direction: column; gap: 7px; }
+  #factBankArea .rd-meter { display: flex; align-items: center; gap: 9px; }
+  #factBankArea .rd-meter .fc-bar { --seg: 8px; --gap: 1.5px; height: 5px; flex: none; }
+  #factBankArea .rd-score { font-family: var(--grot); font-size: 12px; font-weight: 600; line-height: 1; letter-spacing: 0.02em; color: var(--headline); }
+  #factBankArea .rd-why { margin: 0; font-size: 13px; line-height: 1.55; color: var(--text); }
   #factBankArea .cite-link {
     font-size: 12.5px; line-height: 1.5; color: var(--text); text-decoration: underline;
     text-decoration-color: var(--green); text-underline-offset: 3px; text-decoration-thickness: 1.5px;
@@ -394,41 +232,60 @@
   #factBankArea .open .expand-hint .chev { transform: rotate(180deg); }
   #factBankArea .kf-empty-state { padding: 48px 0; text-align: center; color: var(--text); font-size: 14px; }
 
-  /* ── MODE 1: BY PAPER ── */
-  #factBankArea .paper-group {
-    background: var(--light-beige); border: 1px solid var(--divider); border-radius: var(--r-card);
-    margin-top: 18px; overflow: hidden;
-  }
-  #factBankArea .pg-facts { display: flex; flex-direction: column; }
-  #factBankArea .simple-card {
-    padding: 16px 20px 14px; cursor: pointer;
-    border-bottom: 1px solid var(--divider); border-left: 3px solid transparent;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  #factBankArea .pg-facts .cwrap:last-of-type .simple-card { border-bottom: none; }
-  #factBankArea .simple-card:hover { border-left-color: var(--green); background: #fdfaef; }
-  #factBankArea .simple-card.open { border-left-color: var(--green); }
-  #factBankArea .sc-top { display: flex; gap: 12px; align-items: baseline; }
-  #factBankArea .sc-plain { flex: 1; font-size: 15px; font-weight: 500; line-height: 1.55; color: var(--headline); }
-  #factBankArea .sc-body { padding-top: 4px; }
-  #factBankArea .sc-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-  #factBankArea .pg-footer {
-    display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
-    padding: 13px 20px 14px; background: var(--beige); border-top: 1px solid var(--divider); flex-wrap: wrap;
-  }
-  #factBankArea .pg-cite { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  #factBankArea .pg-count { font-family: var(--grot); font-size: 11.5px; letter-spacing: 0.04em; color: var(--purple); white-space: nowrap; }
-
-  /* ── MODE 2: ALL FACTS ── */
+  /* ── FACT CARD ── */
   #factBankArea .fact-card {
     background: var(--light-beige); border: 1px solid var(--divider); border-radius: var(--r-card);
     border-left: 3px solid var(--green);
     padding: 18px 22px 16px; margin-top: 14px; cursor: pointer; transition: background 0.15s;
   }
   #factBankArea .fact-card:hover { background: #fdfaef; }
-  #factBankArea .fc-plain { font-size: 15px; font-weight: 500; line-height: 1.55; color: var(--headline); }
-  #factBankArea .fc-quote-block { margin-top: 12px; }
-  #factBankArea .fc-quote-block .lbl-grot { display: block; margin-bottom: 4px; }
+
+  /* ── SOURCE GROUPS (default "Most recent" sort) ──
+     A source's facts sit together under one header that carries what they share: the paper title,
+     the byline, how many facts, and View Summary. The header is a tinted band attached to the first
+     card beneath it, so the source reads as the container and the facts as its contents (the quote is
+     the largest text on a card, and a thin line of source text above it used to get lost). The cards keep
+     their own quote, pills and ratings and sit closer together. The ranking sorts stay flat. A fact with
+     no header of its own wears the same band across the top of its card (.fc-source, below). */
+  #factBankArea .g-group { margin-top: 28px; }
+  #factBankArea .g-head {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; align-items: center;
+    margin: 0; padding: 12px 16px 11px;
+    background: var(--source-band); border: 1px solid var(--divider);
+    border-radius: var(--r-card) var(--r-card) 0 0;
+  }
+  /* Pinned: the header stays just under the filter bar while you scroll through its facts, so the source is always in
+     view beside the quote you are reading. Its range is its own group (.g-group), so it leaves with its last card and a
+     lone fact below is never under another source's header. --kf-bar-h is the bar's live height (80-fact-bank.js).
+     The header tucks 1px under the bar (the bar's z-index is higher, so the overlap is hidden): whatever rounding the
+     browser does on a zoomed page, no line can open between them for the cards to show through.
+     Not on a phone, where the bar and a header together would take too much of the screen. */
+  @media (min-width: 641px) {
+    #factBankArea .g-head { position: sticky; top: calc(var(--kf-bar-h, 0px) - 1px); z-index: 30; }
+  }
+  /* The header's type is the paper card's (.src-title and .src-meta in cards.css) and a single fact's band's: the title
+     in Public Sans 15.5px bold, the byline 13px, so a source reads at one size in both tabs. (The title was 18px with a
+     14px byline here, and 16.5px on a phone.) */
+  #factBankArea .g-title {
+    margin: 0; font-family: var(--sans); font-size: 15.5px; font-weight: 700;
+    line-height: 1.3; color: var(--headline);
+  }
+  #factBankArea .g-meta { margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--text); }
+  #factBankArea .g-right { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+  #factBankArea .g-count {
+    font-family: var(--grot); font-size: 11.5px; font-weight: 500; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--purple);
+  }
+  #factBankArea .cwrap.in-group .fc-source { display: none; }
+  /* A source's facts are one block under its header: no gap between them, and a hairline between one fact and the
+     next. The hairline is an inset shadow, not a border, so the green rule down the left side stays unbroken; the
+     cards' corners are square except the block's bottom two. */
+  #factBankArea .cwrap.in-group .fact-card { margin-top: 0; border-radius: 0; }
+  #factBankArea .cwrap.in-group + .cwrap.in-group .fact-card { border-top: 0; box-shadow: inset 0 1px 0 var(--divider); }
+  #factBankArea .cwrap.in-group:not(:last-child) .fact-card { border-bottom: 0; }
+  #factBankArea .cwrap.in-group:last-child .fact-card { border-radius: 0 0 var(--r-card) var(--r-card); }
+  /* The first card under a header is attached to its band. */
+  #factBankArea .g-head + .cwrap .fact-card { margin-top: 0; border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
   #factBankArea .fc-details-body { padding-top: 14px; }
   #factBankArea .fc-details-body .fact-meta { margin-top: 12px; }
   #factBankArea .fact-footer {
@@ -438,82 +295,133 @@
   #factBankArea .fact-footer .fc-cite { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 220px; }
   #factBankArea .fact-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 
-  /* ── REFINED CARD (shared by both views) ──
+  /* ── REFINED CARD ──
      Placed last in the fact-bank block so its rules win equal-specificity ties
-     over the older .fc-quote-block / .rating-desc / .fact-caveat margins. */
-  #factBankArea .fc-claim { font-size: 15.5px; font-weight: 600; line-height: 1.5; color: var(--headline); }
-  #factBankArea .fc-scan {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 7px 14px; margin-top: 10px;
-    font-family: var(--grot); font-size: 11.5px; color: var(--purple);
+     over the older .rating-desc / .fact-caveat margins. */
+  /* Regular weight (it was 500): the source above it is the bolder thing on a card now, so the quote no longer competes. */
+  #factBankArea .fact-quote.fc-lead { margin: 0; font-size: 16px; font-weight: 400; line-height: 1.5; color: var(--headline); }
+  /* Card header: the category pills on the left, the two rating bars in
+     a fixed right-hand column, then the expand chevron. The bars start at the same x on
+     every card, so a reader can scan down the column and compare Political with Truth. */
+  #factBankArea .fc-head {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto 18px;
+    column-gap: 28px; align-items: center; margin-top: 12px;
   }
-  #factBankArea .fc-src { font-weight: 600; color: var(--text); }
-  #factBankArea .fc-meter {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  #factBankArea .fc-head-main { min-width: 0; }
+  #factBankArea .fc-head .expand-hint { justify-self: end; }
+  /* Byline (in a source header and in a card's source band): the author or writer in real semibold (Public Sans
+     ships a SemiBold file; Haas Grotesk is Roman only, so a 600 there never rendered bold), organization and
+     year in regular weight. */
+  #factBankArea .fc-author { font-weight: 600; color: var(--headline); }
+  /* The source band across the top of a card with no source header of its own: the paper's title and its byline
+     on the header's tint, and View Summary at the right, as a source header has it (.g-head above; the Papers rows
+     have the same button pointing the other way). Negative margins run it to the card's edges (the card pads
+     18px 22px, 15px at the sides on narrow screens); the card's left rule stays visible beside it. */
+  #factBankArea .fc-source {
+    margin: -18px -22px 14px; padding: 11px 22px 10px;
+    background: var(--source-band); border-bottom: 1px solid var(--divider); border-radius: 9px 9px 0 0;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; align-items: center;
   }
-  #factBankArea .fc-scan .dots { letter-spacing: 1.5px; color: var(--green); font-size: 10px; text-transform: none; }
-  #factBankArea .fc-scan .expand-hint { margin-left: auto; }
+  #factBankArea .fc-source-text { min-width: 0; }
+  #factBankArea .fc-source-title { font-family: var(--sans); font-size: 15.5px; font-weight: 700; line-height: 1.3; color: var(--headline); }
+  #factBankArea .fc-source-by { margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--text); }
+  #factBankArea .fc-rate {
+    display: grid; grid-template-columns: auto auto; column-gap: 12px; row-gap: 9px; align-items: center;
+  }
+  /* Labels are right-aligned so the short one ("Truth") sits against its bar instead of
+     floating a long way from it beside "Political noteworthiness". */
+  #factBankArea .fc-rate-lbl {
+    font-family: var(--grot); font-size: 10px; font-weight: 500; line-height: 1;
+    letter-spacing: 0.07em; text-transform: uppercase; color: var(--purple);
+    justify-self: end; text-align: right;
+  }
+  /* Rating bar: five segments from one element. --n is the rating; the gradient fills the
+     first n segments and a repeating mask cuts the gaps between them. Filled navy is 14:1
+     on the card (the old green dots were 2.55:1). A low Truth rating fills amber. */
+  #factBankArea .fc-bar {
+    --seg: 12px; --gap: 2px; --n: 0; --fill: var(--headline); --track: var(--divider);
+    display: block; width: calc(5 * var(--seg) + 4 * var(--gap)); height: 7px; border-radius: 1px;
+    background: linear-gradient(to right, var(--fill) calc(var(--n) * (var(--seg) + var(--gap))), var(--track) 0);
+    -webkit-mask: repeating-linear-gradient(to right, #000 0 var(--seg), transparent var(--seg) calc(var(--seg) + var(--gap)));
+            mask: repeating-linear-gradient(to right, #000 0 var(--seg), transparent var(--seg) calc(var(--seg) + var(--gap)));
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  #factBankArea .fc-bar.is-low { --fill: var(--gold-deep); }
   #factBankArea .fc-detail {
     display: flex; flex-direction: column; gap: 14px;
     margin-top: 2px; padding-top: 14px; border-top: 1px solid var(--divider);
   }
   #factBankArea .fc-detail > * { margin: 0; }
-  #factBankArea .fc-chips { align-items: center; }
-  /* Sourcing demoted by weight, not cut: full text, smaller, recessed. */
-  #factBankArea .fact-methods {
-    background: var(--beige); border: 1px solid var(--divider); border-radius: var(--r-card); padding: 11px 14px;
+  #factBankArea .fc-chips { align-items: center; margin-top: 9px; }
+  /* Sourcing demoted by weight, not cut: full text, smaller, recessed. The surrounding
+     paragraph is the same panel as a disclosure, so the two read as siblings. */
+  #factBankArea .fact-methods, #factBankArea .fact-context-d {
+    background: var(--beige); border: 1px solid var(--divider); border-radius: var(--r-card);
   }
+  #factBankArea .fact-methods { padding: 11px 14px; }
   #factBankArea .fact-methods > .lbl-grot { display: block; margin-bottom: 6px; color: var(--purple); }
   #factBankArea .fact-methods .fact-meta { font-size: 12px; }
   #factBankArea .fc-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  /* All Facts: full quote + usage guidance shown up front (methods & ratings on expand). */
+  /* Usage guidance (take note + suggested use) shown up front under the lead quote;
+     ratings, methods and sourcing wait for the expand. */
   #factBankArea .fc-open { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
   #factBankArea .fc-open > * { margin: 0; }
   #factBankArea .fc-usage { font-size: 13px; line-height: 1.55; color: var(--text); }
   #factBankArea .fc-usage .lbl-grot { display: block; margin-bottom: 3px; }
-  /* Surrounding-paragraph disclosure, nested inside the expanded detail. */
+  /* Surrounding paragraph: the same panel as Methods & sourcing. The label row is the summary.
+     Its padding sits on the summary and the body, not on the panel, so the whole closed panel
+     is the toggle and a click on its edge cannot collapse the card. */
   #factBankArea .fact-context-d > summary {
-    font-family: var(--grot); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em;
-    color: var(--purple); cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 14px; color: var(--purple); cursor: pointer; list-style: none;
   }
   #factBankArea .fact-context-d > summary::-webkit-details-marker { display: none; }
-  #factBankArea .fact-context-d > summary::before {
-    content: "\25B8"; color: var(--green); display: inline-block; transition: transform 0.18s ease;
-  }
-  #factBankArea .fact-context-d[open] > summary::before { transform: rotate(90deg); }
-  #factBankArea .fc-ctx-body {
-    margin-top: 8px; padding: 10px 14px;
-    border: 1px solid var(--divider); border-radius: var(--r-card); background: var(--beige);
-    font-size: 12.5px; line-height: 1.65; font-style: italic; color: var(--text);
-  }
+  #factBankArea .fact-context-d > summary .lbl-grot { color: var(--purple); }
+  #factBankArea .fact-context-d > summary:hover .lbl-grot { color: var(--headline); }
+  #factBankArea .fact-context-d > summary:focus-visible { outline-offset: -2px; border-radius: var(--r-card); }
+  #factBankArea .fact-context-d[open] > summary { padding-bottom: 6px; }
+  #factBankArea .fact-context-d[open] > summary .chev { transform: rotate(180deg); }
+  #factBankArea .fc-ctx-body { padding: 0 14px 11px; font-size: 12px; line-height: 1.6; color: var(--text); }
 
   @media (max-width: 760px) {
-    #factBankArea .mode-btn { min-width: 100%; }
-    #factBankArea .fact-card, #factBankArea .simple-card { padding-left: 15px; padding-right: 15px; }
-    #factBankArea .pg-footer { padding-left: 15px; padding-right: 15px; }
+    #factBankArea .fact-card { padding-left: 15px; padding-right: 15px; }
+    #factBankArea .fc-source { margin-left: -15px; margin-right: -15px; padding-left: 15px; padding-right: 15px; }
+  }
+  /* Narrow: the rating bars drop under the pills, still two stacked rows, chevron at the end.
+     "Political noteworthiness" makes the gauge 238px wide, so the left column gets too
+     tight below about 820px. */
+  @media (max-width: 820px) {
+    #factBankArea .fc-head { grid-template-columns: minmax(0, 1fr) 18px; row-gap: 11px; }
+    #factBankArea .fc-head-main { grid-column: 1 / -1; }
+    #factBankArea .fc-rate { justify-self: start; }
+  }
+  /* Narrow: the rationale rail becomes a label line above its sentence, and a source header stacks
+     its count and button under the title. */
+  @media (max-width: 640px) {
+    #factBankArea .rd-row { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+    #factBankArea .rd-rail { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+    #factBankArea .g-head { grid-template-columns: minmax(0, 1fr); row-gap: 8px; padding: 11px 15px 10px; }
+    #factBankArea .fc-source { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+    #factBankArea .fc-source .act-btn { justify-self: end; }
+    #factBankArea .g-right { justify-content: space-between; }
   }
   @media (prefers-reduced-motion: reduce) {
-    #factBankArea .cwrap, #factBankArea .details, #factBankArea .kw-panel,
-    #factBankArea .expand-hint .chev, #factBankArea .kw-toggle .chev { transition: none; }
+    #factBankArea .details,
+    #factBankArea .expand-hint .chev { transition: none; }
     .ui-chevron { transition: none; }
   }
 
-  /* Narrow phones: tighten the row so all five nav items share one line */
+  /* Narrow windows and phones: the six tabs are 597px wide, more than the header has below about 650px, and the row used to be held at its full width and
+     ran off both edges. It may now shrink to the header's width and wrap between the groups, and a group stays whole (Research and Policy on the first
+     line, Legislation under them; one group a line at 320px). Below 560px the tabs are also tightened. */
+  @media (max-width: 660px) {
+    .header-nav { flex-shrink: 1; min-width: 0; max-width: 100%; }
+    .header-tabs { row-gap: 8px; justify-content: center; }
+  }
   @media (max-width: 560px) {
     .header-nav-btn { padding: 6px 6px; letter-spacing: 0; }
-    .header-tabs { gap: 0 10px; }
+    .header-tabs { column-gap: 10px; }
     .tab-group-label { font-size: 9px; letter-spacing: 0.06em; }
-  }
-
-  .policy-view .lens-toggle { display: none !important; }
-
-  /* ── Policy filter bar ───────────────────────────────────── */
-
-  .pol-filter-label {
-    font-size: 13px; font-weight: 400; letter-spacing: 0;
-    color: var(--muted); white-space: nowrap;
-    flex-shrink: 0; margin-right: 10px;
-    font-family: 'Public Sans', 'Helvetica Neue', Arial, sans-serif;
   }
 
   /* Disruption chips */
@@ -540,7 +448,7 @@
   .pol-col-title {
     font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
     color: color-mix(in srgb, var(--pol-cat-color, var(--text)) 45%, var(--text));
-    font-family: var(--grot);
+    font-family: var(--sans);
     line-height: 1.3; margin-bottom: 4px;
   }
   .pol-col-desc {
@@ -578,10 +486,12 @@
     border-bottom: 1px solid var(--border);
     background: color-mix(in srgb, var(--cat-color, transparent) 6%, transparent);
   }
+  /* Type sizes on this tab are the site's, not its own: the area title is About's section-heading size (20px bold), the
+     count the header's group-label spec, the tile title the Papers card-header spec, the toggle one weight in both states. */
   .pol-cat-row-title {
     display: flex; align-items: baseline; gap: 9px;
-    font-family: var(--grot);
-    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: var(--sans);
+    font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
     color: var(--headline); line-height: 1.2;
   }
   .pol-cat-row-title::before {
@@ -597,7 +507,7 @@
   .pol-cat-row-count {
     display: inline-block; margin-top: 7px;
     font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--muted); font-variant-numeric: tabular-nums;
   }
   /* Cards flow left→right and wrap; auto-fill columns of equal width keep
@@ -625,8 +535,8 @@
   .pol-cat-card-title {
     flex: 1;
     font-family: 'Public Sans', sans-serif;
-    font-size: 13px; font-weight: 500; line-height: 1.4;
-    color: var(--text);
+    font-size: 15.5px; font-weight: 700; line-height: 1.3;
+    color: var(--headline);
   }
   /* Persistent, faint affordance: darkens toward the category color and
      slides right on hover. Always present — hovering never resizes the card.
@@ -691,9 +601,9 @@
   .pol-item-wrap:hover .pol-item-title { color: var(--accent); }
 
   /* ── Policy Map / Links sub-view toggle ──────────────────────
-     Deliberately its own class, not `.lens-toggle` — the site hides
-     every `.lens-toggle` inside `.policy-view` (lens doesn't apply to
-     the Policy Map), which would also hide this if it shared the class. */
+     Deliberately its own class. It once shared `.lens-toggle` (the
+     research lens control, since removed), and the site hid every
+     `.lens-toggle` inside `.policy-view`, which hid this one too. */
   .pol-subview-toggle {
     display: flex; align-items: center; gap: 2px;
     background: var(--light-beige); border: 1px solid var(--navy);
@@ -701,12 +611,12 @@
     margin: 20px 28px 0;
   }
   .pol-subview-btn {
-    padding: 5px 16px; font-size: 12px; font-weight: 500;
+    padding: 5px 16px; font-size: 12px; font-weight: 600;
     border: none; background: transparent; border-radius: var(--r-ctl);
     cursor: pointer; color: var(--navy); font-family: inherit;
     transition: all 0.15s; white-space: nowrap; letter-spacing: 0.015em;
   }
-  .pol-subview-btn.active { background: var(--navy); color: #fff; font-weight: 600; }
+  .pol-subview-btn.active { background: var(--navy); color: #fff; }
   .pol-subview-btn:hover:not(.active) { color: var(--text); background: color-mix(in srgb, var(--navy) 7%, transparent); }
 
   /* ── Policy Links graph (test-run, hand-rolled SVG force layout) ── */
