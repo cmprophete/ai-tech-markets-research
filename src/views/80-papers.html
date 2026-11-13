@@ -1,15 +1,66 @@
 
-      <!-- What's New: a dated feed of database additions and Policy Map
-           reviews. Rendered inline as a sub-section of the Research tab. -->
-      <div id="changelogArea"></div>
+      <!-- Papers, the Database sub-view: the search-and-filters bar, then the list. The bar is the
+           Fact Bank's (same markup shape, same styles: src/styles/filterbar.css) with this tab's
+           facets: Sort stays in view; Methodology, Category and Region sit behind "More filters". -->
+      <div id="papersArea">
+        <div class="controls" role="region" aria-label="Search and filters">
+          <div class="controls-row">
+            <div class="search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="ppSearch" placeholder="Search papers, authors, findings…" aria-label="Search papers">
+            </div>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppSort">Sort</label>
+              <select id="ppSort" aria-label="Sort papers">
+                <option value="desc" selected>Newest first</option>
+                <option value="asc">Oldest first</option>
+              </select>
+            </span>
+            <button class="more-toggle" id="ppMoreToggle" aria-expanded="false" aria-controls="ppMorePanel">
+              <span class="more-label">More filters</span> <span class="more-count" id="ppMoreCount" hidden></span> <span class="ui-chevron chev" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="more-panel" id="ppMorePanel">
+            <div>
+              <div class="more-body">
+                <div class="controls-row">
+                  <span class="ctl-pair">
+                    <label class="ctl-label" for="ppCategory">Category</label>
+                    <select id="ppCategory" aria-label="Filter by category">
+                      <option value="all">All categories</option>
+                    </select>
+                  </span>
+                  <span class="ctl-pair">
+                    <label class="ctl-label" for="ppMethod">Methodology</label>
+                    <select id="ppMethod" aria-label="Filter by methodology">
+                      <option value="all">All types</option>
+                    </select>
+                  </span>
+                  <span class="ctl-pair">
+                    <label class="ctl-label" for="ppRegion">Region</label>
+                    <select id="ppRegion" aria-label="Filter by region">
+                      <option value="all">All regions</option>
+                    </select>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="result-row">
+            <div class="result-line" id="ppResultLine" aria-live="polite"></div>
+            <button class="clear-filters" id="ppClear" hidden>Clear filters</button>
+          </div>
+        </div>
 
-      <div class="cards-grid" id="cardsGrid"></div>
-      <div class="empty-state" id="emptyState">
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <h3>No results</h3>
-        <p>Try adjusting your search or clearing filters.</p>
-        <button id="emptyStateClear" style="display:none;margin-top:12px;background:var(--surface2);border:1px solid var(--border);color:var(--accent);border-radius: var(--r-ctl);padding:7px 16px;font-size: 13px;cursor:pointer;font-family:inherit">Clear all filters</button>
+        <div class="cards-grid" id="cardsGrid" tabindex="-1"></div>
+        <nav class="pager" id="ppPager" hidden></nav>
+        <div class="empty-state" id="emptyState">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <h3>No results</h3>
+          <p>Try adjusting your search or clearing filters.</p>
+          <button id="emptyStateClear" style="display:none;margin-top:12px;background:var(--surface2);border:1px solid var(--border);color:var(--accent);border-radius: var(--r-ctl);padding:7px 16px;font-size: 13px;cursor:pointer;font-family:inherit">Clear all filters</button>
+        </div>
       </div>
     </div>
