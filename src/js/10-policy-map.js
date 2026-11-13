@@ -10,10 +10,14 @@
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const curated = (pol.paperIds || []).map(id => paperMap[id]).filter(Boolean);
     const curatedIds = new Set(curated.map(r => r.id));
+    // A paper can be a curated POLICY_SOURCES entry (copied out of the tracker, so that a Sheet archive cannot strip a
+    // card's citation) and still be a live tracker entry, until the sync archives it. Match on its link as well as its
+    // id, or it is listed a second time under "related".
+    const curatedUrls = new Set(curated.map(r => r.sourceUrl).filter(Boolean));
     const cats = POL_TO_RESEARCH_CATS[pol.category] || [];
     const related = cats.length
       ? RESEARCH_DATA
-          .filter(r => cats.includes(r.category) && !curatedIds.has(r.id))
+          .filter(r => cats.includes(r.category) && !curatedIds.has(r.id) && !curatedUrls.has(r.sourceUrl))
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .slice(0, 16)
       : [];
