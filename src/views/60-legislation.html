@@ -1,0 +1,99 @@
+      <!-- ── LEGISLATION ── (the Government action group's first tab, view key and route "legislation") A map of the states and, under it, two tables. src/js/60-legislation.js builds everything inside
+           #legislationArea from data/us-map.js (the outlines) and data/legislation-data.js (the bills, which are empty until
+           there is a source for them, and the midterm results from the Associated Press). The masthead above is
+           TAB_DESCS.legislation in src/js/70-render.js. The states carry no letters of their own (pointing at one names it in
+           the panel); #legTiles holds one button for each state too small to point at, which the script adds. The bills table is paged
+           (#legBillsPager), so is the results table (#legResultsPager), and the bills arrive in a file of their own the first time the tab opens (data/legislation-bills.js). #legFilters is
+           the search-and-topics bar under the toolbar. -->
+      <div id="legislationArea">
+        <!-- The toolbar and the filter bar stick together at the top of the window (src/styles/legislation.css, .leg-sticky): the layers, the office toggle, the Show menu and Clear, then the
+             search and filters. -->
+        <div class="leg-sticky" id="legSticky">
+          <div class="leg-controls">
+            <div class="pol-subview-toggle" role="group" aria-label="View">
+              <button class="pol-subview-btn" type="button" id="legLayerResults" data-layer="results" aria-pressed="false">2026 Midterm results</button>
+              <button class="pol-subview-btn" type="button" id="legLayerBills" data-layer="bills" aria-pressed="false">Bills</button>
+            </div>
+            <div class="pol-subview-toggle leg-office-toggle" id="legOfficeToggle" role="group" aria-label="Race shown on the map">
+              <button class="pol-subview-btn" type="button" id="legOfficeSenate" data-office="senate" aria-pressed="false">Senate</button>
+              <button class="pol-subview-btn" type="button" id="legOfficeHouse" data-office="house" aria-pressed="false">House</button>
+              <button class="pol-subview-btn" type="button" id="legOfficeGovernor" data-office="governor" aria-pressed="false">Governor</button>
+            </div>
+            <div class="leg-select-pair" id="legShowPair">
+              <label class="leg-ctl-label" for="legStateSelect">Show</label>
+              <select id="legStateSelect" class="leg-select"><option value="">All jurisdictions</option></select>
+            </div>
+            <button class="leg-clear" type="button" id="legClear" hidden>Clear</button>
+          </div>
+          <!-- The filter bar: the shared .controls bar (src/styles/filterbar.css, the same markup shape as Papers and the Fact Bank) with this tab's facets.
+               Search and Sort stay in view; behind "More filters" are Status, the checkbox that adds the bills that only mention AI, and the topic chips.
+               All of it but Sort narrows (or, for the checkbox, widens) everything the page counts (src/js/60-legislation.js, "Search and topics"); the
+               topics themselves are LEGISLATION_TOPICS in data/legislation-data.js, and the chips are drawn into #legTopicPills. Congress has no button: it
+               is the Federal entry in the Show menu. -->
+          <div class="controls" id="legFilters" role="region" aria-label="Search and filter the legislation">
+            <div class="controls-row">
+              <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="legSearch" placeholder="Search bills, states, topics…" aria-label="Search the legislation" autocomplete="off">
+              </div>
+              <span class="ctl-pair">
+                <label class="ctl-label" for="legSort">Sort</label>
+                <select id="legSort" aria-label="Sort the legislation">
+                  <option value="recent" selected>Most recent action</option>
+                  <option value="oldest">Oldest action</option>
+                  <option value="jurisdiction">Jurisdiction</option>
+                </select>
+              </span>
+              <button class="more-toggle" id="legMoreToggle" type="button" aria-expanded="false" aria-controls="legMorePanel">
+                <span class="more-label">More filters</span> <span class="more-count" id="legMoreCount" hidden></span> <span class="ui-chevron chev" aria-hidden="true"></span>
+              </button>
+            </div>
+            <div class="more-panel" id="legMorePanel">
+              <div>
+                <div class="more-body">
+                  <div class="controls-row">
+                    <span class="ctl-pair">
+                      <label class="ctl-label" for="legStatus">Status</label>
+                      <select id="legStatus" aria-label="Filter by status"><option value="">All statuses</option></select>
+                    </span>
+                    <label class="ctl-check" id="legPassingWrap" hidden>
+                      <input type="checkbox" id="legPassing"> Include bills that only mention AI <span class="leg-muted-count" id="legPassingCount"></span>
+                    </label>
+                  </div>
+                  <div class="pill-row" id="legTopicPills" role="group" aria-label="Filter by topic"></div>
+                  <p class="leg-topic-note" id="legTopicNote"></p>
+                </div>
+              </div>
+            </div>
+            <div class="result-row">
+              <div class="result-line" id="legResultLine" aria-live="polite"></div>
+              <button class="clear-filters" id="legFilterClear" type="button" hidden>Clear filters</button>
+            </div>
+          </div>
+        </div>
+        <div class="leg-stage" id="legStage">
+          <div class="leg-map-wrap">
+            <div class="leg-map-box" id="legMapBox">
+              <svg id="legMap" class="leg-map" viewBox="0 0 975 610" role="img" aria-label="Map of the United States. Choose a state, or Federal, in the Show menu; the panel and both tables follow it."></svg>
+              <div class="leg-tiles" id="legTiles" role="group" aria-labelledby="legTilesLabel"><span class="leg-tiles-label" id="legTilesLabel">Small states</span></div>
+            </div>
+            <div class="leg-legend" id="legLegend"></div>
+            <p class="leg-map-source" id="legMapSource"></p>
+          </div>
+          <div class="leg-panel-slot"><aside class="leg-panel" id="legPanel" aria-label="Selected state"></aside></div>
+        </div>
+        <section class="leg-section" id="legBillsSection" aria-label="Bills">
+          <h2 class="leg-section-title" id="legBillsTitle"><span class="leg-scope leg-scope--title" id="legBillsScope"></span></h2>
+          <div class="leg-stats" id="legBillsStats" hidden></div>
+          <div class="leg-table-wrap" id="legBillsTable" tabindex="-1"></div>
+          <nav class="pager" id="legBillsPager" hidden></nav>
+          <p class="leg-source" id="legBillsNote"></p>
+        </section>
+        <section class="leg-section" id="legResultsSection" aria-labelledby="legResultsTitle">
+          <h2 class="leg-section-title" id="legResultsTitle">2026 Midterm results <span class="leg-scope" id="legResultsScope"></span></h2>
+          <div class="leg-table-wrap" id="legResultsTable" tabindex="-1"></div>
+          <nav class="pager" id="legResultsPager" hidden></nav>
+          <p class="leg-source" id="legSource"></p>
+        </section>
+        <div class="sr-only" id="legAnnounce" aria-live="polite"></div>
+      </div>
