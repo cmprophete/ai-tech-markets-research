@@ -27,7 +27,15 @@ const SNAP = path.join(__dirname, 'snapshots', 'routes.json');
 /* Routes worth pinning: one per view, every tracker sub-tab, the chain, both
    legacy aliases, a parameterised route, and two that should not match. */
 const ROUTES = [
-  '', '#about', '#research', '#changelog', '#fact-bank', '#policy', '#solutions',
+  '', '#about', '#papers',
+  '#sources',     // retired name of #papers (the address bar is rewritten)
+  '#research',    // the older retired name of #papers (rewritten too)
+  '#changelog',   // retired: the What's New feed was removed (the address bar is rewritten to #papers)
+  '#fact-bank', '#policy',
+  '#agenda',       // Agenda, a placeholder tab, first in the Policy group
+  '#legislation',  // Legislation, the first tab of the Government action nav group
+  '#enforcement',  // Enforcement, a placeholder tab, the first of the Government action nav group
+  '#solutions',   // retired tab, now an alias of #policy (the address bar is rewritten)
   // Removed routes, pinned so their fall-through to About cannot regress
   // silently. The Economy tab (Data Tracker + Job Displacement) and its routes
   // were removed 2026-08; #adoption/#themes/#theme predate it (docs/adr/0005).
@@ -36,7 +44,7 @@ const ROUTES = [
   '#tracker/nonsense', '#nonsense',
 ];
 
-const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy', 'viewSolutions'];
+const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy'];
 
 const txt = el => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : null);
 
