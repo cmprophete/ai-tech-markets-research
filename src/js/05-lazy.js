@@ -21,7 +21,8 @@
      riskier change than the bytes justify. Deferred here are the two payloads
      whose consumers already had a single, late entry point:
 
-       fact-bank-data.js   880 KB   built on first open of the Fact Bank view
+       fact-bank-data.js     569 KB  built on first open of the Fact Bank view
+       fact-bank-context.js  220 KB  the facts' surrounding paragraphs, loaded on the first card opened
        us-albers-data.js   107 KB   built on first open of the BTOS Where panel
 
      That is 987 KB, 42% of the total, off the critical path. */
