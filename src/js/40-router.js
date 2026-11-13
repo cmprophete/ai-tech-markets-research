@@ -2,9 +2,13 @@
      One place that knows how location.hash and app state map onto each other.
 
      Routes
-       #about #research #changelog #fact-bank #policy #solutions
+       #about #papers #fact-bank #policy #legislation
                                                ... the flat views, in VIEWS below
-       #policy/<policy-id> #entry/<entry-id>   ... parameterised
+                                                   (#legislation is a placeholder tab)
+                                                   (#sources, #research and #changelog are retired
+                                                   aliases of #papers, and #solutions of #policy)
+       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id>
+                                               ... parameterised
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
      routes (Data Tracker + Job Displacement removed 2026-08).
@@ -28,15 +32,29 @@
        guard  false means the route does not match (falls through to default) */
   const VIEWS = {
     about:              { view: 'about' },
-    research:           { view: 'cards',     enter: () => setResearchSubview('database') },
-    changelog:          { view: 'cards',     enter: () => setResearchSubview('changelog') },
-    'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled },
+    papers:             { view: 'cards', enter: clearPapersLink },
+    // Retired names of the same tab: it was Papers, then briefly Sources (that clashed with
+    // the "source" on every fact card), then Papers again; #changelog was its What's New feed,
+    // removed because the list sorts newest first. Kept so old links land on a real view; the
+    // address bar is rewritten to #papers.
+    sources:            { view: 'cards',     alias: true },
+    research:           { view: 'cards',     alias: true },
+    changelog:          { view: 'cards',     alias: true },
+    'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled, enter: clearFactBankLink },
     policy:             { view: 'policy' },
-    solutions:          { view: 'solutions' },
+    // A placeholder tab, first in the Policy group of the nav; nothing is behind it yet.
+    agenda:             { view: 'agenda' },
+    // Retired tab, merged into Policy. Kept so old links land on a real view;
+    // `alias` has applyHashRoute rewrite the address bar to the canonical route.
+    solutions:          { view: 'policy', alias: true },
+    // The Government action group's tabs (a nav group of its own since 2026-11-12, called Legislation until that evening; before it Legislation was second in the
+    // Policy group). `legislation` is the group's second tab, Legislation (alphabetical, after Enforcement), and keeps the route it always had.
+    legislation:        { view: 'legislation' },
+    // A placeholder tab, first in the Government action group; nothing is behind it yet.
+    enforcement:        { view: 'enforcement' },
   };
-  // Reverse map, for currentRoute(). First key wins, so `research` beats
-  // `changelog` as the generic name for the cards view; the sub-view is
-  // resolved explicitly below.
+  // Reverse map, for currentRoute(). First key wins, so `papers` is the canonical name of the
+  // cards view (the retired aliases after it never are).
   const ROUTE_FOR_VIEW = {};
   for (const [route, cfg] of Object.entries(VIEWS)) {
     if (!(cfg.view in ROUTE_FOR_VIEW)) ROUTE_FOR_VIEW[cfg.view] = route;
@@ -52,7 +70,6 @@
 
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
-    if (activeView === 'cards') return researchSubview === 'changelog' ? 'changelog' : 'research';
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 
@@ -70,6 +87,9 @@
         if (cfg.guard && !cfg.guard()) return false;
         if (cfg.enter) cfg.enter();
         setView(cfg.view);
+        // A retired route: setHash is suppressed while a route is being applied,
+        // so write the canonical one directly, or a copied link keeps the dead name.
+        if (cfg.alias) history.replaceState(null, '', '#' + ROUTE_FOR_VIEW[cfg.view]);
         return true;
       }
 
@@ -79,23 +99,30 @@
         openPolModalById(tail);
         return true;
       }
+      // A source's facts. The Fact Bank searches paper titles, so the title as a
+      // query narrows it to that source. The Fact Bank builds lazily: the query is
+      // parked in factBankQuery for its builder, and applied now if it is ready.
+      if (head === 'fact-bank' && tail && factBankEnabled && RESEARCH_DATA.some(r => r.id === +tail)) {
+        factBankQuery = RESEARCH_DATA.find(r => r.id === +tail).title;
+        setView('fact-bank');
+        applyFactBankQuery();
+        return true;
+      }
+      // A paper, from a fact's "View Summary". It works as a source's facts link does for the Fact Bank above: the
+      // paper's title goes into the Papers search box, so the list is narrowed to that paper, and its row is opened.
+      // Nothing is scrolled to or highlighted, because there is nothing to hunt for. clearPapersLink undoes it when
+      // Papers is opened any other way.
       if (head === 'entry' && tail && RESEARCH_DATA.some(r => r.id === +tail)) {
-        const entry = RESEARCH_DATA.find(r => r.id === +tail);
-        if (activeLens === 'economist' && !isEconRelevant(entry)) setLens('general');
-        activeCat = 'all'; activeStatus = 'all'; activeGeo = 'all'; activeEvidence = 'all';
-        searchQuery = '';
-        const si = document.getElementById('searchInput'); if (si) si.value = '';
-        setResearchSubview('database');
+        searchQuery = papersLinkQuery = RESEARCH_DATA.find(r => r.id === +tail).title;
+        resetPaperFilters();   // the three filters back to All, so nothing hides the paper; it also syncs the search box
+        papersPage = 1;
         setView('cards');
         // setTimeout rather than requestAnimationFrame: rAF never fires in a
         // background tab, and shared links routinely open in one.
         setTimeout(() => {
-          const el = document.querySelector(`.card[data-entry-id="${+tail}"]`);
-          if (!el) return;
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('deep-link-flash');
-          setTimeout(() => el.classList.add('fading'), 1600);
-          setTimeout(() => el.classList.remove('deep-link-flash', 'fading'), 3000);
+          const el = document.querySelector(`.src-row[data-entry-id="${+tail}"]`);
+          if (el) setSourceRowOpen(el, true);   // the link is about this source, so show its body
+          showListTop(document.getElementById('cardsGrid'));
         }, 60);
         return true;
       }
