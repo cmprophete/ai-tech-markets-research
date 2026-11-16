@@ -2,9 +2,9 @@
    loads at runtime, so a change needs only a reload, not a build.
 
    LEGISLATION_DATA is one row per bill. It starts empty. The bills themselves are in data/legislation-bills.js, which tools/legislation.py
-   generates from the Brennan Center's Artificial Intelligence Legislation Tracker (the federal list), each federal bill's official record at
-   GovInfo, and Open States (state bills, found by full-text searches: tools/openstates_fetch.py says for which phrases), and which the tab
-   fetches the first time it opens, adding its rows to this list. Nothing else is
+   generates from GovInfo's bill-status data (the federal bills: tools/congress_fetch.py scans it for AI) and Open States (state bills, found
+   by full-text searches: tools/openstates_fetch.py says for which phrases), and which the tab fetches the first time it opens, adding its
+   rows to this list. Nothing else is
    listed rather than guessed: a bill from any other source goes in by hand, as a row pushed onto this list from a file loaded after this
    one. A row:
 
@@ -63,8 +63,8 @@ const LEGISLATION_STAGES = {
 
 /* TOPICS. The topic chips under "More filters" and the "Topics:" line in the bills table come from this list and from nothing else. A bill's
    topics are worked out in the page, each time it loads, by matching these words against the bill's own text: they are our reading, not
-   any legislature's, the Brennan Center's or anyone else's list. A topic is assigned to a bill when one of its words is in the bill's
-   title, or when two different words of it are in the bill's summary, the legislature's subject terms or the Brennan Center's labels
+   any legislature's or anyone else's list. A topic is assigned to a bill when one of its words is in the bill's
+   title, or when two different words of it are in the bill's summary or in the subject terms the legislature (or, for a federal bill, the Congressional Research Service) assigned
    (so a stray word in a long summary does not count; two words that overlap, such as 'health' and 'mental health' in the phrase "mental
    health", count once). A bill can have several topics; one that matches none is found under "No topic".
    Matching ignores capitals and starts at the beginning of a word, so 'employ' finds employer and employment; end a word with $ to
