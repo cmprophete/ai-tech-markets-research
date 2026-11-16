@@ -27,12 +27,16 @@ Which file owns what, and how the `@@include@@` format works:
 
 ## Data
 
-The research list is curated in a spreadsheet and generated into the site:
+The research list is curated in a Google Sheet, and a daily GitHub Action is its
+only writer into the repo: it saves a snapshot to `content/research.csv` and
+regenerates the `RESEARCH_DATA` array in `data/tracker-data.js`. Change papers in
+the Sheet, and do not edit or commit those two from a branch (the one-writer rule,
+in [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 
 ```sh
-python3 tools/research.py build                 # content/research.csv -> data/tracker-data.js
-python3 tools/research.py check                 # validate; write nothing
-python3 tools/research.py build --sheet <url>   # pull a published Google Sheet first
+python3 tools/research.py check                 # validate; write nothing (safe anywhere)
+python3 tools/research.py build                 # content/research.csv -> data/tracker-data.js (scratch copy only)
+python3 tools/research.py build --sheet <url>   # what the sync runs (scratch copy only)
 ```
 
 See **[`content/README.md`](content/README.md)**. Themes and the policy map live
@@ -51,7 +55,7 @@ node tests/routes.js         # snapshot of every route
 
 ```
 src/            build inputs: head, styles/, views/, js/, the template
-content/        research.csv -- the curated source for the research list
+content/        research.csv -- the sync's snapshot of the research Sheet (never hand-edited)
 data/           the published payloads (research, fact bank, themes, policies)
 assets/         images loaded directly by the page
 tools/          research.py (sheet -> data) and helper scripts
