@@ -28,8 +28,8 @@ Do not hand-edit the `RESEARCH_DATA` array; the next build overwrites it. See
 [`content/README.md`](content/README.md). The rest of `tracker-data.js`
 (`POLICY_DATA`, `AGENDA_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
 (with `data/fact-bank-context.js`) are still hand-maintained. Two more data files are generated and never hand-edited: `data/us-map.js` by
-`tools/us_map.py`, and the Legislation tab's bills, `data/legislation-bills.js`, by `tools/legislation.py`: the federal list from the Brennan
-Center's tracker, each federal bill's record from GovInfo, and the state bills from an Open States search of the legislatures' own records
+`tools/us_map.py`, and the Legislation tab's bills, `data/legislation-bills.js`, by `tools/legislation.py`: the federal bills from our own scan of GovInfo's
+bill-status data (`tools/congress_fetch.py`, no key), and the state bills from an Open States search of the legislatures' own records
 (`tools/openstates_fetch.py`; it needs a free key in `~/.openstates_key`, which never goes in the repo or in chat). For the states Open States has
 no summary for (Illinois, New Jersey) each legislature's own summary is read from its site by `tools/state_summaries.py` into
 `content/legislation-state-summaries.json`, which is likewise generated and never hand-edited. See
