@@ -14,7 +14,7 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 
 | I want to change | Edit | Then |
 |---|---|---|
-| **a research entry** | `content/research.csv` | `python3 tools/research.py build` |
+| **a research entry (add, edit, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)) | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
 | **a theme / policy** | `data/tracker-data.js` (by hand) | reload; no build step |
 | **a midterm result or a stage (Legislation tab)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
 | **an enforcement action or a key case (for the Enforcement tab, a placeholder)** | `data/legislation-actions.js` (by hand; the row format and the rules are at the top of the file) | reload; no build step |
@@ -28,11 +28,34 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 | **app behaviour** | `src/js/<area>.js` | `python3 build.py` |
 
 `data/*.js` load at runtime, so a data change needs only a reload, not a
-rebuild. **Do not hand-edit the `RESEARCH_DATA` array** in `data/tracker-data.js`
-— it is generated from `content/research.csv`; see
-[`content/README.md`](content/README.md). `POLICY_DATA`, `AGENDA_DATA`
+rebuild. **Do not hand-edit the `RESEARCH_DATA` array** in `data/tracker-data.js`,
+or `content/research.csv`: the daily sync writes both from the Google Sheet (see
+"One writer per file" below and [`content/README.md`](content/README.md)). `POLICY_DATA`, `AGENDA_DATA`
 and `CATEGORIES` in that file are hand-maintained, and so are `data/fact-bank-data.js`,
 `data/fact-bank-context.js`, `data/paper-summaries.js` and `data/legislation-data.js` (`data/us-map.js` and `data/legislation-bills.js`, by contrast, are generated, by `tools/us_map.py` and `tools/legislation.py`).
+
+## One writer per file
+
+Some files have exactly one thing that is allowed to change them, and everyone
+else only reads them. The reason is Git: it combines changes made in different
+places without trouble, and gets stuck only when two writers change the same
+lines in two copies. That is how merging `main` into a branch conflicted in both
+research files on 2026-11-16: the daily sync and the branch had each rewritten
+the same paper rows.
+
+| What | Its one writer | For everyone else |
+|---|---|---|
+| `content/research.csv` and the `RESEARCH_DATA` array in `data/tracker-data.js` | the daily sync from the Google Sheet (`.github/workflows/research-sync.yml`), which commits to `main` | change papers in the Sheet. Never commit these two from a branch. If they conflict in a merge, take `main`'s copy of the research list |
+| the wording of a policy card (`POLICY_DATA`) | the policy author; Claude only places their text, verbatim ([`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | do not reword it |
+
+To try `tools/research.py` without becoming a second writer, run `check` (it
+writes nothing) or run `build` in a scratch copy of the repo (for example
+`rsync -a --exclude .git ./ /tmp/research-scratch/`), never in the working tree
+you commit from. If GitHub Desktop lists `content/research.csv` as changed, or
+lists `data/tracker-data.js` with thousands of changed lines when you only edited
+a policy card, do not commit it. The other generated files follow the same idea:
+edit the source and rerun the tool (`index.html` from `src/`, the Legislation
+bills and map from their tools).
 
 ## src/ layout
 
