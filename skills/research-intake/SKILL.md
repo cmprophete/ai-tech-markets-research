@@ -13,12 +13,13 @@ This skill orchestrates. It does **not** restate the fact-extraction rubric: ste
 
 The research list has one writer: the daily sync from the Google Sheet (`.github/workflows/research-sync.yml`). It alone writes `content/research.csv` and the `RESEARCH_DATA` array in `data/tracker-data.js`. So do **not** append to `RESEARCH_DATA`, do not edit `content/research.csv`, and do not run `tools/research.py build` in the working tree: a row added only in the repo is wiped at the next sync, and a second writer is what makes merges conflict (see "One writer per file" in `CONTRIBUTING.md`).
 
-Add one row to the research tab of the Sheet, by header name (the Sheet's column order is not the CSV's), through the Google Sheets connector when it is connected; otherwise hand the user the row to paste. The fields, as in `content/README.md`:
+Add one row to the research tab of the Sheet, by header name (the Sheet's column order is not the CSV's), through the Google Sheets connector when it is connected; otherwise hand the user the row to paste. **Write it as `status` = `under review`: the user approves it in the Sheet, and only an approved row reaches the site.** (Until the Sheet has a `status` column, a row with a blank `archived` is published at the next sync, so keep a draft off the site by putting "pending" in `archived`; this note goes when the Sheet has moved over, see `content/README.md`.) The fields, as in `content/README.md`:
 
 ```
 id          an integer above every id already in use
 date        "YYYY-MM-DD", the source's publication date
 added       "<today>", the intake date
+status      under review   (the user sets it to approved; archived retires a row, with the reason in note)
 title       "..."
 source      "Author(s) — Publishing institution"
 sourceUrl   "https://..."
@@ -37,7 +38,7 @@ Rules (from `RECOMMENDATIONS.md`, intake conventions):
 - Pick an explicit integer `id` above every id already in use.
 - If the entry belongs to a theme's or a policy's curated basis, that is a separate editorial decision — flag it, do not wire it silently (theme `papers` / policy `paperIds` links change synthesis meaning).
 
-The paper reaches `RESEARCH_DATA` at the next sync (about 13:00 UTC daily, or when the workflow is run by hand from the Actions tab).
+The paper reaches `RESEARCH_DATA` at the next sync (about 13:00 UTC daily, or when the workflow is run by hand from the Actions tab) once its `status` is `approved`. An under-review row may be a bare link or a draft; the sync only counts it.
 
 ## Step 2 — Extract the entry's facts
 
@@ -45,7 +46,7 @@ Run the `fact-bank` skill on the entry you just added, following it exactly (ver
 
 The facts can be written before the sync has copied the paper into `RESEARCH_DATA`: the Fact Bank view skips a fact whose paper is not there yet (`src/js/80-fact-bank.js`), so they appear when the paper does.
 
-- If the source is **fully readable**: extract 1-3 facts into `data/fact-bank-data.js` (`FACT_BANK`), keyed to this entry's `paperId`. If it is a genuine wellspring, cap at 3 and set `foundational`.
+- If the source is **fully readable**: extract 1-3 facts into `data/fact-bank-data.js` (`FACT_BANK`), keyed to this entry's `paperId`. If it is a genuine wellspring, cap at 3 and set `foundational` on the facts. (That is the Fact Bank's flag. It is not the Sheet's `foundational` column, which marks a paper as classic background reading and is the user's call.)
 - If the source is **not fully readable** (paywall, bot-blocked, dead link, PDF fetch failed): do **not** extract from an abstract. Append the entry to `PENDING_SOURCES.md` (paper id, title, clickable link, access problem), and stop there for this entry. A maintainer supplies a local copy later.
 - If the source is pure theory or commentary with **no concrete number-bearing findings**: record zero facts and say so. Do not manufacture one.
 
