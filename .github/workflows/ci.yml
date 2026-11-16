@@ -1,0 +1,76 @@
+name: Checks
+
+# Runs on every push to a branch, and on demand (Actions tab > Checks > "Run workflow").
+# This is the safety net behind the two local guards in .githooks/pre-commit, which only
+# protect a machine that ran `git config core.hooksPath .githooks`. When a run goes red, the
+# name of the failing step says what broke:
+#
+#   Page matches src/         index.html was not rebuilt after a change in src/, or was edited
+#                             by hand. Run `python3 build.py` and commit index.html with the change.
+#   Research data validates   content/research.csv and the data files disagree, or a row is incomplete.
+#   Research tool self-test   tools/research.py no longer round-trips the CSV or breaks a status rule.
+#   Python files compile      a file in build.py or tools/ has a syntax error.
+#   No file over 2 MB         large derived data does not belong in this repo (see the pre-commit hook).
+#   Route tests               the jsdom suites in tests/; see "Tests" in CONTRIBUTING.md.
+#   Interaction tests
+#
+# Not covered: the nightly research sync (research-sync.yml) pushes with the built-in token, and
+# GitHub does not start other workflows for a push made that way. The sync checks the Sheet itself
+# before it writes anything; this workflow checks every other change.
+#
+# It only reads the repo (see permissions) and never commits.
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}            # manual "Run workflow" button
+
+permissions:
+  contents: read
+
+concurrency:                       # a newer push to the same branch replaces a run still going
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"   # the same as the nightly sync
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"       # jsdom 31 needs 22.22.2 or later, or 24.15.0 or later
+
+      - name: Page matches src/
+        run: python3 build.py --check
+
+      - name: Research data validates
+        run: python3 tools/research.py check
+
+      - name: Research tool self-test
+        run: python3 tools/research.py selftest
+
+      - name: Python files compile
+        run: python3 -m py_compile build.py tools/*.py
+
+      - name: No file over 2 MB
+        run: |
+          git ls-files -z | xargs -0 wc -c | awk '$2 != "total" && $1 > 2097152 { print "too big:", $0; bad = 1 } END { exit bad }'
+
+      - name: Install the test dependency (jsdom)
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Route tests
+        run: node tests/routes.js
+
+      - name: Interaction tests
+        run: node tests/interactions.js
