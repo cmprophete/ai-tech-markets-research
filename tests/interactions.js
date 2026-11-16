@@ -1343,7 +1343,9 @@ const legislationLoadTests = async () => {
     const fire = (el, type) => el.dispatchEvent(new sw.Event(type, { bubbles: true }));
     const open = row => { const tg = row.querySelector('.src-toggle'); if (tg.getAttribute('aria-expanded') !== 'true') tg.click(); return row; };
     const box = sd.getElementById('ppSearch');
-    const research = sw.eval('RESEARCH_DATA'), pilotIds = Object.keys(sw.eval('PAPER_SUMMARIES'));
+    const research = sw.eval('RESEARCH_DATA');
+    // A summary whose paper is archived is never shown (nothing attaches it), so there is no row to read for it
+    const pilotIds = Object.keys(sw.eval('PAPER_SUMMARIES')).filter(id => research.some(r => String(r.id) === id));
     const kids = row => [...row.querySelector('.src-body').children].map(c => c.className.split(' ')[0]).join();
     const facts = row => ({ layout: kids(row), belowLead: !!row.querySelector('.src-text > .src-finding + .src-chips'), labels: [...row.querySelectorAll('.src-chips .src-chip')].map(c => c.dataset.kind).join(), facts: row.querySelectorAll('.src-chips .src-chip').length, published: [...row.querySelectorAll('.src-chips .src-chip')].some(c => c.dataset.kind === 'Published'), buttons: [...row.querySelectorAll('.src-actions .cite-act')].map(b => b.textContent.trim()).join(' | '), side: !!row.querySelector('.src-side'), detail: !!row.querySelector('.src-detail') });
     const read = async id => {
@@ -1358,11 +1360,12 @@ const legislationLoadTests = async () => {
     box.value = ''; fire(box, 'input'); await wait(300);
     const plain = open(sd.querySelector('.src-row:not([data-summary])'));
     const plainId = plain.dataset.entryId, plainBullet = plain.querySelector('.src-takeaways li').textContent.trim().toLowerCase().slice(0, 40);
-    ok('some papers carry a summary (the pilot) and the rest do not', pilot.length > 0 && pilot.length < 30 && pilot.every(p => p.marked) && !!plain, 'pilot rows: ' + pilot.length);
+    ok('some papers carry a summary and the rest do not', pilot.length > 0 && pilot.length < research.length && pilot.every(p => p.marked) && !!plain, 'summarised rows: ' + pilot.length);
     ok('an open summary row shows a lede and a body paragraph, and no bullets',
        pilot.every(p => p.lede && p.lede.length > 20 && p.hasPara && !p.bullets));
+    // the note in parentheses can hold parentheses of its own, so it is matched up to the last one
     ok('every summary says where its text came from and whether it was reviewed',
-       pilot.every(p => /^Summary written from the (full text|abstract only)( \([^)]+\))?\. (Draft, not yet reviewed|Reviewed )/.test(p.basis)));
+       pilot.every(p => /^Summary written from the (full text|abstract only)( \(.+\))?\. (Draft, not yet reviewed|Reviewed )/.test(p.basis)));
     ok('a "Take note" paragraph, when there is one, is labelled and is a single paragraph', pilot.every(p => p.takeOk));
     ok('a summary written from the abstract only has no note', pilot.filter(p => /abstract only/.test(p.basis)).every(p => !p.hasTake));
     ok('a paper without a summary keeps its key finding and bullets', !!plain.querySelector('.src-finding') && !plain.querySelector('.src-lede') && !!plain.querySelector('.src-takeaways li'));
@@ -1384,9 +1387,21 @@ const legislationLoadTests = async () => {
     const hits2 = await find(plainBullet);
     ok('searching a phrase from a bullet still finds a paper that has no summary', hits2.includes(plainId), hits2.length + ' hits');
     box.value = ''; fire(box, 'input'); await wait(300);
-    ok('the pilot summaries pass the console validator', pg.warns.filter(m => /summary \d+:/.test(m)).length === 0, pg.warns.filter(m => /summary \d+:/.test(m))[0]);
+    ok('the summaries pass the console validator', pg.warns.filter(m => /summary \d+:/.test(m)).length === 0, pg.warns.filter(m => /summary \d+:/.test(m))[0]);
     const own = pg.errors.filter(e => !/data validation/.test(e));
     ok('no console errors with summaries on the page', own.length === 0, own[0]);
+  }
+  /* ── the console validator ────────────────────────────────────────────────
+     A reference to a paper that is not published (archived, or under review, in the Sheet) is left out of
+     the page on purpose, so the validator reports it once at info level and raises no error. A mistake in
+     the data still raises the error. */
+  {
+    const pg = load('index.html', '#about');
+    ok('references to unpublished papers are one info line, not an error',
+       !pg.errors.some(e => /data validation/.test(e)) && pg.infos.filter(m => /not published/.test(m)).length <= 1, pg.errors[0] || pg.infos[0]);
+    // break the data on purpose: point every policy cross-reference at a policy that does not exist
+    const bad = load('index.html', '#about', { transform: html => html.replace(/\{\{pol:[a-z0-9-]+\|/g, '{{pol:zz-no-such-policy|') });
+    ok('a real mistake in the data still raises the console error', bad.errors.some(e => /data validation: \d+ problem/.test(e)), bad.errors[0]);
   }
   ok('Fact Bank tab survives the lazy load', !!d.getElementById('viewFactBank'));
   ok('no console errors across the lazy paths', errors.length === 0, errors[0]);
