@@ -14,7 +14,7 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 
 | I want to change | Edit | Then |
 |---|---|---|
-| **a research entry (add, edit, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)) | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
+| **a research entry (add, edit, approve, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
 | **a theme / policy** | `data/tracker-data.js` (by hand) | reload; no build step |
 | **a midterm result or a stage (Legislation tab)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
 | **an enforcement action or a key case (for the Enforcement tab, a placeholder)** | `data/legislation-actions.js` (by hand; the row format and the rules are at the top of the file) | reload; no build step |
