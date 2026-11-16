@@ -44,7 +44,9 @@ const ROUTES = [
   '#tracker/nonsense', '#nonsense',
 ];
 
-const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy'];
+// Every nav button, in the header's order of ids: without Agenda, Enforcement and Legislation here the
+// snapshot could not say which tab reads as current on their routes.
+const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy', 'viewAgenda', 'viewEnforcement', 'viewLegislation'];
 
 const txt = el => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : null);
 
