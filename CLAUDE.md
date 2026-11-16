@@ -25,8 +25,9 @@ python3 tools/research.py check                 # validate the sheet, write noth
 python3 tools/research.py build [--sheet <url>] # what the sync runs: only in a scratch copy of the repo
 ```
 
-So **a branch never commits those two files.** Add, edit and archive papers in the
-Sheet, never in the repo. Do not hand-edit `RESEARCH_DATA` or `content/research.csv`,
+So **a branch never commits those two files.** Add, edit, approve and archive papers
+in the Sheet, never in the repo: a row reaches the site only when its `status` is
+`approved` (blank means under review; see `content/README.md`). Do not hand-edit `RESEARCH_DATA` or `content/research.csv`,
 and do not run `build` in the working tree you commit from: a local build is a
 second writer, and two writers changing the same rows is what made merging `main`
 into a branch conflict in both files on 2026-11-16. If either file shows as changed
