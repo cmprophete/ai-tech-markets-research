@@ -1,27 +1,32 @@
 ---
 name: research-intake
-description: Add a new source to the AI research tracker AND extract its facts in one pass. Use whenever adding, intaking, or ingesting a new paper, report, or article into the tracker (data/tracker-data.js, RESEARCH_DATA) in the ai-tech-markets-research repo. This is the front door for new entries: it chains the tracker add and the fact-bank extraction so every new source arrives with its facts (or an explicit pending record). For a batch fact sweep over sources already in the tracker, use fact-bank directly with next_steps.md.
+description: Add a new source to the AI research tracker AND extract its facts in one pass. Use whenever adding, intaking, or ingesting a new paper, report, or article into the tracker (curated in the research Google Sheet, which the daily sync copies into data/tracker-data.js, RESEARCH_DATA) in the ai-tech-markets-research repo. This is the front door for new entries: it chains the tracker add and the fact-bank extraction so every new source arrives with its facts (or an explicit pending record). For a batch fact sweep over sources already in the tracker, use fact-bank directly with next_steps.md.
 ---
 
 # Research Intake
 
-The single entry point for putting a new source into the tracker. It does two things in order: (1) add the entry to `data/tracker-data.js`, then (2) immediately extract that entry's facts for the Fact Bank. Historically these were decoupled (add now, fact-sweep later in batches); this skill couples them so no source sits in the tracker without its facts, or without an explicit note saying why they are missing. See `docs/adr/0003-facts-at-intake.md`.
+The single entry point for putting a new source into the tracker. It does two things in order: (1) add the paper to the research Google Sheet (the master, never the repo), then (2) immediately extract that entry's facts for the Fact Bank. Historically these were decoupled (add now, fact-sweep later in batches); this skill couples them so no source sits in the tracker without its facts, or without an explicit note saying why they are missing. See `docs/adr/0003-facts-at-intake.md`.
 
 This skill orchestrates. It does **not** restate the fact-extraction rubric: step 2 defers entirely to the `fact-bank` skill (`skills/fact-bank/SKILL.md`, mirrored at `.claude/skills/fact-bank/SKILL.md`). Read that skill before doing step 2.
 
-## Step 1 — Add the tracker entry
+## Step 1 — Add the paper to the Google Sheet (never to the repo)
 
-Edit `data/tracker-data.js` only (never `index.html`). Append one object to `RESEARCH_DATA` matching the existing schema exactly. Core fields, copied from a recent entry as a template:
+The research list has one writer: the daily sync from the Google Sheet (`.github/workflows/research-sync.yml`). It alone writes `content/research.csv` and the `RESEARCH_DATA` array in `data/tracker-data.js`. So do **not** append to `RESEARCH_DATA`, do not edit `content/research.csv`, and do not run `tools/research.py build` in the working tree: a row added only in the repo is wiped at the next sync, and a second writer is what makes merges conflict (see "One writer per file" in `CONTRIBUTING.md`).
 
-```js
-{ id: <next unused integer>, date: "YYYY-MM-DD", added: "<today>",
-  title: "...",
-  source: "Author(s) — Publishing institution",
-  sourceUrl: "https://...",
-  category: "<one CATEGORIES id>", geography: "us" | "intl",
-  keyFinding: "One to three sentences, plain and defensible.",
-  takeaways: [ "...", "...", "..." ]
-}
+Add one row to the research tab of the Sheet, by header name (the Sheet's column order is not the CSV's), through the Google Sheets connector when it is connected; otherwise hand the user the row to paste. **Write it as `status` = `under review`: the user approves it in the Sheet, and only an approved row reaches the site.** (Until the Sheet has a `status` column, a row with a blank `archived` is published at the next sync, so keep a draft off the site by putting "pending" in `archived`; this note goes when the Sheet has moved over, see `content/README.md`.) The fields, as in `content/README.md`:
+
+```
+id          an integer above every id already in use
+date        "YYYY-MM-DD", the source's publication date
+added       "<today>", the intake date
+status      under review   (the user sets it to approved; archived retires a row, with the reason in note)
+title       "..."
+source      "Author(s) — Publishing institution"
+sourceUrl   "https://..."
+category    one CATEGORIES id
+geography   us | intl
+keyFinding  One to three sentences, plain and defensible.
+takeaways   the bullet points, one per line inside the cell
 ```
 
 Rules (from `RECOMMENDATIONS.md`, intake conventions):
@@ -30,14 +35,18 @@ Rules (from `RECOMMENDATIONS.md`, intake conventions):
 - **`category` must be one of the ids in `CATEGORIES`** (top of `tracker-data.js`). An unknown category ships a silent bug the R7 guard will flag.
 - **`geography`** is `us` or `intl`.
 - Match the voice and length of existing `keyFinding` / `takeaways`. No em-dashes in prose fields (repo style). Do not editorialize beyond what the source supports.
-- Pick the next unused integer `id`. Keep the array's existing ordering convention.
+- Pick an explicit integer `id` above every id already in use.
 - If the entry belongs to a theme's or a policy's curated basis, that is a separate editorial decision — flag it, do not wire it silently (theme `papers` / policy `paperIds` links change synthesis meaning).
+
+The paper reaches `RESEARCH_DATA` at the next sync (about 13:00 UTC daily, or when the workflow is run by hand from the Actions tab) once its `status` is `approved`. An under-review row may be a bare link or a draft; the sync only counts it.
 
 ## Step 2 — Extract the entry's facts
 
 Run the `fact-bank` skill on the entry you just added, following it exactly (verbatim quotes from fetched text only, abstract first but verify in the body, both rating rubrics, controlled vocabularies, mandatory `caveat`, `pubDate` copied from the entry's `date`, `model` recorded).
 
-- If the source is **fully readable**: extract 1-3 facts into `data/fact-bank-data.js` (`FACT_BANK`), keyed to this entry's `paperId`. If it is a genuine wellspring, cap at 3 and set `foundational`.
+The facts can be written before the sync has copied the paper into `RESEARCH_DATA`: the Fact Bank view skips a fact whose paper is not there yet (`src/js/80-fact-bank.js`), so they appear when the paper does.
+
+- If the source is **fully readable**: extract 1-3 facts into `data/fact-bank-data.js` (`FACT_BANK`), keyed to this entry's `paperId`. If it is a genuine wellspring, cap at 3 and set `foundational` on the facts. (That is the Fact Bank's flag. It is not the Sheet's `foundational` column, which marks a paper as classic background reading and is the user's call.)
 - If the source is **not fully readable** (paywall, bot-blocked, dead link, PDF fetch failed): do **not** extract from an abstract. Append the entry to `PENDING_SOURCES.md` (paper id, title, clickable link, access problem), and stop there for this entry. A maintainer supplies a local copy later.
 - If the source is pure theory or commentary with **no concrete number-bearing findings**: record zero facts and say so. Do not manufacture one.
 
@@ -48,7 +57,7 @@ Open `index.html`, and check the browser console:
 - The tracker's R7 guard reports **zero problems** (no unknown category, no broken theme/policy links, no unresolved citation tokens, valid `date`/`added`).
 - Watch for any `fact-bank:` console warnings (e.g. `FACT_BANK not loaded`); there is currently no per-record validator (unresolved paperId, duplicate id, bad rating) wired into the Fact Bank tab, so check new records by eye against the schema in `skills/fact-bank/SKILL.md`.
 
-Then confirm by eye: the new entry appears in the **Research** tab (and shows as Recent), and its facts appear in the **Fact Bank** tab under the source. If the source went to `PENDING_SOURCES.md`, confirm the row is there instead.
+Once the sync has run, confirm by eye: the new entry appears in the **Research** tab (and shows as Recent), and its facts appear in the **Fact Bank** tab under the source. If the source went to `PENDING_SOURCES.md`, confirm the row is there instead.
 
 ## One entry vs. many
 
@@ -56,5 +65,5 @@ This skill is for **one source at a time** at intake. For working the existing b
 
 ## Repo conventions
 
-- No build step; data files load as classic `<script src>`. Edits to `tracker-data.js` and `fact-bank-data.js` are plain, diffable, reviewable through the existing PR flow.
+- No build step; data files load as classic `<script src>`. Edits to `fact-bank-data.js` are plain, diffable, reviewable through the existing PR flow. `RESEARCH_DATA` in `tracker-data.js` is written only by the sync.
 - This file is mirrored at `.claude/skills/research-intake/SKILL.md` (the loaded copy; `.claude/` is gitignored) and `skills/research-intake/SKILL.md` (the committed copy). When editing either, sync the other in the same commit.

@@ -5,6 +5,12 @@ name: Sync research from Google Sheet
 # stable across runs because build --sheet reconciles them against the committed
 # content/research.csv snapshot (see tools/research.py / content/README.md).
 #
+# What reaches the site: only rows whose `status` is "approved". Rows that are under
+# review (or blank) or archived are kept in the snapshot and never published. A status
+# or foundational word that is not allowed, or an approved row that is incomplete,
+# makes this run fail and leaves the site as it was. (A Sheet with no `status` column
+# yet is read the old way: any text in `archived` hides the row.)
+#
 # ── ONE-TIME SETUP on GitHub (Claude can't do these; they're in the repo UI) ──
 #   1. Publish the Sheet as CSV: in Google Sheets, File > Share > Publish to web
 #      > pick the tab > Comma-separated values (.csv) > Publish. Copy that link.

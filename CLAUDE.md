@@ -14,18 +14,29 @@ is assembled from `src/index.template.html` and the files it `@@include@@`s
 rejects a stale page. If you find yourself editing `index.html`, stop and find
 the `src/` file that owns it.
 
-**2. The research list is generated from a sheet, not hand-edited.**
-`RESEARCH_DATA` in `data/tracker-data.js` is built from `content/research.csv` by
-`tools/research.py`:
+**2. The research list has one writer: the daily sync from the Google Sheet.**
+The Google Sheet is the master. The `research-sync.yml` Action pulls it every day
+and is the only thing that writes `content/research.csv` and the `RESEARCH_DATA`
+array in `data/tracker-data.js` (through `tools/research.py`), committing both to
+`main`:
 
 ```sh
-python3 tools/research.py build                 # content/research.csv -> data/tracker-data.js
-python3 tools/research.py build --sheet <url>   # pull a published Google Sheet first
-python3 tools/research.py check                 # validate the sheet, write nothing
+python3 tools/research.py check                 # validate the sheet, write nothing: safe anywhere
+python3 tools/research.py build [--sheet <url>] # what the sync runs: only in a scratch copy of the repo
 ```
 
-Do not hand-edit the `RESEARCH_DATA` array; the next build overwrites it. See
-[`content/README.md`](content/README.md). The rest of `tracker-data.js`
+So **a branch never commits those two files.** Add, edit, approve and archive papers
+in the Sheet, never in the repo: a row reaches the site only when its `status` is
+`approved` (blank means under review; see `content/README.md`). Do not hand-edit `RESEARCH_DATA` or `content/research.csv`,
+and do not run `build` in the working tree you commit from: a local build is a
+second writer, and two writers changing the same rows is what made merging `main`
+into a branch conflict in both files on 2026-11-16. If either file shows as changed
+when you did not mean it, restore it before anyone commits (the CSV whole; in
+`data/tracker-data.js` only the `RESEARCH_DATA` array, because the rest of that file
+is hand-edited). If a merge conflicts in them, take `main`'s copy of the research
+list and keep the branch's other edits. Policy-card wording has one writer too, the
+policy author (the verbatim rule below). See [`content/README.md`](content/README.md)
+and "One writer per file" in [`CONTRIBUTING.md`](CONTRIBUTING.md). The rest of `tracker-data.js`
 (`POLICY_DATA`, `AGENDA_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
 (with `data/fact-bank-context.js`) are still hand-maintained. Two more data files are generated and never hand-edited: `data/us-map.js` by
 `tools/us_map.py`, and the Legislation tab's bills, `data/legislation-bills.js`, by `tools/legislation.py`: the federal bills from our own scan of GovInfo's
