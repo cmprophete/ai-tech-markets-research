@@ -122,9 +122,9 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
      labelled.map(sec => sec.dataset.group).join() === 'research,policy,government' &&
      [['research', 'green'], ['policy', 'pink'], ['government', 'gold']].every(([g, c]) => new RegExp(`\\.about-section\\[data-group="${g}"\\][^{]*\\{\\s*--group-accent:\\s*var\\(--${c}\\)`).test(navCss)));
   const govSec = labelled[2];
-  ok('the Government action section names the sources behind the Legislation tab (the Brennan Center, GovInfo, Open States and the Associated Press), says the topics are our reading and the federal summaries were written with the help of AI, and states no number that the page computes and would let go stale',
-     !!govSec && ['Brennan Center', 'GovInfo', 'Open States', 'Associated Press'].every(n => govSec.querySelector('.about-note').textContent.includes(n)) &&
-     /Topics are our reading/.test(govSec.querySelector('.about-note').textContent) && /written with the help of AI/.test(govSec.querySelector('.about-note').textContent) &&
+  ok('the Government action section names the sources behind the Legislation tab (GovInfo, Open States, the Congressional Research Service and the Associated Press), says the topics are our reading, names no tracker or advocacy group, and states no number that the page computes and would let go stale',
+     !!govSec && ['GovInfo', 'Open States', 'Congressional Research Service', 'Associated Press'].every(n => govSec.querySelector('.about-note').textContent.includes(n)) &&
+     /Topics are our reading/.test(govSec.querySelector('.about-note').textContent) && !/tracker/i.test(govSec.querySelector('.about-note').textContent) &&
      !/\d/.test(govSec.textContent.replace('2026', '')), govSec && govSec.textContent);
 }
 
@@ -250,7 +250,7 @@ for (const old of ['#sources', '#research', '#changelog']) {
 
 /* ── Legislation: a map of the states, a panel that follows the pointer, and two tables ─────────────────────────
    The tab opens; its masthead says what is loaded, from the data; the map draws all 50 states and DC; pointing at a state shows it
-   in the panel; clicking pins it and narrows both tables. The bills (federal ones from the Brennan Center and GovInfo, state ones from Open States) are a
+   in the panel; clicking pins it and narrows both tables. The bills (federal ones from GovInfo, state ones from Open States) are a
    file of their own, fetched when the tab first opens, so every test here waits for them. The midterm results (Senate, House,
    governor) come from the Associated Press's pages and are cited in every row and below the map. Part A checks the shipped bills
    and the view the tab opens on, part B the midterm results layer, part C paging, the hover panel's cap, the territories and each
@@ -275,7 +275,7 @@ const legislationTests = async () => {
   const AP = 'https://apnews.com/projects/elections-2026/';
   const nat = w.eval('MIDTERM_NATIONAL');
   // the shipped bills
-  const nBills = w.eval('LEGISLATION_DATA.filter(b => !b.passing).length'), nPassing = w.eval('LEGISLATION_DATA.filter(b => b.passing).length'), nFed = w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal').length"), nState = nBills - nFed;
+  const nBills = w.eval('LEGISLATION_DATA.filter(b => !b.passing).length'), nPassing = w.eval('LEGISLATION_DATA.filter(b => b.passing).length'), nFed = w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && !b.passing).length"), nFedPassing = w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && b.passing).length"), nState = nBills - nFed;
   const countOf = code => w.eval(`LEGISLATION_DATA.filter(b => b.level === 'state' && b.state === '${code}' && !b.passing).length`);
   const counts = JSON.parse(w.eval("(() => { const c = {}; LEGISLATION_DATA.forEach(b => { if (b.level === 'state' && !b.passing && US_MAP.states[b.state]) c[b.state] = (c[b.state] || 0) + 1; }); return JSON.stringify(c); })()"));
   const nTerritory = w.eval("LEGISLATION_DATA.filter(b => b.level === 'state' && !b.passing && !US_MAP.states[b.state]).length");
@@ -295,16 +295,16 @@ const legislationTests = async () => {
   ok('#legislation marks the Legislation button active, and not Landscape',
      btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active'));
   ok('the screen reader announcement names the view', d.getElementById('viewAnnounce').textContent === 'Legislation view');
-  ok('the bills are loaded: the federal ones from the Brennan Center (each with its record from GovInfo), the state ones from Open States, as many as each says it holds, and from nobody else',
-     area.getAttribute('data-bills') === 'ready' && nBills > 0 && nFed === feeds.brennan.included && nState === feeds.openstates.included &&
-     w.eval("LEGISLATION_DATA.every(b => b.source && /^https?:\\/\\//.test(b.source.url) && (b.level === 'federal' ? ['Congress.gov', 'Bill text'].includes(b.source.label) : ['Legislature', 'Open States'].includes(b.source.label)))"),
-     `${nFed} federal of ${feeds.brennan.included}, ${nState} state of ${feeds.openstates.included}`);
+  ok('the bills are loaded: the federal ones from GovInfo, the state ones from Open States, as many as each says it holds (the ones that only mention AI counted apart), and from nobody else',
+     area.getAttribute('data-bills') === 'ready' && nBills > 0 && Object.keys(feeds).join() === 'govinfo,openstates' && nFed === feeds.govinfo.included && nFedPassing === feeds.govinfo.passing && nState === feeds.openstates.included &&
+     w.eval("LEGISLATION_DATA.every(b => b.source && /^https?:\\/\\//.test(b.source.url) && (b.level === 'federal' ? b.source.label === 'Congress.gov' && b.source.url.startsWith('https://www.congress.gov/bill/119th-congress/') && b.session === '119th Congress' : ['Legislature', 'Open States'].includes(b.source.label)))"),
+     `${nFed}+${nFedPassing} federal of ${feeds.govinfo.included}+${feeds.govinfo.passing}, ${nState} state of ${feeds.openstates.included}`);
   ok('every bill is well formed: a unique id, a place the page knows (a state on the map, a territory, or Congress), a stage that counts as active, and no account token anywhere (the links to a legislature and to Open States carry none)',
      w.eval("new Set(LEGISLATION_DATA.map(b => b.id)).size === LEGISLATION_DATA.length && LEGISLATION_DATA.every(b => b.level === 'federal' || US_MAP.states[b.state] || LEGISLATION_TERRITORIES[b.state]) && LEGISLATION_DATA.every(b => LEGISLATION_STAGES[b.stage] && LEGISLATION_STAGES[b.stage].active)") &&
      !w.eval('/statenet|ciq=|client_md|urn:user/i.test(JSON.stringify(LEGISLATION_DATA) + JSON.stringify(LEGISLATION_FEEDS))'));
-  ok('each federal bill has a summary in our own words and its Congress, each one with a number has its official last action (from GovInfo), and each state bill its session and its official title (and its last action, when it has one)',
-     w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal').every(b => b.summary && b.session === '119th Congress')") &&
-     w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && b.lastAction && b.lastAction.date && b.lastAction.text).length") === feeds.govinfo.included &&
+  ok('each federal bill has its Congress and its official last action (from GovInfo), and a summary (the Congressional Research Service\'s, else its official title) unless its title already is the official one; and each state bill has its session and its official title (and its last action, when it has one)',
+     w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal').every(b => (b.summary || /^(To |A bill |An act )/.test(b.title)) && b.session === '119th Congress')") &&
+     w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && b.lastAction && b.lastAction.date && b.lastAction.text).length") === feeds.govinfo.included + feeds.govinfo.passing &&
      w.eval("LEGISLATION_DATA.filter(b => b.level === 'state').every(b => typeof b.session === 'string' && b.title && (!b.lastAction || b.lastAction.date))"));
   ok('no bill\'s last action is dated in the future: a scheduled effective date is not an action taken, and as the "last action" it would sort the bill to the top by recency (one day of slack for the time zone)',
      w.eval("(() => { const t = new Date(Date.now() + 86400000).toISOString().slice(0, 10); return LEGISLATION_DATA.every(b => !b.lastAction || !b.lastAction.date || b.lastAction.date <= t); })()"),
@@ -398,10 +398,10 @@ const legislationTests = async () => {
      rows('legBillsTable') === Math.min(PAGE, nBills) && heads() === 'Jurisdiction,Bill,Title,Status,Last action,Summary,Source' && dates()[0] === newestAction && inOrder(dates(), true) &&
      d.getElementById('legSort').value === 'recent' && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && !pager.hidden && pager.querySelector('.pager-status').textContent === `Page 1 of ${pagesOf(nBills)}`, `${rows('legBillsTable')} rows, ${heads()}, ${dates().slice(0, 4)}`);
   const passNote = n => `${num(n)} more active ${n === 1 ? 'bill mentions' : 'bills mention'} AI only in ${n === 1 ? 'its' : 'their'} text; "Include bills that only mention AI", under More filters, adds ${n === 1 ? 'it' : 'them'}.`;
-  ok('a note under the table says what the state list is, how many more bills the search found and why they are left out (not active), and how many more the checkbox under More filters would add',
-     d.getElementById('legBillsNote').textContent === `State bills are ${feeds.openstates.scope}. ${feeds.openstates.summaries ? feeds.openstates.summaries + ' ' : ''}Open States found ${joinAnd(feeds.openstates.omitted.filter(o => o.n).map(o => `${num(o.n)} more bills that ${o.why}`))}; none is included.${nPassing ? ` ${passNote(nPassing)}` : ''}`, d.getElementById('legBillsNote').textContent);
+  ok('a note under the table says what the federal list and the state list are, where the summaries come from, how many more bills the search found and why they are left out (not active), and how many more the checkbox under More filters would add',
+     d.getElementById('legBillsNote').textContent === `Federal bills are ${feeds.govinfo.scope}. ${feeds.govinfo.summaries} State bills are ${feeds.openstates.scope}. ${feeds.openstates.summaries ? feeds.openstates.summaries + ' ' : ''}Open States found ${joinAnd(feeds.openstates.omitted.filter(o => o.n).map(o => `${num(o.n)} more bills that ${o.why}`))}; none is included.${nPassing ? ` ${passNote(nPassing)}` : ''}`, d.getElementById('legBillsNote').textContent);
   /* the checkbox, under More filters, for the bills that only mention AI in their text */
-  const passWrap = d.getElementById('legPassingWrap'), passBox = d.getElementById('legPassing'), pcode = nPassing ? w.eval("LEGISLATION_DATA.find(b => b.passing).state") : '';
+  const passWrap = d.getElementById('legPassingWrap'), passBox = d.getElementById('legPassing'), pcode = nPassing ? w.eval("LEGISLATION_DATA.find(b => b.passing && b.level === 'state').state") : '';
   ok('under More filters a checkbox offers the bills that only mention AI in their text, says how many, and starts off: none of them is in the table',
      nPassing > 0 && !passWrap.hidden && !passBox.checked && passBox.type === 'checkbox' && !!passWrap.closest('#legMorePanel') && passWrap.querySelector('.leg-muted-count').textContent === num(nPassing) &&
      !/Mentions AI only in its text/.test(billsTable().textContent), passWrap.textContent);
@@ -424,9 +424,9 @@ const legislationTests = async () => {
      d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && mastheadText().startsWith(`${num(nBills)} active bills`) && readSteps().map(x => `${x.lo}-${x.hi}`).join() === stepsOff &&
      !/Mentions AI only in its text/.test(billsTable().textContent) && d.getElementById('legBillsNote').textContent.includes(passNote(nPassing)));
   d.getElementById('legStateSelect').value = 'federal'; d.getElementById('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
-  ok('a federal bill shows its title, its bill number and Congress, the Brennan Center\'s labels, its stage and the dates it was introduced, its summary, and a link to Congress.gov',
+  ok('a federal bill shows its title, its bill number and Congress, its stage and the dates it was introduced, its summary, and a link to Congress.gov, and carries no category labels from anyone',
      (() => { const r = [...billsTable().querySelectorAll('tbody tr')].find(x => /TAKE IT DOWN/.test(x.textContent)) || billsTable().querySelectorAll('tbody tr')[1];
-       return /119th Congress/.test(r.textContent) && /Brennan Center labels: /.test(r.textContent) && !!r.querySelector('a[href^="https://"]'); })());
+       return /119th Congress/.test(r.textContent) && /Introduced /.test(r.textContent) && !/labels: /.test(r.textContent) && !!r.querySelector('a[href^="https://www.congress.gov/bill/119th-congress/"]'); })());
   fire(d.getElementById('legClear'), 'click');
 
   /* ── B. the midterm results layer ────────────────────────────────────────────────────────────────────────── */
@@ -653,14 +653,13 @@ const legislationTests = async () => {
   ok('choosing Federal in the Show menu narrows the bills table to Congress\'s bills, paged, and the card gives Congress\'s stats with the link to them',
      sel.value === 'federal' && rows('legBillsTable') === Math.min(PAGE, nFed) &&
      cardOk(nFed) &&
-     heads() === 'Jurisdiction,Bill,Title,Status,Last action,Summary,Source' && d.getElementById('legBillsNote').textContent === '', `${heads()} | ${d.getElementById('legBillsNote').textContent}`);
+     heads() === 'Jurisdiction,Bill,Title,Status,Last action,Summary,Source' && d.getElementById('legBillsNote').textContent === `Federal bills are ${feeds.govinfo.scope}. ${feeds.govinfo.summaries}${nFedPassing ? ' ' + passNote(nFedPassing) : ''}`, `${heads()} | ${d.getElementById('legBillsNote').textContent}`);
   fire(d.getElementById('legClear'), 'click');
   const links2 = [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href'));
-  ok('on the Bills layer the line below the map cites the Brennan Center for the federal list, GovInfo for the federal bills\' official records and Open States for the state bills, each with a link to its page, and not AP',
-     /^Sources: Brennan Center for Justice, “Artificial Intelligence Legislation Tracker” \(tracker, updated /.test(d.getElementById('legMapSource').textContent) &&
+  ok('on the Bills layer the line below the map cites GovInfo for the federal bills and Open States for the state bills, each with a link to its page, and not AP or any tracker',
+     /^Sources: U\.S\. Government Publishing Office, “Bill Status XML Bulk Data” \(bulk data, read /.test(d.getElementById('legMapSource').textContent) &&
      /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) &&
-     /U\.S\. Government Publishing Office, “Bill Status XML Bulk Data” \(bulk data, read /.test(d.getElementById('legMapSource').textContent) &&
-     links2.join() === Object.values(feeds).map(f => f.url).join() && !/Associated Press/.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
+     links2.join() === Object.values(feeds).map(f => f.url).join() && !/Associated Press|tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
   fire(d.getElementById('legLayerResults'), 'click');
   ok('and back on Midterm results it cites AP alone', links.length === 1 && [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href')).join() === AP);
   fire(d.getElementById('legLayerBills'), 'click');
