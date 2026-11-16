@@ -13,7 +13,8 @@ so anything kept only in the repo's copy would be wiped, and the Sheet's `extra_
 machine-managed. To adopt the format permanently, add a `summary` column to the Sheet and map it in
 `tools/research.py`; until then, `00-state.js` attaches each entry of `PAPER_SUMMARIES` to its paper
 as `entry.summary`. Only papers that are not archived in the Sheet get an entry: an archived paper is
-not in `RESEARCH_DATA`, and the console validator flags a summary whose paper is missing.
+not in `RESEARCH_DATA`, so a summary for it is never shown, and the console validator lists it in its
+one-line note about unpublished papers (an info message, not an error).
 
 ```js
 const PAPER_SUMMARIES = {
