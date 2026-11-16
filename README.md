@@ -36,7 +36,7 @@ python3 tools/research.py build --sheet <url>   # pull a published Google Sheet 
 ```
 
 See **[`content/README.md`](content/README.md)**. Themes and the policy map live
-in `data/tracker-data.js` and are hand-edited; the fact bank is `data/fact-bank-data.js`; the Legislation tabs' stages, midterm results and filter topics are `data/legislation-data.js` (its enforcement actions and key cases, by hand, `data/legislation-actions.js`), its state outlines are generated into `data/us-map.js` by `tools/us_map.py`, and its bills into `data/legislation-bills.js` by `tools/legislation.py` (the federal list from the Brennan Center's tracker, each federal bill's record from GovInfo, the state bills from an Open States search, fetched by `tools/openstates_fetch.py`; see `docs/legislation-sources.md`). All
+in `data/tracker-data.js` and are hand-edited; the fact bank is `data/fact-bank-data.js`; the Legislation tabs' stages, midterm results and filter topics are `data/legislation-data.js` (its enforcement actions and key cases, by hand, `data/legislation-actions.js`), its state outlines are generated into `data/us-map.js` by `tools/us_map.py`, and its bills into `data/legislation-bills.js` by `tools/legislation.py` (the federal bills from our own scan of GovInfo's bill-status data, fetched by `tools/congress_fetch.py`, the state bills from an Open States search, fetched by `tools/openstates_fetch.py`; see `docs/legislation-sources.md`). All
 `data/*.js` load at runtime, so a data change needs only a reload, and a fresh
 clone renders from the committed files.
 
