@@ -7,10 +7,12 @@ research.py -- curate the research database from a spreadsheet.
     python3 tools/research.py build --sheet <url>              pull a published Google Sheet (CSV),
                                                                snapshot it to research.csv, then regenerate
     python3 tools/research.py check      validate the sheet without writing anything;
-                                         also flags dangling id references (POLICY_DATA,
-                                         {{cite}} tokens, Fact Bank) to archived or
-                                         missing studies. (also accepts --sheet <url>)
+                                         also notes the policy cards, {{cite}} tokens and
+                                         Fact Bank facts that point at a paper which is not
+                                         published (under review, archived or missing).
+                                         (also accepts --sheet <url>)
     python3 tools/research.py selftest   prove the parser/serializer round-trips losslessly
+                                         and that the status rules behave
 
 GOOGLE SHEETS. Keep the master in Google Sheets if you like collaborative editing.
 Publish it as CSV (File > Share > Publish to web > CSV), then feed that link to
@@ -31,14 +33,21 @@ Now you edit content/research.csv in Excel/Google Sheets (or any editor), run
 build.py step is needed. Commit + push to publish. git history of the CSV is the
 curation audit trail.
 
-THE SHEET. One row per study. Columns:
+THE SHEET. One row per study. Columns (rows are read by header name; the Sheet's
+own column order differs from the snapshot's):
     id          integer, stable, referenced by POLICY_DATA paperIds. LEAVE BLANK
                 for a new row -- build assigns the next id and writes it back.
     date        publication date, YYYY-MM-DD
     added       intake date, YYYY-MM-DD. Blank on a new row -> today, written back.
-    archived    OPTIONAL. Put a note/date here to retire a study: it stays in the
-                sheet for the record but drops off the site. Blank = live. Clear it
-                to un-archive. (Prefer this to deleting the row -- it keeps the id.)
+    status      under review | approved | archived. Blank = under review. Only
+                `approved` rows are published, and only they must be complete (an
+                under-review row may be a bare link). Any other word stops the sync
+                and names the row. Archived rows keep their id and are not checked.
+    foundational
+                blank or the word `foundational` (classic background reading). An
+                approved row that has it is published with `foundational: true`.
+                NOT the Fact Bank's `foundational` flag, which sits on the facts.
+    note        free text, e.g. why a row is archived. Never published.
     category    one of the CATEGORIES ids (see the list build/check prints)
     geography   us | intl
     evidence    analysis | commentary | industry | official | peer-reviewed | (blank)
@@ -48,9 +57,15 @@ THE SHEET. One row per study. Columns:
     keyFinding  one paragraph
     takeaways   one bullet PER LINE inside the cell (Alt+Enter in Excel)
 
-REMOVING A STUDY. Either delete its row, or -- better -- put a note in `archived`
-to keep it on record. The site is regenerated from the sheet, so a deletion is
-permanent once you rebuild; archiving is reversible and preserves the id.
+OLD SHEETS. A sheet (or snapshot) with no `status` column is read the old way: any
+text in `archived` means archived, blank means approved (so the row must be
+complete), and `foundational` is ignored. That lets this code merge BEFORE the Sheet
+gets the new columns. Once `status` exists, `archived` is ignored.
+
+REMOVING A STUDY. Either delete its row, or -- better -- set its status to
+`archived` (and say why in `note`) to keep it on record. The site is regenerated
+from the sheet, so a deletion is permanent once you rebuild; archiving is
+reversible and preserves the id.
 
 No dependencies beyond the Python standard library.
 """
@@ -67,27 +82,43 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data", "tracker-data.js")
 SHEET = os.path.join(ROOT, "content", "research.csv")
-# Read-only for `check`: a second file that references research by id, so
-# archiving a study can leave a fact here dangling. Never written by this tool.
+# Read-only for `check`: a second file that references research by id, so a paper
+# that is not approved (archived, say) can leave a fact here dangling. Never written
+# by this tool.
 FACT_BANK_DATA = os.path.join(ROOT, "data", "fact-bank-data.js")
 
-# Column order in the CSV. `id` and `added` may be blank on new rows. Any entry
-# field that isn't one of the flat columns (e.g. a `highlight` object on a
+# Column order in the CSV snapshot. `id` and `added` may be blank on new rows. Any
+# entry field that isn't one of the flat columns (e.g. a `highlight` object on a
 # featured study) rides along in extra_json so nothing is ever dropped.
-COLUMNS = ["id", "date", "added", "archived", "category", "geography", "evidence",
-           "title", "source", "sourceUrl", "keyFinding", "takeaways", "extra_json"]
+COLUMNS = ["id", "date", "added", "status", "foundational", "note", "category", "geography",
+           "evidence", "title", "source", "sourceUrl", "keyFinding", "takeaways", "extra_json"]
 
 # The fields that get their own CSV column and are published in RESEARCH_DATA;
 # everything else on an entry -> extra_json.
 FLAT_FIELDS = {"id", "date", "added", "category", "geography", "evidence",
                "title", "source", "sourceUrl", "keyFinding", "takeaways"}
 
-# Control columns: they live in the sheet/CSV but are never written into
-# RESEARCH_DATA. `archived`: any text (a note or date) keeps the row in the sheet
-# for the record but drops it from the published site; blank = live. Archiving
-# preserves the row's id, so ids are never reused and references never silently
-# re-point.
-CONTROL_FIELDS = {"archived"}
+# What a row's `status` can be: exactly these words (matching ignores capitals and
+# extra spaces). A BLANK cell means under review, so a row pasted into the Sheet is
+# never published until someone approves it, and a bare link cannot stop the sync.
+UNDER_REVIEW, APPROVED, ARCHIVED = "under review", "approved", "archived"
+STATUSES = (UNDER_REVIEW, APPROVED, ARCHIVED)
+FOUNDATIONAL = "foundational"
+# What an APPROVED row must have (it also needs at least one takeaway).
+REQUIRED = ("date", "title", "source", "sourceUrl", "category", "geography", "keyFinding")
+
+# Control columns: they live in the sheet/CSV and decide what is published, but they
+# are never copied into RESEARCH_DATA as they are.
+#   status        only `approved` rows are published (and only they must be complete).
+#                 Whatever the status, the row keeps its id, so ids are never reused
+#                 and references never silently re-point.
+#   foundational  blank or the word `foundational` (classic background reading). On an
+#                 approved row it is published as `foundational: true`. NOT the Fact
+#                 Bank's `foundational` flag, which sits on the facts.
+#   note          free text (why a row is archived, say); never published.
+#   archived      the OLD column, read only when the sheet has no `status` column
+#                 (any text = archived); never written any more.
+CONTROL_FIELDS = {"status", "note", "foundational", "archived"}
 
 GEOGRAPHY = {"us", "intl"}
 EVIDENCE = {"analysis", "commentary", "industry", "official", "peer-reviewed"}
@@ -309,6 +340,8 @@ def serialize_entries(entries):
         L.append(f'    category: {js_string(e["category"])}, geography: {js_string(e["geography"])},')
         if e.get("evidence"):
             L.append(f'    evidence: {js_string(e["evidence"])},')
+        if e.get("foundational"):
+            L.append("    foundational: true,")
         L.append(f'    keyFinding: {js_string(e["keyFinding"])},')
         tk = e.get("takeaways") or []
         if tk:
@@ -320,7 +353,8 @@ def serialize_entries(entries):
         else:
             L.append("    takeaways: [],")
         # Preserve any field beyond the flat schema verbatim (e.g. `highlight`),
-        # but never the control columns (archived).
+        # but never the control columns (status, note, archived; `foundational` is
+        # written above).
         for k, val in e.items():
             if k in FLAT_FIELDS or k in CONTROL_FIELDS:
                 continue
@@ -333,10 +367,16 @@ def serialize_entries(entries):
 # ── CSV <-> entry dicts ─────────────────────────────────────────────────────
 
 def entry_to_row(e):
+    foundational = e.get("foundational")
     row = {
         "id": e["id"],
         "date": e["date"],
         "added": e["added"],
+        # An entry read from RESEARCH_DATA (export, selftest) carries no status: it was
+        # published, so it is approved. Its `foundational: true` is the word in the cell.
+        "status": e.get("status", APPROVED),
+        "foundational": FOUNDATIONAL if foundational is True else (foundational or ""),
+        "note": e.get("note", ""),
         "category": e["category"],
         "geography": e["geography"],
         "evidence": e.get("evidence", ""),
@@ -345,16 +385,38 @@ def entry_to_row(e):
         "sourceUrl": e["sourceUrl"],
         "keyFinding": e["keyFinding"],
         "takeaways": "\n".join(e["takeaways"]),
-        "archived": e.get("archived", ""),
     }
     extra = {k: v for k, v in e.items() if k not in FLAT_FIELDS and k not in CONTROL_FIELDS}
     row["extra_json"] = json.dumps(extra, ensure_ascii=False) if extra else ""
     return row
 
 
+def _norm(s):
+    """Trim, lowercase and squeeze spaces: ' Under  Review' reads as 'under review'."""
+    return " ".join((s or "").split()).lower()
+
+
 def row_to_entry(row):
     idv = (row.get("id") or "").strip()
     takeaways = [t.strip() for t in (row.get("takeaways") or "").splitlines() if t.strip()]
+    if "status" in row:
+        # The sheet has a `status` column, so it speaks for itself: blank = under review,
+        # and a word that is not one of STATUSES is kept as typed so validate() can name
+        # it. `foundational` is blank or the word; anything else is kept as typed too.
+        raw = (row.get("status") or "").strip()
+        status = _norm(raw) if _norm(raw) in STATUSES else (raw or UNDER_REVIEW)
+        note = (row.get("note") or "").strip()
+        raw = (row.get("foundational") or "").strip()
+        foundational = FOUNDATIONAL if _norm(raw) == FOUNDATIONAL else raw
+    else:
+        # No `status` column (the Sheet before the cutover, or a snapshot written before
+        # it): read it exactly as the old code did. Any text in `archived` = archived
+        # (the text is the note, unless it is just the word); blank = live, i.e. approved
+        # (so it must be complete); the `foundational` column was never read.
+        text = (row.get("archived") or "").strip()
+        status = ARCHIVED if text else APPROVED
+        note = "" if text.lower() == "archived" else text
+        foundational = ""
     e = {
         "id": int(idv) if idv else None,
         "date": (row.get("date") or "").strip(),
@@ -367,11 +429,14 @@ def row_to_entry(row):
         "sourceUrl": (row.get("sourceUrl") or "").strip(),
         "keyFinding": (row.get("keyFinding") or "").strip(),
         "takeaways": takeaways,
-        "archived": (row.get("archived") or "").strip(),
+        "status": status,
+        "foundational": foundational,
+        "note": note,
     }
     extra = (row.get("extra_json") or "").strip()
     if extra:
-        e.update(json.loads(extra))
+        for k, v in json.loads(extra).items():
+            e.setdefault(k, v)  # a key in extra_json can never override a column
     return e
 
 
@@ -427,6 +492,20 @@ def fact_bank_paper_ids():
 
 # ── validation ──────────────────────────────────────────────────────────────
 
+def row_label(n, e):
+    """'row 12 (id 40) "Title"': enough to find the row in the Sheet. The title (or the
+    link, for a bare-link row) goes AFTER the parenthesis."""
+    who = f"row {n} (id {e['id'] if e['id'] is not None else 'NEW'})"
+    name = e["title"] or e["sourceUrl"]
+    return f'{who} "{name[:60].rstrip()}"' if name else who
+
+
+def unfinished(entries):
+    """Under-review rows that could not be approved yet (a required field is blank)."""
+    return [e for e in entries if e["status"] == UNDER_REVIEW
+            and (any(not e[f] for f in REQUIRED) or not e["takeaways"])]
+
+
 def validate(entries, cats, warn=print):
     errors = []
     seen_ids = {}
@@ -442,14 +521,31 @@ def validate(entries, cats, warn=print):
             return False
 
     for n, e in enumerate(entries, 1):
-        where = f"row {n} (id {e['id'] if e['id'] is not None else 'NEW'})"
+        where = row_label(n, e)
         if e["id"] is not None:
             if e["id"] in seen_ids:
-                errors.append(f"{where}: duplicate id (also row {seen_ids[e['id']]})")
+                m = seen_ids[e["id"]]
+                if e["sourceUrl"] and e["sourceUrl"] == entries[m - 1]["sourceUrl"]:
+                    # A pasted link that is already in the tracker takes the old row's id
+                    # (reconcile_ids matches by link), so say what really happened.
+                    errors.append(f"{where}: duplicate id (also row {m}): rows {m} and {n} have the "
+                                  "same link, so it is already in the tracker. Delete the repeat")
+                else:
+                    errors.append(f"{where}: duplicate id (also row {m})")
             seen_ids[e["id"]] = n
-        if e.get("archived"):
-            continue  # kept in the sheet for the record, not published -> skip content checks
-        for f in ("date", "title", "source", "sourceUrl", "category", "geography", "keyFinding"):
+        status = e["status"]
+        if status not in STATUSES:
+            errors.append(f"{where}: status '{status}' is not one of: {', '.join(STATUSES)} "
+                          "(leave it blank for under review)")
+            continue
+        if e["foundational"] not in ("", FOUNDATIONAL):
+            errors.append(f"{where}: foundational '{e['foundational']}' must be blank "
+                          f"or the word '{FOUNDATIONAL}'")
+        if status != APPROVED:
+            # Under review: may be a bare link, only counted (see unfinished()). Archived:
+            # kept in the sheet for the record. Neither is published -> no content checks.
+            continue
+        for f in REQUIRED:
             if not e[f]:
                 errors.append(f"{where}: missing required field '{f}'")
         if not e["takeaways"]:
@@ -516,7 +612,8 @@ def sheet_csv_url(url):
 
 def fetch_entries(url):
     """Fetch a published sheet as CSV and parse it, guarding against getting an
-    HTML login/error page instead of the data. Returns (entries, has_archived_col)."""
+    HTML login/error page instead of the data. Returns (entries, columns): the parsed
+    rows and the set of header names the sheet has."""
     with urllib.request.urlopen(sheet_csv_url(url), timeout=30) as resp:
         text = resp.read().decode("utf-8")
     header = text.split("\n", 1)[0].lower()
@@ -526,8 +623,8 @@ def fetch_entries(url):
             "  In Google Sheets: File > Share > Publish to web > CSV, and use that link\n"
             "  (or a .../export?format=csv link).")
     reader = csv.DictReader(io.StringIO(text))
-    has_archived = "archived" in (reader.fieldnames or [])
-    return [row_to_entry(r) for r in reader], has_archived
+    columns = set(reader.fieldnames or [])
+    return [row_to_entry(r) for r in reader], columns
 
 
 def reconcile_ids(entries, ledger):
@@ -544,25 +641,59 @@ def reconcile_ids(entries, ledger):
     return entries
 
 
+def keep_recorded_state(entries, ledger):
+    """Copy status, note and foundational from the committed snapshot onto the rows it
+    knows: by id (two rows can share a link), else by sourceUrl."""
+    by_id = {e["id"]: e for e in ledger if e["id"] is not None}
+    by_url = {e["sourceUrl"]: e for e in ledger if e.get("sourceUrl")}
+    for e in entries:
+        prev = by_id.get(e["id"]) or by_url.get(e["sourceUrl"])
+        if prev:
+            e["status"], e["note"], e["foundational"] = prev["status"], prev["note"], prev["foundational"]
+    return entries
+
+
 def load_source(url):
     """Entries to build from: a remote sheet (reconciled against the committed
     snapshot) or the local content/research.csv."""
     if not url:
         return load_local_entries()
-    entries, sheet_has_archived = fetch_entries(url)
+    entries, columns = fetch_entries(url)
     ledger = load_local_entries()
     reconcile_ids(entries, ledger)
-    # A sheet with no `archived` column cannot express archive state, so preserve
-    # archives already recorded in the committed snapshot (matched by sourceUrl)
-    # rather than silently un-archiving them on every sync. A sheet that DOES
-    # carry the column stays authoritative -- including blanks that un-archive.
-    if not sheet_has_archived:
-        by_url = {e["sourceUrl"]: e for e in ledger if e.get("sourceUrl")}
-        for e in entries:
-            prev = by_url.get(e["sourceUrl"])
-            if prev and prev.get("archived") and not e.get("archived"):
-                e["archived"] = prev["archived"]
+    if "status" in columns and "archived" in columns:
+        print("  note: the sheet has both a `status` and an `archived` column; "
+              "`status` decides and `archived` is ignored")
+    # A sheet with NEITHER `status` nor `archived` cannot express where a row stands, so
+    # keep what the committed snapshot recorded for it rather than quietly publishing or
+    # un-archiving rows on every sync. A sheet that DOES carry one of the columns stays
+    # authoritative -- including blanks.
+    if "status" not in columns and "archived" not in columns:
+        keep_recorded_state(entries, ledger)
     return entries
+
+
+def published(entries):
+    """The rows that reach the site: approved ones only."""
+    return [e for e in entries if e["status"] == APPROVED]
+
+
+def counts_note(entries):
+    """'7 under review, 105 archived': the rows that are not approved ('' if none)."""
+    n = {s: sum(1 for e in entries if e["status"] == s) for s in (UNDER_REVIEW, ARCHIVED)}
+    return ", ".join(f"{n[s]} {s}" for s in (UNDER_REVIEW, ARCHIVED) if n[s])
+
+
+def note_unfinished(entries):
+    """One line about under-review rows that are still incomplete: fine until approved."""
+    rows = unfinished(entries)
+    if rows:
+        ids = [str(e["id"]) for e in rows if e["id"] is not None]
+        new = sum(1 for e in rows if e["id"] is None)
+        who = ", ".join(x for x in (("ids " + ", ".join(ids)) if ids else "",
+                                    f"{new} new row(s)" if new else "") if x)
+        print(f"  note: {len(rows)} under review row(s) are still incomplete "
+              f"(fine until approved): {who}")
 
 
 def cmd_check(url=None):
@@ -577,30 +708,35 @@ def cmd_check(url=None):
         return 1
     # Three hand-maintained regions reference research by id: POLICY_DATA id
     # arrays, {{cite:N}} tokens in prose, and Fact Bank facts.
-    # Archiving a study leaves any of these dangling -- the policy silently
-    # drops it, a {{cite}} renders raw, and a fact whose paper is archived is
-    # hidden by the runtime guard in 80-fact-bank.js. None corrupts the build, so
-    # these are notes (not errors): the checklist of hand-edits an archive leaves
-    # behind. This is why the Fact Bank went blank once -- an archive with no
-    # such warning left every fact pointing at a study that no longer rendered.
-    live = [e for e in entries if not e.get("archived")]
-    # Valid citation targets, as strings: live research ids (numeric, from the
+    # A study that is under review, archived or deleted leaves any of these
+    # dangling -- the policy silently drops it, a {{cite}} renders raw, and a fact
+    # whose paper is not published is hidden by the runtime guard in
+    # 80-fact-bank.js. None corrupts the build, so these are notes (not errors): the
+    # checklist of hand-edits that leaves behind. This is why the Fact Bank went blank
+    # once -- an archive with no such warning left every fact pointing at a study that
+    # no longer rendered.
+    approved = published(entries)
+    # Where each id stands, so a dangling reference can say why.
+    standing = {str(e["id"]): e["status"] for e in entries if e["id"] is not None}
+    # Valid citation targets, as strings: approved research ids (numeric, from the
     # Sheet) plus the hand-maintained POLICY_SOURCES string ids. Comparing in
     # string space lets numeric research ids and string policy-source ids coexist.
-    valid = {str(e["id"]) for e in live if e["id"] is not None} | policy_source_ids(text)
+    valid = {str(e["id"]) for e in approved if e["id"] is not None} | policy_source_ids(text)
 
     def note_orphans(label, referenced):
         dangling = sorted(referenced - valid)
         if dangling:
-            print(f"  note: {label} reference ids missing or archived "
-                  f"(not in the tracker or POLICY_SOURCES): {', '.join(dangling)}")
+            what = ", ".join(f"{i} ({standing.get(i, 'not in the sheet')})" for i in dangling)
+            print(f"  note: {label} point at papers that are not published "
+                  f"(not approved, and not in POLICY_SOURCES): {what}")
 
     note_orphans("POLICY_DATA paperIds", policy_paper_ids(text))
     note_orphans("{{cite:ID}} tokens", cite_token_ids(text))
     note_orphans("Fact Bank paperIds", fact_bank_paper_ids())
-    archived = len(entries) - len(live)
-    print(f"  ok  {len(live)} live entries valid"
-          + (f"  ({archived} archived, not published)" if archived else ""))
+    note_unfinished(entries)
+    others = counts_note(entries)
+    print(f"  ok  {len(approved)} approved entries valid"
+          + (f"  ({others}, not published)" if others else ""))
     return 0
 
 
@@ -636,21 +772,146 @@ def cmd_build(url=None):
         if assigned:
             print(f"  assigned id + intake date to {assigned} new row(s)")
 
-    # Publish only live rows; archived rows stay in the sheet/CSV for the record.
-    live = [e for e in entries if not e.get("archived")]
-    archived = len(entries) - len(live)
-    out = splice_research(text, live)
+    # Publish only approved rows; the rest stay in the sheet/CSV for the record.
+    approved = published(entries)
+    others = counts_note(entries)
+    out = splice_research(text, approved)
     with open(DATA, "w", encoding="utf-8") as fh:
         fh.write(out)
-    print(f"  wrote  data/tracker-data.js  ({len(live)} entries published"
-          + (f"; {archived} archived, kept in the sheet)" if archived else ")"))
+    note_unfinished(entries)
+    print(f"  wrote  data/tracker-data.js  ({len(approved)} entries published"
+          + (f"; {others}, kept in the sheet)" if others else ")"))
     print("  Reload the page to see it; commit + push to publish.")
     return 0
 
 
+def _rules_selftest():
+    """The status rules, on tiny in-memory sheets (nothing is read or written).
+    Returns (number of checks, list of what went wrong)."""
+    problems, done = [], [0]
+
+    def expect(ok, what):
+        done[0] += 1
+        if not ok:
+            problems.append(what)
+
+    base = {"id": "", "date": "2026-01-02", "added": "2026-01-03", "category": "cat-a",
+            "geography": "us", "evidence": "", "title": "A title", "source": "Ann -- Org",
+            "sourceUrl": "https://example.org/", "keyFinding": "A finding.",
+            "takeaways": "One point", "extra_json": "", "foundational": "", "note": ""}
+    old_cols = ["id", "date", "added", "archived", "category", "geography", "evidence", "title",
+                "source", "sourceUrl", "keyFinding", "takeaways", "extra_json", "foundational"]
+    new_cols = COLUMNS
+
+    def sheet(header, rows):
+        buf = io.StringIO()
+        w = csv.DictWriter(buf, fieldnames=header, extrasaction="ignore")
+        w.writeheader()
+        for r in rows:
+            w.writerow(dict(base, **r))
+        buf.seek(0)
+        return [row_to_entry(r) for r in csv.DictReader(buf)]
+
+    def errors_of(header, rows):
+        return validate(sheet(header, rows), ["cat-a"], warn=lambda m: None)
+
+    def names(errors, *words):
+        return any(all(w in m for w in words) for m in errors)
+
+    def link(n):
+        return {"sourceUrl": f"https://example.org/{n}"}
+
+    # A sheet with no `status` column is read exactly the old way.
+    old = sheet(old_cols, [
+        dict(id="1", **link(1)),                                                  # live
+        dict(id="2", archived="superseded 2026-08", title="", **link(2)),         # archived, a reason
+        dict(id="3", archived="ARCHIVED", **link(3)),                             # archived, the bare word
+        dict(id="4", archived="pending", **link(4)),                              # any text hides it
+        dict(id="5", foundational="foundational", **link(5)),                     # column ignored
+    ])
+    expect(not validate(old, ["cat-a"], warn=lambda m: None), "old sheet: a clean sheet gave errors")
+    expect([e["status"] for e in old] == [APPROVED, ARCHIVED, ARCHIVED, ARCHIVED, APPROVED],
+           "old sheet: any text in `archived` (even 'pending') must mean archived, blank approved")
+    expect([e["note"] for e in old] == ["", "superseded 2026-08", "", "pending", ""],
+           "old sheet: the archived text must become the note (nothing for the bare word)")
+    expect(all(not e["foundational"] for e in old), "old sheet: `foundational` must still be ignored")
+    expect(names(errors_of(old_cols, [dict(id="1", date="", **link(1))]), "row 1", "'date'"),
+           "old sheet: a live row without a date must still stop the sync and name the row")
+    expect(names(errors_of(old_cols, [dict(id="1", archived="", title="", **link(1))]), "row 1", "'title'"),
+           "old sheet: a blank-archived bare link must still stop the sync (as it always did)")
+
+    # A sheet with a `status` column.
+    new = sheet(new_cols, [
+        dict(id="1", status="approved", **link(1)),
+        dict(id="2", status="", **link(2)),                                       # blank = under review
+        dict(id="3", status=" Approved ", foundational="Foundational", **link(3)),
+        dict(id="4", status="under review", date="", title="", source="", category="",
+             geography="", keyFinding="", takeaways="", **link(4)),               # a bare link
+        dict(id="5", status="archived", note="superseded", title="", **link(5)),
+        dict(id="6", status="approved", **link(6)),
+        dict(id="7", status="under review", foundational="foundational", **link(7)),
+    ])
+    expect(not validate(new, ["cat-a"], warn=lambda m: None), "new sheet: a clean sheet gave errors")
+    expect([e["status"] for e in new] == [APPROVED, UNDER_REVIEW, APPROVED, UNDER_REVIEW, ARCHIVED,
+                                          APPROVED, UNDER_REVIEW], "new sheet: statuses misread")
+    expect([e["id"] for e in unfinished(new)] == [4], "new sheet: only the bare link is unfinished")
+    out = serialize_entries(published(new))
+    back = JSParser(out, len("const RESEARCH_DATA = ")).arr()
+    expect([b["id"] for b in back] == [1, 3, 6], "new sheet: only approved rows may be published")
+    expect([b.get("foundational") for b in back] == [None, True, None],
+           "new sheet: `foundational: true` belongs on the approved foundational row only")
+    expect("status" not in out and "note:" not in out, "new sheet: status and note must never be published")
+    # ... and the snapshot columns carry all of it through a write and a read.
+    for label, entries in (("new", new), ("old", old)):
+        buf = io.StringIO()
+        w = csv.DictWriter(buf, fieldnames=COLUMNS)
+        w.writeheader()
+        for e in entries:
+            w.writerow(entry_to_row(e))
+        buf.seek(0)
+        expect([row_to_entry(r) for r in csv.DictReader(buf)] == entries,
+               f"snapshot: status, foundational and note must round-trip ({label} sheet)")
+    # An extra_json key can never override a column.
+    sneaky = sheet(new_cols, [dict(id="1", status="under review",
+                                   extra_json='{"status": "approved", "highlight": {"a": 1}}', **link(1))])
+    expect(sneaky[0]["status"] == UNDER_REVIEW and sneaky[0].get("highlight") == {"a": 1},
+           "extra_json must not be able to approve a row, but must still carry its own keys")
+
+    # A sheet with neither column keeps what the snapshot recorded, row by row, even when
+    # two rows share a link.
+    ledger = sheet(new_cols, [dict(id="1", status="approved", **link(1)),
+                              dict(id="2", status="archived", note="old", **link(1)),
+                              dict(id="3", status="under review", **link(3))])
+    bare = sheet(["id", "sourceUrl", "title"], [dict(id="1", **link(1)), dict(id="2", **link(1)),
+                                                dict(id="3", **link(3)), dict(id="", **link(9))])
+    keep_recorded_state(bare, ledger)
+    expect([e["status"] for e in bare] == [APPROVED, ARCHIVED, UNDER_REVIEW, APPROVED]
+           and bare[1]["note"] == "old",
+           "a sheet with neither column must keep the snapshot's status for each row (matched by id first)")
+
+    # Mistakes stop the sync and name the row.
+    expect(names(errors_of(new_cols, [dict(id="1", status="approved", **link(1)),
+                                      dict(id="2", status="aproved", **link(2))]), "row 2", "'aproved'"),
+           "an unknown status must stop the sync and name the row")
+    expect(names(errors_of(new_cols, [dict(id="1", status="approved", keyFinding="", **link(1))]),
+                 "row 1", "'keyFinding'"), "an approved row must be complete")
+    expect(names(errors_of(new_cols, [dict(id="1", status="approved", takeaways="", **link(1))]),
+                 "row 1", "takeaway"), "an approved row needs a takeaway")
+    expect(names(errors_of(new_cols, [dict(id="1", status="under review", foundational="classic", **link(1))]),
+                 "row 1", "'classic'"), "an unknown `foundational` word must stop the sync")
+    expect(names(errors_of(new_cols, [dict(id="1", status="approved", **link(1)),
+                                      dict(id="1", status="approved", **link(2))]), "duplicate id"),
+           "a duplicate id must still stop the sync")
+    expect(names(errors_of(new_cols, [dict(id="1", status="approved", **link(1)),
+                                      dict(id="1", status="under review", **link(1))]), "same link"),
+           "a repeated link must say so")
+    return done[0], problems
+
+
 def cmd_selftest():
     """Prove the FULL pipeline is lossless on the live data, touching nothing:
-    parse -> CSV -> parse -> serialize -> parse, then deep-compare to the original."""
+    parse -> CSV -> parse -> serialize -> parse, then deep-compare to the original.
+    Then check the status rules on small in-memory sheets."""
     text = read_data()
     _, _, a = find_array_span(text, "RESEARCH_DATA")
 
@@ -680,6 +941,13 @@ def cmd_selftest():
         print(f"selftest FAILED: {diffs} entr(y/ies) changed by the round-trip", file=sys.stderr)
         return 1
     print(f"  selftest ok  full CSV round-trip is identical for all {len(a)} entries")
+    checks, problems = _rules_selftest()
+    if problems:
+        print(f"selftest FAILED: {len(problems)} of {checks} status-rule checks failed:", file=sys.stderr)
+        for p in problems:
+            print("  - " + p, file=sys.stderr)
+        return 1
+    print(f"  selftest ok  all {checks} status-rule checks pass")
     return 0
 
 
