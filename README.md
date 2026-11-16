@@ -29,9 +29,9 @@ Which file owns what, and how the `@@include@@` format works:
 
 The research list is curated in a Google Sheet, and a daily GitHub Action is its
 only writer into the repo: it saves a snapshot to `content/research.csv` and
-regenerates the `RESEARCH_DATA` array in `data/tracker-data.js`. Change papers in
-the Sheet, and do not edit or commit those two from a branch (the one-writer rule,
-in [`CONTRIBUTING.md`](CONTRIBUTING.md)):
+regenerates the `RESEARCH_DATA` array in `data/tracker-data.js` from the rows whose
+`status` is `approved`. Change papers in the Sheet, and do not edit or commit those
+two from a branch (the one-writer rule, in [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 
 ```sh
 python3 tools/research.py check                 # validate; write nothing (safe anywhere)
