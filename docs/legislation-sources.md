@@ -218,6 +218,18 @@ then reload the page, open the Legislation tab and run `node tests/interactions.
   The date the page gives for when the state bills were read is the day the oldest saved page of a session still in progress was fetched (`read_day`
   in `tools/legislation.py`), not the day the build ran, so refreshing moves it forward. Asking Open States for a higher limit is the other way to
   shorten the first fetch.
+- **The weekly refresh job (installed on the owner's Mac, 2026-11-17).** A launchd job runs every Monday at 7:30 AM (at wake, if the Mac was asleep), only
+  while the owner is logged in, and refreshes the cache: `openstates_fetch.py --refresh-open`, then `congress_fetch.py`. It writes only to
+  `~/.cache/ai-tracker` and to its log, `~/Library/Logs/ai-tracker-refresh.log`; it never touches the repository; and it tells the owner by a macOS
+  notification when it is done or when a step failed twice. After that, run `python3 tools/state_summaries.py` and `python3 tools/legislation.py build`
+  by hand (about two minutes) and commit `data/legislation-bills.js` and `content/legislation-state-summaries.json`. The job lives in
+  `~/.local/share/ai-tracker-refresh/` (outside Documents, which macOS can keep a background job out of), with a README.txt of its own. The `.py` files
+  there are COPIES of `tools/openstates_fetch.py` and `tools/congress_fetch.py`, so when either one changes (a new search phrase in `TERMS`, say), copy it
+  again: `cp tools/openstates_fetch.py tools/congress_fetch.py ~/.local/share/ai-tracker-refresh/`. Run it now with
+  `launchctl kickstart gui/$(id -u)/local.ai-tracker.legislation-refresh`; remove it with
+  `launchctl bootout gui/$(id -u)/local.ai-tracker.legislation-refresh` and by deleting
+  `~/Library/LaunchAgents/local.ai-tracker.legislation-refresh.plist` and that folder. It replaces the scheduled Claude task
+  `finish-openstates-search`, which switches itself off once its search is finished.
 - **What stops the build:** an unknown jurisdiction or session, a date that does not parse, a bad link. It writes nothing if it stops.
 - **The midterm results are read by hand, not fetched** (AP's pages are bot-walled for scripts). Read them in a browser from AP's overview page and each
   state's overview page (`https://apnews.com/projects/elections-2026/<state>-results/`) and type what changed into `data/legislation-data.js`: the two
