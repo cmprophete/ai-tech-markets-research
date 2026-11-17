@@ -280,6 +280,8 @@ const legislationTests = async () => {
   const counts = JSON.parse(w.eval("(() => { const c = {}; LEGISLATION_DATA.forEach(b => { if (b.level === 'state' && !b.passing && US_MAP.states[b.state]) c[b.state] = (c[b.state] || 0) + 1; }); return JSON.stringify(c); })()"));
   const nTerritory = w.eval("LEGISLATION_DATA.filter(b => b.level === 'state' && !b.passing && !US_MAP.states[b.state]).length");
   const feeds = JSON.parse(w.eval('JSON.stringify(LEGISLATION_FEEDS)'));
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const longDay = iso => { const [y, m, day] = iso.split('-'); return `${MONTHS[+m - 1]} ${+day}, ${y}`; };   // "2026-11-17" as the page writes it
   const PAGE = 10, pagesOf = n => Math.max(1, Math.ceil(n / PAGE));   // the bills table's page (LEG_PAGE_SIZE); the Papers list and the Fact Bank keep fifty
   const RPAGE = 10, rpagesOf = n => Math.max(1, Math.ceil(n / RPAGE));   // the results table's page (LEG_RESULTS_PAGE_SIZE): states to a page
   // The pointer leaving the map: with nothing pinned the card stays on the state last pointed at for LEG_CARD_GRACE ms (so the pointer can reach its link), so a test that wants the card
@@ -456,6 +458,10 @@ const legislationTests = async () => {
   ok('on this layer the source is cited in a line directly below the map, with a link to AP\'s midterm results page, the one source for the Senate, the House and governors, and nothing else',
      d.getElementById('legLegend').nextElementSibling === mapSource && /^Source: The Associated Press, “2026 Midterm Election Results: Senate, House and Governor Races”/.test(mapSource.textContent) &&
      links.length === 1 && links[0] === AP && !/U\.S\. Senate Election Results/.test(mapSource.textContent), mapSource.textContent);
+  const apStamp = w.eval('MIDTERM_SOURCES.ap.updated');
+  ok('and the line ends with when the page was last updated, on a line of its own: AP\'s own stamp, as written',
+     !!apStamp && mapSource.querySelectorAll('.leg-map-updated').length === 1 && mapSource.querySelector('.leg-map-updated').textContent === `Last updated ${apStamp}.` &&
+     mapSource.textContent.endsWith(` Last updated ${apStamp}.`), mapSource.textContent);
   fire(path('TX'), 'mouseover');
   ok('pointing at Texas shows its Senate, House and governor results, with no source line and no links: AP is cited under the map and in the results table',
      /Texas/.test(panel()) && /SenateDemocratic gain/.test(panel()) && /HouseDemocrats 14, Republicans 24/.test(panel()) && /GovernorDemocratic gain/.test(panel()) &&
@@ -664,6 +670,18 @@ const legislationTests = async () => {
      /^Sources: U\.S\. Government Publishing Office, “Bill Status XML Bulk Data” \(bulk data, read /.test(d.getElementById('legMapSource').textContent) &&
      /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) &&
      links2.join() === Object.values(feeds).map(f => f.url).join() && !/Associated Press|tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
+  const newestRead = Object.values(feeds).map(f => f.read).filter(Boolean).sort().pop();
+  ok('and it ends with when the page was last updated: the newest of the feeds\' dates, while each feed\'s own date stays in its citation',
+     !!newestRead && d.querySelectorAll('#legMapSource .leg-map-updated').length === 1 && d.querySelector('#legMapSource .leg-map-updated').textContent === `Last updated ${longDay(newestRead)}.` &&
+     d.getElementById('legMapSource').textContent.endsWith(` Last updated ${longDay(newestRead)}.`) &&
+     Object.values(feeds).every(f => d.getElementById('legMapSource').textContent.includes(`read ${longDay(f.read)})`)), d.getElementById('legMapSource').textContent);
+  const readDays = Object.keys(feeds).map(k => [k, feeds[k].read]);
+  readDays.forEach(([k]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ''`));
+  fire(d.getElementById('legLayerResults'), 'click'); fire(d.getElementById('legLayerBills'), 'click');
+  ok('with no feed dated the line makes up no date: it still cites the sources, and says nothing about when they were updated',
+     /^Sources: /.test(d.getElementById('legMapSource').textContent) && !/Last updated/.test(d.getElementById('legMapSource').textContent) && !d.querySelector('#legMapSource .leg-map-updated'), d.getElementById('legMapSource').textContent);
+  readDays.forEach(([k, v]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ${JSON.stringify(v)}`));
+  fire(d.getElementById('legLayerResults'), 'click'); fire(d.getElementById('legLayerBills'), 'click');
   fire(d.getElementById('legLayerResults'), 'click');
   ok('and back on Midterm results it cites AP alone', links.length === 1 && [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href')).join() === AP);
   fire(d.getElementById('legLayerBills'), 'click');

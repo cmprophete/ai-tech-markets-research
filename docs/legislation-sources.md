@@ -246,3 +246,8 @@ then reload the page, open the Legislation tab and run `node tests/interactions.
 `data/legislation-bills.js` is fetched the first time the Legislation tab opens (`legLoadBills` in `src/js/60-legislation.js`, through
 `loadPayload` in `src/js/05-lazy.js`), so the other tabs never wait for it. It adds its rows to `LEGISLATION_DATA` and sets
 `LEGISLATION_FEEDS`, which the page reads for the sources line under the map (on the Bills layer) and for the note under the table.
+
+That line ends with "Last updated" and a date, on both layers: the newest of its sources' dates, which is the day each feed was read (`read` in
+`LEGISLATION_FEEDS`) on the Bills layer and AP's stamp (`updated` in `MIDTERM_SOURCES`) on the Midterm results layer. Each source's own date stays in its
+citation just before it, so a feed that is a day older than the other still says so. A source with no date adds none, and a line with no dated source says
+nothing about when it was updated. What moves the date: a rebuild after the weekly refresh moves the feeds' dates, and retyping AP's results moves its stamp.
