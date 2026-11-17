@@ -5,6 +5,8 @@
     python3 tools/openstates_fetch.py --only NY,CA --max-requests 20
     python3 tools/openstates_fetch.py --wait-for-allowance 3     # a scheduled run: wait up to 3 hours if today's allowance is not back yet
     python3 tools/openstates_fetch.py --term "artificial intelligence" --term "generative" --since 2025-01-01
+    python3 tools/openstates_fetch.py --refresh-open             # a weekly refresh: fetch again the sessions still in progress (about 100 requests)
+    python3 tools/openstates_fetch.py --refresh-open --dry-run   # say how many requests that would take, and make none
 
 Why Open States: it follows each legislature's own record (official title, official summary where the legislature gives one, every action
 with a standard classification, the session's dates), and publishes its data under a public-domain dedication with attribution
@@ -24,6 +26,12 @@ tool waits a minute and tries again; on the daily one it stops and says so, and 
 saved as it arrives, so an interrupted or stopped run carries on where it stopped and a finished run costs nothing to repeat. The whole
 list is about 500 requests, so a first run takes two or three days of the free allowance, and the same again if the cache is deleted to
 re-fetch. Nothing here touches the repository: the cache defaults to ~/.cache/ai-tracker/openstates.
+
+Refreshing: because a finished run costs nothing to repeat, the saved pages never get newer by themselves, and a bill's status on the page is only as
+recent as the page it came from. --refresh-open fetches again every page of every phrase for the sessions Open States dates as still in progress (no
+end date, or one that has not passed: 12 of the 108 on 2026-11-17), when their saved pages are older than --max-age days (default 1). A session that
+has ended is left alone: nothing more happens to its bills. A search's new pages are kept in memory and written together once the last has arrived,
+so a run that stops half way (the day's allowance, a lost connection) leaves the old pages, which agree with each other, in place.
 """
 import argparse
 import datetime
@@ -120,6 +128,9 @@ def main():
     ap.add_argument('--max-requests', type=int, default=0, help='stop after this many requests (0 = no limit)')
     ap.add_argument('--wait-for-allowance', type=float, default=0.0, metavar='HOURS',
                     help="if the day's allowance is already spent when the run starts, wait up to this many hours for it to come back (checking every 10 minutes) instead of stopping at once; for a scheduled run")
+    ap.add_argument('--refresh-open', action='store_true', help="fetch again every page of every phrase for the sessions still in progress (no end date, or one that has not passed) whose saved pages are older than --max-age days; for a weekly refresh. Ended sessions are left alone")
+    ap.add_argument('--max-age', type=float, default=1.0, metavar='DAYS', help='with --refresh-open: leave alone pages saved more recently than this (default 1), so a run that was stopped carries on instead of starting again')
+    ap.add_argument('--dry-run', action='store_true', help='say how many requests the run would make, at least, and make none')
     a = ap.parse_args()
     cache = os.path.expanduser(a.cache)
     os.makedirs(cache, exist_ok=True)
@@ -152,21 +163,36 @@ def main():
                 todo.append((j, c, s))
     print(f'{len(todo)} sessions in {len({c for _, c, _ in todo})} jurisdictions, terms {terms}, spacing {SPACING:.0f} s', flush=True)
 
-    fetched = hits = 0
+    fetched = hits = wanted = 0
     for j, c, s in todo:
+        end = s.get('end_date')
+        in_progress = end is None or end >= today
         for term in terms:
+            folder = os.path.join(cache, 'bills', c, s['identifier'])
+            p1 = os.path.join(folder, f'{slug(term)}-p1.json')
+            # --refresh-open: a session still in progress gets every page of the search fetched again once its saved pages are old enough. The
+            # new pages are kept in memory and written together when the last one has arrived, so a run that stops half way leaves the old
+            # pages, which agree with each other, in place (page boundaries move when bills are added, so old and new pages must not mix).
+            redo = bool(a.refresh_open and in_progress and os.path.exists(p1) and time.time() - os.path.getmtime(p1) > a.max_age * 86400)
+            if a.dry_run:
+                wanted += 1 if (redo or not os.path.exists(p1)) else 0
+                continue
+            fresh = []
             page, max_page = 1, 1
             while page <= max_page:
-                fn = os.path.join(cache, 'bills', c, s['identifier'], f'{slug(term)}-p{page}.json')
-                if os.path.exists(fn):
+                fn = os.path.join(folder, f'{slug(term)}-p{page}.json')
+                if os.path.exists(fn) and not redo:
                     d = json.load(open(fn))
                 else:
                     if a.max_requests and cl.count >= a.max_requests:
                         print(f'stopped at the request limit ({a.max_requests}); run again to continue', flush=True)
                         return
                     d = cl.get('/bills', [('jurisdiction', j['id']), ('session', s['identifier']), ('q', term), ('per_page', 20), ('page', page)] + [('include', i) for i in INCLUDE])
-                    os.makedirs(os.path.dirname(fn), exist_ok=True)
-                    json.dump(d, open(fn, 'w'))
+                    if redo:
+                        fresh.append((fn, d))
+                    else:
+                        os.makedirs(os.path.dirname(fn), exist_ok=True)
+                        json.dump(d, open(fn, 'w'))
                     fetched += 1
                 max_page = d['pagination'].get('max_page') or 1
                 if page == 1:
@@ -175,6 +201,16 @@ def main():
                     if n:
                         print(f'{c.upper():3} {s["identifier"]:10} {term!r}: {n} bills ({max_page} page{"s" if max_page > 1 else ""})', flush=True)
                 page += 1
+            if redo:
+                k = max_page + 1
+                while os.path.exists(os.path.join(folder, f'{slug(term)}-p{k}.json')):   # the search now has fewer pages than it had
+                    os.remove(os.path.join(folder, f'{slug(term)}-p{k}.json'))
+                    k += 1
+                for fn, d in fresh:
+                    json.dump(d, open(fn, 'w'))
+    if a.dry_run:
+        print(f'dry run: at least {wanted} request{"s" if wanted != 1 else ""} (one for each search to fetch, more where a search has more than one page); nothing fetched', flush=True)
+        return
     print(f'done: {fetched} requests this run, {hits} matches across all sessions', flush=True)
 
 

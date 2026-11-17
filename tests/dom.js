@@ -7,7 +7,7 @@
    <script src> is inlined in place before parsing, which gets execution order
    exactly right and avoids the network entirely.
 
-   Requires jsdom:  npm install jsdom
+   Requires jsdom (pinned in package.json):  npm install
    ═══════════════════════════════════════════════════════════════════════════ */
 const fs = require('fs');
 const path = require('path');
@@ -37,7 +37,7 @@ function diskInterceptor() {
   });
 }
 
-function load(page, hash) {
+function load(page, hash, opts = {}) {
   const { JSDOM, VirtualConsole } = require('jsdom');
   let html = fs.readFileSync(path.join(ROOT, page), 'utf8');
   const missing = [];
@@ -52,11 +52,16 @@ function load(page, hash) {
     return '<script>' + fs.readFileSync(p, 'utf8').replace(/<\/script/gi, '<\\/script') + '</script>';
   });
 
-  const errors = [], warns = [];
+  // A test may break the page's data on purpose (opts.transform gets the assembled
+  // HTML), to prove that a check still fires.
+  if (opts.transform) html = opts.transform(html);
+
+  const errors = [], warns = [], infos = [];
   const vc = new VirtualConsole();
   vc.on('jsdomError', e => errors.push('jsdomError: ' + ((e && e.message) || e)));
   vc.on('error', (...a) => errors.push('console.error: ' + a.map(String).join(' ')));
   vc.on('warn', (...a) => warns.push(a.map(String).join(' ')));
+  vc.on('info', (...a) => infos.push(a.map(String).join(' ')));
 
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
@@ -78,7 +83,7 @@ function load(page, hash) {
   const w = dom.window, d = w.document;
   d.dispatchEvent(new w.Event('DOMContentLoaded', { bubbles: true }));
   w.dispatchEvent(new w.Event('load'));
-  return { dom, w, d, errors, warns, missing };
+  return { dom, w, d, errors, warns, infos, missing };
 }
 
 /* Let queued microtasks and the disk loader settle. Needed after anything that

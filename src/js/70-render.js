@@ -365,8 +365,19 @@
   // ── R7: data-validation guard (console-only) ────────────────
   // Catches the silent-reference-rot class of bug (e.g. an entry carrying a
   // theme id as its category, a cite token pointing at a deleted entry) at load.
+  //
+  // Two levels. A PROBLEM is a mistake in the data: console.error, then one warning
+  // each. A NOTE is a reference to a paper that is not published (archived, or still
+  // under review, in the Sheet). The page leaves such a reference out on purpose: a
+  // policy card, written by its author, may cite a paper the Sheet has archived, and
+  // an archived paper's facts and summary go with it. That is expected, so it is
+  // reported once at info level and is not an error. The page only has the published
+  // papers, so it cannot tell "archived" from "mistyped id"; `tools/research.py check`
+  // reads the whole Sheet and says which one it is.
   (function validateData() {
     const problems = [];
+    const notes = [], unpublished = new Set();
+    const note = (paperId, text) => { unpublished.add(String(paperId)); notes.push(text); };
     const catIds = new Set(CATEGORIES.map(c => c.id));
     const ids = new Set();
     RESEARCH_DATA.forEach(e => {
@@ -380,7 +391,7 @@
     (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
-      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) problems.push(`policy ${p.id}: paperId ${pid} not found`); });
+      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) note(pid, `policy ${p.id}: paperId ${pid}`); });
       if (!POLICY_CATEGORIES[p.category]) problems.push(`policy ${p.id}: unknown category "${p.category}"`);
       if (!DISRUPTION_LEVELS.some(l => l.id === p.level)) problems.push(`policy ${p.id}: unknown level "${p.level}"`);
       // A base category with no CATEGORY_MERGE_MAP entry drops its policies
@@ -399,7 +410,7 @@
     const scanTokens = (obj, label) => {
       const s = JSON.stringify(obj);
       for (const m of s.matchAll(/\{\{citep?:([\w-]+)\}\}/g)) {
-        if (!ids.has(m[1])) problems.push(`${label}: cite token ${m[1]} resolves to no entry`);
+        if (!ids.has(m[1])) note(m[1], `${label}: cite token ${m[1]}`);
       }
       for (const m of s.matchAll(/\{\{pol:([a-z0-9-]+)\|/g)) {
         if (!polIds.has(m[1])) problems.push(`${label}: policy cross-reference "${m[1]}" resolves to no policy`);
@@ -407,7 +418,7 @@
     };
     // Paper summaries (the pilot, data/paper-summaries.js): shape and house rules
     (typeof PAPER_SUMMARIES !== 'undefined' ? Object.entries(PAPER_SUMMARIES) : []).forEach(([id, s]) => {
-      if (!RESEARCH_DATA.some(e => String(e.id) === id)) problems.push(`summary ${id}: no such paper`);
+      if (!RESEARCH_DATA.some(e => String(e.id) === id)) note(id, `summary ${id}`);
       if (!s.lede || !s.body) problems.push(`summary ${id}: needs a lede and a body paragraph`);
       if (s.basis !== 'full text' && s.basis !== 'abstract only') problems.push(`summary ${id}: basis must be "full text" or "abstract only"`);
       if (s.basis === 'abstract only' && s.note) problems.push(`summary ${id}: a summary written from the abstract only carries no "Take note" paragraph`);
@@ -417,6 +428,10 @@
     if (problems.length) {
       console.error(`[tracker] data validation: ${problems.length} problem(s) found`);
       problems.slice(0, 25).forEach(p => console.warn('[tracker]', p));
+    }
+    if (notes.length) {
+      console.info(`[tracker] ${notes.length} reference(s) to ${unpublished.size} paper(s) that are not published (archived or under review) are left out of the page, by design: ${[...unpublished].join(', ')}`);
+      notes.forEach(n => console.debug('[tracker] left out:', n));
     }
   })();
 

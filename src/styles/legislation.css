@@ -107,6 +107,8 @@
   .leg-map-source { margin: 14px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
   .leg-map-source a { color: var(--accent); text-underline-offset: 2px; }
   .leg-map-source a:hover { text-decoration-thickness: 2px; }
+  /* The date on a line of its own, so it is found without reading the citations above it. */
+  .leg-map-updated { display: block; margin-top: 4px; }
 
   .leg-panel { background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); padding: 18px 18px 16px; min-height: 220px; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
   /* The card never grows taller than the map column beside it. Its slot is a grid item that is stretched to the row's height, which the map sets, and that

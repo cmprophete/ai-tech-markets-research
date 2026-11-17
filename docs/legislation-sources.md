@@ -60,28 +60,24 @@ To add a state, write a reader in `tools/state_summaries.py` (a function from a 
 their text by script or link to PDF analyses), and for those the choice is a dash or a summary we write from the bill's full text, which is a larger job: see
 "Limits to know".
 
-### Where it stands (November 12, 2026)
+### Where it stands (November 17, 2026)
 
-- **What the page shows** is the list for "artificial intelligence" alone. It found 2,042 bills; 1,258 are not active; 784 are active, of which 477
-  are about AI and 307 only mention it. (The first run had 445 and 339: reading the legislatures' own summaries for Illinois and New Jersey moved 32 bills
-  whose synopsis or statement names AI into the first group.) The 477 are in 38 jurisdictions (37 states or DC, and Puerto Rico; the other 14 have none),
-  371 of them with the legislature's own summary. With the checkbox on, 46 jurisdictions have bills (every one but DC, Indiana, Massachusetts, Missouri,
-  New Hampshire and South Dakota).
-- **Summaries read from the legislatures' sites (November 12, 2026).** 208 bills gained one: Illinois 109 of 109, New Jersey 97 of 104 (the other seven,
-  A 390, A 5024, A 5800, S 329, S 4888, S 4934 and S 4959, have no introduced text published yet), and Maryland 2 of 10 (its 2026 session pages answered
-  with a server error that day, and a bill's page is the only place the synopsis is). Still without a summary, of the 477 bills about AI: 106 (Pennsylvania
-  35, Michigan 9, Utah 7, New Jersey 6, Louisiana, Tennessee and Texas 5 each, Maryland and Montana 4 each, Arkansas, Idaho, Maine and Vermont 3 each,
-  Connecticut, Mississippi and Washington 2 each, and one each in Iowa, Kansas, New Mexico, Nevada, New York, Oklahoma, Puerto Rico and West Virginia),
-  and 122 of the 307 that only mention AI. Those states' pages give no summary in their own HTML, or give it in a PDF analysis or by script.
-- **The other three phrases are started and not finished.** Open States' free key allows 250 requests a day, and that day's allowance (the first
-  full run, the setup and the day's tests had spent most of it) ran out partway. All three phrases are finished in 14 of the 108 sessions, which
-  are the seven jurisdictions Alabama, Alaska, Arizona, Arkansas, California, Colorado and Connecticut; "deepfake" also has three
-  sessions searched elsewhere (Delaware, Wyoming) that found nothing new, so the build reports it as finished in 17. The build
-  leaves all three phrases out until they are finished everywhere, says so when it runs, and the page's note names only "artificial
-  intelligence". What the seven jurisdictions showed: 14 bills the first search had not found (Arizona 5, California 4, Arkansas 2, Alaska,
-  Alabama and Colorado 1 each), 5 of them active, and 4 of those about AI (three in California, about deepfakes and digital replicas, and an
-  Arkansas deepfake offense). About 280 requests remain, so two days of the free allowance; run the
-  fetch again each day (see "Refreshing") and then the build.
+- **What the page shows** is the list for all four phrases ("artificial intelligence", "deepfake", "digital replica" and "synthetic media"), with the
+  sessions still in progress fetched again on November 17. The searches found 2,307 bills (2,042 for "artificial intelligence" alone on November 12);
+  1,407 are not active; 900 are active, of which 499 are about AI (it was 477) and 401 only mention it (it was 307). The 499 are in 39 jurisdictions,
+  393 of them with the legislature's own summary. With the checkbox on, 48 jurisdictions have bills. By default the page lists 780 bills: these 499 and
+  the 281 federal ones.
+- **Summaries read from the legislatures' sites (November 17, 2026).** 251 bills have one: Illinois 123, New Jersey 116 of 122 (the other six, A 390,
+  A 5024, S 329, S 4888, S 4934 and S 4959, have no introduced text published yet) and Maryland 12 of 12 (its session pages answered on the 17th; on
+  the 12th they gave a server error, and a bill's page is the only place the synopsis is). Still without a summary, of the 499 bills about AI: 106
+  (Pennsylvania 35, Michigan 9, Louisiana and Utah 7 each, Tennessee 6, New Jersey and Texas 5 each, Arkansas and Montana 4 each, Idaho, Maine and
+  Vermont 3 each, and 15 more in states with one or two), and 145 of the 401 that only mention AI. Those states' pages give no summary in their own
+  HTML, or give it in a PDF analysis or by script.
+- **All four phrases are finished, in all 108 sessions (November 17, 2026).** Open States' free key allows 250 requests a day. The widened search took
+  the scheduled run of November 16 (about 37 minutes, after three runs that failed on the owner's spend limit) and a short run by hand on the 17th.
+  The 12 sessions still in progress (California, DC, Georgia, Guam, Illinois, Michigan, New Jersey, New York, Ohio, Pennsylvania, Puerto Rico and the
+  Virgin Islands) were then fetched again with `--refresh-open` (73 requests), which is what the page's "read November 17" means; the sessions that
+  have ended keep their pages from November 12, because nothing more happens to their bills.
 
 ### Limits to know
 
@@ -201,6 +197,7 @@ The 2026 Midterm results table lists ten states to a page (`LEG_RESULTS_PAGE_SIZ
 
 ```sh
 python3 tools/openstates_fetch.py                       # every phrase in TERMS, saved to ~/.cache/ai-tracker/openstates; resumes where it stopped
+python3 tools/openstates_fetch.py --refresh-open        # a weekly refresh: fetch again the sessions still in progress (12 on 2026-11-17, about 100 requests)
 python3 tools/state_summaries.py                        # the legislatures' own summaries for the bills Open States has none for (about 8 minutes the first time)
 python3 tools/congress_fetch.py                        # the federal bills: downloads what changed at GovInfo (about 46 MB the first time), scans it in a few seconds; no key
 python3 tools/legislation.py build
@@ -214,12 +211,43 @@ then reload the page, open the Legislation tab and run `node tests/interactions.
   10 requests a minute and 250 a day; the fetch spaces requests 7 seconds apart, waits a minute if it is limited anyway, stops with a message when
   the day's allowance is spent, and saves every page as it arrives, so an interrupted or stopped run carries on and a finished one costs nothing to
   repeat. The whole list is about 500 requests (the 175 for "artificial intelligence" and about 330 for the other three phrases), so a first run
-  takes two or three days of the free allowance, and so does a re-fetch from an empty cache (delete the folder to re-fetch). A lighter refresh, only
-  the sessions still in progress, is not built. Asking Open States for a higher limit is the other way to shorten it.
+  takes two or three days of the free allowance, and so does a re-fetch from an empty cache (delete the folder to re-fetch). A saved page never gets newer by itself (a run that finds a page saved costs nothing), so the state bills are only as
+  recent as the day they were fetched. `--refresh-open` (built 2026-11-17) fetches every page again for the sessions still in progress (no end
+  date, or one that has not passed): about 100 requests while a dozen legislatures are in session, more in the spring, and a session that has ended
+  is not fetched again. It replaces a session's pages only once all of them have arrived, and `--max-age` (default 1 day) lets a stopped run carry on.
+  The date the page gives for when the state bills were read is the day the oldest saved page of a session still in progress was fetched (`read_day`
+  in `tools/legislation.py`), not the day the build ran, so refreshing moves it forward. Asking Open States for a higher limit is the other way to
+  shorten the first fetch.
+- **The weekly refresh job (installed on the owner's Mac, 2026-11-17).** A launchd job runs every Monday at 7:30 AM (at wake, if the Mac was asleep), only
+  while the owner is logged in, and refreshes the cache: `openstates_fetch.py --refresh-open`, then `congress_fetch.py`. It writes only to
+  `~/.cache/ai-tracker` and to its log, `~/Library/Logs/ai-tracker-refresh.log`; it never touches the repository; and it tells the owner by a macOS
+  notification when it is done or when a step failed twice. After that, run `python3 tools/state_summaries.py` and `python3 tools/legislation.py build`
+  by hand (about two minutes) and commit `data/legislation-bills.js` and `content/legislation-state-summaries.json`. The job lives in
+  `~/.local/share/ai-tracker-refresh/` (outside Documents, which macOS can keep a background job out of), with a README.txt of its own. The `.py` files
+  there are COPIES of `tools/openstates_fetch.py` and `tools/congress_fetch.py`, so when either one changes (a new search phrase in `TERMS`, say), copy it
+  again: `cp tools/openstates_fetch.py tools/congress_fetch.py ~/.local/share/ai-tracker-refresh/`. Run it now with
+  `launchctl kickstart gui/$(id -u)/local.ai-tracker.legislation-refresh`; remove it with
+  `launchctl bootout gui/$(id -u)/local.ai-tracker.legislation-refresh` and by deleting
+  `~/Library/LaunchAgents/local.ai-tracker.legislation-refresh.plist` and that folder. It replaces the scheduled Claude task
+  `finish-openstates-search`, which switches itself off once its search is finished.
 - **What stops the build:** an unknown jurisdiction or session, a date that does not parse, a bad link. It writes nothing if it stops.
+- **The midterm results are read by hand, not fetched** (AP's pages are bot-walled for scripts). Read them in a browser from AP's overview page and each
+  state's overview page (`https://apnews.com/projects/elections-2026/<state>-results/`) and type what changed into `data/legislation-data.js`: the two
+  `updated` stamps, the `MIDTERM_NATIONAL` totals, and the row of every state that had a race still open (an `uncalled` result, or a House `dLead` or
+  `rLead`). A state's overview page says "N Democrats, M Republicans, K remaining" for its House seats and shows who leads a district still open; its
+  `-us-house-results` page shows one district at a time, so it is no use for this. After editing, the 50 rows must add up to AP's national House totals:
+  the seats called for each party, plus every seat still open or in a runoff, make the 435. They did on 2026-11-17 (D 256, R 171, 8 open), and the page
+  puts a note under the table when they differ. Still open that day: the Alaska Senate seat (ranked-choice counting may follow), House seats in
+  Alaska, Minnesota, North Carolina (3) and Tennessee, and two Louisiana runoffs; once those are called the layer can be left as it is. The Alaska
+  check in `tests/interactions.js` reads Alaska's row from the data, so a call does not break it.
 
 ## On the page
 
 `data/legislation-bills.js` is fetched the first time the Legislation tab opens (`legLoadBills` in `src/js/60-legislation.js`, through
 `loadPayload` in `src/js/05-lazy.js`), so the other tabs never wait for it. It adds its rows to `LEGISLATION_DATA` and sets
 `LEGISLATION_FEEDS`, which the page reads for the sources line under the map (on the Bills layer) and for the note under the table.
+
+That line ends with "Last updated" and a date, on both layers: the newest of its sources' dates, which is the day each feed was read (`read` in
+`LEGISLATION_FEEDS`) on the Bills layer and AP's stamp (`updated` in `MIDTERM_SOURCES`) on the Midterm results layer. Each source's own date stays in its
+citation just before it, so a feed that is a day older than the other still says so. A source with no date adds none, and a line with no dated source says
+nothing about when it was updated. What moves the date: a rebuild after the weekly refresh moves the feeds' dates, and retyping AP's results moves its stamp.

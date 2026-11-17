@@ -280,6 +280,8 @@ const legislationTests = async () => {
   const counts = JSON.parse(w.eval("(() => { const c = {}; LEGISLATION_DATA.forEach(b => { if (b.level === 'state' && !b.passing && US_MAP.states[b.state]) c[b.state] = (c[b.state] || 0) + 1; }); return JSON.stringify(c); })()"));
   const nTerritory = w.eval("LEGISLATION_DATA.filter(b => b.level === 'state' && !b.passing && !US_MAP.states[b.state]).length");
   const feeds = JSON.parse(w.eval('JSON.stringify(LEGISLATION_FEEDS)'));
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const longDay = iso => { const [y, m, day] = iso.split('-'); return `${MONTHS[+m - 1]} ${+day}, ${y}`; };   // "2026-11-17" as the page writes it
   const PAGE = 10, pagesOf = n => Math.max(1, Math.ceil(n / PAGE));   // the bills table's page (LEG_PAGE_SIZE); the Papers list and the Fact Bank keep fifty
   const RPAGE = 10, rpagesOf = n => Math.max(1, Math.ceil(n / RPAGE));   // the results table's page (LEG_RESULTS_PAGE_SIZE): states to a page
   // The pointer leaving the map: with nothing pinned the card stays on the state last pointed at for LEG_CARD_GRACE ms (so the pointer can reach its link), so a test that wants the card
@@ -456,6 +458,10 @@ const legislationTests = async () => {
   ok('on this layer the source is cited in a line directly below the map, with a link to AP\'s midterm results page, the one source for the Senate, the House and governors, and nothing else',
      d.getElementById('legLegend').nextElementSibling === mapSource && /^Source: The Associated Press, “2026 Midterm Election Results: Senate, House and Governor Races”/.test(mapSource.textContent) &&
      links.length === 1 && links[0] === AP && !/U\.S\. Senate Election Results/.test(mapSource.textContent), mapSource.textContent);
+  const apStamp = w.eval('MIDTERM_SOURCES.ap.updated');
+  ok('and the line ends with when the page was last updated, on a line of its own: AP\'s own stamp, as written',
+     !!apStamp && mapSource.querySelectorAll('.leg-map-updated').length === 1 && mapSource.querySelector('.leg-map-updated').textContent === `Last updated ${apStamp}.` &&
+     mapSource.textContent.endsWith(` Last updated ${apStamp}.`), mapSource.textContent);
   fire(path('TX'), 'mouseover');
   ok('pointing at Texas shows its Senate, House and governor results, with no source line and no links: AP is cited under the map and in the results table',
      /Texas/.test(panel()) && /SenateDemocratic gain/.test(panel()) && /HouseDemocrats 14, Republicans 24/.test(panel()) && /GovernorDemocratic gain/.test(panel()) &&
@@ -464,8 +470,12 @@ const legislationTests = async () => {
   fire(path('NE'), 'mouseover');
   ok('a Republican hold reads as one, in the Senate and for governor', /Nebraska/.test(panel()) && (panel().match(/Republican hold/g) || []).length === 2 && /HouseDemocrats 1, Republicans 2/.test(panel()), panel());
   fire(path('AK'), 'mouseover');
+  // The results move as AP calls races, so what Alaska's card should show is read from the data here, not written into the test.
+  const akRow = JSON.parse(w.eval('JSON.stringify(MIDTERM_RESULTS.AK)'));
+  const akUncalled = ['senate', 'governor'].filter(o => akRow[o] && akRow[o].result === 'uncalled').length, akLeads = (akRow.house.dLead || 0) + (akRow.house.rLead || 0);
   ok('an uncalled race says so and names who leads, and an uncalled House seat is counted',
-     /Alaska/.test(panel()) && (panel().match(/Uncalled/g) || []).length === 2 && /Peltola/.test(panel()) && /Not yet called: 1 Republican-leading/.test(panel()), panel());
+     /Alaska/.test(panel()) && (panel().match(/Uncalled/g) || []).length === akUncalled && (akUncalled === 0 || /Peltola/.test(panel())) &&
+     (akLeads === 0 || new RegExp(`Not yet called: ${akLeads} `).test(panel())), panel());
   fire(path('MS'), 'mouseover');
   ok('Mississippi is a Democratic gain, naming the winner', /Mississippi/.test(panel()) && /Democratic gain/.test(panel()) && /Colom/.test(panel()), panel());
   fire(path('MT'), 'mouseover');
@@ -660,6 +670,18 @@ const legislationTests = async () => {
      /^Sources: U\.S\. Government Publishing Office, “Bill Status XML Bulk Data” \(bulk data, read /.test(d.getElementById('legMapSource').textContent) &&
      /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) &&
      links2.join() === Object.values(feeds).map(f => f.url).join() && !/Associated Press|tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
+  const newestRead = Object.values(feeds).map(f => f.read).filter(Boolean).sort().pop();
+  ok('and it ends with when the page was last updated: the newest of the feeds\' dates, while each feed\'s own date stays in its citation',
+     !!newestRead && d.querySelectorAll('#legMapSource .leg-map-updated').length === 1 && d.querySelector('#legMapSource .leg-map-updated').textContent === `Last updated ${longDay(newestRead)}.` &&
+     d.getElementById('legMapSource').textContent.endsWith(` Last updated ${longDay(newestRead)}.`) &&
+     Object.values(feeds).every(f => d.getElementById('legMapSource').textContent.includes(`read ${longDay(f.read)})`)), d.getElementById('legMapSource').textContent);
+  const readDays = Object.keys(feeds).map(k => [k, feeds[k].read]);
+  readDays.forEach(([k]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ''`));
+  fire(d.getElementById('legLayerResults'), 'click'); fire(d.getElementById('legLayerBills'), 'click');
+  ok('with no feed dated the line makes up no date: it still cites the sources, and says nothing about when they were updated',
+     /^Sources: /.test(d.getElementById('legMapSource').textContent) && !/Last updated/.test(d.getElementById('legMapSource').textContent) && !d.querySelector('#legMapSource .leg-map-updated'), d.getElementById('legMapSource').textContent);
+  readDays.forEach(([k, v]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ${JSON.stringify(v)}`));
+  fire(d.getElementById('legLayerResults'), 'click'); fire(d.getElementById('legLayerBills'), 'click');
   fire(d.getElementById('legLayerResults'), 'click');
   ok('and back on Midterm results it cites AP alone', links.length === 1 && [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href')).join() === AP);
   fire(d.getElementById('legLayerBills'), 'click');
@@ -1343,7 +1365,9 @@ const legislationLoadTests = async () => {
     const fire = (el, type) => el.dispatchEvent(new sw.Event(type, { bubbles: true }));
     const open = row => { const tg = row.querySelector('.src-toggle'); if (tg.getAttribute('aria-expanded') !== 'true') tg.click(); return row; };
     const box = sd.getElementById('ppSearch');
-    const research = sw.eval('RESEARCH_DATA'), pilotIds = Object.keys(sw.eval('PAPER_SUMMARIES'));
+    const research = sw.eval('RESEARCH_DATA');
+    // A summary whose paper is archived is never shown (nothing attaches it), so there is no row to read for it
+    const pilotIds = Object.keys(sw.eval('PAPER_SUMMARIES')).filter(id => research.some(r => String(r.id) === id));
     const kids = row => [...row.querySelector('.src-body').children].map(c => c.className.split(' ')[0]).join();
     const facts = row => ({ layout: kids(row), belowLead: !!row.querySelector('.src-text > .src-finding + .src-chips'), labels: [...row.querySelectorAll('.src-chips .src-chip')].map(c => c.dataset.kind).join(), facts: row.querySelectorAll('.src-chips .src-chip').length, published: [...row.querySelectorAll('.src-chips .src-chip')].some(c => c.dataset.kind === 'Published'), buttons: [...row.querySelectorAll('.src-actions .cite-act')].map(b => b.textContent.trim()).join(' | '), side: !!row.querySelector('.src-side'), detail: !!row.querySelector('.src-detail') });
     const read = async id => {
@@ -1358,11 +1382,12 @@ const legislationLoadTests = async () => {
     box.value = ''; fire(box, 'input'); await wait(300);
     const plain = open(sd.querySelector('.src-row:not([data-summary])'));
     const plainId = plain.dataset.entryId, plainBullet = plain.querySelector('.src-takeaways li').textContent.trim().toLowerCase().slice(0, 40);
-    ok('some papers carry a summary (the pilot) and the rest do not', pilot.length > 0 && pilot.length < 30 && pilot.every(p => p.marked) && !!plain, 'pilot rows: ' + pilot.length);
+    ok('some papers carry a summary and the rest do not', pilot.length > 0 && pilot.length < research.length && pilot.every(p => p.marked) && !!plain, 'summarised rows: ' + pilot.length);
     ok('an open summary row shows a lede and a body paragraph, and no bullets',
        pilot.every(p => p.lede && p.lede.length > 20 && p.hasPara && !p.bullets));
+    // the note in parentheses can hold parentheses of its own, so it is matched up to the last one
     ok('every summary says where its text came from and whether it was reviewed',
-       pilot.every(p => /^Summary written from the (full text|abstract only)( \([^)]+\))?\. (Draft, not yet reviewed|Reviewed )/.test(p.basis)));
+       pilot.every(p => /^Summary written from the (full text|abstract only)( \(.+\))?\. (Draft, not yet reviewed|Reviewed )/.test(p.basis)));
     ok('a "Take note" paragraph, when there is one, is labelled and is a single paragraph', pilot.every(p => p.takeOk));
     ok('a summary written from the abstract only has no note', pilot.filter(p => /abstract only/.test(p.basis)).every(p => !p.hasTake));
     ok('a paper without a summary keeps its key finding and bullets', !!plain.querySelector('.src-finding') && !plain.querySelector('.src-lede') && !!plain.querySelector('.src-takeaways li'));
@@ -1384,9 +1409,21 @@ const legislationLoadTests = async () => {
     const hits2 = await find(plainBullet);
     ok('searching a phrase from a bullet still finds a paper that has no summary', hits2.includes(plainId), hits2.length + ' hits');
     box.value = ''; fire(box, 'input'); await wait(300);
-    ok('the pilot summaries pass the console validator', pg.warns.filter(m => /summary \d+:/.test(m)).length === 0, pg.warns.filter(m => /summary \d+:/.test(m))[0]);
+    ok('the summaries pass the console validator', pg.warns.filter(m => /summary \d+:/.test(m)).length === 0, pg.warns.filter(m => /summary \d+:/.test(m))[0]);
     const own = pg.errors.filter(e => !/data validation/.test(e));
     ok('no console errors with summaries on the page', own.length === 0, own[0]);
+  }
+  /* ── the console validator ────────────────────────────────────────────────
+     A reference to a paper that is not published (archived, or under review, in the Sheet) is left out of
+     the page on purpose, so the validator reports it once at info level and raises no error. A mistake in
+     the data still raises the error. */
+  {
+    const pg = load('index.html', '#about');
+    ok('references to unpublished papers are one info line, not an error',
+       !pg.errors.some(e => /data validation/.test(e)) && pg.infos.filter(m => /not published/.test(m)).length <= 1, pg.errors[0] || pg.infos[0]);
+    // break the data on purpose: point every policy cross-reference at a policy that does not exist
+    const bad = load('index.html', '#about', { transform: html => html.replace(/\{\{pol:[a-z0-9-]+\|/g, '{{pol:zz-no-such-policy|') });
+    ok('a real mistake in the data still raises the console error', bad.errors.some(e => /data validation: \d+ problem/.test(e)), bad.errors[0]);
   }
   ok('Fact Bank tab survives the lazy load', !!d.getElementById('viewFactBank'));
   ok('no console errors across the lazy paths', errors.length === 0, errors[0]);

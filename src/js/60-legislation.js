@@ -242,14 +242,25 @@
     const when = s.updated ? `${escapeHTML(s.kind || 'page')}, updated ${escapeHTML(s.updated)}` : s.read ? `${escapeHTML(s.kind || 'page')}, read ${escapeHTML(legDateLong(s.read))}` : escapeHTML(legDateLong(s.date));
     return `${url ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener">${title}</a>` : title} (${when})`;
   }
-  /* The line below the map: the sources of the layer being shown, each with a link, grouped by who wrote it. The 2026 Midterm results layer
-     cites AP; the Bills layer cites GovInfo (federal bills) and Open States (state bills), once their file has loaded. */
+  /* One source's own date, to compare and to show: a feed gives the day it was read ("2026-11-17"), AP the stamp its results were copied with
+     ("November 17, 2026, 9:44 AM"), shown as written. A source with neither has no date, and none is made up for it. */
+  function legSourceStamp(s) {
+    const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.read || '');
+    if (iso) return { key: Date.UTC(+iso[1], +iso[2] - 1, +iso[3]), text: legDateLong(s.read) };
+    const ap = /^([A-Za-z]+) (\d{1,2}), (\d{4})(?:, (\d{1,2}):(\d{2}) ([AP]M))?$/.exec(s.updated || ''), month = ap ? LEG_MONTHS.indexOf(ap[1]) : -1;
+    return month < 0 ? null : { key: Date.UTC(+ap[3], month, +ap[2], (+ap[4] || 0) % 12 + (ap[6] === 'PM' ? 12 : 0), +ap[5] || 0), text: s.updated };
+  }
+  /* The line below the map: the sources of the layer being shown, each with a link, grouped by who wrote it, then when the page was last updated: the
+     newest of those sources' dates. Each source's own date stays in its citation, so a feed that is a day older than the rest still says so. The 2026
+     Midterm results layer cites AP; the Bills layer cites GovInfo (federal bills) and Open States (state bills), once their file has loaded. */
   function legRenderMapSource() {
     const el = document.getElementById('legMapSource');
     if (!el) return;
     const src = legView.layer === 'results' ? legGet.sources() : (legGet.feeds() || {}), ids = Object.keys(src), groups = [];
     ids.forEach(id => { const g = groups.find(x => x.org === src[id].org); if (g) g.items.push(src[id]); else groups.push({ org: src[id].org, items: [src[id]] }); });
-    el.innerHTML = groups.length ? (ids.length > 1 ? 'Sources: ' : 'Source: ') + groups.map(g => `${escapeHTML(g.org)}, ${legJoin(g.items.map(legCiteLong))}`).join('; ') + '.' : '';
+    const newest = ids.map(id => legSourceStamp(src[id])).filter(Boolean).sort((a, b) => b.key - a.key)[0];
+    el.innerHTML = groups.length ? (ids.length > 1 ? 'Sources: ' : 'Source: ') + groups.map(g => `${escapeHTML(g.org)}, ${legJoin(g.items.map(legCiteLong))}`).join('; ') + '.'
+      + (newest ? ` <span class="leg-map-updated">Last updated ${escapeHTML(newest.text)}.</span>` : '') : '';
   }
   function legNationalBlock() {
     const n = legGet.national(), s = n && legGet.sources()[n.src];
