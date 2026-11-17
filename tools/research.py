@@ -7,12 +7,14 @@ research.py -- curate the research database from a spreadsheet.
     python3 tools/research.py build --sheet <url>              pull a published Google Sheet (CSV),
                                                                snapshot it to research.csv, then regenerate
     python3 tools/research.py check      validate the sheet without writing anything;
-                                         also notes the policy cards, {{cite}} tokens and
-                                         Fact Bank facts that point at a paper which is not
-                                         published (under review, archived or missing).
+                                         also checks the policy cards, {{cite}} tokens and
+                                         Fact Bank facts that point at a paper: one that is
+                                         under review or archived is a note, an id that is
+                                         in no row of the sheet (a typo, or a deleted row)
+                                         makes check exit 1.
                                          (also accepts --sheet <url>)
     python3 tools/research.py selftest   prove the parser/serializer round-trips losslessly
-                                         and that the status rules behave
+                                         and that the status and reference rules behave
 
 GOOGLE SHEETS. Keep the master in Google Sheets if you like collaborative editing.
 Publish it as CSV (File > Share > Publish to web > CSV), then feed that link to
@@ -43,6 +45,9 @@ own column order differs from the snapshot's):
                 `approved` rows are published, and only they must be complete (an
                 under-review row may be a bare link). Any other word stops the sync
                 and names the row. Archived rows keep their id and are not checked.
+                A link on an under-review row that repeats another row's link is a
+                named warning, never a stop (delete the repeat); two APPROVED rows
+                with one id and one link still stop the sync.
     foundational
                 blank or the word `foundational` (classic background reading). An
                 approved row that has it is published with `foundational: true`.
@@ -450,13 +455,20 @@ def category_ids(text):
     return [c["id"] for c in cats]
 
 
+def _line_of(text, pos):
+    """1-based line number of character offset `pos`."""
+    return text.count("\n", 0, pos) + 1
+
+
 def _id_list(text, key):
-    """String ids inside every `<key>: [ ... ]` array in `text`. Handles both
-    quoted string ids ("nelp-uws-2025") and bare integers, mixed in one array."""
-    ids = set()
+    """String ids inside every `<key>: [ ... ]` array in `text`, as {id: [line, ...]}:
+    the lines each id is written on. Handles both quoted string ids ("nelp-uws-2025")
+    and bare integers, mixed in one array."""
+    ids = {}
     for m in re.finditer(key + r":\s*\[([^\]]*)\]", text):
+        line = _line_of(text, m.start())
         for tok in re.finditer(r'"([\w-]+)"|(\d+)', m.group(1)):
-            ids.add(tok.group(1) if tok.group(1) is not None else tok.group(2))
+            ids.setdefault(tok.group(1) if tok.group(1) is not None else tok.group(2), []).append(line)
     return ids
 
 
@@ -468,7 +480,10 @@ def policy_paper_ids(text):
 def cite_token_ids(text):
     """IDs referenced by {{cite:ID}} / {{citep:ID}} prose tokens (numeric research
     ids or string POLICY_SOURCES ids), for orphan detection."""
-    return set(re.findall(r"\{\{cite[a-z]*:\s*([\w-]+)\s*\}\}", text))
+    ids = {}
+    for m in re.finditer(r"\{\{cite[a-z]*:\s*([\w-]+)\s*\}\}", text):
+        ids.setdefault(m.group(1), []).append(_line_of(text, m.start()))
+    return ids
 
 
 def policy_source_ids(text):
@@ -478,16 +493,23 @@ def policy_source_ids(text):
     return set(re.findall(r'\bid:\s*"([\w-]+)"', m.group(1))) if m else set()
 
 
-def fact_bank_paper_ids():
-    """IDs referenced by Fact Bank facts (data/fact-bank-data.js). Returns an
-    empty set if that file is absent or unreadable, so `check` still runs on a
-    partial checkout instead of crashing."""
+def read_fact_bank():
+    """The text of data/fact-bank-data.js, or "" if that file is absent or unreadable, so
+    `check` still runs on a partial checkout instead of crashing."""
     try:
         with open(FACT_BANK_DATA, encoding="utf-8") as fh:
-            fb = fh.read()
+            return fh.read()
     except OSError:
-        return set()
-    return set(re.findall(r"paperId:\s*(\d+)", fb))
+        return ""
+
+
+def fact_bank_paper_ids(fb):
+    """IDs referenced by Fact Bank facts (`fb` is the text of data/fact-bank-data.js),
+    as {id: [line, ...]}."""
+    ids = {}
+    for m in re.finditer(r"paperId:\s*(\d+)", fb):
+        ids.setdefault(m.group(1), []).append(_line_of(fb, m.start()))
+    return ids
 
 
 # ── validation ──────────────────────────────────────────────────────────────
@@ -506,9 +528,29 @@ def unfinished(entries):
             and (any(not e[f] for f in REQUIRED) or not e["takeaways"])]
 
 
+def _same_link(a, b):
+    """Two rows that carry the same, non-blank link."""
+    return bool(a["sourceUrl"]) and a["sourceUrl"] == b["sourceUrl"]
+
+
+def _harmless_repeat(a, b):
+    """Two rows with the same id AND the same link, at least one of them not approved: a
+    pasted repeat (reconcile_ids hands it the old row's id). It cannot publish one id twice,
+    so it must not stop the sync. Two approved rows can, so that stays an error."""
+    return _same_link(a, b) and not (a["status"] == APPROVED and b["status"] == APPROVED)
+
+
+def _row_ref(n, e):
+    """'row 12 (id 40, approved)': which row and where it stands, without its title."""
+    return f"row {n} (id {e['id'] if e['id'] is not None else 'NEW'}, {e['status']})"
+
+
 def validate(entries, cats, warn=print):
     errors = []
-    seen_ids = {}
+    rows_by_id = {}
+    for n, e in enumerate(entries, 1):
+        if e["id"] is not None:
+            rows_by_id.setdefault(e["id"], []).append(n)
     date_re = __import__("re").compile(r"^\d{4}-\d{2}-\d{2}$")
 
     def check_date(v):
@@ -523,16 +565,19 @@ def validate(entries, cats, warn=print):
     for n, e in enumerate(entries, 1):
         where = row_label(n, e)
         if e["id"] is not None:
-            if e["id"] in seen_ids:
-                m = seen_ids[e["id"]]
-                if e["sourceUrl"] and e["sourceUrl"] == entries[m - 1]["sourceUrl"]:
-                    # A pasted link that is already in the tracker takes the old row's id
-                    # (reconcile_ids matches by link), so say what really happened.
+            # An earlier row with this id is a clash, unless the two are a harmless repeat
+            # (the same link, one of them not approved): that is only warned about, below.
+            clashes = [m for m in rows_by_id[e["id"]]
+                       if m < n and not _harmless_repeat(e, entries[m - 1])]
+            if clashes:
+                m = clashes[-1]
+                if _same_link(e, entries[m - 1]):
+                    # Both approved, one link: the pasted link is already in the tracker and
+                    # took the old row's id (reconcile_ids matches by link), so say so.
                     errors.append(f"{where}: duplicate id (also row {m}): rows {m} and {n} have the "
                                   "same link, so it is already in the tracker. Delete the repeat")
                 else:
                     errors.append(f"{where}: duplicate id (also row {m})")
-            seen_ids[e["id"]] = n
         status = e["status"]
         if status not in STATUSES:
             errors.append(f"{where}: status '{status}' is not one of: {', '.join(STATUSES)} "
@@ -562,6 +607,19 @@ def validate(entries, cats, warn=print):
             warn(f"  note: {where}: evidence '{e['evidence']}' is new (known: {', '.join(sorted(EVIDENCE))})")
         if e["sourceUrl"] and not e["sourceUrl"].startswith("http"):
             errors.append(f"{where}: sourceUrl should start with http")
+    # A link on several rows is never what stops the sync unless two APPROVED rows share its
+    # id (above). When one of the rows is under review, though, it is a repeat nobody should
+    # approve, so name it. One warning per link, listing every row that carries it.
+    rows_by_link = {}
+    for n, e in enumerate(entries, 1):
+        if e["sourceUrl"]:
+            rows_by_link.setdefault(e["sourceUrl"], []).append(n)
+    for link, ns in rows_by_link.items():
+        if len(ns) > 1 and any(entries[n - 1]["status"] == UNDER_REVIEW for n in ns):
+            warn(f"  warning: the link {link[:70]} is on "
+                 f"{', '.join(_row_ref(n, entries[n - 1]) for n in ns)}. A repeat on an under review row "
+                 "is never published and does not stop the sync, but delete it from the Sheet before "
+                 "approving it")
     return errors
 
 
@@ -630,7 +688,14 @@ def fetch_entries(url):
 def reconcile_ids(entries, ledger):
     """Restore each row's stable id/added from the committed snapshot, matched by
     sourceUrl, so sheet rows may leave those blank without churning ids."""
-    by_url = {e["sourceUrl"]: e for e in ledger if e.get("sourceUrl")}
+    # The snapshot can hold several rows with one link (a pasted repeat shares the old
+    # row's id). The last one wins, EXCEPT that a row which is not approved never
+    # displaces an approved one: a repeat must not be able to move a published id.
+    by_url = {}
+    for e in ledger:
+        link = e.get("sourceUrl")
+        if link and (link not in by_url or by_url[link]["status"] != APPROVED or e["status"] == APPROVED):
+            by_url[link] = e
     for e in entries:
         prev = by_url.get(e["sourceUrl"])
         if prev:
@@ -696,6 +761,50 @@ def note_unfinished(entries):
               f"(fine until approved): {who}")
 
 
+def _at(path, lines):
+    """'data/tracker-data.js lines 12, 40': where an id is written (the first five lines)."""
+    shown = ", ".join(str(n) for n in lines[:5]) + (" ..." if len(lines) > 5 else "")
+    return f"{path} line{'s' if len(lines) > 1 else ''} {shown}"
+
+
+def dangling_references(entries, text, fb):
+    """Where every id that a POLICY_DATA card, a {{cite}} token or a Fact Bank fact points
+    at stands in the sheet. `text` is data/tracker-data.js, `fb` data/fact-bank-data.js.
+    Returns (notes, problems), both lists of lines.
+
+      notes     ids whose row is under review or archived. The page leaves them out on
+                purpose (a card may cite a paper the Sheet has archived, and an archived
+                paper's facts go with it), so they never fail `check`.
+      problems  ids that are in NO row of the sheet: a typo, or a row someone deleted.
+                The browser cannot tell that from an archived paper (it only has the
+                published ones), so this is where it is caught.
+
+    An id is fine when its row is approved or it is a POLICY_SOURCES id."""
+    # Where each id stands, so a dangling reference can say why.
+    standing = {str(e["id"]): e["status"] for e in entries if e["id"] is not None}
+    # Valid citation targets, as strings: approved research ids (numeric, from the
+    # Sheet) plus the hand-maintained POLICY_SOURCES string ids. Comparing in
+    # string space lets numeric research ids and string policy-source ids coexist.
+    valid = {str(e["id"]) for e in published(entries) if e["id"] is not None} | policy_source_ids(text)
+    notes, problems = [], []
+    for label, path, referenced in (
+            ("POLICY_DATA paperIds", "data/tracker-data.js", policy_paper_ids(text)),
+            ("{{cite:ID}} tokens", "data/tracker-data.js", cite_token_ids(text)),
+            ("Fact Bank paperIds", "data/fact-bank-data.js", fact_bank_paper_ids(fb))):
+        dangling = sorted(set(referenced) - valid)
+        unpublished = [i for i in dangling if i in standing]
+        missing = [i for i in dangling if i not in standing]
+        if unpublished:
+            what = ", ".join(f"{i} ({standing[i]})" for i in unpublished)
+            notes.append(f"  note: {label} point at papers that are not published "
+                         f"(not approved, and not in POLICY_SOURCES): {what}")
+        if missing:
+            what = ", ".join(f"{i} ({_at(path, referenced[i])})" for i in missing)
+            problems.append(f"{label} point at ids that are in no row of the sheet "
+                            f"(a typo, or a row that was deleted): {what}")
+    return notes, problems
+
+
 def cmd_check(url=None):
     text = read_data()
     cats = category_ids(text)
@@ -708,32 +817,23 @@ def cmd_check(url=None):
         return 1
     # Three hand-maintained regions reference research by id: POLICY_DATA id
     # arrays, {{cite:N}} tokens in prose, and Fact Bank facts.
-    # A study that is under review, archived or deleted leaves any of these
-    # dangling -- the policy silently drops it, a {{cite}} renders raw, and a fact
-    # whose paper is not published is hidden by the runtime guard in
-    # 80-fact-bank.js. None corrupts the build, so these are notes (not errors): the
-    # checklist of hand-edits that leaves behind. This is why the Fact Bank went blank
-    # once -- an archive with no such warning left every fact pointing at a study that
-    # no longer rendered.
+    # A study that is under review or archived leaves any of these dangling on purpose
+    # -- the policy silently drops it, a {{cite}} renders raw, and a fact whose paper is
+    # not published is hidden by the runtime guard in 80-fact-bank.js -- so those are
+    # notes, the checklist of hand-edits an archive leaves behind. (This is why the Fact
+    # Bank went blank once: an archive with no such warning left every fact pointing at
+    # a study that no longer rendered.) An id that is in no row at all is a typo or a
+    # deleted row, which nothing can ever resolve: that is a problem, and check fails.
     approved = published(entries)
-    # Where each id stands, so a dangling reference can say why.
-    standing = {str(e["id"]): e["status"] for e in entries if e["id"] is not None}
-    # Valid citation targets, as strings: approved research ids (numeric, from the
-    # Sheet) plus the hand-maintained POLICY_SOURCES string ids. Comparing in
-    # string space lets numeric research ids and string policy-source ids coexist.
-    valid = {str(e["id"]) for e in approved if e["id"] is not None} | policy_source_ids(text)
-
-    def note_orphans(label, referenced):
-        dangling = sorted(referenced - valid)
-        if dangling:
-            what = ", ".join(f"{i} ({standing.get(i, 'not in the sheet')})" for i in dangling)
-            print(f"  note: {label} point at papers that are not published "
-                  f"(not approved, and not in POLICY_SOURCES): {what}")
-
-    note_orphans("POLICY_DATA paperIds", policy_paper_ids(text))
-    note_orphans("{{cite:ID}} tokens", cite_token_ids(text))
-    note_orphans("Fact Bank paperIds", fact_bank_paper_ids())
+    notes, problems = dangling_references(entries, text, read_fact_bank())
+    for line in notes:
+        print(line)
     note_unfinished(entries)
+    if problems:
+        print(f"check: {len(problems)} problem(s):", file=sys.stderr)
+        for p in problems:
+            print("  - " + p, file=sys.stderr)
+        return 1
     others = counts_note(entries)
     print(f"  ok  {len(approved)} approved entries valid"
           + (f"  ({others}, not published)" if others else ""))
@@ -903,8 +1003,199 @@ def _rules_selftest():
                                       dict(id="1", status="approved", **link(2))]), "duplicate id"),
            "a duplicate id must still stop the sync")
     expect(names(errors_of(new_cols, [dict(id="1", status="approved", **link(1)),
-                                      dict(id="1", status="under review", **link(1))]), "same link"),
+                                      dict(id="1", status="approved", **link(1))]), "same link"),
            "a repeated link must say so")
+
+    # A pasted link that repeats another row's link. reconcile_ids hands the repeat the old
+    # row's id, and that used to stop the sync for a row that is never published. Now only
+    # two APPROVED rows with one id stop it; an under review (or blank) repeat is a named
+    # warning. `checked` replays the whole chain: reconcile against the snapshot, then validate.
+    def checked(header, rows, ledger=None):
+        entries = sheet(header, rows)
+        if ledger is not None:
+            reconcile_ids(entries, ledger)
+        said = []
+        return validate(entries, ["cat-a"], warn=said.append), said
+
+    def bare(n, **kw):                       # a link-only row, as pasted into the Sheet
+        row = dict(id="", status="", date="", title="", source="", category="", geography="",
+                   keyFinding="", takeaways="", **link(n))
+        row.update(kw)
+        return row
+
+    approved5 = dict(id="5", status="approved", **link(5))
+    ledger5 = sheet(new_cols, [approved5])
+    errs, said = checked(new_cols, [approved5, bare(5)], ledger5)
+    expect(not errs, "a pasted link that repeats an approved row's link (blank status) must not stop the sync")
+    expect(names(said, "warning", "row 1 (id 5, approved)", "row 2 (id 5, under review)", "example.org/5"),
+           "a pasted repeat must be named in a warning, with both rows and the link")
+    errs, said = checked(new_cols, [approved5, bare(5, status="under review")], ledger5)
+    expect(not errs and names(said, "row 2 (id 5, under review)"),
+           "a repeat whose status is 'under review' must not stop the sync either")
+    errs, said = checked(new_cols, [bare(5), approved5], ledger5)
+    expect(not errs and names(said, "row 1 (id 5, under review)", "row 2 (id 5, approved)"),
+           "a pasted repeat ABOVE the approved original must not stop the sync, and the warning names the repeat")
+    errs, said = checked(new_cols, [approved5, bare(5, status="archived")], ledger5)
+    expect(not errs and not said, "an archived row is on record: no stop and no warning for a shared id and link")
+    errs, said = checked(new_cols, [approved5, bare(5, id="6")])
+    expect(not errs and names(said, "row 2 (id 6, under review)"),
+           "a link repeated under another id is a warning only")
+    errs, said = checked(new_cols, [approved5, dict(id="6", status="approved", **link(5))])
+    expect(not errs and not said, "two approved rows with different ids and one link are left as they were")
+    errs, said = checked(new_cols, [bare(8), bare(8)])
+    expect(not errs and names(said, "row 1 (id NEW, under review)", "row 2 (id NEW, under review)"),
+           "two new pasted rows with one link (no ids yet) are a warning, not a stop")
+    ledger8 = sheet(new_cols, [dict(id="324", status="under review", **link(8)),
+                               dict(id="325", status="under review", **link(8))])
+    errs, said = checked(new_cols, [bare(8), bare(8)], ledger8)
+    expect(not errs and names(said, "(id 325, under review)"),
+           "the day after, when both twins resolve to one id, it is still a warning, not a stop")
+    errs, said = checked(new_cols, [bare(8), bare(8), bare(8)])
+    expect(sum("warning" in m for m in said) == 1 and names(said, "row 3"),
+           "a link on three rows is one warning, naming every row")
+
+    # A repeat must not be able to move a published id. Two rows that share a link and sit in
+    # the snapshot under different ids (twins pasted in one batch get one id each the first
+    # day) both resolve to the SAME id the next day, and it has to be the published row's.
+    twins = sheet(new_cols, [dict(id="324", status="approved", **link(9)),
+                             dict(id="325", status="under review", **link(9))])
+
+    def resolved(ledger_rows):
+        got = sheet(["id", "sourceUrl", "title"], [dict(id="", **link(9)), dict(id="", **link(9))])
+        reconcile_ids(got, ledger_rows)
+        return [e["id"] for e in got]
+
+    expect(resolved(twins) == [324, 324], "a repeat must not move a published id: blank rows take the approved row's id")
+    expect(resolved(twins[::-1]) == [324, 324], "... whichever order the snapshot lists the two rows in")
+    expect(resolved(sheet(new_cols, [dict(id="324", status="under review", **link(9)),
+                                     dict(id="325", status="archived", **link(9))])) == [325, 325],
+           "with no approved row the last row with the link still wins, as before")
+    expect(resolved(sheet(new_cols, [dict(id="10", status="approved", **link(9)),
+                                     dict(id="11", status="approved", **link(9))])) == [11, 11],
+           "with two approved rows the last still wins, as before (the sheet has such a pair today)")
+
+    # ... and what must still stop the sync.
+    errs, _ = checked(new_cols, [approved5, dict(approved5)])
+    expect(names(errs, "row 2", "duplicate id (also row 1)", "same link"),
+           "two approved rows with one id and one link must still stop the sync")
+    errs, _ = checked(new_cols, [approved5, bare(5, id="5"), dict(approved5)])
+    expect(names(errs, "row 3", "also row 1", "same link"),
+           "an under review repeat in between must not hide a second approved row")
+    errs, _ = checked(new_cols, [approved5, dict(id="5", status="under review", **link(6))])
+    expect(names(errs, "row 2", "duplicate id") and not names(errs, "same link"),
+           "an id shared by rows with DIFFERENT links must still stop the sync, whatever their status")
+    errs, said = checked(new_cols, [approved5, bare(5, id="5", foundational="classic")])
+    expect(names(errs, "row 2", "'classic'") and names(said, "warning"),
+           "a repeat must not hide another mistake in its own row")
+    errs, _ = checked(old_cols, [dict(id="5", **link(5)), dict(id="5", **link(5))])
+    expect(names(errs, "duplicate id", "same link"),
+           "an old-format sheet stays strict: a blank `archived` means approved")
+    return done[0], problems
+
+
+def _reference_selftest():
+    """The reference rules (`check` on ids that cards, tokens and facts point at), on tiny
+    in-memory data files (nothing is read or written). Returns (number of checks, list of
+    what went wrong)."""
+    problems, done = [], [0]
+
+    def expect(ok, what):
+        done[0] += 1
+        if not ok:
+            problems.append(what)
+
+    def names(lines, *words):
+        return any(all(w in m for w in words) for m in lines)
+
+    def row(i, status):
+        return {"id": i, "status": status}
+
+    # Line numbers below are for these texts: paperIds on line 5, the cite tokens on line 6;
+    # the facts' paperIds on lines 2 to 4.
+    cards = ('const POLICY_SOURCES = [\n  { id: "src-ok" },\n];\n'
+             'const POLICY_DATA = [\n'
+             '  { id: "a", paperIds: [1, 2, "src-ok", 9001, "src-typo"],\n'
+             '    rationale: "x {{cite:1}} {{citep:src-ok}} {{cite:3}} {{cite:9002}}" },\n'
+             '];\n')
+    facts = "const FACTS = [\n  { paperId: 1 },\n  { paperId: 2 },\n  { paperId: 9003 },\n];\n"
+    sheet_rows = [row(1, APPROVED), row(2, ARCHIVED), row(3, UNDER_REVIEW)]
+
+    notes, bad = dangling_references(sheet_rows, cards, facts)
+    # Unpublished is only a note: the owner decided on 2026-11-16 that cards may cite archived
+    # papers and that an archived paper's facts go with it.
+    expect(names(notes, "POLICY_DATA paperIds", "2 (archived)")
+           and names(notes, "{{cite:ID}} tokens", "3 (under review)")
+           and names(notes, "Fact Bank paperIds", "2 (archived)"),
+           "a reference to an archived or under review paper must stay a note, saying which")
+    expect(not names(bad, "(archived)") and not names(bad, "(under review)"),
+           "a reference to an archived or under review paper must never be a problem")
+    expect(names(bad, "POLICY_DATA paperIds", "9001"), "a card paperId that is in no row must be a problem")
+    expect(names(bad, "POLICY_DATA paperIds", "src-typo"),
+           "a card paperId that is neither a POLICY_SOURCES id nor in the sheet must be a problem")
+    expect(names(bad, "{{cite:ID}} tokens", "9002"), "a {{cite}} token whose id is in no row must be a problem")
+    expect(names(bad, "Fact Bank paperIds", "9003"), "a Fact Bank paperId that is in no row must be a problem")
+    expect(names(bad, "9001 (data/tracker-data.js line 5)") and names(bad, "9002 (data/tracker-data.js line 6)"),
+           "a problem must say which line of tracker-data.js the id is on")
+    expect(names(bad, "9003 (data/fact-bank-data.js line 4)"),
+           "a problem must say which line of fact-bank-data.js the id is on")
+    expect(not names(notes + bad, "src-ok") and len(notes) == 3 and len(bad) == 3,
+           "an approved id or a POLICY_SOURCES id must never be reported")
+
+    # Only unpublished references: notes, and `check` passes.
+    only_unpublished = cards.replace(', 9001, "src-typo"', "").replace(" {{cite:9002}}", "")
+    notes, bad = dangling_references(sheet_rows, only_unpublished, "")
+    expect(notes and not bad, "references to archived and under review papers alone must not fail check")
+    # The same references once the rows are deleted from the sheet: now they are problems.
+    notes, bad = dangling_references([row(1, APPROVED)], only_unpublished, "")
+    expect(not notes and names(bad, "POLICY_DATA paperIds", "2 (data/tracker-data.js line 5)")
+           and names(bad, "{{cite:ID}} tokens", "3 (data/tracker-data.js line 6)"),
+           "an id whose row was deleted must stop being a note and become a problem")
+    # A reference to a row that is only archived is not the same as a reference to a typo.
+    expect(dangling_references([row(1, APPROVED), row(2, ARCHIVED), row(3, ARCHIVED)],
+                               only_unpublished, "")[1] == [],
+           "archiving a row must never turn its references into problems")
+    # Nothing dangling: silence. And a missing Fact Bank file is not an error.
+    clean = 'const POLICY_DATA = [\n  { id: "a", paperIds: [1], rationale: "{{cite:1}}" },\n];\n'
+    expect(dangling_references(sheet_rows, clean, "") == ([], []), "a card citing only approved papers must be silent")
+    # Numeric research ids in the sheet and string ids in the files meet in string space.
+    expect(dangling_references([row(7, APPROVED)], 'x paperIds: ["7"] y', "") == ([], []),
+           "a numeric sheet id must match the same id written as a string")
+
+    # The wiring: `check` itself must exit 1 for an id that is in no row, and 0 when the ids
+    # are only archived or under review. This points the module at a throwaway folder for a
+    # moment (the Fact Bank file is left out of it, as on a partial checkout).
+    import contextlib, tempfile
+
+    def check_exit(cited, rows):
+        global DATA, SHEET, FACT_BANK_DATA
+        kept = (DATA, SHEET, FACT_BANK_DATA)
+        with tempfile.TemporaryDirectory() as tmp:
+            DATA, SHEET, FACT_BANK_DATA = (os.path.join(tmp, n) for n in
+                                           ("tracker-data.js", "research.csv", "fact-bank-data.js"))
+            try:
+                with open(DATA, "w", encoding="utf-8") as fh:
+                    fh.write('const CATEGORIES = [ { id: "cat-a" } ];\n'
+                             'const POLICY_DATA = [ { id: "a", paperIds: [' + cited + '] } ];\n')
+                with open(SHEET, "w", encoding="utf-8", newline="") as fh:
+                    w = csv.DictWriter(fh, fieldnames=COLUMNS)
+                    w.writeheader()
+                    for i, status in rows:
+                        w.writerow(entry_to_row({
+                            "id": i, "date": "2026-01-02", "added": "2026-01-03", "category": "cat-a",
+                            "geography": "us", "title": "T", "source": "A -- B", "status": status,
+                            "sourceUrl": f"https://example.org/{i}", "keyFinding": "F", "takeaways": ["x"]}))
+                out, err = io.StringIO(), io.StringIO()
+                with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                    code = cmd_check()
+                return code, err.getvalue()
+            finally:
+                DATA, SHEET, FACT_BANK_DATA = kept
+
+    rows = [(1, APPROVED), (2, ARCHIVED), (3, UNDER_REVIEW)]
+    code, _ = check_exit("1, 2, 3", rows)
+    expect(code == 0, "check must exit 0 when the only unpublished references are archived or under review")
+    code, err = check_exit("1, 2, 9001", rows)
+    expect(code == 1 and "9001" in err, "check must exit 1, naming the id, when a card cites an id that is in no row")
     return done[0], problems
 
 
@@ -941,13 +1232,14 @@ def cmd_selftest():
         print(f"selftest FAILED: {diffs} entr(y/ies) changed by the round-trip", file=sys.stderr)
         return 1
     print(f"  selftest ok  full CSV round-trip is identical for all {len(a)} entries")
-    checks, problems = _rules_selftest()
-    if problems:
-        print(f"selftest FAILED: {len(problems)} of {checks} status-rule checks failed:", file=sys.stderr)
-        for p in problems:
-            print("  - " + p, file=sys.stderr)
-        return 1
-    print(f"  selftest ok  all {checks} status-rule checks pass")
+    for kind, group in (("status-rule", _rules_selftest), ("reference", _reference_selftest)):
+        checks, problems = group()
+        if problems:
+            print(f"selftest FAILED: {len(problems)} of {checks} {kind} checks failed:", file=sys.stderr)
+            for p in problems:
+                print("  - " + p, file=sys.stderr)
+            return 1
+        print(f"  selftest ok  all {checks} {kind} checks pass")
     return 0
 
 
