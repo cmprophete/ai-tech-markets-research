@@ -54,8 +54,9 @@
     return p.sourceUrl ? `${apa} ${p.sourceUrl}` : apa;
   }
 
-  // R1: assemble a policy card as a Markdown primer draft, with citations
-  // resolved to (Author, Year) text and a References section of cited papers.
+  // R1: assemble a policy card as a Markdown primer draft, with inline citations
+  // resolved to (Year) or (Author, Year) text. There is no References list (removed
+  // 2026-11-17): a card's sources are the links and citations in its own text.
   function policyToMarkdown(p, lvl, catLabel) {
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const plain = s => tokensToPlain(s, paperMap);
@@ -90,22 +91,6 @@
     if (Array.isArray(p.press) && p.press.length) {
       md.push('', '## Press & resources', '');
       p.press.forEach(it => md.push(`- ${it.label}: ${it.url}`));
-    }
-    const fieldText = [p.summary, p.rationale, p.feasibility, p.landscape,
-      ...(p.strengths || []), ...(p.risks || [])].join(' ');
-    // paperIds are numbers (or slugs) and {{cite}} tokens are always strings, so read them all as strings, or a paper that is
-    // both is listed twice; then list a paper once even when it has two ids (a slug and its tracker number), by its link.
-    const citedIds = [...new Set([
-      ...(p.paperIds || []).map(String),
-      ...[...fieldText.matchAll(/\{\{citep?:([\w-]+)\}\}/g)].map(m => m[1]),
-    ])];
-    const seenLinks = new Set();
-    const cited = citedIds.map(id => paperMap[id]).filter(Boolean)
-      .filter(r => { const k = r.sourceUrl || r.id; if (seenLinks.has(k)) return false; seenLinks.add(k); return true; })
-      .sort((a, b) => (a.source || '').localeCompare(b.source || ''));
-    if (cited.length) {
-      md.push('', '## References', '');
-      cited.forEach(r => md.push(`- ${formatAPAPlain(r)}`));
     }
     md.push('');
     return md.join('\n');
@@ -225,7 +210,6 @@
 
         policies.forEach(p => {
           const lvl = levelMap[p.level] || {};
-          const basisHTML = buildPolicyBasis(getResearchBasis(p));
 
           const wrap = document.createElement('div');
           wrap.className = 'pol-item-wrap';
@@ -240,7 +224,7 @@
             </div>`;
 
           wrap.querySelector('.pol-item').addEventListener('click', () => {
-            openPolModal(p, lvl, catLabel, basisHTML);
+            openPolModal(p, lvl, catLabel);
           });
           itemList.appendChild(wrap);
         });
@@ -302,12 +286,11 @@
         catPolicies.forEach(p => {
           const lvl = levelMap[p.level] || {};
           const origCatLabel = POLICY_CATEGORIES[p.category] || p.category;
-          const basisHTML = buildPolicyBasis(getResearchBasis(p));
 
           const card = document.createElement('div');
           card.className = 'pol-cat-card';
           card.innerHTML = `<div class="pol-cat-card-title">${p.title}</div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
-          card.addEventListener('click', () => openPolModal(p, lvl, origCatLabel, basisHTML));
+          card.addEventListener('click', () => openPolModal(p, lvl, origCatLabel));
           cards.appendChild(card);
         });
 
@@ -584,7 +567,7 @@
     container.appendChild(outer);
   }
 
-  function openPolModal(p, lvl, catLabel, basisHTML) {
+  function openPolModal(p, lvl, catLabel) {
     const backdrop = document.getElementById('polModal');
     const modal    = backdrop.querySelector('.pol-modal');
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
@@ -640,14 +623,14 @@
     // Where it stands and Precedents and examples were merged into one
     // section (single `landscape` field) so the modal doesn't split
     // precedent and current politics across two labels that readers had to
-    // cross-reference themselves. basisHTML (the citation reference list)
-    // still hangs off this section, same as it did under the old
-    // "Precedents and examples" label.
-    const landscapeHTML = (p.landscape || basisHTML) ? `
+    // cross-reference themselves. The "Research basis" list that used to hang
+    // off this section (the card's paperIds, plus related studies by category)
+    // was removed on 2026-11-17 as no longer relevant: a card's sources are the
+    // links in its own text.
+    const landscapeHTML = p.landscape ? `
       <div class="pol-modal-section">
         <div class="pol-modal-label">Precedents & landscape</div>
-        ${p.landscape ? `<div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>` : ''}
-        ${basisHTML ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px">${basisHTML}</div>` : ''}
+        <div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>
       </div>` : '';
     const pressHTML = (Array.isArray(p.press) && p.press.length) ? `
       <div class="pol-modal-section">
@@ -669,18 +652,6 @@
       ${landscapeHTML}
       ${pressHTML}
       ${lastReviewedHTML}`;
-    const rbToggle = document.getElementById('polModalBody').querySelector('.pol-basis-toggle');
-    if (rbToggle) {
-      const rel = document.getElementById('polModalBody').querySelector('.pol-basis-related');
-      const tEl = rbToggle.querySelector('.pol-basis-toggle-text');
-      const n = rel ? rel.querySelectorAll('.pol-basis-ref').length : 0;
-      rbToggle.addEventListener('click', () => {
-        const open = rbToggle.getAttribute('aria-expanded') === 'true';
-        rbToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-        if (rel) rel.style.display = open ? 'none' : 'flex';
-        if (tEl) tEl.textContent = open ? `Show ${n} more related ${n === 1 ? 'study' : 'studies'}` : 'Hide related studies';
-      });
-    }
     // Wire policy cross-reference links to open their target policy's modal.
     document.getElementById('polModalBody').querySelectorAll('.pol-xref').forEach(a => {
       const go = e => { e.stopPropagation(); openPolModalById(a.dataset.polId); };

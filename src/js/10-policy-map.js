@@ -2,48 +2,6 @@
   let polLevelFilter = 'all';
   let polViewMode    = 'grid';
 
-  // R3: curated evidence first. A policy's hand-picked `paperIds` (order preserved)
-  // are the visible research basis; the category-derived list is demoted to a
-  // deduplicated "related" set behind the toggle. Policies without paperIds keep
-  // the old behavior (top few category matches visible, rest behind the toggle).
-  function getResearchBasis(pol) {
-    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
-    const curated = (pol.paperIds || []).map(id => paperMap[id]).filter(Boolean);
-    const curatedIds = new Set(curated.map(r => r.id));
-    // A paper can be a curated POLICY_SOURCES entry (copied out of the tracker, so that a Sheet archive cannot strip a
-    // card's citation) and still be a live tracker entry, until the sync archives it. Match on its link as well as its
-    // id, or it is listed a second time under "related".
-    const curatedUrls = new Set(curated.map(r => r.sourceUrl).filter(Boolean));
-    const cats = POL_TO_RESEARCH_CATS[pol.category] || [];
-    const related = cats.length
-      ? RESEARCH_DATA
-          .filter(r => cats.includes(r.category) && !curatedIds.has(r.id) && !curatedUrls.has(r.sourceUrl))
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 16)
-      : [];
-    return { curated, related };
-  }
-
-  // Build the policy "Research basis" reference list.
-  function buildPolicyBasis(basis) {
-    const curated = (basis && basis.curated) || [];
-    const related = (basis && basis.related) || [];
-    if (!curated.length && !related.length) return '';
-    const renderRef = r => {
-      const href = r.sourceUrl ? ` href="${r.sourceUrl}" target="_blank" rel="noopener"` : '';
-      return `<a class="pol-basis-ref"${href} onclick="event.stopPropagation()">${formatAPACitation(r)}</a>`;
-    };
-    const SHOWN = 4;
-    const shown = curated.length ? curated : related.slice(0, SHOWN);
-    const rest  = curated.length ? related : related.slice(SHOWN);
-    const restLabel = curated.length ? 'related' : 'more related';
-    return `<div class="pol-basis"><div class="pol-basis-label">Research basis</div>`
-      + `<div class="pol-basis-refs">${shown.map(renderRef).join('')}</div>`
-      + (rest.length ? `<button class="pol-basis-toggle" type="button" aria-expanded="false"><span class="ui-chevron pol-basis-chevron" aria-hidden="true"></span><span class="pol-basis-toggle-text">Show ${rest.length} ${restLabel} ${rest.length === 1 ? 'study' : 'studies'}</span></button>`
-        + `<div class="pol-basis-refs pol-basis-related" style="display:none">${rest.map(renderRef).join('')}</div>` : '')
-      + `</div>`;
-  }
-
   // APA-style citation: Author. (Year). Title. Organization.
   // The `source` field stores "Author — Organization"; a bare organization stands alone.
   function formatAPACitation(p) {
@@ -101,7 +59,6 @@
     if (!p) return;
     const lvl = DISRUPTION_LEVELS.find(l => l.id === p.level) || {};
     const catLabel = POLICY_CATEGORIES[p.category] || '';
-    const basisHTML = buildPolicyBasis(getResearchBasis(p));
-    openPolModal(p, lvl, catLabel, basisHTML);
+    openPolModal(p, lvl, catLabel);
   }
 

@@ -3230,18 +3230,3 @@ const POLICY_DATA = [{ id:"ui-reform", level:"baseline", category:"safety-net",
     press:[{label:"Saez & Zucman — Wealth Tax Scoring",url:"https://eml.berkeley.edu/~saez/saez-zucmanNTJ19wealth.pdf"}],
     pairsWith:[{id:"sovereign-wealth-fund",why:"A wealth tax on AI-derived gains can seed the fund, tying the accumulation vehicle to a revenue source."}], competesWith:[{id:"automation-levy",why:"Both tax AI-driven capital gains, competing for the same tax base and legislative vehicle."},{id:"global-min-tax",why:"Domestic wealth taxation versus a multilateral minimum, overlapping claims on concentrated AI capital."}], lastReviewed:"2026-06-23"   },
 ];
-
-// ── Cross-view category mappings ─────────────────────────────
-// Maps each policy category → list of research categories that inform it
-const POL_TO_RESEARCH_CATS = {
-  'safety-net':    ['labor', 'macro', 'wellbeing', 'policy'],
-  'labor-rights':  ['labor', 'workers', 'hiring', 'surveillance', 'equity', 'criminal-justice', 'datarights'],
-  'tax-wealth':    ['macro', 'corporate'],
-  'healthcare':    ['wellbeing', 'workers'],
-  'work-structure':['workers', 'wellbeing', 'labor'],
-  'education':     ['education', 'workers'],
-  'antitrust':     ['corporate', 'macro', 'criminal-justice'],
-  'housing':       ['community', 'macro'],
-  'jobs':          ['labor', 'macro', 'community'],
-  'international': ['macro', 'policy', 'datarights'],
-};

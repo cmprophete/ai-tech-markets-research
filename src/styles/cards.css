@@ -175,34 +175,6 @@
     .src-row, .src-facts { transition: none; }
   }
 
-  /* ── CROSS-VIEW LINKS ───────────────────────────────────────── */
-
-  .pol-basis { margin-top: 10px; }
-  .pol-basis-label {   /* a heading in the dialog, like .pol-modal-label */
-    font-family: var(--sans);
-    font-size: 15.5px; font-weight: 700;
-    color: var(--text); margin-bottom: 8px;
-  }
-
-  .pol-basis-refs { display: flex; flex-direction: column; gap: 8px; }
-  .pol-basis-ref {
-    display: block; font-size: 12px; line-height: 1.55; color: var(--muted);
-    text-decoration: none; word-break: break-word;
-    padding-left: 14px; text-indent: -14px;
-  }
-  .pol-basis-ref em { font-style: italic; }
-  .pol-basis-ref:hover { color: var(--accent); }
-  .pol-basis-related { margin-top: 8px; }
-  .pol-basis-toggle {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 12px; padding: 4px 0;
-    border: none; background: none; cursor: pointer;
-    color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.02em;   /* the .act-btn text style */
-    font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-  }
-  .pol-basis-chevron { /* see .ui-chevron */ }
-  .pol-basis-toggle[aria-expanded="true"] .pol-basis-chevron { transform: rotate(180deg); }
-
   /* ── VIEW TOGGLE ────────────────────────────────────────── */
 
   
@@ -273,9 +245,7 @@
     }
     body.pol-modal-open .pol-modal-body { overflow: visible !important; max-height: none !important; }
     body.pol-modal-open .pol-modal-close,
-    body.pol-modal-open .pol-modal-actions,
-    body.pol-modal-open .pol-basis-toggle { display: none !important; }
-    body.pol-modal-open .pol-basis-related { display: flex !important; }
+    body.pol-modal-open .pol-modal-actions { display: none !important; }
     body.pol-modal-open .pol-press-list a::after {
       content: " (" attr(href) ")"; font-size: 9px; color: #555; word-break: break-all;
     }

@@ -204,30 +204,31 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
      boxes.length === w.eval('POLICY_DATA.length') && boxes.length > 0 && touching.length === 0, `${boxes.length} nodes, touching: ${touching.slice(0, 4).join('; ')}`);
 }
 
-/* ── policy cards: no paper listed twice ────────────────────────────────────
-   A card's Research basis lists a paper once (a paper that is both a curated POLICY_SOURCES entry and a live tracker entry used
-   to appear again under "related"), and "Copy as draft" lists each reference once (a paper that was both a numeric paperId and
-   a {{cite}} token used to appear twice). Checked on every policy. */
+/* ── policy cards: no Research basis, and no References list in "Copy as draft" ───────────────
+   The dialog used to end its Precedents section with a "Research basis" list (the card's paperIds, then a "Show N related
+   studies" list picked by category), and "Copy as draft" ended with a "## References" list of the same papers plus the ones
+   its text cites. The owner removed both on 2026-11-17 as no longer relevant: a card's sources are the links and citations
+   in its text. Checked on every policy. */
 (async () => {
   const { w, d } = load('index.html', '#policy');
   let copied = null;
   w.HTMLTextAreaElement.prototype.select = function () { copied = this.value; };
   w.document.execCommand = () => true;
   const ids = w.eval('POLICY_DATA.map(p => p.id)');
-  const dupBasis = [], dupRefs = [];
+  const withBasis = [], withRefs = [], noDraft = [];
   for (const id of ids) {
     w.location.hash = '#policy/' + id;
     await settle(5);
-    const hrefs = [...d.querySelectorAll('#polModal .pol-basis-ref')].map(a => a.getAttribute('href')).filter(Boolean);
-    if (new Set(hrefs).size !== hrefs.length) dupBasis.push(id);
+    if (d.querySelector('#polModal [class*="pol-basis"]') || /Research basis|related stud/i.test(d.getElementById('polModalBody').textContent)) withBasis.push(id);
     copied = null;
     const btn = d.getElementById('polCopyDraft');
     if (btn) btn.click();
-    const refs = ((copied || '').split('## References')[1] || '').split('\n').filter(l => l.startsWith('- '));
-    if (new Set(refs).size !== refs.length) dupRefs.push(id);
+    if (!copied || !copied.startsWith('# ')) noDraft.push(id);
+    else if (/^## References/m.test(copied)) withRefs.push(id);
   }
-  ok('no policy card lists a paper twice in its Research basis', dupBasis.length === 0, dupBasis.join(', '));
-  ok('"Copy as draft" lists each reference once on every policy', dupRefs.length === 0, dupRefs.join(', '));
+  ok('no policy card shows a Research basis or a list of related studies', withBasis.length === 0, withBasis.join(', '));
+  ok('"Copy as draft" still gives a draft on every policy, and none of them ends with a References list',
+     withRefs.length === 0 && noDraft.length === 0, `with references: ${withRefs.join(', ')} | no draft: ${noDraft.join(', ')}`);
 })();
 
 /* #sources (briefly), #research (before that) and #changelog (the What's New feed, removed) were routes
