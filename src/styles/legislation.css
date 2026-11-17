@@ -131,17 +131,11 @@
   .leg-office-body > * + * { margin-top: 4px; }
   .leg-office-body > .leg-muted { color: var(--muted); }
   .leg-office-toggle[hidden] { display: none; }
-  .leg-chip {
-    display: inline-flex; align-items: center; white-space: nowrap;
-    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6;
-    border-radius: var(--r-tag); padding: 2.5px 9px;
-    background: var(--beige); border: 1px solid var(--divider); color: var(--text);
-  }
-  .leg-chip--d-gain   { background: var(--leg-gain); border-color: var(--leg-gain); color: var(--light-beige); }
-  .leg-chip--d-hold   { background: var(--leg-hold); border-color: color-mix(in srgb, var(--navy) 40%, var(--divider)); color: var(--headline); }
-  .leg-chip--r-hold   { background: var(--leg-rhold); border-color: color-mix(in srgb, var(--pink) 60%, var(--divider)); color: var(--headline); }
-  .leg-chip--r-gain   { background: var(--leg-rgain); border-color: var(--leg-rgain); color: var(--headline); }
-  .leg-chip--uncalled { background: color-mix(in srgb, var(--gold) 30%, var(--light-beige)); border-color: var(--gold); color: var(--headline); }
+  /* A race's result: a square in the party's colour (the map's fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a race
+     not yet called are the news, so those are bold. They were coloured pills, one in every cell. */
+  .leg-result { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .leg-result--news { font-weight: 600; color: var(--headline); }
+  .leg-swatch--sm { width: 10px; height: 10px; border-radius: 2px; }
 
   .leg-section { margin-top: 38px; }
   /* The 2026 Midterm results layer shows only the results: the bills' filter bar and table are hidden by the script (legPaint). */
@@ -153,8 +147,8 @@
     display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
     font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--headline);
   }
-  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now the size and weight of a column title in the Policy
-     tab (15px bold, .pol-col-title), in navy and in the same family as the title, so it reads as part of it. */
+  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now 15px bold, in navy and in the same family
+     as the title, so it reads as part of it. */
   .leg-scope { font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--navy); font-variant-numeric: tabular-nums; }
   /* The Bills section's title has no words of its own: it is the jurisdiction and the count ("New York · 8 bills"), at the size, weight and colour of a section title
      (the owner's request, 2026-11-12), so the span takes everything from the heading around it. */
@@ -205,9 +199,9 @@
      House, Governor", 214px with its padding) whole at a normal desktop width, 19% (229px at a 1280px window); in a narrower window it
      wraps rather than take room from the three results columns, which carry the notes. The minimums are the widest thing that cannot
      wrap, so the columns also agree in a narrow window: the longest state name (New Hampshire, 131px with its padding) and the widest
-     result chip (127px). */
+     result (a square and "Democratic gain" in bold, 160px with its padding). */
   .leg-table--results th:nth-child(1) { width: 12%; min-width: 134px; }
-  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 130px; }
+  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 160px; }
   .leg-table--results th:nth-child(3) { width: 29%; }
   .leg-table--results th:nth-child(5) { width: 19%; }
   .leg-status-note { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
