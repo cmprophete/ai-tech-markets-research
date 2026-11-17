@@ -361,6 +361,19 @@
     const mergedOrder = Object.keys(MERGED_POLICY_CATEGORIES); // curated top→bottom order
     const bandH = H / mergedOrder.length;
 
+    // A node's label is HTML in a foreignObject, in the graph's own units. LABEL_FS is the font size .pol-links-node-label sets (13px, the notes size on the
+    // other tabs); LABEL_W is how wide a label may get before it wraps. Both only size the boxes the layout keeps apart: the browser does the real wrapping.
+    const LABEL_FS = 13, LABEL_W = 150, LABEL_LH = 1.28;
+    // How tall a title's label is: its lines, estimated word by word (Public Sans averages about 0.57em a character), kept a little generous.
+    const labelHeight = title => {
+      const em = LABEL_FS * 0.57; let lines = 1, w = 0;
+      title.split(/\s+/).forEach(word => {
+        const ww = word.length * em;
+        if (w && w + em + ww > LABEL_W) { lines++; w = ww; } else w += (w ? em : 0) + ww;
+      });
+      return Math.max(20, lines * LABEL_FS * LABEL_LH + 2);
+    };
+
     // ── Build nodes, seeded with a golden-angle spread so the pre-settle
     // starting layout is already roughly non-overlapping. ──
     const nodes = POLICY_DATA.map((p, i) => {
@@ -370,7 +383,7 @@
       const seed = (i * 137.5) % 360;
       const x = W / 2 + Math.cos(seed * Math.PI / 180) * (W / 2 - 100);
       const y = bandCenter + Math.sin(seed * Math.PI / 180) * (bandH / 2 - 30);
-      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0 };
+      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0, h: labelHeight(p.title) };
     });
     const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
 
@@ -426,6 +439,32 @@
       alpha *= 0.985;
     }
     for (let i = 0; i < 400 && alpha > 0.01; i++) tick();
+
+    // The physics treats a node as a point, but each one carries a label to its right, so labels sat on top of each other. Once it has settled, push any
+    // two nodes whose dot-and-label boxes touch apart along the shorter way out, a pass at a time, with a light pull back toward the node's band, until
+    // none touch. The band names at the top left of each band are boxes that do not move. Deterministic, like the rest of the layout.
+    const boxOf = n => ({ l: n.x - 10, r: n.x + 11 + LABEL_W, t: n.y - 10, b: n.y - 10 + n.h });
+    const bandNames = mergedOrder.map((mcId, i) => ({ l: 8, r: 20 + MERGED_POLICY_CATEGORIES[mcId].length * 9, t: i * bandH + 4, b: i * bandH + 26 }));
+    for (let pass = 0; pass < 240; pass++) {
+      let touching = 0;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j], A = boxOf(a), B = boxOf(b);
+          const ox = Math.min(A.r, B.r) - Math.max(A.l, B.l) + 6, oy = Math.min(A.b, B.b) - Math.max(A.t, B.t) + 4;
+          if (ox <= 0 || oy <= 0) continue;
+          touching++;
+          if (oy <= ox) { const d = (oy / 2) * (a.y <= b.y ? -1 : 1); a.y += d; b.y -= d; }
+          else { const d = (ox / 2) * (a.x <= b.x ? -1 : 1); a.x += d; b.x -= d; }
+        }
+      }
+      nodes.forEach(n => {
+        n.y += (n.bandCenter - n.y) * 0.01;
+        bandNames.forEach(L => { const B = boxOf(n); if (B.r > L.l && B.l < L.r && B.b > L.t && B.t < L.b) n.y += L.b - B.t + 2; });
+        n.x = Math.max(24, Math.min(W - 190, n.x));
+        n.y = Math.max(16, Math.min(H - 6 - n.h, n.y));
+      });
+      if (!touching) break;
+    }
 
     // ── Render as SVG (real DOM nodes — see ADR 0002 for why not canvas) ──
     const svgNS = 'http://www.w3.org/2000/svg';
@@ -486,7 +525,7 @@
       const labelFo = document.createElementNS(svgNS, 'foreignObject');
       labelFo.setAttribute('class', 'pol-links-node-label-fo');
       labelFo.setAttribute('x', n.x + 11); labelFo.setAttribute('y', n.y - 10);
-      labelFo.setAttribute('width', 116); labelFo.setAttribute('height', 48);
+      labelFo.setAttribute('width', LABEL_W); labelFo.setAttribute('height', n.h);
       const labelDiv = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
       labelDiv.setAttribute('class', 'pol-links-node-label');
       labelDiv.textContent = n.title;

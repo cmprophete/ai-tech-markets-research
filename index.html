@@ -586,9 +586,9 @@
   /* ── CROSS-VIEW LINKS ───────────────────────────────────────── */
 
   .pol-basis { margin-top: 10px; }
-  .pol-basis-label {
+  .pol-basis-label {   /* a heading in the dialog, like .pol-modal-label */
     font-family: var(--sans);
-    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: 15.5px; font-weight: 700;
     color: var(--text); margin-bottom: 8px;
   }
 
@@ -605,7 +605,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     margin-top: 12px; padding: 4px 0;
     border: none; background: none; cursor: pointer;
-    color: var(--accent); font-size: 12px; font-weight: 600;
+    color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.02em;   /* the .act-btn text style */
     font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
   }
   .pol-basis-chevron { /* see .ui-chevron */ }
@@ -1035,7 +1035,7 @@
     margin: 0; padding: 0 0 0 18px;
     display: flex; flex-direction: column; gap: 7px;
     font-family: 'Public Sans', sans-serif;
-    font-size: 13.5px; line-height: 1.55; color: var(--text);
+    font-size: 14px; line-height: 1.55; color: var(--text);   /* body text is 14px, as .pol-modal-text is */
   }
   .pol-modal-list li { padding-left: 2px; }
   .pol-modal-list li::marker { color: var(--accent); }
@@ -1050,7 +1050,7 @@
   .pol-press-list {
     list-style: none; padding: 0; margin: 0;
     display: flex; flex-direction: column; gap: 6px;
-    font-family: 'Public Sans', sans-serif; font-size: 13.5px; line-height: 1.5;
+    font-family: 'Public Sans', sans-serif; font-size: 13px; line-height: 1.5;   /* the notes size */
   }
   .pol-press-list a {
     color: var(--accent); text-decoration: none;
@@ -1081,10 +1081,10 @@
   .pol-modal-meta {
     display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;
   }
+  /* The level and category under the title are small labels, so they take the chips' text style (Haas 11px/500) rather than a Public Sans size of their own. */
   .pol-modal-level {
-    font-size: 11px; font-weight: 500; color: var(--muted);
-    background: none; border: none; padding: 0; border-radius: 0; letter-spacing: 0;
-    font-family: 'Public Sans', sans-serif;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted);
+    background: none; border: none; padding: 0; border-radius: 0;
   }
   .pol-modal-meta-sep {
     display: inline-block; width: 1px; height: 12px;
@@ -1092,8 +1092,7 @@
     opacity: 0.8;
   }
   .pol-modal-cat {
-    font-size: 11px; font-weight: 500; color: var(--muted);
-    font-family: 'Public Sans', sans-serif;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted);
   }
   .pol-modal-phase-desc {
     font-size: 13px; color: var(--muted); line-height: 1.55;
@@ -1103,7 +1102,7 @@
   .pol-modal-phase-desc:empty { display: none; }
   .pol-modal-close {
     background: none; border: none; cursor: pointer;
-    color: var(--muted); font-size: 18px; line-height: 1; padding: 4px;
+    color: var(--muted); font-size: 19px; line-height: 1; padding: 4px;   /* the size .modal-close has on the other modals */
     border-radius: var(--r-ctl); transition: color 0.15s; flex-shrink: 0;
   }
   .pol-modal-close:hover { color: var(--text); }
@@ -1116,9 +1115,10 @@
     padding-bottom: 16px; border-bottom: 1px solid var(--border);
   }
   .pol-modal-section:last-child { padding-bottom: 0; border-bottom: none; }
+  /* A section heading in the dialog: the card-title style (15.5px bold) the policy tiles and the Papers cards use. */
   .pol-modal-label {
     font-family: var(--sans);
-    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: 15.5px; font-weight: 700;
     color: var(--text);
   }
   .pol-modal-text { font-size: 14px; color: var(--text); line-height: 1.7; }
@@ -1133,8 +1133,8 @@
   @media (max-width: 720px) { .pol-rel-cols { grid-template-columns: 1fr; gap: 12px; } }
   .pol-rel-head {
     display: flex; align-items: center; gap: 8px;
-    font-family: 'Public Sans', sans-serif; font-size: 11px; font-weight: 700;
-    letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px;
+    font-family: var(--grot); font-size: 11px; font-weight: 600;   /* the .lbl-grot label style */
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px;
   }
   .pol-rel-head .pol-rel-glyph { width: 20px; border-top: 2.5px solid currentColor; }
   .pol-rel-head.pairs { color: var(--rel-pair); }
@@ -1143,8 +1143,8 @@
   .pol-rel-item { padding: 3px 0 3px 12px; border-left: 2px solid var(--border); margin-bottom: 9px; }
   .g-pairs .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-pair) 55%, var(--border)); }
   .g-competes .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-compete) 55%, var(--border)); }
-  .pol-rel-item .pol-xref { font-size: 13.5px; font-weight: 600; }
-  .pol-rel-why { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+  .pol-rel-item .pol-xref { font-size: 13px; font-weight: 600; }
+  .pol-rel-why { display: block; font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
 
   /* ── POLICY VIEW ─────────────────────────────────────── */
   .policy-view .cards-area           { padding: 0; }
@@ -1776,7 +1776,7 @@
   .pol-links-svg { display: block; width: 100%; height: auto; min-height: 560px; }
   .pol-links-band-label {
     font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;   /* the .lbl-grot label style */
     fill: var(--muted); opacity: 0.75;
   }
   .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
@@ -1791,19 +1791,21 @@
      long policy titles can wrap onto multiple lines instead of running off
      as one long unbroken string. */
   .pol-links-node-label-fo { overflow: visible; pointer-events: none; }
+  /* 13px is the notes size on the other tabs. It is in the graph's own units, so at the page's width the graph is drawn a little smaller (about 12px);
+     LABEL_FS in renderPolicyLinksGraph is this number, which the layout uses to keep the labels apart. */
   .pol-links-node-label {
     font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
-    font-size: 9.5px; line-height: 1.28; color: var(--text);
+    font-size: 13px; line-height: 1.28; color: var(--text);
     white-space: normal; overflow-wrap: break-word;
     transition: opacity 0.15s, font-weight 0.15s, color 0.15s;
   }
   .pol-links-node.dimmed .pol-links-node-label { opacity: 0.3; }
-  .pol-links-node.lit .pol-links-node-label { font-weight: 700; color: var(--headline); }
+  .pol-links-node.lit .pol-links-node-label { font-weight: 600; color: var(--headline); }
   .pol-links-node-hit { fill: transparent; cursor: pointer; }
   .pol-links-legend {
-    display: flex; flex-wrap: wrap; gap: 14px;
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
     padding: 12px 16px; border-top: 1px solid var(--border);
-    font-family: 'Public Sans', sans-serif; font-size: 11px; color: var(--muted);
+    font-family: var(--sans); font-size: 13px; line-height: 1.4; color: var(--text);   /* the Legislation map legend's style */
   }
   .pol-links-legend-item { display: flex; align-items: center; gap: 6px; }
   .pol-links-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -3335,6 +3337,19 @@
     const mergedOrder = Object.keys(MERGED_POLICY_CATEGORIES); // curated top→bottom order
     const bandH = H / mergedOrder.length;
 
+    // A node's label is HTML in a foreignObject, in the graph's own units. LABEL_FS is the font size .pol-links-node-label sets (13px, the notes size on the
+    // other tabs); LABEL_W is how wide a label may get before it wraps. Both only size the boxes the layout keeps apart: the browser does the real wrapping.
+    const LABEL_FS = 13, LABEL_W = 150, LABEL_LH = 1.28;
+    // How tall a title's label is: its lines, estimated word by word (Public Sans averages about 0.57em a character), kept a little generous.
+    const labelHeight = title => {
+      const em = LABEL_FS * 0.57; let lines = 1, w = 0;
+      title.split(/\s+/).forEach(word => {
+        const ww = word.length * em;
+        if (w && w + em + ww > LABEL_W) { lines++; w = ww; } else w += (w ? em : 0) + ww;
+      });
+      return Math.max(20, lines * LABEL_FS * LABEL_LH + 2);
+    };
+
     // ── Build nodes, seeded with a golden-angle spread so the pre-settle
     // starting layout is already roughly non-overlapping. ──
     const nodes = POLICY_DATA.map((p, i) => {
@@ -3344,7 +3359,7 @@
       const seed = (i * 137.5) % 360;
       const x = W / 2 + Math.cos(seed * Math.PI / 180) * (W / 2 - 100);
       const y = bandCenter + Math.sin(seed * Math.PI / 180) * (bandH / 2 - 30);
-      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0 };
+      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0, h: labelHeight(p.title) };
     });
     const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
 
@@ -3400,6 +3415,32 @@
       alpha *= 0.985;
     }
     for (let i = 0; i < 400 && alpha > 0.01; i++) tick();
+
+    // The physics treats a node as a point, but each one carries a label to its right, so labels sat on top of each other. Once it has settled, push any
+    // two nodes whose dot-and-label boxes touch apart along the shorter way out, a pass at a time, with a light pull back toward the node's band, until
+    // none touch. The band names at the top left of each band are boxes that do not move. Deterministic, like the rest of the layout.
+    const boxOf = n => ({ l: n.x - 10, r: n.x + 11 + LABEL_W, t: n.y - 10, b: n.y - 10 + n.h });
+    const bandNames = mergedOrder.map((mcId, i) => ({ l: 8, r: 20 + MERGED_POLICY_CATEGORIES[mcId].length * 9, t: i * bandH + 4, b: i * bandH + 26 }));
+    for (let pass = 0; pass < 240; pass++) {
+      let touching = 0;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j], A = boxOf(a), B = boxOf(b);
+          const ox = Math.min(A.r, B.r) - Math.max(A.l, B.l) + 6, oy = Math.min(A.b, B.b) - Math.max(A.t, B.t) + 4;
+          if (ox <= 0 || oy <= 0) continue;
+          touching++;
+          if (oy <= ox) { const d = (oy / 2) * (a.y <= b.y ? -1 : 1); a.y += d; b.y -= d; }
+          else { const d = (ox / 2) * (a.x <= b.x ? -1 : 1); a.x += d; b.x -= d; }
+        }
+      }
+      nodes.forEach(n => {
+        n.y += (n.bandCenter - n.y) * 0.01;
+        bandNames.forEach(L => { const B = boxOf(n); if (B.r > L.l && B.l < L.r && B.b > L.t && B.t < L.b) n.y += L.b - B.t + 2; });
+        n.x = Math.max(24, Math.min(W - 190, n.x));
+        n.y = Math.max(16, Math.min(H - 6 - n.h, n.y));
+      });
+      if (!touching) break;
+    }
 
     // ── Render as SVG (real DOM nodes — see ADR 0002 for why not canvas) ──
     const svgNS = 'http://www.w3.org/2000/svg';
@@ -3460,7 +3501,7 @@
       const labelFo = document.createElementNS(svgNS, 'foreignObject');
       labelFo.setAttribute('class', 'pol-links-node-label-fo');
       labelFo.setAttribute('x', n.x + 11); labelFo.setAttribute('y', n.y - 10);
-      labelFo.setAttribute('width', 116); labelFo.setAttribute('height', 48);
+      labelFo.setAttribute('width', LABEL_W); labelFo.setAttribute('height', n.h);
       const labelDiv = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
       labelDiv.setAttribute('class', 'pol-links-node-label');
       labelDiv.textContent = n.title;

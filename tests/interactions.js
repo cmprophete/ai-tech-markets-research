@@ -185,6 +185,25 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the Landscape masthead counts the policies the map lists and the areas it draws them in', !m || (num(m[1]) === listed && num(m[2]) === rows && listed > 0), `${text} | listed ${listed} in ${rows} rows`);
 }
 
+/* ── Landscape: the Links graph keeps its labels apart ──────────────────────────────────────────────────────
+   The graph's force layout treats a node as a point, but every node carries a label to its right, so labels sat on top of each
+   other (7 pairs of labels and 8 labels over another node's dot, at the old 9.5px size; the labels are 13px now, which would be
+   worse still). A pass after the physics pushes the dot-and-label boxes apart. jsdom has no layout, so this reads the boxes the
+   layout wrote into the SVG: each label's foreignObject (x, y, width, height) and the dot beside it. */
+{
+  const { w, d } = load('index.html', '#policy');
+  const links = [...d.querySelectorAll('.pol-subview-btn')].find(b => /^links/i.test(b.textContent.trim()));
+  links.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  const boxes = [...d.querySelectorAll('.pol-links-node')].map(g => {
+    const fo = g.querySelector('foreignObject'), at = n => +fo.getAttribute(n), cx = +g.querySelector('.pol-links-node-dot').getAttribute('cx');
+    return { t: fo.textContent, l: cx - 10, r: at('x') + at('width'), top: at('y'), b: at('y') + at('height') };
+  });
+  const touching = [];
+  boxes.forEach((A, i) => boxes.slice(i + 1).forEach(B => { if (A.l < B.r && B.l < A.r && A.top < B.b && B.top < A.b) touching.push(`${A.t} / ${B.t}`); }));
+  ok('the Links graph draws every policy and lays its labels out so that none sits on another label or dot',
+     boxes.length === w.eval('POLICY_DATA.length') && boxes.length > 0 && touching.length === 0, `${boxes.length} nodes, touching: ${touching.slice(0, 4).join('; ')}`);
+}
+
 /* ── policy cards: no paper listed twice ────────────────────────────────────
    A card's Research basis lists a paper once (a paper that is both a curated POLICY_SOURCES entry and a live tracker entry used
    to appear again under "related"), and "Copy as draft" lists each reference once (a paper that was both a numeric paperId and
