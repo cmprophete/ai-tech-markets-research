@@ -7,7 +7,7 @@
    <script src> is inlined in place before parsing, which gets execution order
    exactly right and avoids the network entirely.
 
-   Requires jsdom:  npm install jsdom
+   Requires jsdom (pinned in package.json):  npm install
    ═══════════════════════════════════════════════════════════════════════════ */
 const fs = require('fs');
 const path = require('path');
