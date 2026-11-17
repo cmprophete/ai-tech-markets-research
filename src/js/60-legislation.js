@@ -74,9 +74,11 @@
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
     return m ? `${LEG_MONTHS[+m[2] - 1]} ${+m[3]}, ${m[1]}` : '';
   }
-  function legStageChip(b) {
+  /* A bill's status is its stage in words, as plain text. It was a grey pill until 2026-11-17: a pill looks like a button, and this is a label to read. (A row of dots under the words, for
+     where the stage sits on the path, was tried the same day and not kept: the owner preferred the words alone.) */
+  function legStage(b) {
     const st = legGet.stages()[b.stage];
-    return st ? `<span class="leg-chip">${escapeHTML(st.label)}</span>` : '';
+    return st ? escapeHTML(st.label) : '';
   }
   /* ── Search and topics ───────────────────────────────────────────────────────────────────────────────────────
      The filter bar narrows every bill the page counts: the map's shading, the legend, the panel and the table all follow it, as they follow the
@@ -217,7 +219,12 @@
     if (c.runoff) parts.push(`${c.runoff} in ${c.runoff === 1 ? 'a runoff' : 'runoffs'}`);
     return parts.length ? `Not yet called: ${parts.join(', ')}.` : '';
   }
-  const legResultChip = r => `<span class="leg-chip leg-chip--${escapeHTML(r.result)}">${escapeHTML(LEG_RESULT[r.result] || r.result)}</span>`;
+  /* A race's result: a square in the party's colour (the map's own fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a
+     race not yet called are the news, so those are bold. It was a coloured pill in every cell until 2026-11-17. */
+  const legResult = r => {
+    const news = r.result === 'd-gain' || r.result === 'r-gain' || r.result === 'uncalled';
+    return `<span class="leg-result${news ? ' leg-result--news' : ''}"><span class="leg-swatch leg-swatch--sm fill-${escapeHTML(r.result)}" aria-hidden="true"></span>${escapeHTML(LEG_RESULT[r.result] || r.result)}</span>`;
+  };
 
   /* The organisations the results come from: "The Associated Press". */
   function legSourceNames() {
@@ -469,7 +476,7 @@
   /* The panel's midterm block for a state: its three offices. */
   function legOfficeRows(s) {
     const row = (office, body) => `<div class="leg-office"><div class="leg-office-name">${LEG_OFFICES[office]}</div><div class="leg-office-body">${body}</div></div>`;
-    const race = office => { const r = s[office]; return r ? `<div>${legResultChip(r)}</div>${r.detail ? `<div class="leg-muted">${escapeHTML(r.detail)}</div>` : ''}` : `<div class="leg-muted">No 2026 ${LEG_RACE[office]} race.</div>`; };
+    const race = office => { const r = s[office]; return r ? `<div>${legResult(r)}</div>${r.detail ? `<div class="leg-muted">${escapeHTML(r.detail)}</div>` : ''}` : `<div class="leg-muted">No 2026 ${LEG_RACE[office]} race.</div>`; };
     const open = legHouseOpen(s.house);
     return row('senate', race('senate')) +
            row('house', s.house ? `<div>${escapeHTML(legHouseText(s.house))}</div>${open ? `<div class="leg-muted">${escapeHTML(open)}</div>` : ''}` : '<div class="leg-muted">No 2026 House race.</div>') +
@@ -548,7 +555,7 @@
       return s.house ? `${escapeHTML(legHouseText(s.house))}${open ? `<div class="leg-status-note">${escapeHTML(open)}</div>` : ''}` : LEG_DASH;
     }
     const r = s[office];
-    return r ? `${legResultChip(r)}${r.detail ? `<div class="leg-status-note">${escapeHTML(r.detail)}</div>` : ''}` : LEG_DASH;
+    return r ? `${legResult(r)}${r.detail ? `<div class="leg-status-note">${escapeHTML(r.detail)}</div>` : ''}` : LEG_DASH;
   }
 
   /* What each source found beyond the bills shown (a feed's `omitted`: bills that failed, or only mention AI in passing), which tools/legislation.py leaves out of the data,
@@ -605,7 +612,7 @@
       { head: 'Jurisdiction', cell: b => escapeHTML(legJur(b)) },
       { head: 'Bill', cls: 'leg-col-bill', cell: b => `<span class="leg-num">${legCell(b.bill)}</span>${sessionOf(b) ? `<div class="leg-status-note">${escapeHTML(sessionOf(b))}</div>` : ''}` },
       { head: 'Title', cls: 'leg-col-title', cell: b => `${legCell(b.title)}${legTopicLine(b)}${b.subjects && b.subjects.length ? `<div class="leg-status-note">Subjects: ${b.subjects.map(escapeHTML).join(', ')}</div>` : ''}${b.passing ? '<div class="leg-status-note">Mentions AI only in its text</div>' : ''}` },
-      { head: 'Status', cls: shown.some(b => b.status) ? 'leg-col-status' : '', cell: b => { const st = legGet.stages()[b.stage]; return legStageChip(b) + ((b.status && st && b.status !== st.label) ? `<div class="leg-status-note">${escapeHTML(b.status)}</div>` : ''); } },
+      { head: 'Status', cls: shown.some(b => b.status) ? 'leg-col-status' : '', cell: b => { const st = legGet.stages()[b.stage]; return legStage(b) + ((b.status && st && b.status !== st.label) ? `<div class="leg-status-note">${escapeHTML(b.status)}</div>` : ''); } },
       { head: 'Last action', cls: 'leg-col-last', show: bills.some(b => b.lastAction), cell: b => { const la = b.lastAction; return la ? ([la.date ? legDateLong(la.date) : '', la.text || ''].filter(Boolean).map(escapeHTML).join(': ') || LEG_DASH) : LEG_DASH; } },
       { head: 'Summary', cls: 'leg-col-summary', show: bills.some(b => b.summary), cell: b => legCell(b.summary) },
       { head: 'Source', cell: b => { const src = b.source, url = src ? legSafeUrl(src.url) : ''; return src ? (url ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener">${escapeHTML(src.label || url)}</a>` : legCell(src.label)) : LEG_DASH; } },
