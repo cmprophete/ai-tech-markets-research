@@ -13,7 +13,7 @@ This skill orchestrates. It does **not** restate the fact-extraction rubric: ste
 
 The research list has one writer: the daily sync from the Google Sheet (`.github/workflows/research-sync.yml`). It alone writes `content/research.csv` and the `RESEARCH_DATA` array in `data/tracker-data.js`. So do **not** append to `RESEARCH_DATA`, do not edit `content/research.csv`, and do not run `tools/research.py build` in the working tree: a row added only in the repo is wiped at the next sync, and a second writer is what makes merges conflict (see "One writer per file" in `CONTRIBUTING.md`).
 
-Add one row to the research tab of the Sheet, by header name (the Sheet's column order is not the CSV's), through the Google Sheets connector when it is connected; otherwise hand the user the row to paste. **Write it as `status` = `under review`: the user approves it in the Sheet, and only an approved row reaches the site.** (Until the Sheet has a `status` column, a row with a blank `archived` is published at the next sync, so keep a draft off the site by putting "pending" in `archived`; this note goes when the Sheet has moved over, see `content/README.md`.) The fields, as in `content/README.md`:
+Add one row to the research tab of the Sheet, by header name (the Sheet's column order is not the CSV's), through the Google Sheets connector when it is connected; otherwise hand the user the row to paste. **Write it as `status` = `under review`: the user approves it in the Sheet, and only an approved row reaches the site.** The fields, as in `content/README.md`:
 
 ```
 id          an integer above every id already in use
