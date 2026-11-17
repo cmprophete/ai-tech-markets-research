@@ -57,8 +57,6 @@
   function openPolModalById(id) {
     const p = POLICY_DATA.find(x => x.id === id);
     if (!p) return;
-    const lvl = DISRUPTION_LEVELS.find(l => l.id === p.level) || {};
-    const catLabel = POLICY_CATEGORIES[p.category] || '';
-    openPolModal(p, lvl, catLabel);
+    openPolModal(p);
   }
 

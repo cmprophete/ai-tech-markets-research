@@ -246,9 +246,6 @@
     body.pol-modal-open .pol-modal-body { overflow: visible !important; max-height: none !important; }
     body.pol-modal-open .pol-modal-close,
     body.pol-modal-open .pol-modal-actions { display: none !important; }
-    body.pol-modal-open .pol-press-list a::after {
-      content: " (" attr(href) ")"; font-size: 9px; color: #555; word-break: break-all;
-    }
     body.pol-modal-open .syn-cite, body.pol-modal-open .pol-xref { color: inherit; border-bottom: none; }
   }
 

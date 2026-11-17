@@ -80,11 +80,11 @@ One of 4 top-level groupings — Economic Security, Labor & Worker Rights, AI Go
 _Avoid_: Category, policy group
 
 **Policy Link**:
-A `pairsWith` entry on a policy — `{id, why}` — meaning the referenced policy reinforces or amplifies this one. Currently authored topically/administratively (not yet aligned to ESP's theory of the case from `becky_brief.md`). Rendered today both as a text cross-link (`.pol-xref`) inside the policy detail modal, and as an edge in the Links graph.
+A `pairsWith` entry on a policy — `{id, why}` — meaning the referenced policy reinforces or amplifies this one. Currently authored topically/administratively (not yet aligned to ESP's theory of the case from `becky_brief.md`). Rendered today as an edge in the Links graph. The policy detail modal listed it, with its `why`, under a "How it interacts" section until that section was removed on 2026-11-17; the `.pol-xref` links that remain are the `{{pol:id|text}}` ones written inside a card's own prose.
 _Avoid_: Connection, relationship, edge (edge is fine in code/rendering context, but "Policy Link" is the domain term)
 
 **Rival Policy**:
-A `competesWith` entry on a policy — a substitute or alternative approach, not a reinforcing one (e.g. UBI vs. Guaranteed Income). Currently stored in the data but not visualized anywhere.
+A `competesWith` entry on a policy — a substitute or alternative approach, not a reinforcing one (e.g. UBI vs. Guaranteed Income). Stored in the data and shown nowhere on the page now (the policy detail modal listed it under "How it interacts" until 2026-11-17).
 _Avoid_: Competing policy, opposite policy
 
 **Map view**:

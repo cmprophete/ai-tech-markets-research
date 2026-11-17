@@ -204,31 +204,91 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
      boxes.length === w.eval('POLICY_DATA.length') && boxes.length > 0 && touching.length === 0, `${boxes.length} nodes, touching: ${touching.slice(0, 4).join('; ')}`);
 }
 
-/* ── policy cards: no Research basis, and no References list in "Copy as draft" ───────────────
+/* ── Landscape: the Links graph draws a line for each pair of policies that pair with each other ───────────────────────────────
+   Its lines come from each card's pairsWith. The card's dialog stopped listing them when its "How it interacts" section was removed (2026-11-17),
+   so the graph is the one place they show now: a pair authored on both sides is one line, and an id that is no policy draws nothing. */
+{
+  const { w, d } = load('index.html', '#policy');
+  const links = [...d.querySelectorAll('.pol-subview-btn')].find(b => /^links/i.test(b.textContent.trim()));
+  links.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  const want = w.eval("new Set(POLICY_DATA.flatMap(p => (p.pairsWith || []).filter(l => POLICY_DATA.some(x => x.id === l.id)).map(l => [p.id, l.id].sort().join('|')))).size");
+  const got = d.querySelectorAll('.pol-links-edge').length;
+  ok('the Links graph draws one line for each pair of policies that pair with each other', want > 0 && got === want, `${got} lines for ${want} pairs`);
+}
+
+/* ── policy cards: no Research basis, no Press & resources, no References list in "Copy as draft" ─────
    The dialog used to end its Precedents section with a "Research basis" list (the card's paperIds, then a "Show N related
-   studies" list picked by category), and "Copy as draft" ended with a "## References" list of the same papers plus the ones
-   its text cites. The owner removed both on 2026-11-17 as no longer relevant: a card's sources are the links and citations
-   in its text. Checked on every policy. */
+   studies" list picked by category), then a "Press & resources" list, and "Copy as draft" ended with a "## References" list
+   of the same papers plus the ones its text cites. The owner removed all three on 2026-11-17 as no longer relevant: a card's
+   sources are the links and citations in its text. The `press` and `paperIds` fields were retired with them, so no card may
+   carry either. Checked on every policy.
+
+   The same day, "revisit this category structure" (the level and fine category under the title, e.g. "Restructure | Work Structure",
+   with the level's one-line description under them) was answered "Area only": the header names the policy area the Map files the
+   card under (one of the four rows) and nothing else of its structure, and "Copy as draft" opens with an Area line instead of
+   Phase and Domain. The `level` and `category` fields stay in the data: the area is derived from the category.
+
+   And the "How it interacts" section (a card's pairsWith and competesWith as Pairs with / Competes with lists of cross-links) was removed from
+   the dialog and from "Copy as draft" at the owner's request. The two fields stay in the data: pairsWith draws the Links graph's lines (checked
+   above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block). */
 (async () => {
   const { w, d } = load('index.html', '#policy');
   let copied = null;
   w.HTMLTextAreaElement.prototype.select = function () { copied = this.value; };
   w.document.execCommand = () => true;
   const ids = w.eval('POLICY_DATA.map(p => p.id)');
-  const withBasis = [], withRefs = [], noDraft = [];
+  // Each card's area, level and fine category as the page's own data gives them (plain JSON, so nothing crosses the jsdom
+  // realm as a live object). `texts` is everything the old header could have printed for the card's structure.
+  const facts = JSON.parse(w.eval(`JSON.stringify(Object.fromEntries(POLICY_DATA.map(p => {
+    const areaId = CATEGORY_MERGE_MAP[p.category], lv = DISRUPTION_LEVELS.find(l => l.id === p.level) || {};
+    return [p.id, { areaId, area: MERGED_POLICY_CATEGORIES[areaId], texts: [lv.label, lv.sublabel, lv.blurb, POLICY_CATEGORIES[p.category]].filter(Boolean) }];
+  })))`));
+  const withBasis = [], withPress = [], withRefs = [], noDraft = [], wrongArea = [], levelShown = [], wrongDot = [], draftLabels = [], withRel = [], withRelDraft = [];
   for (const id of ids) {
     w.location.hash = '#policy/' + id;
     await settle(5);
     if (d.querySelector('#polModal [class*="pol-basis"]') || /Research basis|related stud/i.test(d.getElementById('polModalBody').textContent)) withBasis.push(id);
+    if (/Press (&|and) resources/i.test(d.getElementById('polModalBody').textContent)) withPress.push(id);
+    if ([...d.querySelectorAll('#polModalBody .pol-modal-label')].some(e => /^How it interacts$/i.test(e.textContent.trim())) || d.querySelector('#polModalBody [class*="pol-rel"]')) withRel.push(id);
+    const f = facts[id], meta = d.getElementById('polModalArea'), head = d.querySelector('#polModal .pol-modal-header');
+    if (!meta || meta.textContent !== f.area) wrongArea.push(`${id}: "${meta && meta.textContent}" instead of "${f.area}"`);
+    const leaves = [...head.querySelectorAll('*')].filter(e => !e.children.length).map(e => e.textContent.trim());
+    if (d.getElementById('polModalLevel') || d.getElementById('polModalCat') || d.getElementById('polModalPhaseDesc') || f.texts.some(x => leaves.includes(x))) levelShown.push(id);
+    const dot = meta && meta.querySelector('.pol-modal-area-dot'), row = d.querySelector(`#policyArea .pol-cat-row[data-cat="${f.areaId}"]`);
+    const dotColor = dot && dot.style.getPropertyValue('--cat-color');
+    if (!dotColor || !row || dotColor !== row.style.getPropertyValue('--cat-color')) wrongDot.push(id);
     copied = null;
     const btn = d.getElementById('polCopyDraft');
     if (btn) btn.click();
     if (!copied || !copied.startsWith('# ')) noDraft.push(id);
-    else if (/^## References/m.test(copied)) withRefs.push(id);
+    else if (/^## (References|Press)/m.test(copied)) withRefs.push(id);
+    if (copied && /^## (Pairs with|Competes with)/m.test(copied)) withRelDraft.push(id);
+    if (copied && (!copied.includes('\n**Area:** ' + f.area + '\n') || /\*\*(Phase|Domain):\*\*/.test(copied))) draftLabels.push(id);
   }
+  ok('every policy dialog shows, under its title, the policy area its card sits under on the Map (one of the four rows)', wrongArea.length === 0, wrongArea.join(' | '));
+  ok('no policy dialog shows its card\'s level, the level\'s description or its fine category', levelShown.length === 0, levelShown.join(', '));
+  ok('the dot beside the area is the colour of that area\'s row on the Map', wrongDot.length === 0, wrongDot.join(', '));
+  ok('"Copy as draft" opens with the card\'s area, not a phase and a domain', draftLabels.length === 0, draftLabels.join(', '));
   ok('no policy card shows a Research basis or a list of related studies', withBasis.length === 0, withBasis.join(', '));
-  ok('"Copy as draft" still gives a draft on every policy, and none of them ends with a References list',
+  ok('no policy card shows a Press & resources section', withPress.length === 0, withPress.join(', '));
+  ok('no policy dialog has a "How it interacts" section (no Pairs with or Competes with lists of cross-links)', withRel.length === 0, withRel.join(', '));
+  ok('"Copy as draft" has no Pairs with or Competes with list', withRelDraft.length === 0, withRelDraft.join(', '));
+  const retired = w.eval("POLICY_DATA.filter(p => 'paperIds' in p || 'press' in p).map(p => p.id)");
+  ok('no policy card carries the retired paperIds or press fields', retired.length === 0, retired.join(', '));
+  ok('"Copy as draft" still gives a draft on every policy, and none of them ends with a References or Press & resources list',
      withRefs.length === 0 && noDraft.length === 0, `with references: ${withRefs.join(', ')} | no draft: ${noDraft.join(', ')}`);
+
+  // A cross-link written inside a card's own text ({{pol:id|text}}) still opens the card it names. With the How it interacts section gone, these
+  // are the only links from one card to another.
+  const xid = w.eval("(POLICY_DATA.find(p => JSON.stringify([p.summary, p.rationale, p.strengths, p.risks, p.landscape]).includes('{{pol:')) || {}).id");
+  w.location.hash = '#policy/' + xid;
+  await settle(5);
+  const xlink = d.querySelector('#polModalBody .pol-xref');
+  const xtitle = xlink && w.eval(`(POLICY_DATA.find(p => p.id === ${JSON.stringify(xlink.dataset.polId)}) || {}).title`);
+  if (xlink) xlink.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await settle(5);
+  const nowOpen = d.getElementById('polModalTitle').textContent;
+  ok('a cross-link inside a card\'s text still opens the card it names', !!xlink && !!xtitle && nowOpen === xtitle, `link: ${!!xlink}, wanted "${xtitle}", the dialog says "${nowOpen}"`);
 })();
 
 /* #sources (briefly), #research (before that) and #changelog (the What's New feed, removed) were routes

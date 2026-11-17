@@ -63,7 +63,7 @@ Each of these reaches the site at the next sync (the Actions tab can run it righ
 
 **An approved row that is not complete stops the whole sync.** If any approved row lacks a required field, the sync refuses to write and the site stays at the last good sync, so finish a row before approving it. Nothing reads a link to fill the rest in. A link that is already in the tracker, even on an archived or under-review row, must not be added again: the new row takes the old row's id and fails the duplicate-id check, and the error says the two rows have the same link. Delete the repeat.
 
-**Archive, don't delete, when you might want it back or a policy cites it.** Archiving is reversible and keeps the `id` reserved, so nothing gets reused or re-pointed. `check` notes every policy card (`POLICY_DATA paperIds`), `{{cite}}` token and Fact Bank fact that points at a study which is not approved, and says whether that study is under review, archived or not in the Sheet at all.
+**Archive, don't delete, when you might want it back or a policy cites it.** Archiving is reversible and keeps the `id` reserved, so nothing gets reused or re-pointed. `check` notes every `{{cite}}` token and Fact Bank fact that points at a study which is not approved, and says whether that study is under review, archived or not in the Sheet at all.
 
 ## How the sync works
 

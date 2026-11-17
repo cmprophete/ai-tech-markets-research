@@ -54,18 +54,29 @@
     return p.sourceUrl ? `${apa} ${p.sourceUrl}` : apa;
   }
 
+  // The policy area a card sits under on the Map: its category's merged row, one of the four MERGED_POLICY_CATEGORIES
+  // (Economic Security, Labor & Worker Rights, AI Governance, Mitigating Harms). The dialog header and "Copy as draft"
+  // both name it and both ask here, so neither can disagree with the Map. Null when the category maps to no row
+  // (validateData reports that).
+  function policyAreaOf(p) {
+    const id = CATEGORY_MERGE_MAP[p.category];
+    return (id && MERGED_POLICY_CATEGORIES[id]) ? { id, label: MERGED_POLICY_CATEGORIES[id] } : null;
+  }
+
   // R1: assemble a policy card as a Markdown primer draft, with inline citations
   // resolved to (Year) or (Author, Year) text. There is no References list (removed
   // 2026-11-17): a card's sources are the links and citations in its own text.
-  function policyToMarkdown(p, lvl, catLabel) {
+  function policyToMarkdown(p) {
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const plain = s => tokensToPlain(s, paperMap);
     const fmtD = s => { if (!s) return ''; const d = new Date(s + 'T00:00:00'); return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
     const md = [];
+    const area = policyAreaOf(p);
     md.push(`# ${p.title}`);
     md.push('');
-    md.push(`**Phase:** ${lvl.label || p.level}${catLabel ? ` · **Domain:** ${catLabel}` : ''}`);
-    md.push('');
+    // The Map's area, not the phase and fine category the draft used to open with (dropped 2026-11-17, with the same two
+    // labels under the dialog's title).
+    if (area) md.push(`**Area:** ${area.label}`, '');
     md.push(`*Draft prepared from AI Tracker: Research and Policy (${appURL('policy/' + p.id)})${p.lastReviewed ? `. Last reviewed ${fmtD(p.lastReviewed)}` : ''}.*`);
     const section = (label, body) => { if (body) { md.push('', `## ${label}`, '', plain(body)); } };
     const listSection = (label, arr) => {
@@ -74,24 +85,11 @@
         arr.forEach(item => md.push(`- ${plain(item)}`));
       }
     };
-    const polTitleMD = id => { const t = POLICY_DATA.find(x => x.id === id); return t ? t.title : id; };
-    const relListSection = (label, arr) => {
-      if (Array.isArray(arr) && arr.length) {
-        md.push('', `## ${label}`, '');
-        arr.forEach(r => md.push(`- ${polTitleMD(r.id)}: ${plain(r.why)}`));
-      }
-    };
     section('What it is', p.summary);
     section('The challenge', p.rationale);
     listSection('Strengths', p.strengths);
     listSection('Risks', p.risks);
-    relListSection('Pairs with', p.pairsWith);
-    relListSection('Competes with', p.competesWith);
     section('Precedents & landscape', p.landscape);
-    if (Array.isArray(p.press) && p.press.length) {
-      md.push('', '## Press & resources', '');
-      p.press.forEach(it => md.push(`- ${it.label}: ${it.url}`));
-    }
     md.push('');
     return md.join('\n');
   }
@@ -224,7 +222,7 @@
             </div>`;
 
           wrap.querySelector('.pol-item').addEventListener('click', () => {
-            openPolModal(p, lvl, catLabel);
+            openPolModal(p);
           });
           itemList.appendChild(wrap);
         });
@@ -284,13 +282,10 @@
         cards.className = 'pol-cat-row-cards';
 
         catPolicies.forEach(p => {
-          const lvl = levelMap[p.level] || {};
-          const origCatLabel = POLICY_CATEGORIES[p.category] || p.category;
-
           const card = document.createElement('div');
           card.className = 'pol-cat-card';
           card.innerHTML = `<div class="pol-cat-card-title">${p.title}</div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
-          card.addEventListener('click', () => openPolModal(p, lvl, origCatLabel));
+          card.addEventListener('click', () => openPolModal(p));
           cards.appendChild(card);
         });
 
@@ -567,16 +562,26 @@
     container.appendChild(outer);
   }
 
-  function openPolModal(p, lvl, catLabel) {
+  function openPolModal(p) {
     const backdrop = document.getElementById('polModal');
     const modal    = backdrop.querySelector('.pol-modal');
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     // Preserve the original trigger when navigating policy → policy via cross-links.
     if (!backdrop.classList.contains('open')) backdrop._lastFocus = document.activeElement;
-    document.getElementById('polModalTitle').textContent     = p.title;
-    document.getElementById('polModalLevel').textContent     = lvl.label || p.level;
-    document.getElementById('polModalCat').textContent       = catLabel;
-    document.getElementById('polModalPhaseDesc').textContent = lvl.blurb || lvl.sublabel || '';
+    document.getElementById('polModalTitle').textContent = p.title;
+    // Under the title: the policy area the Map files the card under, led by that row's colour as a dot. The card's level
+    // and fine category are not shown (dropped 2026-11-17: the area is what the Map is organized by). Rebuilt on every
+    // open because a cross-link swaps one policy for another without closing the dialog.
+    const area = policyAreaOf(p), areaEl = document.getElementById('polModalArea');
+    areaEl.textContent = '';
+    if (area) {
+      const dot = document.createElement('span');
+      dot.className = 'pol-modal-area-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      dot.style.setProperty('--cat-color', CAT_COLOR_VARS[area.id] || 'var(--muted)');
+      areaEl.appendChild(dot);
+      areaEl.appendChild(document.createTextNode(area.label));
+    }
     const li = (arr) => (arr || []).map(item => `<li>${injectPolicyLinks(item, paperMap)}</li>`).join('');
     const fmtDate = s => {
       if (!s) return '';
@@ -596,46 +601,20 @@
           <ul class="pol-modal-list">${li(p.risks)}</ul>
         </div>` : '<div></div>'}
       </div>` : '';
-    // How it interacts — replaces the former Feasibility section. Relationships
-    // are cross-links (.pol-xref) wired to openPolModalById below.
-    const polTitle = id => { const t = POLICY_DATA.find(x => x.id === id); return t ? t.title : id; };
-    const relRow = r => `<div class="pol-rel-item"><a class="pol-xref" data-pol-id="${r.id}" role="link" tabindex="0">${polTitle(r.id)}</a><span class="pol-rel-why">${r.why}</span></div>`;
-    const hasPairs = Array.isArray(p.pairsWith) && p.pairsWith.length;
-    const hasCompetes = Array.isArray(p.competesWith) && p.competesWith.length;
-    const pairsBlock = hasPairs ? `<div class="pol-rel-group g-pairs">
-          <div class="pol-rel-head pairs"><span class="pol-rel-glyph"></span>Pairs with</div>
-          ${p.pairsWith.map(relRow).join('')}
-        </div>` : '';
-    const competesBlock = hasCompetes ? `<div class="pol-rel-group g-competes">
-          <div class="pol-rel-head competes"><span class="pol-rel-glyph"></span>Competes with</div>
-          ${p.competesWith.map(relRow).join('')}
-        </div>` : '';
-    // Two columns (Pairs | Competes) when both exist, mirroring Strengths/Risks;
-    // a single group spans full width rather than leaving a half-empty row.
-    const relInner = (hasPairs && hasCompetes)
-      ? `<div class="pol-rel-cols">${pairsBlock}${competesBlock}</div>`
-      : pairsBlock + competesBlock;
-    const relHTML = (hasPairs || hasCompetes) ? `
-      <div class="pol-modal-section">
-        <div class="pol-modal-label">How it interacts</div>
-        ${relInner}
-      </div>` : '';
     // Where it stands and Precedents and examples were merged into one
     // section (single `landscape` field) so the modal doesn't split
     // precedent and current politics across two labels that readers had to
     // cross-reference themselves. The "Research basis" list that used to hang
     // off this section (the card's paperIds, plus related studies by category)
     // was removed on 2026-11-17 as no longer relevant: a card's sources are the
-    // links in its own text.
+    // links in its own text. A "How it interacts" section (the card's pairsWith and
+    // competesWith as lists of cross-links, with their why text) sat between
+    // Strengths/Risks and this one until the same day; the two fields stay in the
+    // data, because pairsWith draws the Links graph's lines.
     const landscapeHTML = p.landscape ? `
       <div class="pol-modal-section">
         <div class="pol-modal-label">Precedents & landscape</div>
         <div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>
-      </div>` : '';
-    const pressHTML = (Array.isArray(p.press) && p.press.length) ? `
-      <div class="pol-modal-section">
-        <div class="pol-modal-label">Press & resources</div>
-        <ul class="pol-press-list">${p.press.map(it => `<li><a href="${it.url}" target="_blank" rel="noopener noreferrer">${it.label}</a></li>`).join('')}</ul>
       </div>` : '';
     const lastReviewedHTML = p.lastReviewed ? `<div class="pol-modal-lastreviewed">Last reviewed: ${fmtDate(p.lastReviewed)}</div>` : '';
     document.getElementById('polModalBody').innerHTML = `
@@ -648,9 +627,7 @@
         <div class="pol-modal-text">${injectPolicyLinks(p.rationale, paperMap)}</div>
       </div>
       ${prosConsHTML}
-      ${relHTML}
       ${landscapeHTML}
-      ${pressHTML}
       ${lastReviewedHTML}`;
     // Wire policy cross-reference links to open their target policy's modal.
     document.getElementById('polModalBody').querySelectorAll('.pol-xref').forEach(a => {
@@ -665,7 +642,7 @@
         <button class="pol-action-btn" id="polCopyDraft" title="Copy this policy as a Markdown primer draft">Copy as draft</button>
         <button class="pol-action-btn" id="polCopyLink" title="Copy a shareable link to this policy">Copy link</button>
         <button class="pol-action-btn" id="polPrint" title="Print or save as a PDF">Print</button>`;
-      document.getElementById('polCopyDraft').addEventListener('click', e => copyText(policyToMarkdown(p, lvl, catLabel), e.currentTarget));
+      document.getElementById('polCopyDraft').addEventListener('click', e => copyText(policyToMarkdown(p), e.currentTarget));
       document.getElementById('polCopyLink').addEventListener('click', e => copyText(appURL('policy/' + p.id), e.currentTarget));
       document.getElementById('polPrint').addEventListener('click', () => window.print());
     }

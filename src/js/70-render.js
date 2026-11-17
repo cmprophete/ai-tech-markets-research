@@ -391,7 +391,6 @@
     (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
-      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) note(pid, `policy ${p.id}: paperId ${pid}`); });
       if (!POLICY_CATEGORIES[p.category]) problems.push(`policy ${p.id}: unknown category "${p.category}"`);
       if (!DISRUPTION_LEVELS.some(l => l.id === p.level)) problems.push(`policy ${p.id}: unknown level "${p.level}"`);
       // A base category with no CATEGORY_MERGE_MAP entry drops its policies
