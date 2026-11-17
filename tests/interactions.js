@@ -128,6 +128,22 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
      !/\d/.test(govSec.textContent.replace('2026', '')), govSec && govSec.textContent);
 }
 
+/* ── the About modal is gone; the Pilot release notice is laid out like the About page's notes ────────────────────────────
+   The "About" modal (and the hidden ⓘ button that opened it) was unreachable and out of date: it still spoke of twenty-seven policies, five stages and a Themes tab. It was removed
+   on 2026-11-17 at the owner's request; the About page is the only About. The Fact Bank's "Pilot release" notice used to be a small uppercase label over its text in a rounded callout;
+   it is now a run-in lead-in like the About page's "How this section is built." notes, the same \`.about-note\` class and so the same padding, size and square ends, in the gold of a
+   fact's "Take note" (\`warn\`). jsdom has no cascade to measure that with, so this checks the markup the style hangs on. */
+{
+  const { d } = load('index.html', '#fact-bank');
+  ok('there is no About modal and no hidden ⓘ button for it', !d.getElementById('aboutModal') && !d.getElementById('aboutInfoBtn') && !d.getElementById('aboutModalClose'));
+  const note = d.querySelector('#factBankArea .intro-note > p');
+  const lead = note && note.querySelector('strong');
+  ok('the Pilot release notice is an .about-note in the warn gold, led by "Pilot release." like the About page\'s "How this section is built." notes',
+     !!note && note.classList.contains('about-note') && note.classList.contains('warn') && !!lead && lead.textContent === 'Pilot release.' && note.firstElementChild === lead && !note.querySelector('.lbl-grot'));
+  const notes = [...load('index.html', '#about').d.querySelectorAll('.about-note')];
+  ok('the About page\'s own notes lead the same way (a bold run-in, then the text)', notes.length >= 2 && notes.every(n => n.firstElementChild.matches('strong')));
+}
+
 /* ── Agenda: a placeholder tab, first in the Policy group ───────────────────────────────────────────────────
    It opens, asks its question, says it is coming, and shows one note: nothing is here yet, with a link to Landscape (#policy). Nothing is behind
    it, and none of the Policy tab's list is built on it. */
@@ -181,7 +197,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const num = word => { word = word.toLowerCase(); if (ONES.includes(word)) return ONES.indexOf(word); const [t, o] = word.split('-'); return (TENS[t] || NaN) + (o ? ONES.indexOf(o) : 0); };
   const text = d.getElementById('headerTabDescText').textContent;
   const m = /^(\S+) policy interventions grouped into (\S+) policy areas/.exec(text);
-  const listed = d.querySelectorAll('#policyArea .pol-item-wrap').length, rows = d.querySelectorAll('#policyArea .pol-cat-row').length;
+  const listed = d.querySelectorAll('#policyArea .pol-cat-card').length, rows = d.querySelectorAll('#policyArea .pol-cat-row').length;
   ok('the Landscape masthead counts the policies the map lists and the areas it draws them in', !m || (num(m[1]) === listed && num(m[2]) === rows && listed > 0), `${text} | listed ${listed} in ${rows} rows`);
 }
 
@@ -230,20 +246,24 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
 
    And the "How it interacts" section (a card's pairsWith and competesWith as Pairs with / Competes with lists of cross-links) was removed from
    the dialog and from "Copy as draft" at the owner's request. The two fields stay in the data: pairsWith draws the Links graph's lines (checked
-   above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block). */
+   above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block).
+
+   Last, the `level` field (which of five stages of AI disruption a card addressed: Repair, Expand, Build, Restructure, Transform) and its
+   DISRUPTION_LEVELS table were retired once nothing showed them. The one thing that still read them was a per-category column view that
+   CSS had hidden (`.pol-columns { display: none }`) since the Map's rows replaced it; it was deleted with them, and the masthead-count check
+   above now counts the tiles the Map draws. The five stages' text and each card's level are kept in the shared notes folder. */
 (async () => {
   const { w, d } = load('index.html', '#policy');
   let copied = null;
   w.HTMLTextAreaElement.prototype.select = function () { copied = this.value; };
   w.document.execCommand = () => true;
   const ids = w.eval('POLICY_DATA.map(p => p.id)');
-  // Each card's area, level and fine category as the page's own data gives them (plain JSON, so nothing crosses the jsdom
-  // realm as a live object). `texts` is everything the old header could have printed for the card's structure.
+  // Each card's area as the page's own data gives it (plain JSON, so nothing crosses the jsdom realm as a live object).
   const facts = JSON.parse(w.eval(`JSON.stringify(Object.fromEntries(POLICY_DATA.map(p => {
-    const areaId = CATEGORY_MERGE_MAP[p.category], lv = DISRUPTION_LEVELS.find(l => l.id === p.level) || {};
-    return [p.id, { areaId, area: MERGED_POLICY_CATEGORIES[areaId], texts: [lv.label, lv.sublabel, lv.blurb, POLICY_CATEGORIES[p.category]].filter(Boolean) }];
+    const areaId = CATEGORY_MERGE_MAP[p.category];
+    return [p.id, { areaId, area: MERGED_POLICY_CATEGORIES[areaId] }];
   })))`));
-  const withBasis = [], withPress = [], withRefs = [], noDraft = [], wrongArea = [], levelShown = [], wrongDot = [], draftLabels = [], withRel = [], withRelDraft = [];
+  const withBasis = [], withPress = [], withRefs = [], noDraft = [], wrongArea = [], extraInHeader = [], wrongDot = [], draftLabels = [], withRel = [], withRelDraft = [];
   for (const id of ids) {
     w.location.hash = '#policy/' + id;
     await settle(5);
@@ -253,7 +273,8 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
     const f = facts[id], meta = d.getElementById('polModalArea'), head = d.querySelector('#polModal .pol-modal-header');
     if (!meta || meta.textContent !== f.area) wrongArea.push(`${id}: "${meta && meta.textContent}" instead of "${f.area}"`);
     const leaves = [...head.querySelectorAll('*')].filter(e => !e.children.length).map(e => e.textContent.trim());
-    if (d.getElementById('polModalLevel') || d.getElementById('polModalCat') || d.getElementById('polModalPhaseDesc') || f.texts.some(x => leaves.includes(x))) levelShown.push(id);
+    const allowed = new Set([d.getElementById('polModalTitle').textContent.trim(), 'Copy as draft', 'Copy link', 'Print', '✕', '']);
+    if (d.getElementById('polModalLevel') || d.getElementById('polModalCat') || d.getElementById('polModalPhaseDesc') || leaves.some(x => !allowed.has(x))) extraInHeader.push(id);
     const dot = meta && meta.querySelector('.pol-modal-area-dot'), row = d.querySelector(`#policyArea .pol-cat-row[data-cat="${f.areaId}"]`);
     const dotColor = dot && dot.style.getPropertyValue('--cat-color');
     if (!dotColor || !row || dotColor !== row.style.getPropertyValue('--cat-color')) wrongDot.push(id);
@@ -266,15 +287,15 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
     if (copied && (!copied.includes('\n**Area:** ' + f.area + '\n') || /\*\*(Phase|Domain):\*\*/.test(copied))) draftLabels.push(id);
   }
   ok('every policy dialog shows, under its title, the policy area its card sits under on the Map (one of the four rows)', wrongArea.length === 0, wrongArea.join(' | '));
-  ok('no policy dialog shows its card\'s level, the level\'s description or its fine category', levelShown.length === 0, levelShown.join(', '));
+  ok('no policy dialog header carries anything but the title, the area and the three buttons (no level, no fine category)', extraInHeader.length === 0, extraInHeader.join(', '));
   ok('the dot beside the area is the colour of that area\'s row on the Map', wrongDot.length === 0, wrongDot.join(', '));
   ok('"Copy as draft" opens with the card\'s area, not a phase and a domain', draftLabels.length === 0, draftLabels.join(', '));
   ok('no policy card shows a Research basis or a list of related studies', withBasis.length === 0, withBasis.join(', '));
   ok('no policy card shows a Press & resources section', withPress.length === 0, withPress.join(', '));
   ok('no policy dialog has a "How it interacts" section (no Pairs with or Competes with lists of cross-links)', withRel.length === 0, withRel.join(', '));
   ok('"Copy as draft" has no Pairs with or Competes with list', withRelDraft.length === 0, withRelDraft.join(', '));
-  const retired = w.eval("POLICY_DATA.filter(p => 'paperIds' in p || 'press' in p).map(p => p.id)");
-  ok('no policy card carries the retired paperIds or press fields', retired.length === 0, retired.join(', '));
+  const retired = w.eval("POLICY_DATA.filter(p => 'paperIds' in p || 'press' in p || 'level' in p).map(p => p.id)");
+  ok('no policy card carries the retired paperIds, press or level fields, and the level table is gone', retired.length === 0 && w.eval('typeof DISRUPTION_LEVELS') === 'undefined', retired.join(', '));
   ok('"Copy as draft" still gives a draft on every policy, and none of them ends with a References or Press & resources list',
      withRefs.length === 0 && noDraft.length === 0, `with references: ${withRefs.join(', ')} | no draft: ${noDraft.join(', ')}`);
 
@@ -787,7 +808,7 @@ const legislationTests = async () => {
   ok('a note under the table says how many bills were left out, and why',
      /2 bills in the data are not shown as active: 1 failed, 1 with no stage given/.test(d.getElementById('legBillsNote').textContent), d.getElementById('legBillsNote').textContent);
   ok('the masthead counts both levels, in words while the count is small', /Three active bills: two in two states and one in Congress/.test(mastheadText()), mastheadText());
-  ok('a bill shows its stage as a chip, with the source\'s own words beneath when they differ, its last action, and a dash for what a source does not give',
+  ok('a bill shows its stage as plain text, with the source\'s own words beneath when they differ, its last action, and a dash for what a source does not give',
      /In committee/.test(billsTable().querySelector('tr[data-state="TX"]').textContent) && /Referred to the House Technology Committee/.test(billsTable().querySelector('tr[data-state="TX"]').textContent) &&
      /March 1, 2026: Referred to committee/.test(billsTable().textContent) && /–/.test(billsTable().querySelector('tr[data-state="OH"]').textContent));
   ok('a link is shown only when its address is http or https', billsTable().querySelectorAll('a').length === 1 && billsTable().querySelector('a').getAttribute('href') === 'https://example.org/bill');
@@ -834,6 +855,20 @@ const legislationTests = async () => {
      resultLine() === `${num(nBills)} of ${num(nBills)} bills.`, resultLine());
   ok('the topics are defined in the data, each with an id, a label and some words, and no two share an id',
      topicDefs.length >= 5 && new Set(topicDefs.map(t => t.id)).size === topicDefs.length && topicDefs.every(t => t.id && t.label && t.words > 0 && t.id !== 'all' && t.id !== 'none'), JSON.stringify(topicDefs.map(t => t.id)));
+  /* A bill's status and a race's result are labels to read, so they are not pills (a pill looks like a button): the status is its stage in words, as plain text; a result is a square in the
+     party's colour and the words, bold for a gain and for a race not yet called. (The status had a row of dots under its words for a few hours on 2026-11-17; the owner preferred the words alone.) */
+  const stageLabels = JSON.parse(w.eval("JSON.stringify(Object.keys(LEGISLATION_STAGES).map(k => LEGISLATION_STAGES[k].label))"));
+  const statusRows = [...billsTable().querySelectorAll('tbody tr:not(.leg-empty-row)')];
+  ok('a bill\'s status is its stage in words as plain text: the cell\'s own text starts with the stage, with no pill and no dots',
+     statusRows.length > 0 && statusRows.every(tr => { const cell = tr.children[3], first = cell.firstChild; return !!first && first.nodeType === 3 && stageLabels.includes(first.textContent) && !cell.querySelector('.leg-chip, .leg-step, .leg-track'); }),
+     statusRows.slice(0, 2).map(tr => tr.children[3].textContent).join(' | '));
+  const RESULT_WORDS = { 'd-gain': 'Democratic gain', 'd-hold': 'Democratic hold', 'r-hold': 'Republican hold', 'r-gain': 'Republican gain', uncalled: 'Uncalled' };
+  const raceCells = [...d.querySelectorAll('#legResultsTable tbody tr:not(.leg-empty-row) .leg-result')];
+  ok('a race\'s result is a square in the party\'s colour and the words, not a pill: a gain or a race not yet called is bold, a hold is plain',
+     raceCells.length > 0 && raceCells.every(el => {
+       const sw = el.querySelector('.leg-swatch'), key = sw && (sw.className.match(/fill-(d-gain|d-hold|r-hold|r-gain|uncalled)/) || [])[1];
+       return !!key && sw.getAttribute('aria-hidden') === 'true' && el.textContent.trim() === RESULT_WORDS[key] && el.classList.contains('leg-result--news') === ['d-gain', 'r-gain', 'uncalled'].includes(key);
+     }) && raceCells.some(el => el.classList.contains('leg-result--news')) && raceCells.some(el => !el.classList.contains('leg-result--news')) && !d.querySelector('#legResultsTable .leg-chip'), raceCells.length + ' results');
   ok('the chips are All, then one for each topic in the data\'s order, then No topic; each carries its count, and All counts every bill',
      chips().length === topicDefs.length + 2 && chipText(chips()[0]).startsWith('All') && chipN(chips()[0]) === nBills && chipText(chips()[chips().length - 1]).startsWith('No topic') &&
      topicDefs.every((t, i) => chipText(chips()[i + 1]).startsWith(t.label)) && chips().every(b => b.getAttribute('aria-pressed') === (b.dataset.topic === 'all' ? 'true' : 'false')), chips().map(chipText).join(' | '));
