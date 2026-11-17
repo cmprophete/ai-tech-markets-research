@@ -100,7 +100,7 @@ table, and `setView()` lives in `70-render.js`.
 ## Tests
 
 ```sh
-npm install jsdom                       # once
+npm install                             # once: installs jsdom, pinned in package.json
 node tests/interactions.js              # clicking and keyboard
 node tests/routes.js                    # every route (snapshot)
 node tests/routes.js --write            # re-record after an intended change
@@ -120,8 +120,10 @@ re-record to clear a red run.
 view nav is one delegated listener reading `data-view` attributes, and a typo
 there would leave every route green and every button dead.
 
-Neither runs in the pre-commit hook. Run them before pushing anything that
-touches `src/js/` or the view markup.
+Neither runs in the pre-commit hook, but both run on every push in GitHub Actions
+(see "Checks on every push" below). Run them before pushing anything that touches
+`src/js/` or the view markup, so the push does not go red. jsdom is pinned to one
+version in `package.json`: bump it on purpose, and re-run both suites when you do.
 
 ## Two guards
 
@@ -133,3 +135,20 @@ touches `src/js/` or the view markup.
 
 If guard 1 trips, you almost certainly edited `index.html` instead of `src/`;
 move the change into `src/` before rebuilding, because rebuilding discards it.
+
+## Checks on every push
+
+`.github/workflows/ci.yml` (the **Checks** workflow) runs on every push to a branch:
+the same two guards (a fresh build of `index.html`, no file over 2 MB),
+`tools/research.py check` and `selftest`, a syntax check of the Python files, and
+both jsdom suites. It does not need the hook, so it still protects a machine that
+never ran `git config core.hooksPath .githooks`. When a run goes red, the name of
+the failing step says what broke.
+
+- Commit `index.html` in the same push as the `src/` change it was built from, or
+  the push shows a red "Page matches src/" step until the next one.
+- It does not check the nightly research sync's own commit: GitHub starts no other
+  workflow for a push made with the built-in token. The sync validates the Sheet
+  itself before it writes anything.
+- To make a red check block a merge, add a branch protection rule that requires
+  the `checks` job (a repository setting: Settings > Branches).
