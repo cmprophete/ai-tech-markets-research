@@ -1635,7 +1635,8 @@
     background: color-mix(in srgb, var(--cat-color, transparent) 6%, transparent);
   }
   /* Type sizes on this tab are the site's, not its own: the area title is About's section-heading size (20px bold), the
-     count the header's group-label spec, the tile title the Papers card-header spec, the toggle one weight in both states. */
+     count the header's group-label spec, the tile title the body size in bold (14px, a step under the Papers card title, because three
+     tiles share a row and 15.5px read as slightly too large here), the toggle one weight in both states. */
   .pol-cat-row-title {
     display: flex; align-items: baseline; gap: 9px;
     font-family: var(--sans);
@@ -1683,7 +1684,7 @@
   .pol-cat-card-title {
     flex: 1;
     font-family: 'Public Sans', sans-serif;
-    font-size: 15.5px; font-weight: 700; line-height: 1.3;
+    font-size: 14px; font-weight: 700; line-height: 1.3;
     color: var(--headline);
   }
   /* Persistent, faint affordance: darkens toward the category color and
