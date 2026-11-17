@@ -21,9 +21,22 @@ name: Sync research from Google Sheet
 #       to hide it from logs, store it as a secret instead and change vars.-> secrets. below.)
 #   3. Repo Settings > Actions > General > Workflow permissions >
 #      "Read and write permissions" (lets the run commit the update).
+#   4. Repo Settings > General > Features: tick "Issues", and watch the repo's issues
+#      (Watch > Custom > Issues) so the report below reaches you by email or in your
+#      notifications. This is the only setup the failure report needs.
 #
 # Then it runs on the schedule below, or on demand: Actions tab > this workflow
 # > "Run workflow". Change the cron (or delete the schedule block) to taste.
+#
+# ── WHEN IT FAILS ──
+# A failed run changes nothing on the site, so it can go unnoticed for days (it did, in
+# November 2026). So when any step fails, a final step opens one issue titled
+# "Research sync failed", or adds a comment to the one already open, with what the sync
+# printed and a link to the run. The first run that succeeds afterwards closes it with a
+# comment. It uses the built-in token (the `issues: write` permission below) and the `gh`
+# that ships on the runner: no secrets. GitHub also emails whoever last edited the `cron:`
+# line when a scheduled run fails, but only if that person's notification settings allow
+# it, so this does not rely on it.
 
 on:
   workflow_dispatch: {}            # manual "Run workflow" button
@@ -32,6 +45,7 @@ on:
 
 permissions:
   contents: write                  # so the built-in token can push the commit
+  issues: write                    # so a failed run can open an issue and a later good run can close it
 
 concurrency:                       # never let two syncs overlap
   group: research-sync
@@ -50,16 +64,23 @@ jobs:
           python-version: "3.11"
 
       - name: Pull the sheet and rebuild
+        id: build
         env:
           SHEET_URL: ${{ vars.RESEARCH_SHEET_URL }}
+          PYTHONUNBUFFERED: "1"      # keep the tool's messages in the order it printed them
         run: |
-          if [ -z "$SHEET_URL" ]; then
-            echo "::error::Repository variable RESEARCH_SHEET_URL is not set. See this workflow's header for setup."
-            exit 1
-          fi
-          python3 tools/research.py build --sheet "$SHEET_URL"
+          # Everything the step prints is also kept in a file, for the failure report below.
+          set -o pipefail
+          {
+            if [ -z "$SHEET_URL" ]; then
+              echo "::error::Repository variable RESEARCH_SHEET_URL is not set. See this workflow's header for setup."
+              exit 1
+            fi
+            python3 tools/research.py build --sheet "$SHEET_URL"
+          } 2>&1 | tee "$RUNNER_TEMP/research-sync.log"
 
       - name: Commit and push if anything changed
+        id: push
         run: |
           if git diff --quiet -- content/research.csv data/tracker-data.js; then
             echo "No research changes; nothing to commit."
@@ -70,3 +91,56 @@ jobs:
             git commit -m "Sync research from Google Sheet"
             git push
           fi
+
+      # Reporting. Both steps find the open issue by its exact title, so a hand-made issue
+      # with another title is never touched, and nothing is needed in the repo's labels.
+      - name: Report the failure in an issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          PUSH_OUTCOME: ${{ steps.push.outcome }}
+        run: |
+          log="$RUNNER_TEMP/research-sync.log"
+          body="$RUNNER_TEMP/issue-body.md"
+          {
+            echo "The daily research sync failed, so the site's research list stays at the last good sync until this is fixed."
+            echo
+            echo "Run: $RUN_URL"
+            echo
+            if [ "$BUILD_OUTCOME" = "failure" ] && [ -s "$log" ]; then
+              echo "What the sync printed (the last 40 lines):"
+              echo
+              echo '```'
+              tail -n 40 "$log" | sed 's/^::error:://'
+              echo '```'
+            elif [ "$PUSH_OUTCOME" = "failure" ]; then
+              echo "The Sheet was read and the data rebuilt, but committing or pushing the result failed. Open the run for the message."
+            else
+              echo "A step before the Sheet was read failed. Open the run for the message."
+            fi
+            echo
+            echo "To fix it, correct the row the message names in the Google Sheet, then start the sync again from the Actions tab (Run workflow). The next run that succeeds closes this issue."
+          } > "$body"
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 200 --json number,title \
+            --jq 'map(select(.title == "Research sync failed")) | .[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Research sync failed" --body-file "$body"
+          fi
+
+      - name: Close the failure issue once a sync succeeds
+        if: success()
+        continue-on-error: true      # trouble with issues must never turn a good sync red
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          numbers=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 200 --json number,title \
+            --jq '.[] | select(.title == "Research sync failed") | .number')
+          for number in $numbers; do
+            gh issue close "$number" --repo "$GITHUB_REPOSITORY" \
+              --comment "The research sync succeeded again ($RUN_URL), so this issue is closed. A new issue opens if it fails again."
+          done
