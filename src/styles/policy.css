@@ -98,6 +98,9 @@
     font-family: var(--sans);
   }
   .about-note strong { color: var(--text); font-weight: 600; }   /* semibold, as the other tabs' 13px labels */
+  /* The same note in the gold of a caution, as the Fact Bank's pilot-release notice wears it (the gold rule and tint of a fact's "Take note").
+     Its text keeps the body colour: the muted grey of the plain note measures 4.0:1 on the gold, under the 4.5:1 that 13px text needs. */
+  .about-note.warn { border-left-color: var(--gold); background: rgba(235,195,130,0.16); color: var(--text); }
   /* Each part ends by pointing at its tabs. The pill is the Fact Bank's (.act-btn in this file), value for value. */
   .about-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
   .about-link {
@@ -146,8 +149,8 @@
   /* text-wrap: pretty keeps a one-word last line (a stranded "is.") off the paragraph. */
   #factBankArea .intro-text { font-size: 15px; line-height: 1.7; max-width: var(--lede-measure); text-wrap: pretty; }
   /* Last element in the masthead, so it carries the closing hairline, at the shared measure. The note
-     inside is the same caution callout as a fact's "Take note" (.fact-caveat.warn: gold rule, tinted
-     ground, small uppercase label, regular type), so the pilot caveat reads as part of this page. */
+     inside is the About page's "How this section is built" note (.about-note) in the gold of a fact's "Take note"
+     (.about-note.warn), so the pilot caveat is laid out like the other notes about how the site is made. */
   #factBankArea .intro-note { max-width: var(--lede-measure); padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 
   /* ── COLLAPSE MACHINERY ── */
@@ -424,44 +427,6 @@
     .tab-group-label { font-size: 9px; letter-spacing: 0.06em; }
   }
 
-  /* Disruption chips */
-
-  .pol-empty-msg {
-    display: none; padding: 36px 40px;
-    font-size: 13px; color: var(--muted); font-style: italic;
-  }
-
-  /* ── Policy Matrix ───────────────────────────────────────── */
-  /* ── Policy Overview (Column Grid) ─────────────────────────── */
-  .pol-columns { display: none; }
-  .pol-col {
-    border: 1px solid var(--border);
-    border-radius: var(--r-card); overflow: hidden;
-    border-top: 2px solid color-mix(in srgb, var(--pol-cat-color, var(--border)) 45%, var(--border));
-    background: var(--surface);
-  }
-  .pol-col-header {
-    padding: 12px 14px 10px;
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-  }
-  .pol-col-title {
-    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
-    color: color-mix(in srgb, var(--pol-cat-color, var(--text)) 45%, var(--text));
-    font-family: var(--sans);
-    line-height: 1.3; margin-bottom: 4px;
-  }
-  .pol-col-desc {
-    font-size: 10.5px; color: var(--muted); line-height: 1.45;
-    font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-  }
-  .pol-col-count {
-    display: inline-block; font-size: 10px; color: var(--muted);
-    margin-top: 4px; font-variant-numeric: tabular-nums;
-  }
-  .pol-col-distbar { display: none; }
-  .pol-col-distbar-seg { display: none; }
-
   /* ── Policy category rows ─────────────────────────────────── */
   /* Four merged categories stacked as rows in curated order — the four
      pathways of Becky Chao's April 2026 brief, in her order (Economic
@@ -556,50 +521,6 @@
     .pol-cat-card-arrow { transition: opacity 0.15s, color 0.15s; }
     .pol-cat-card:hover .pol-cat-card-arrow { transform: rotate(-90deg); }
   }
-  /* View mode toggle */
-
-  .pol-item-list {
-    display: flex; flex-direction: column; gap: 8px; padding: 10px;
-  }
-  .pol-item-wrap {
-    border: 1px solid color-mix(in srgb, var(--level-color, var(--border)) 18%, var(--border));
-    border-radius: var(--r-card); overflow: hidden; position: relative;
-    background: color-mix(in srgb, var(--level-color, #ffffff) 6%, #ffffff);
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  }
-  .pol-item-wrap::before {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(135deg, var(--level-color, transparent) 0%, transparent 45%);
-    opacity: 0.06; pointer-events: none; z-index: 0;
-  }
-  .pol-item-wrap::after {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, color-mix(in srgb, var(--level-color, transparent) 60%, transparent) 0%, transparent 65%);
-    border-radius: var(--r-card) var(--r-card) 0 0;
-  }
-  .pol-item-wrap:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(44,50,84,0.1);
-    border-color: color-mix(in srgb, var(--level-color, var(--border)) 35%, var(--border));
-  }
-  .pol-item {
-    display: flex; flex-direction: row; align-items: flex-start; gap: 8px;
-    padding: 10px 12px 11px; cursor: pointer;
-    position: relative; z-index: 1;
-  }
-  .pol-item-badge {
-    display: inline-block; flex-shrink: 0; margin-top: 1px;
-    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
-    color: color-mix(in srgb, var(--level-color, var(--muted)) 65%, var(--muted));
-    background: color-mix(in srgb, var(--level-color, var(--muted)) 7%, transparent);
-    border: 1px solid color-mix(in srgb, var(--level-color, var(--muted)) 18%, var(--border));
-    border-radius: var(--r-tag); padding: 2px 7px;
-    white-space: nowrap;
-  }
-  .pol-item-title {
-    font-size: 11.5px; font-weight: 500; color: var(--text); line-height: 1.35; flex: 1;
-  }
-  .pol-item-wrap:hover .pol-item-title { color: var(--accent); }
 
   /* ── Policy Map / Links sub-view toggle ──────────────────────
      Deliberately its own class. It once shared `.lens-toggle` (the
@@ -666,8 +587,6 @@
   @media (max-width: 700px) {
     .pol-subview-toggle { margin: 16px 16px 0; }
     .pol-links-wrap { padding: 16px 16px 40px; }
-
-    .pol-columns { padding-left: 16px; padding-right: 16px; grid-template-columns: 1fr; }
 
     /* Policy Map: tighten row padding; auto-fill collapses cards to 1-up */
     .pol-cat-rows { padding: 18px 16px 40px; gap: 18px; }
