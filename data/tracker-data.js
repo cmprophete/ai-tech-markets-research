@@ -354,18 +354,6 @@ const RESEARCH_DATA = [
       "FTC challenges revealed limits of traditional merger review: data moats, talent lock-in, and API dependency chains fall outside conventional competitive harm analysis."
     ],
   },
-  { id: 7, date: "2023-09-14", added: "2026-04-30",
-    title: "Algorithmic Management and Worker Surveillance: Evidence from Warehouse Logistics",
-    source: "MIT Work of the Future",
-    sourceUrl: "https://dl.acm.org/doi/10.1145/3757409",
-    category: "surveillance", geography: "us",
-    keyFinding: "AI-driven performance management in warehouses increased throughput by 18% while simultaneously raising injury rates and voluntary turnover by 34%.",
-    takeaways: [
-      "Algorithmic target systems create a 'ratchet effect': as workers adapt to baselines, the AI raises them, leaving no sustainable steady state.",
-      "Workers under algorithmic management report 2.3× higher rates of musculoskeletal injuries and psychological stress than those under traditional supervisors.",
-      "Workers lack visibility into how scores are calculated, closing off both informal appeals and formal legal challenge pathways."
-    ],
-  },
   { id: 8, date: "2021-07-06", added: "2026-04-30",
     title: "Essential Work: Analyzing the Hiring Technologies of Large Hourly Employers",
     source: "Upturn",
@@ -390,18 +378,6 @@ const RESEARCH_DATA = [
       "Lenders deploying third-party AI tools reported lacking access to model internals needed to conduct HMDA disparate impact analysis required by federal regulation."
     ],
   },
-  { id: 11, date: "2023-12-18", added: "2026-04-30",
-    title: "Local Implications of Data Centers and the Tech Layoff Wave on Regional Labor Markets",
-    source: "Brookings Metro",
-    sourceUrl: "https://www.brookings.edu/articles/local-implications-data-centers-rural-communities-us/",
-    category: "community", geography: "us",
-    keyFinding: "The 2022–2023 tech layoff wave was geographically concentrated in five metro areas, creating localized fiscal stress and housing market corrections invisible in national aggregates.",
-    takeaways: [
-      "San Francisco, Seattle, Austin, New York, and Boston absorbed over 70% of announced tech layoffs despite representing under 15% of total U.S. employment.",
-      "Affected metros saw 6–12% declines in commercial real estate occupancy within six months, with downstream effects on municipal revenues and transit.",
-      "Displaced tech workers showed lower-than-expected geographic mobility, concentrating high-skill unemployment in already high-cost housing markets."
-    ],
-  },
   { id: 12, date: "2025-10-17", added: "2026-04-30",
     title: "Data Drain: The Land and Water Impacts of the AI Boom",
     source: "Jon Gorey — Lincoln Institute of Land Policy",
@@ -412,18 +388,6 @@ const RESEARCH_DATA = [
       "Large data centers in water-stressed regions consume 1–5 million gallons daily for cooling, often under NDAs preventing public accounting of cumulative regional water draw.",
       "Despite large capital investment announcements, data center operations typically create fewer than 50 permanent local jobs per facility.",
       "Local electricity rate increases following data center grid connections have averaged 4–9% in rural co-op territories, disproportionately affecting low-income residents."
-    ],
-  },
-  { id: 13, date: "2024-03-05", added: "2026-04-30",
-    title: "Always-On Work Culture and AI Assistant Adoption: Boundary Erosion Among Knowledge Workers",
-    source: "American Psychological Association",
-    sourceUrl: "https://www.apa.org/pubs/reports/work-wellbeing",
-    category: "wellbeing", geography: "us",
-    keyFinding: "AI productivity tool adoption correlates with extended working hours and declining psychological detachment, partially or fully offsetting efficiency gains in wellbeing outcomes.",
-    takeaways: [
-      "Workers who adopted AI assistants reported 1.8 more working hours per week on average, tools enable work expansion rather than substitution.",
-      "The 'always-ready' framing of AI tools erodes psychological permission to disengage, raising baseline stress even when objective workload is unchanged.",
-      "High AI adopters paradoxically report higher job satisfaction despite longer hours, driven by perceived competence gains and task variety."
     ],
   },
   { id: 15, date: "2023-06-14", added: "2026-04-30",
@@ -2461,16 +2425,16 @@ const RESEARCH_DATA = [
       "Enforcement through a city labor-standards office demonstrates municipal capacity to regulate platform work absent federal action."
     ],
   },
-  { id: 265, date: "2026-03-04", added: "2026-07-08",
+  { id: 265, date: "2026-10-29", added: "2026-07-08",
     title: "Uber Technologies, Inc. v. City of Seattle",
     source: "U.S. Court of Appeals for the Ninth Circuit",
-    sourceUrl: "https://cdn.ca9.uscourts.gov/datastore/opinions/2026/03/04/25-231.pdf",
+    sourceUrl: "https://cdn.ca9.uscourts.gov/datastore/opinions/2026/10/29/25-228.pdf",
     category: "policy", geography: "us",
-    keyFinding: "A divided Ninth Circuit panel affirmed the denial of a preliminary injunction against Seattle's App-Based Worker Deactivation Rights Ordinance. Uber, Portier, and intervenor Instacart argued that the ordinance's policy and notice mandates compel speech under the First Amendment. The court held the ordinance regulates non-expressive economic conduct, that any incidental speech is commercial and survives lower scrutiny, and the ordinance stands.",
+    keyFinding: "A divided Ninth Circuit panel affirmed the denial of a preliminary injunction against Seattle's App-Based Worker Deactivation Rights Ordinance, which requires app-based companies to tell workers their deactivation policy in writing and to keep it reasonably related to safe and efficient operations. Uber, Portier, and intervenor Instacart argued that the ordinance compels speech under the First Amendment. In an amended opinion that replaced its March 2026 decision, the panel assumed without deciding that the ordinance regulates speech, held that any such speech is commercial and survives the lower level of scrutiny, and found the ordinance not unconstitutionally vague. One judge dissented in part.",
     takeaways: [
-      "Neutralizes the compelled-speech theory platforms raised against disclosure-based labor regulation, a template argument likely to recur elsewhere.",
-      "With constitutionality affirmed at the appellate level, the Seattle model is cleared for adoption by other jurisdictions.",
-      "Classifying notice-and-records mandates as economic conduct regulation keeps future algorithmic-transparency rules on firm First Amendment ground."
+      "The court rejected the compelled-speech challenge to a disclosure-style labor rule. It treated the notice requirement as commercial speech and found it meets the Zauderer test: reasonably related to keeping workers informed, not about a controversial issue, and not unduly burdensome.",
+      "The panel changed its reasoning. The withdrawn March opinion held the ordinance regulates conduct, not speech; the amended opinion only assumes it regulates speech. Judge Bennett's partial dissent says the ordinance does compel speech and would send the case back for review under intermediate scrutiny.",
+      "This is a preliminary-injunction ruling, not a final judgment: the panel held only that the plaintiffs are unlikely to succeed on the merits, and the order allows further rehearing petitions. The compelled-speech question is not settled for other jurisdictions."
     ],
   },
   { id: 266, date: "2026-07-10", added: "2026-07-16",
