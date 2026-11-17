@@ -94,11 +94,10 @@
     return md.join('\n');
   }
 
-  // Hoisted out of buildPolicyView() so renderPolicyLinksGraph() (the Links
-  // sub-view) can share the exact same category→color mapping as the Map
-  // sub-view — a policy should be the same color in both views.
-  // Policy category identity colors. Every value is an ESP token or a
-  // documented light/dark sibling of one (see :root) — no invented hues.
+  // Policy category identity colors, used by the Links graph (its node dots and
+  // its legend). The Map's rows use the four area colors, CAT_COLOR_VARS below.
+  // Every value is an ESP token or a documented light/dark sibling of one
+  // (see :root) — no invented hues.
   const POL_CAT_COLORS = {
     'safety-net':    '#2C3254',  // Warm Navy
     'labor-rights':  '#70AD8F',  // Soft Green
@@ -148,88 +147,6 @@
         <button class="pol-subview-btn active" id="polSubviewMap" type="button">Map</button>
         <button class="pol-subview-btn" id="polSubviewLinks" type="button">Links</button>`;
       area.appendChild(subToggle);
-
-      const levelMap = Object.fromEntries(DISRUPTION_LEVELS.map(l => [l.id, l]));
-
-      // Empty state msg
-      const emptyMsg = document.createElement('div');
-      emptyMsg.className = 'pol-empty-msg';
-      emptyMsg.id = 'polEmptyMsg';
-      emptyMsg.textContent = 'No policies match the current filters.';
-      area.appendChild(emptyMsg);
-
-      // Short descriptions per policy category
-      const POL_CAT_DESCS = {
-        'safety-net':    'Income floors and social insurance programs',
-        'labor-rights':  'Worker protections and employment standards',
-        'tax-wealth':    'Redistribution through progressive taxation',
-        'healthcare':    'Health coverage decoupled from employment',
-        'work-structure':'Flexible work arrangements and job design',
-        'education':     'Skills training and lifelong learning systems',
-        'antitrust':     'Market competition and platform regulation',
-        'housing':       'Affordable housing and place-based support',
-        'jobs':          'Direct job creation and sectoral investment',
-        'international': 'Cross-border coordination and trade policy',
-        'civil-rights':  'Discrimination testing and algorithmic accountability',
-      };
-
-
-      const columns = document.createElement('div');
-      columns.className = 'pol-columns';
-
-      Object.entries(POLICY_CATEGORIES).forEach(([catId, catLabel]) => {
-        const policies = POLICY_DATA.filter(p => p.category === catId);
-        if (!policies.length) return;
-
-        const col = document.createElement('div');
-        col.className = 'pol-col';
-        col.dataset.cat = catId;
-        const catColor = POL_CAT_COLORS[catId] || '#6d7091';
-        col.style.setProperty('--pol-cat-color', catColor);
-
-        // Header — with level distribution bar
-        const desc = POL_CAT_DESCS[catId] || '';
-        const distSegs = DISRUPTION_LEVELS.map(l => {
-          const count = policies.filter(p => p.level === l.id).length;
-          if (!count) return '';
-          const pct = (count / policies.length * 100).toFixed(1);
-          return `<span class="pol-col-distbar-seg" style="background:${l.color};width:${pct}%" title="${l.label}: ${count}"></span>`;
-        }).join('');
-        col.innerHTML = `
-          <div class="pol-col-header">
-            <div class="pol-col-title">${catLabel}</div>
-            <div class="pol-col-desc">${desc}</div>
-            <span class="pol-col-count">${policies.length} polic${policies.length===1?'y':'ies'}</span>
-            <div class="pol-col-distbar">${distSegs}</div>
-          </div>
-          <div class="pol-item-list"></div>`;
-
-        const itemList = col.querySelector('.pol-item-list');
-
-        policies.forEach(p => {
-          const lvl = levelMap[p.level] || {};
-
-          const wrap = document.createElement('div');
-          wrap.className = 'pol-item-wrap';
-          wrap.dataset.level = p.level;
-          wrap.dataset.id = p.id;
-          if (lvl.color) wrap.style.setProperty('--level-color', lvl.color);
-
-          wrap.innerHTML = `
-            <div class="pol-item">
-              <div class="pol-item-title">${p.title}</div>
-              <span class="pol-item-badge">${lvl.label || p.level}</span>
-            </div>`;
-
-          wrap.querySelector('.pol-item').addEventListener('click', () => {
-            openPolModal(p);
-          });
-          itemList.appendChild(wrap);
-        });
-
-        columns.appendChild(col);
-      });
-      area.appendChild(columns);
 
       // ── Category rows ────────────────────────────────────────
       // Phase (Repair→Transform) is no longer an axis of the map: the four
