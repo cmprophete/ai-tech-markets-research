@@ -48,7 +48,7 @@ name, because the Sheet's columns are in a different order from the snapshot's:
 
 | `status` | Reaches the site? | What the sync checks |
 |---|---|---|
-| `under review`, or blank | No | Nothing. A bare link is fine: such a row is only counted and noted, never an error. |
+| `under review`, or blank | No | Nothing. A bare link is fine: such a row is only counted and noted, never an error. If its link repeats another row's link, the sync names both rows in a warning and carries on. |
 | `approved` | **Yes** | Everything: a date, title, source, link, category, geography, key finding and at least one takeaway. A missing one stops the whole sync. |
 | `archived` | No | Nothing. The row and its `id` are kept; say why in `note`. |
 
@@ -61,9 +61,9 @@ To **delete** one permanently: remove the row.
 
 Each of these reaches the site at the next sync (the Actions tab can run it right away). There is nothing to run or commit.
 
-**An approved row that is not complete stops the whole sync.** If any approved row lacks a required field, the sync refuses to write and the site stays at the last good sync, so finish a row before approving it. Nothing reads a link to fill the rest in. A link that is already in the tracker, even on an archived or under-review row, must not be added again: the new row takes the old row's id and fails the duplicate-id check, and the error says the two rows have the same link. Delete the repeat.
+**An approved row that is not complete stops the whole sync.** If any approved row lacks a required field, the sync refuses to write and the site stays at the last good sync, so finish a row before approving it. Nothing reads a link to fill the rest in. A link that is already in the tracker should not be added again: the new row takes the old row's id. While the new row is under review (or blank) that is only a warning, which names both rows and does not stop the sync. Approve it, though, and two approved rows share an id, which does stop the sync, so delete the repeat first.
 
-**Archive, don't delete, when you might want it back or a policy cites it.** Archiving is reversible and keeps the `id` reserved, so nothing gets reused or re-pointed. `check` notes every policy card (`POLICY_DATA paperIds`), `{{cite}}` token and Fact Bank fact that points at a study which is not approved, and says whether that study is under review, archived or not in the Sheet at all.
+**Archive, don't delete, when you might want it back or a policy cites it.** Archiving is reversible and keeps the `id` reserved, so nothing gets reused or re-pointed. `check` notes every policy card (`POLICY_DATA paperIds`), `{{cite}}` token and Fact Bank fact that points at a study which is not approved, and says whether that study is under review or archived. An id that is in no row of the Sheet at all, a typo or a row that was deleted, makes `check` fail and names the file and line (the page cannot tell it from an archived study, so `check` is where a mistyped id is caught). Archiving a row never makes it fail.
 
 ## How the sync works
 
@@ -84,6 +84,13 @@ re-pulling never reshuffles ids.
 Keep the `extra_json` column in the Sheet; a few featured studies store data there. The
 published site never reads the Sheet — only this build step does.
 
+**If a run fails**, the site stays at the last good sync, and the workflow opens one GitHub
+issue titled **Research sync failed**: it holds what the sync printed (the row it names, for a
+Sheet problem) and a link to the run. Each further failed run adds a comment to that issue, and
+the first run that succeeds closes it. To clear it, fix the row in the Sheet and use "Run
+workflow" in the Actions tab. For it to reach you, Issues must be switched on for the repo and
+you must watch them (Watch > Custom > Issues); it needs no secrets and no other setup.
+
 ## Commands
 
 ```sh
@@ -91,7 +98,7 @@ python3 tools/research.py check              # validate the sheet; writes nothin
 python3 tools/research.py build              # regenerate the data file from research.csv
 python3 tools/research.py build --sheet URL  # pull a published Google Sheet, snapshot it, rebuild (what the sync runs)
 python3 tools/research.py export             # (rarely) re-seed research.csv FROM the data file
-python3 tools/research.py selftest           # prove the round-trip is lossless and the status rules behave
+python3 tools/research.py selftest           # prove the round-trip is lossless and the status and reference rules behave
 ```
 
 `build` and `export` write `content/research.csv` or `data/tracker-data.js`, and only
@@ -100,8 +107,10 @@ working tree you commit from.
 
 `check` and `build` refuse to proceed if an approved row is missing a required field,
 has a bad date or an unknown category, if a `status` or `foundational` word is not one
-of the allowed ones, or if two rows share an id: they tell you which row (its number,
-its id and its title or link).
+of the allowed ones, or if two approved rows share an id (or two rows share an id but not
+a link): they tell you which row (its number, its id and its title or link). `check` also
+refuses if a policy card, `{{cite}}` token or Fact Bank fact points at an id that is in no
+row of the Sheet.
 
 ## Scope
 
