@@ -252,6 +252,31 @@ def finished_terms(cache, terms):
     return done, short
 
 
+def read_day(cache, terms):
+    """The day the OLDEST saved page of a session still in progress was fetched: what the page says the state bills were read on. The day the
+    build ran would be wrong (it was, until 2026-11-17: the page said "read November 16" over pages fetched on November 12), because a build only
+    reads what is already in the cache, and a bill's status is only as recent as the page it came from. A session that has ended is left out of
+    this: nothing more happens to its bills, so its old pages are as current as new ones would be, and counting them would keep the date at the
+    first fetch for ever. With no session in progress, the oldest page of all. `openstates_fetch.py --refresh-open` moves this day forward."""
+    root = os.path.expanduser(cache)
+    today = datetime.date.today().isoformat()
+    in_progress = {(os_code(j['id']), s['identifier']) for j in json.load(open(os.path.join(root, 'jurisdictions.json')))
+                   for s in j.get('legislative_sessions', []) if s.get('end_date') is None or s['end_date'] >= today}
+    names = [re.compile(re.escape(slug(t)) + r'-p\d+\.json') for t in terms]
+    base = os.path.join(root, 'bills')
+    every, open_ones = [], []
+    for c in os.listdir(base):
+        for s in os.listdir(os.path.join(base, c)):
+            d = os.path.join(base, c, s)
+            if os.path.isdir(d):
+                stamps = [os.path.getmtime(os.path.join(d, f)) for f in os.listdir(d) if any(n.fullmatch(f) for n in names)]
+                every += stamps
+                if (c.upper(), s) in in_progress:   # the cache's folders are lower case, os_code() is upper case
+                    open_ones += stamps
+    stamps = open_ones or every
+    return datetime.date.fromtimestamp(min(stamps)).isoformat() if stamps else today
+
+
 def latest_taken(b, today):
     """(date, text) of a state bill's last action: Open States' own latest action, unless that one is in the future. Georgia, for one, lists a bill's
     effective date (in 2027) as an action, and that is not an action taken: shown as "last action" it would be later than today and, sorted by recency,
@@ -381,7 +406,7 @@ def build(args):
                     'summaries': 'Summaries are the Congressional Research Service\'s where it has written one, else the bill\'s official title.',
                     'included': len(fed) - fed_passing, 'passing': fed_passing, 'leftOut': 0},
     }
-    feeds['openstates'] = {'org': 'Open States', 'short': 'Open States', 'title': 'Bill search', 'kind': 'API v3', 'read': today,
+    feeds['openstates'] = {'org': 'Open States', 'short': 'Open States', 'title': 'Bill search', 'kind': 'API v3', 'read': read_day(args.states_cache, terms),
                            'url': OPENSTATES_PAGE, 'level': 'state', 'scope': 'every bill since 2025 whose text mentions ' + terms_text, 'found': found, 'included': len(state_rows) - passing, 'passing': passing,
                            **({'summaries': summaries_note} if summaries_note else {}),
                            'omitted': [{'n': dead, 'why': 'failed, were withdrawn or vetoed, or whose session ended without passing them'}]}
