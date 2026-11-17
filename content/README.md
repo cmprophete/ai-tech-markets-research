@@ -14,12 +14,6 @@ produces merge conflicts, and it did on 2026-11-16. If a merge ever conflicts in
 them, take `main`'s copy. `data/tracker-data.js` is loaded by the page at runtime,
 so once a sync has landed you just reload to see it.
 
-> **Moving to a `status` column.** Until the Sheet's research tab has a column headed
-> exactly `status`, the sync reads the Sheet the old way: any text in `archived` hides a
-> row, a blank `archived` means published (and the row must then be complete), and the
-> `foundational` column is ignored. Once `status` exists, `archived` is ignored. Delete
-> this note when the Sheet has been moved over.
-
 ## Editing the Sheet
 
 Work in the research tab of the Google Sheet, not in `research.csv`, which is only
