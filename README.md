@@ -10,7 +10,7 @@ Six tabs in three groups, plus an **About** page that opens the site: Research (
 
 ```sh
 git config core.hooksPath .githooks   # build freshness + 2 MB size guard
-npm install jsdom                     # only if you want to run the tests
+npm install                           # installs jsdom (see package.json); only if you want to run the tests
 ```
 
 ## Build
@@ -51,6 +51,10 @@ node tests/interactions.js   # clicking and keyboard
 node tests/routes.js         # snapshot of every route
 ```
 
+The same two suites, the build-freshness check and the 2 MB size check run on every push
+in GitHub Actions: the **Checks** workflow, `.github/workflows/ci.yml` (see
+[`CONTRIBUTING.md`](CONTRIBUTING.md)).
+
 ## Layout
 
 ```
@@ -60,6 +64,8 @@ data/           the published payloads (research, fact bank, themes, policies)
 assets/         images loaded directly by the page
 tools/          research.py (sheet -> data) and helper scripts
 tests/          jsdom harness and route snapshot
+package.json    test tooling only (jsdom); the page itself has no dependencies
+.github/        workflows: the nightly research sync, and Checks on every push
 docs/           GLOSSARY.md, ARCHITECTURE_OPTIONS.md, adr/, history/
 notes/          working notes and backlogs, not part of the build
 ```
