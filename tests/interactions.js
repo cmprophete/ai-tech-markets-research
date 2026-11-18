@@ -1764,6 +1764,22 @@ const legislationLoadTests = async () => {
            h.querySelector('a.act-btn').textContent === 'View Summary →' && /^#entry\/\d+$/.test(h.querySelector('a.act-btn').getAttribute('href')) &&
            !!next && next.classList.contains('cwrap') && pidOf(next) === headPid(h);
        })());
+    /* A pinned header's rounded top corners are cutouts, and the cards scrolling behind it showed their own square corners (and the green rule down their left
+       side) through them: the owner's screenshot, 2026-11-18. A page-coloured shadow fills the cutouts. It is lifted by its own spread, so it ends at the header's
+       bottom edge and never covers the card under it, and it is at least a quarter of the corner's radius, the least that reaches a cutout's far corner (the
+       corner's centre sits r in from each edge, the shadow's arc r + s out from a centre s lower). jsdom does not paint, so the rule is read from the stylesheet;
+       the tokens are read from it too, so the check follows them. */
+    {
+      const rule = /@media \(min-width: 641px\)\s*\{\s*#factBankArea \.g-head\s*\{([^}]*)\}/.exec(barCss);
+      const sh = rule && /box-shadow:\s*0\s+-(\d+)px\s+0\s+(\d+)px\s+var\(--(\w+)\)/.exec(rule[1]);
+      const radius = Number((/--r-card:\s*(\d+)px/.exec(barCss) || [])[1]);
+      const pageBg = (/\n  body\s*\{[^}]*background:\s*var\(--(\w+)\)/.exec(barCss) || [])[1];
+      const gap = Number((/#factBankArea \.g-group\s*\{\s*margin-top:\s*(\d+)px/.exec(barCss) || [])[1]);   // the space above a group: the shadow rises into it, and must stay short of the group above
+      const baseRule = (/\n  #factBankArea \.g-head\s*\{[^}]*\}/.exec(barCss) || [''])[0];
+      ok('a pinned source header fills the cutouts of its rounded top corners with a shadow in the page\'s colour, lifted by its own spread (so it ends at the header\'s bottom edge), wide enough to reach each cutout\'s far corner and short of the group above, and only on the screens where the header pins',
+         !!sh && sh[1] === sh[2] && Number(sh[2]) >= radius / 4 && 2 * Number(sh[2]) < gap && !!pageBg && sh[3] === pageBg &&
+         /border-radius:\s*var\(--r-card\) var\(--r-card\) 0 0/.test(baseRule) && baseRule.indexOf('box-shadow') === -1, sh && sh[0]);
+    }
     for (const [sort, label] of [['political', 'Most noteworthy'], ['truth', 'Most rigorous']]) {
       setSort(sort);
       const flat = walk();
