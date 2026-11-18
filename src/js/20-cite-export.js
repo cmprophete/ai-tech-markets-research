@@ -31,6 +31,9 @@
     if (!s) return '';
     return String(s)
       .replace(/<br\s*\/?\s*>/gi, '\n')
+      // text synced from a Google Doc can hold bullet lists and real links: keep both in the draft
+      .replace(/<li>/gi, '\n- ').replace(/<\/?ul>/gi, '\n')
+      .replace(/<a [^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (m, href, text) => `[${text}](${href.replace(/&amp;/g, '&')})`)
       .replace(/ ?\{\{(citep?):([\w-]+)\}\}/g, (m, kind, id) => {
         const p = paperMap[id];
         if (!p) return '';
@@ -44,7 +47,8 @@
       })
       .replace(/\{\{pol:[a-z0-9-]+\|([^}]+)\}\}/g, '$1')
       .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&').replace(/&rsquo;/g, '’').replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”').replace(/&quot;/g, '"')
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&rsquo;/g, '’').replace(/&ldquo;/g, '“').replace(/&rdquo;/g, '”').replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')   // last, so that a typed "&amp;lt;" stays "&lt;"
       .trim();
   }
 
@@ -77,7 +81,7 @@
     // The Map's area, not the phase and fine category the draft used to open with (dropped 2026-11-17, with the same two
     // labels under the dialog's title).
     if (area) md.push(`**Area:** ${area.label}`, '');
-    md.push(`*Draft prepared from AI Tracker: Research and Policy (${appURL('policy/' + p.id)})${p.lastReviewed ? `. Last reviewed ${fmtD(p.lastReviewed)}` : ''}.*`);
+    md.push(`*Draft prepared from AI Tracker: Research and Policy (${appURL('policy/' + p.id)})${p.docUpdated ? `. Last updated ${fmtD(p.docUpdated)}` : ''}.*`);
     const section = (label, body) => { if (body) { md.push('', `## ${label}`, '', plain(body)); } };
     const listSection = (label, arr) => {
       if (Array.isArray(arr) && arr.length) {
@@ -90,6 +94,11 @@
     listSection('Strengths', p.strengths);
     listSection('Risks', p.risks);
     section('Precedents & landscape', p.landscape);
+    // References written in the card's Google Doc (synced text only) belong to its Precedents & Examples
+    if (Array.isArray(p.references) && p.references.length) {
+      md.push('', '### References', '');
+      p.references.forEach(item => md.push(`- ${plain(item)}`));
+    }
     md.push('');
     return md.join('\n');
   }
@@ -533,7 +542,10 @@
         <div class="pol-modal-label">Precedents & landscape</div>
         <div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>
       </div>` : '';
-    const lastReviewedHTML = p.lastReviewed ? `<div class="pol-modal-lastreviewed">Last reviewed: ${fmtDate(p.lastReviewed)}</div>` : '';
+    // The date line is the day the card's Google Doc was last modified (docUpdated, written by the sync from the Doc's Drive
+    // modifiedTime; docs/policy-doc-sync.md). A card with no Doc shows no date: the hand-kept lastReviewed is no longer read.
+    // The variable and the class name are historical.
+    const lastReviewedHTML = p.docUpdated ? `<div class="pol-modal-lastreviewed">Last updated: ${fmtDate(p.docUpdated)}</div>` : '';
     document.getElementById('polModalBody').innerHTML = `
       <div class="pol-modal-section">
         <div class="pol-modal-label">What it is</div>
@@ -546,6 +558,14 @@
       ${prosConsHTML}
       ${landscapeHTML}
       ${lastReviewedHTML}`;
+    // References listed in the card's Google Doc (synced text only): a section of their own, as the author wrote them.
+    if (Array.isArray(p.references) && p.references.length) {
+      const body = document.getElementById('polModalBody');
+      const refs = document.createElement('div');
+      refs.className = 'pol-modal-section';
+      refs.innerHTML = `<div class="pol-modal-label">References</div><ul class="pol-modal-list">${li(p.references)}</ul>`;
+      body.insertBefore(refs, body.querySelector('.pol-modal-lastreviewed'));   // before Last reviewed, or at the end
+    }
     // Wire policy cross-reference links to open their target policy's modal.
     document.getElementById('polModalBody').querySelectorAll('.pol-xref').forEach(a => {
       const go = e => { e.stopPropagation(); openPolModalById(a.dataset.polId); };
