@@ -14,11 +14,9 @@ produces merge conflicts, and it did on 2026-11-16. If a merge ever conflicts in
 them, take `main`'s copy. `data/tracker-data.js` is loaded by the page at runtime,
 so once a sync has landed you just reload to see it.
 
-> **Moving to a `status` column.** Until the Sheet's research tab has a column headed
-> exactly `status`, the sync reads the Sheet the old way: any text in `archived` hides a
-> row, a blank `archived` means published (and the row must then be complete), and the
-> `foundational` column is ignored. Once `status` exists, `archived` is ignored. Delete
-> this note when the Sheet has been moved over.
+The aim is to add new papers about once a month (the table in the [root README](../README.md)
+says who does what, and how often, for every part of the site). The sync runs every day,
+so whatever is set to `approved` reaches the site within a day.
 
 ## Editing the Sheet
 
@@ -28,9 +26,9 @@ name, because the Sheet's columns are in a different order from the snapshot's:
 
 | Column | What goes in it |
 |---|---|
-| `id` | A stable number. **Leave blank for a new study** — `build` assigns the next id and writes it back. Never renumber existing rows: policy cards reference studies by id. |
+| `id` | A stable number. **Leave blank for a new study**: `build` assigns the next id and writes it back. Never renumber existing rows: policy cards reference studies by id. |
 | `date` | Publication date, `YYYY-MM-DD`. |
-| `added` | Intake date (when you added it), `YYYY-MM-DD`. **Leave blank for a new study** — `build` fills in today's date. |
+| `added` | Intake date (when you added it), `YYYY-MM-DD`. **Leave blank for a new study**: `build` fills in today's date. |
 | `status` | Where the study stands: `under review`, `approved` or `archived`, picked from the dropdown. **Blank means under review.** Only `approved` studies reach the site (see "What the status does" below). |
 | `foundational` | Blank, or the word `foundational` (dropdown): classic background reading. On an approved study it is published as `foundational: true`, for a later page feature; nothing on the site uses it yet. It is **not** the Fact Bank's `foundational` flag, which marks a source with more facts than the one-to-three cap allows and lives on the facts in `data/fact-bank-data.js`. |
 | `note` | Free text: why a study is archived, or anything you want to remember. Shown nowhere on the site. |
@@ -53,6 +51,8 @@ name, because the Sheet's columns are in a different order from the snapshot's:
 | `archived` | No | Nothing. The row and its `id` are kept; say why in `note`. |
 
 Any other word in `status` (or in `foundational`) stops the sync and names the row; the dropdown keeps typos out. A row pasted into the Sheet with no status is under review, so nothing reaches the site until someone sets it to `approved`.
+
+**A paper that is not approved takes its Fact Bank facts with it.** A fact belongs to one paper, and the page drops the facts of any paper that is not published, so archiving a paper (or sending it back to under review) also removes its facts from the Fact Bank, and `check` counts them. The paper's summary, in `data/paper-summaries.js`, is never shown either. Setting the paper back to `approved` brings both back.
 
 To **add** a study: add a row in the Sheet and leave `id` and `added` blank. Leave `status` blank (under review) while you fill the row in, and set it to `approved` when it is complete.
 To **edit** one: change the cell.
@@ -78,11 +78,11 @@ python3 tools/research.py build --sheet "<published-csv-link>"
 
 That downloads the Sheet, saves a snapshot to `content/research.csv` (the committed
 history, every row with its `status`, `foundational` and `note`), and rebuilds
-`RESEARCH_DATA` from the `approved` rows only. New rows can leave `id` blank — the
+`RESEARCH_DATA` from the `approved` rows only. New rows can leave `id` blank: the
 script gives each a stable id by matching its source URL to the last snapshot, so
 re-pulling never reshuffles ids.
 Keep the `extra_json` column in the Sheet; a few featured studies store data there. The
-published site never reads the Sheet — only this build step does.
+published site never reads the Sheet; only this build step does.
 
 ## Commands
 
@@ -105,5 +105,17 @@ its id and its title or link).
 
 ## Scope
 
-This pipeline owns only the **research list** (`RESEARCH_DATA`). Themes, the policy
-lab, and the ESP agenda are still edited by hand in `data/tracker-data.js`.
+This pipeline owns only the **research list** (`RESEARCH_DATA`). Everything else is outside the Sheet:
+the policy cards (`POLICY_DATA`) and the category list in `data/tracker-data.js`, the Fact Bank
+(`data/fact-bank-data.js`), the paper summaries (`data/paper-summaries.js`) and the legislation data are
+edited by hand or written by a tool of their own (the table in the [root README](../README.md) says which).
+The summaries are kept out of the Sheet on purpose: the sync rebuilds `RESEARCH_DATA` from the Sheet, so
+anything kept only in the repo's copy of a paper would be wiped at the next sync
+([`docs/paper-summaries.md`](../docs/paper-summaries.md)).
+
+## Also in this folder
+
+`legislation-state-summaries.json` is not part of the research pipeline. It holds the legislatures' own
+summaries for some state bills (Illinois, New Jersey and Maryland), read from their sites by
+`tools/state_summaries.py`, and is never edited by hand; see
+[`docs/legislation-sources.md`](../docs/legislation-sources.md).
