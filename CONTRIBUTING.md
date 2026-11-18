@@ -17,11 +17,13 @@ Who updates each part of the site, and how often, is in the table in [`README.md
 | I want to change | Edit | Then |
 |---|---|---|
 | **a research entry (add, edit, approve, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
-| **a policy card** | `POLICY_DATA` in `data/tracker-data.js` (by hand; the author's words go in verbatim, see [`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | reload; no build step |
+| **the words of a policy card that has a Google Doc** | the **Doc**, never the repo: `tools/policy_docs.py` carries it into `data/policy-text.js` (generated; see [`docs/policy-doc-sync.md`](docs/policy-doc-sync.md)), for the cards the Sheet's `policy map` tab marks `approved` | the next sync: for now ask Claude to run it (the Docs are not fetched automatically yet), then reload |
+| **hiding a policy card, or bringing it back** | the **Sheet**'s `policy map` tab, never the repo: set the policy's `general status` to `archived` (or back). `tools/policy_map.py` carries it into `data/policy-map.js` (generated), and the page leaves an archived card out | the next sync run: ask Claude (the tab is not published, so nothing reads it by itself), then reload |
+| **any other field of a policy card, or a card with no Doc** | `POLICY_DATA` in `data/tracker-data.js` (by hand; the author's words go in verbatim, see [`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | reload; no build step |
 | **the Agenda tab** | `src/views/40-agenda.html` and `TAB_DESCS.agenda` in `src/js/70-render.js` (a placeholder for now) | `python3 build.py` |
 | **a fact (Fact Bank)** | `data/fact-bank-data.js`, through the `research-intake` and `fact-bank` skills in `skills/` (a fact belongs to one paper; the paragraph around it is in `data/fact-bank-context.js`) | reload; no build step |
 | **a midterm result or a stage (Legislation section)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
-| **an enforcement action or a key case (for the Enforcement and Cases sections of Government action)** | `data/legislation-actions.js` (by hand; the row format and the rules are at the top of the file) | reload; no build step |
+| **an enforcement action or a key case (for the Enforcement and Cases sections of Government action)** | the **Google Sheet**'s `enforcement` or `cases` tab, never the repo: the daily sync copies them into `content/enforcement.csv`, `content/cases.csv` and `data/legislation-actions.js` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync publishes it (or "Run workflow" in the Actions tab) |
 | **a topic in the Legislation filter (its name, or the words that find it)** | `LEGISLATION_TOPICS` in `data/legislation-data.js` (by hand; how a bill gets a topic is in the comment above it, and in [`docs/legislation-sources.md`](docs/legislation-sources.md)) | reload; no build step |
 | **the bills (Legislation tab)** | `python3 tools/openstates_fetch.py` and `python3 tools/congress_fetch.py`, then `python3 tools/legislation.py build`, writes `data/legislation-bills.js`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
 | **a state bill's summary where Open States has none (Illinois, New Jersey)** | `python3 tools/state_summaries.py` reads each legislature's own summary into `content/legislation-state-summaries.json` (by the tool, never by hand), then `python3 tools/legislation.py build`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
@@ -36,7 +38,7 @@ rebuild. **Do not hand-edit the `RESEARCH_DATA` array** in `data/tracker-data.js
 or `content/research.csv`: the daily sync writes both from the Google Sheet (see
 "One writer per file" below and [`content/README.md`](content/README.md)). `POLICY_DATA` and `CATEGORIES`
 in that file are hand-maintained, and so are `data/fact-bank-data.js`,
-`data/fact-bank-context.js`, `data/paper-summaries.js` and `data/legislation-data.js` (`data/us-map.js` and `data/legislation-bills.js`, by contrast, are generated, by `tools/us_map.py` and `tools/legislation.py`).
+`data/fact-bank-context.js`, `data/paper-summaries.js` and `data/legislation-data.js` (`data/us-map.js`, `data/legislation-bills.js`, `data/legislation-actions.js`, `data/policy-text.js` and `data/policy-map.js`, by contrast, are generated, by `tools/us_map.py`, `tools/legislation.py`, `tools/actions.py`, `tools/policy_docs.py` and `tools/policy_map.py`; `data/legislation-actions.js` is written by the daily sync only, `data/policy-text.js` by the policy Doc sync only and `data/policy-map.js` by the policy map sync only).
 
 ## One writer per file
 
@@ -50,12 +52,13 @@ the same paper rows.
 | What | Its one writer | For everyone else |
 |---|---|---|
 | `content/research.csv` and the `RESEARCH_DATA` array in `data/tracker-data.js` | the daily sync from the Google Sheet (`.github/workflows/research-sync.yml`), which commits to `main` | change papers in the Sheet. Never commit these two from a branch. If they conflict in a merge, take `main`'s copy of the research list |
-| the wording of a policy card (`POLICY_DATA`) | the policy author; Claude only places their text, verbatim ([`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | do not reword it |
+| `content/cases.csv`, `content/enforcement.csv` and `data/legislation-actions.js` | the daily sync from the Sheet's `cases` and `enforcement` tabs (the second step of `.github/workflows/research-sync.yml`, `tools/actions.py`), which commits to `main` | change rows in the Sheet. Never commit these three from a branch. If they conflict in a merge, take `main`'s copy of all three |
+| the wording of a policy card | the policy author. For a card with a Google Doc, the Doc, carried into `data/policy-text.js` by `tools/policy_docs.py` (generated: never edited by hand; run `build` only in a scratch copy and commit its output as it came). For a card without one, Claude places their text in `POLICY_DATA`, verbatim ([`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | do not reword it |
 
 To try `tools/research.py` without becoming a second writer, run `check` (it
 writes nothing) or run `build` in a scratch copy of the repo (for example
 `rsync -a --exclude .git ./ /tmp/research-scratch/`), never in the working tree
-you commit from. If GitHub Desktop lists `content/research.csv` as changed, or
+you commit from. If GitHub Desktop lists `content/research.csv`, `content/cases.csv`, `content/enforcement.csv` or `data/legislation-actions.js` as changed, or
 lists `data/tracker-data.js` with thousands of changed lines when you only edited
 a policy card, do not commit it. The other generated files follow the same idea:
 edit the source and rerun the tool (`index.html` from `src/`, the Legislation
@@ -125,7 +128,18 @@ re-record to clear a red run.
 view nav is one delegated listener reading `data-view` attributes, and a typo
 there would leave every route green and every button dead.
 
-Neither runs in the pre-commit hook, but both run on every push in GitHub Actions
+The Python tools have checks of their own, standard library only, no `npm`:
+
+```sh
+python3 tools/research.py selftest                             # the research rules
+python3 tools/actions.py selftest                              # the cases and enforcement rules
+python3 tools/policy_docs.py selftest                          # the policy Doc tool: nasty fixtures, every refusal, deliberate breakages
+python3 tools/policy_map.py selftest                           # the archived-cards tool
+python3 -m unittest discover -s tests -p "test_*.py" -v       # the policy Doc tool's unit tests: the pilot Doc, the CLI, the gate, random text round-trips
+python3 tests/test_policy_docs.py --write-fixtures             # only when a test says the page fixtures are stale
+```
+
+Neither of the jsdom suites runs in the pre-commit hook, but both run on every push in GitHub Actions
 (see "Checks on every push" below). Run them before pushing anything that touches
 `src/js/` or the view markup, so the push does not go red. jsdom is pinned to one
 version in `package.json`: bump it on purpose, and re-run both suites when you do.
@@ -145,7 +159,7 @@ move the change into `src/` before rebuilding, because rebuilding discards it.
 
 `.github/workflows/ci.yml` (the **Checks** workflow) runs on every push to a branch:
 the same two guards (a fresh build of `index.html`, no file over 2 MB),
-`tools/research.py check` and `selftest`, a syntax check of the Python files, and
+`tools/research.py check` and `selftest`, `tools/actions.py check` and `selftest` (which also fails when `data/legislation-actions.js` was edited by hand), the policy Doc tool's `selftest` and its Python tests (`tests/test_policy_docs.py`), `tools/policy_map.py check` and `selftest`, a syntax check of the Python files, and
 both jsdom suites. It does not need the hook, so it still protects a machine that
 never ran `git config core.hooksPath .githooks`. When a run goes red, the name of
 the failing step says what broke.
