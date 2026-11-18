@@ -51,14 +51,19 @@
 
   // ── utils ────────────────────────────────────────────────────
   const escapeHTML = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  // "More filters": the disclosure that holds a filter bar's secondary controls. The Papers bar and
-  // the Fact Bank's bar share it, so the two open and close the same way.
-  function wireMoreFilters(toggleId, panelId) {
-    const toggle = document.getElementById(toggleId), panel = document.getElementById(panelId);
-    toggle.addEventListener('click', () => {
-      const open = panel.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', String(open));
-    });
+  /* The stacked bar of Papers and the Fact Bank (the toolbar, the chips and the search bar: the same three blocks as the Government action tab's, each sticky under the one before; the owner, 2026-11-18): their live
+     heights, for what has to clear them. --bar-toolbar-h on the area is where the chips stick, --bar-chips-h where the search bar sticks (under both), and --bar-h, the three together, is what a jump to the list
+     (scroll-margin-top in filterbar.css) and the Fact Bank's pinned source headers must clear. A block that is not sticky (a phone, a short window) counts as nothing. Read exactly, as legSyncBarHeight does: a rect is
+     in zoomed pixels and the sticky offset in the element's own, hence the division by the body zoom. Returns the total. */
+  function syncBarStack(area) {
+    if (!area) return 0;
+    const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
+    const stuck = el => (el && getComputedStyle(el).position === 'sticky') ? el.getBoundingClientRect().height / zoom : 0;
+    const top = stuck(area.querySelector('.bar-toolbar')), mid = stuck(area.querySelector('.bar-chips')), under = stuck(area.querySelector('.bar-search'));
+    area.style.setProperty('--bar-toolbar-h', top.toFixed(2) + 'px');
+    area.style.setProperty('--bar-chips-h', mid.toFixed(2) + 'px');
+    area.style.setProperty('--bar-h', (top + mid + under).toFixed(2) + 'px');
+    return top + mid + under;
   }
   /* ── paging ───────────────────────────────────────────────────
      The two long lists, Papers and the Fact Bank, show at most PAGE_SIZE cards at a time, with a pager
@@ -125,8 +130,7 @@
   // After a page change: back to the top of the list, just under the sticky filter bar, with focus on the
   // list so a keyboard or screen-reader reader starts at its first card, not at the pager they just used.
   function showListTop(list) {
-    const bar = list.closest('#papersArea, #factBankArea').querySelector('.controls');
-    window.scrollTo(0, Math.max(0, list.getBoundingClientRect().top + window.pageYOffset - bar.offsetHeight - 12));
+    if (typeof list.scrollIntoView === 'function') list.scrollIntoView({ block: 'start' });   // scroll-margin-top (filterbar.css) keeps it clear of the stacked bar
     list.focus({ preventScroll: true });
   }
   // ── filter + sort ────────────────────────────────────────────

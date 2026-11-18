@@ -4,13 +4,13 @@ A curated research database and synthesis on AI, automation, and the economy,
 published as a single self-contained page (`index.html`) that is embedded as an
 iframe on the Economic Security Project site.
 
-Six tabs in three groups, plus an **About** page that opens the site: Research (**Fact Bank** and **Papers**), Policy (**Agenda**, a placeholder for now, and **Landscape**, the policy map) and Government action (**Enforcement**, a placeholder for enforcement actions and key cases; and **Legislation**, a map of the states with a table of bills and one of the 2026 midterm results).
+Five tabs in three groups, plus an **About** page that opens the site: Research (**Fact Bank** and **Papers**), Policy (**Agenda**, a placeholder for now, and **Landscape**, the policy map) and Government action (one tab, labelled **Enforcement and Legislation**, with four sections switched under its masthead: **All**, where the tab opens, which holds everything (the 2026 midterm results by state, the bills, the key cases and the enforcement actions, with a card for each state that holds all of it); **Cases** and **Enforcement**, the court rulings and the agency and attorney general actions about AI listed in `data/legislation-actions.js`; and **Legislation**, the bills alone, a map of the states with a table of bills; each of the three holds its own data alone, on a map shaded by it).
 
 ## Setup (once per machine)
 
 ```sh
 git config core.hooksPath .githooks   # build freshness + 2 MB size guard
-npm install jsdom                     # only if you want to run the tests
+npm install                           # installs jsdom (see package.json); only if you want to run the tests
 ```
 
 ## Build
@@ -51,6 +51,10 @@ node tests/interactions.js   # clicking and keyboard
 node tests/routes.js         # snapshot of every route
 ```
 
+The same two suites, the build-freshness check and the 2 MB size check run on every push
+in GitHub Actions: the **Checks** workflow, `.github/workflows/ci.yml` (see
+[`CONTRIBUTING.md`](CONTRIBUTING.md)).
+
 ## Layout
 
 ```
@@ -60,6 +64,8 @@ data/           the published payloads (research, fact bank, themes, policies)
 assets/         images loaded directly by the page
 tools/          research.py (sheet -> data) and helper scripts
 tests/          jsdom harness and route snapshot
+package.json    test tooling only (jsdom); the page itself has no dependencies
+.github/        workflows: the nightly research sync, and Checks on every push
 docs/           GLOSSARY.md, ARCHITECTURE_OPTIONS.md, adr/, history/
 notes/          working notes and backlogs, not part of the build
 ```

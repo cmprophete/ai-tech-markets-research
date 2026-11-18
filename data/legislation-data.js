@@ -19,7 +19,7 @@
      topics      the source's own category labels, as a list, for example ["Transparency", "Liability"]            (optional)
                  (the page's own Topic filter is separate: LEGISLATION_TOPICS below, worked out from each bill's text)
      subjects    the legislature's own subject index terms, as a list, as it wrote them                          (optional)
-     passing     true when the bill only mentions AI in its text, not its title or summary: hidden until the checkbox "Include bills that only mention AI" (under More filters) is on  (optional)
+     passing     true when the bill only mentions AI in its text, not its title or summary: hidden until the checkbox "Include bills that only lightly mention AI" (beside the Status menu) is on  (optional)
      summary     what it would do: the legislature's own summary where it gives one, else our own words        (optional)
      lastAction  { date: "2026-03-01", text: "Referred to committee" }                      (optional)
      source      { label: "Legislature", url: "https://..." }                                (optional)
@@ -36,7 +36,7 @@
 
    MIDTERM_RESULTS, MIDTERM_SOURCES, MIDTERM_PAGES, MIDTERM_NOTE and MIDTERM_NATIONAL are the 2026 midterm results shown
    beside the legislation, labelled as election results, not legislation. They come from the Associated Press's midterm results
-   (Senate, House and governor, state by state), cited in MIDTERM_SOURCES, and from nothing else. Each state can carry three
+   (Senate, House and governor, state by state), cited in MIDTERM_SOURCES, and from nothing else. They are shown in each state's card, as totals in the overview, and in the results table under the bills. Each state can carry three
    offices, and the link in its Source column is built from the state's name and MIDTERM_PAGES:
      senate     { result, detail? }   the state's 2026 Senate race, if it has one
      governor   { result, detail? }   the state's 2026 governor race, if it has one
@@ -61,7 +61,7 @@ const LEGISLATION_STAGES = {
   'failed':        { label: 'Failed',               active: false },  // died in committee, vetoed, withdrawn, or the session ended
 };
 
-/* TOPICS. The topic chips under "More filters" and the "Topics:" line in the bills table come from this list and from nothing else. A bill's
+/* TOPICS. The topic chips (always showing, above the search) and the "Topics:" line in the bills table come from this list and from nothing else. A bill's
    topics are worked out in the page, each time it loads, by matching these words against the bill's own text: they are our reading, not
    any legislature's or anyone else's list. A topic is assigned to a bill when one of its words is in the bill's
    title, or when two different words of it are in the bill's summary or in the subject terms the legislature (or, for a federal bill, the Congressional Research Service) assigned
@@ -199,7 +199,7 @@ const LEGISLATION_TOPICS = [
 
 const MIDTERM_SOURCES = {
   ap: {
-    org: 'The Associated Press', short: 'AP', title: '2026 Midterm Election Results: Senate, House and Governor Races', kind: 'results page', updated: 'November 12, 2026, 10:29 AM',
+    org: 'The Associated Press', short: 'AP', title: '2026 Midterm Election Results: Senate, House and Governor Races', kind: 'results page', updated: 'November 17, 2026, 9:44 AM',
     url: 'https://apnews.com/projects/elections-2026/',
   },
 };
@@ -215,21 +215,21 @@ const MIDTERM_NOTE = 'Each row links to AP’s page for each of that state’s r
 
 // The totals AP's overview showed when it was read. The Senate and governor totals include the seats not up in 2026.
 const MIDTERM_NATIONAL = {
-  src: 'ap', updated: 'November 12, 2026, 10:29 AM',
+  src: 'ap', updated: 'November 17, 2026, 9:44 AM',
   senate: { democrats: 55, republicans: 44, toBeCalled: 1 },
-  house: { democrats: 255, republicans: 168, toBeCalled: 12 },
-  governor: { democrats: 28, republicans: 20, toBeCalled: 2 },
+  house: { democrats: 256, republicans: 171, toBeCalled: 8 },
+  governor: { democrats: 30, republicans: 20, toBeCalled: 0 },
 };
 
 // The 50 states. A state has a senate entry only if it had a Senate race in 2026 (35 seats, two of them special elections, in Ohio and
 // Florida), and a governor entry only if it had a governor race (36); every state has House districts. DC is not in AP's results.
 const MIDTERM_RESULTS = {
   AL: { senate: { result: 'r-hold' }, house: { d: 2, r: 5 }, governor: { result: 'r-hold' } },
-  AK: { senate: { result: 'uncalled', detail: 'Not yet called: Democrat Mary Peltola leads, with an estimated 86% of votes counted at AP’s November 11, 10:34 PM update. Ranked-choice counting follows if no candidate has a majority of first-choice votes.' }, house: { rLead: 1 }, governor: { result: 'uncalled', detail: 'Not yet called: AP shows a Democrat leading.' } },
+  AK: { senate: { result: 'uncalled', detail: 'Not yet called: Democrat Mary Peltola leads, with an estimated 98% of votes counted at AP’s November 16, 10:40 PM update. Ranked-choice counting follows if no candidate has a majority of first-choice votes.' }, house: { rLead: 1 }, governor: { result: 'd-gain' } },
   AZ: { house: { d: 5, r: 4 }, governor: { result: 'd-hold' } },
   AR: { senate: { result: 'r-hold' }, house: { r: 4 }, governor: { result: 'r-hold' } },
-  CA: { house: { d: 47, r: 3, dLead: 1, rLead: 1 }, governor: { result: 'd-hold' } },
-  CO: { senate: { result: 'd-hold' }, house: { d: 6, r: 1, dLead: 1 }, governor: { result: 'd-hold' } },
+  CA: { house: { d: 48, r: 4 }, governor: { result: 'd-hold' } },
+  CO: { senate: { result: 'd-hold' }, house: { d: 7, r: 1 }, governor: { result: 'd-hold' } },
   CT: { house: { d: 5 }, governor: { result: 'd-hold' } },
   DE: { senate: { result: 'd-hold' }, house: { d: 1 } },
   FL: { senate: { result: 'r-hold' }, house: { d: 8, r: 20 }, governor: { result: 'r-hold' } },
@@ -239,10 +239,10 @@ const MIDTERM_RESULTS = {
   IL: { senate: { result: 'd-hold' }, house: { d: 14, r: 3 }, governor: { result: 'd-hold' } },
   IN: { house: { d: 3, r: 6 } },
   IA: { senate: { result: 'd-gain' }, house: { d: 3, r: 1 }, governor: { result: 'd-gain' } },
-  KS: { senate: { result: 'd-gain' }, house: { d: 1, r: 3 }, governor: { result: 'uncalled', detail: 'Not yet called: AP shows a Democrat leading.' } },
+  KS: { senate: { result: 'd-gain' }, house: { d: 1, r: 3 }, governor: { result: 'd-hold' } },
   KY: { senate: { result: 'r-hold' }, house: { d: 2, r: 4 } },
   LA: { senate: { result: 'r-hold' }, house: { d: 1, r: 3, runoff: 2 } },
-  ME: { senate: { result: 'd-gain' }, house: { d: 1, rLead: 1 }, governor: { result: 'd-hold' } },
+  ME: { senate: { result: 'd-gain' }, house: { d: 1, r: 1 }, governor: { result: 'd-hold' } },
   MD: { house: { d: 7, r: 1 }, governor: { result: 'd-hold' } },
   MA: { senate: { result: 'd-hold' }, house: { d: 9 }, governor: { result: 'd-hold' } },
   MI: { senate: { result: 'd-hold' }, house: { d: 9, r: 4 }, governor: { result: 'd-hold' } },
@@ -256,7 +256,7 @@ const MIDTERM_RESULTS = {
   NJ: { senate: { result: 'd-hold' }, house: { d: 11, r: 1 } },
   NM: { senate: { result: 'd-hold' }, house: { d: 3 }, governor: { result: 'd-hold' } },
   NY: { house: { d: 20, r: 6 }, governor: { result: 'd-hold' } },
-  NC: { senate: { result: 'd-gain' }, house: { d: 9, r: 1, dLead: 2, rLead: 2 } },
+  NC: { senate: { result: 'd-gain' }, house: { d: 9, r: 2, dLead: 2, rLead: 1 } },
   ND: { house: { r: 1 } },
   OH: { senate: { result: 'd-gain' }, house: { d: 8, r: 7 }, governor: { result: 'd-gain' } },
   OK: { senate: { result: 'r-hold' }, house: { r: 5 }, governor: { result: 'r-hold' } },

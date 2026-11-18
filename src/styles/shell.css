@@ -61,7 +61,7 @@
     .header-text { flex-basis: 100%; text-align: center; }
   }
 
-  /* Grouped nav tabs: a rule under each group's tabs, with the group's label below it (Research, Policy, Government action),
+  /* Grouped nav tabs: a rule under each group's tabs, with the group's label below it (Research, Policy, Government action; the last has been one tab since 2026-11-17, labelled Enforcement and Legislation),
      so the tabs sit above their label. (It was flat for a day on 2026-11-11 and went back to groups at the owner's
      request; Legislation left Policy for a group of its own on 2026-11-12, also at the owner's request, and the group has been called Government action since that evening.)
 

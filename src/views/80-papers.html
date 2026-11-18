@@ -1,9 +1,35 @@
 
       <!-- Papers, the Database sub-view: the search-and-filters bar, then the list. The bar is the
            Fact Bank's (same markup shape, same styles: src/styles/filterbar.css) with this tab's
-           facets: Sort stays in view; Methodology, Category and Region sit behind "More filters". -->
+           facets, laid out as the Government action tab's bar is (the owner, 2026-11-18: the same structure): the toolbar (Category, Methodology and Region, always showing, with the Reset button at its right end), then the search bar
+           (search, Sort and the result line), each sticky under the one before (src/styles/filterbar.css, src/js/00-state.js syncBarStack). -->
       <div id="papersArea">
-        <div class="controls" role="region" aria-label="Search and filters">
+        <div class="bar-toolbar controls" id="ppToolbar">
+          <div class="bar-toolbar-row">
+            <div class="bar-toolbar-main">
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppCategory">Category</label>
+              <select id="ppCategory" aria-label="Filter by category">
+                <option value="all">All categories</option>
+              </select>
+            </span>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppMethod">Methodology</label>
+              <select id="ppMethod" aria-label="Filter by methodology">
+                <option value="all">All types</option>
+              </select>
+            </span>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppRegion">Region</label>
+              <select id="ppRegion" aria-label="Filter by region">
+                <option value="all">All regions</option>
+              </select>
+            </span>
+            </div>
+            <button class="reset-btn" type="button" id="ppReset" title="Reset the search, the order and every filter"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="ppResetText">Reset all</span></button>
+          </div>
+        </div>
+        <div class="bar-search controls" id="ppFilters" role="region" aria-label="Search and filters">
           <div class="controls-row">
             <div class="search-wrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -16,41 +42,12 @@
                 <option value="asc">Oldest first</option>
               </select>
             </span>
-            <button class="more-toggle" id="ppMoreToggle" aria-expanded="false" aria-controls="ppMorePanel">
-              <span class="more-label">More filters</span> <span class="more-count" id="ppMoreCount" hidden></span> <span class="ui-chevron chev" aria-hidden="true"></span>
-            </button>
-          </div>
-          <div class="more-panel" id="ppMorePanel">
-            <div>
-              <div class="more-body">
-                <div class="controls-row">
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="ppCategory">Category</label>
-                    <select id="ppCategory" aria-label="Filter by category">
-                      <option value="all">All categories</option>
-                    </select>
-                  </span>
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="ppMethod">Methodology</label>
-                    <select id="ppMethod" aria-label="Filter by methodology">
-                      <option value="all">All types</option>
-                    </select>
-                  </span>
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="ppRegion">Region</label>
-                    <select id="ppRegion" aria-label="Filter by region">
-                      <option value="all">All regions</option>
-                    </select>
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
           <div class="result-row">
             <div class="result-line" id="ppResultLine" aria-live="polite"></div>
-            <button class="clear-filters" id="ppClear" hidden>Clear filters</button>
           </div>
         </div>
+        <div class="sr-only" id="ppAnnounce" aria-live="polite"></div>
 
         <div class="cards-grid" id="cardsGrid" tabindex="-1"></div>
         <nav class="pager" id="ppPager" hidden></nav>

@@ -10,7 +10,10 @@
       <div class="header-tabs" role="tablist" aria-label="Select view">
         <!-- Three labelled groups, each tab above its group's label. Alphabetical within a group. The label is for the eye
              (aria-hidden), so a tab that would not make sense without its group says it in its accessible name, which still
-             contains the visible text (Agenda says "Policy agenda", Landscape "Policy landscape" and Enforcement "Enforcement actions and key cases"; the others are clear alone). -->
+             contains the visible text (Agenda says "Policy agenda" and Landscape "Policy landscape"; the others are clear alone).
+             Government action is ONE tab (since 2026-11-17, at the owner's request; it was two, Enforcement and Legislation), labelled "Enforcement and Legislation" in the owner's words, above the
+             group label Government action. It holds three sections, Cases, Enforcement and Legislation, switched in the toolbar of the area (src/views/60-legislation.html); each keeps an address of its own
+             (#cases, #enforcement, #legislation), and this button opens the one that was open last. -->
         <div class="tab-group" data-group="research" role="presentation">
           <div class="tab-group-btns" role="presentation">
             <button class="header-nav-btn" id="viewFactBank" data-view="fact-bank" role="tab" aria-selected="false" aria-controls="viewPanel">Fact Bank</button>
@@ -27,15 +30,13 @@
         </div>
         <div class="tab-group" data-group="government" role="presentation">
           <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewEnforcement" data-view="enforcement" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Enforcement actions and key cases">Enforcement</button>
-            <button class="header-nav-btn" id="viewLegislation" data-view="legislation" role="tab" aria-selected="false" aria-controls="viewPanel">Legislation</button>
+            <button class="header-nav-btn" id="viewGovernment" data-view="government" role="tab" aria-selected="false" aria-controls="viewPanel">Enforcement and Legislation</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Government action</div>
         </div>
       </div>
     </nav>
     <div style="display:none;">
-      <button id="aboutInfoBtn" aria-label="About this site"></button>
       <button id="sourcesInfoBtn" aria-label="View sources"></button>
     </div>
   </div>

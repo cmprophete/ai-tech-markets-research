@@ -123,8 +123,7 @@
     const emptyState = document.getElementById('kfEmptyState');
     const pager = document.getElementById('kfPager');
     const resultLine = document.getElementById('kfResultLine');
-    const moreCount = document.getElementById('kfMoreCount');
-    const clearBtn = document.getElementById('kfClear');
+    const resetBtn = document.getElementById('kfReset'), resetText = document.getElementById('kfResetText'), announce = document.getElementById('kfAnnounce');
 
     /* ── Shared card fragments ── */
     /* One rating explained: a rail (the scale's name, a small bar, the score) beside the
@@ -384,27 +383,23 @@
       }
       return true;
     }
-    /* Every filter sits inside the "More filters" panel (Evidence, the two rating minimums,
-       keywords, Foundational); only search and Sort stay in view, and neither is counted. The badge
-       counts what is switched on, and "Clear filters" shows exactly when the badge does. */
-    function refreshMore() {
-      const inPanel = (evType !== 'all' ? 1 : 0) + (minPol > 1 ? 1 : 0) + (minTruth > 1 ? 1 : 0) + activeKw.size + (onlyFoundational ? 1 : 0);
-      moreCount.hidden = inPanel === 0;
-      moreCount.textContent = inPanel;
-      clearBtn.hidden = inPanel === 0;
+    /* The Reset button (the owner, 2026-11-18, as on the Government action tab): one button, always there, at the right end of the toolbar. It puts the search, the order and every filter back, and says how many differ from
+       how the tab opens: the search words, Evidence if it is not All types, each rating minimum above 1+, each keyword chosen, Foundational, and the order if it is not Most recent. Solid with the count while any differ,
+       an outline otherwise. */
+    const resetCount = () => (q.trim() ? 1 : 0) + (evType !== 'all' ? 1 : 0) + (minPol > 1 ? 1 : 0) + (minTruth > 1 ? 1 : 0) + activeKw.size + (onlyFoundational ? 1 : 0) + (sortBy !== 'date' ? 1 : 0);
+    function refreshReset() {
+      const n = resetCount();
+      resetBtn.classList.toggle('is-on', n > 0);
+      resetText.textContent = n ? `Reset all (${n})` : 'Reset all';
     }
-    /* The filter bar's live height, for the pinned source headers (--kf-bar-h, read by .g-head in policy.css). A
-       ResizeObserver follows the bar as it changes (More filters opens, a narrow screen wraps it); a render also
-       re-reads it, because the result line it fills is part of the bar and an observer can lag a frame behind.
-       The height is read exactly, not as offsetHeight: the page is zoomed (body zoom, tokens.css), so the bar is a
-       fractional height (85.76px, not 86), and the whole number left the pinned header a quarter pixel below the bar,
-       where the cards scrolling past could show through. A rect is in zoomed pixels and the sticky offset is in the
-       header's own, hence the division by the zoom. */
+    /* The stacked bar's live height, for the pinned source headers (--kf-bar-h, read by .g-head in policy.css): the toolbar, the chips and the search bar together, each as tall as it is while it sticks, and nothing for a
+       block that does not (a phone, a short window). syncBarStack (00-state.js) reads them exactly: the page is zoomed (body zoom, tokens.css), so the bar is a fractional height (85.76px, not 86), and the whole number left
+       the pinned header a quarter pixel below the bar, where the cards scrolling past could show through. A ResizeObserver follows the blocks as they change (a narrow screen wraps them), and a render re-reads it,
+       because the result line is part of the bar and an observer can lag a frame behind. */
     function syncBarHeight() {
-      const bar = document.querySelector('#factBankArea .controls');
-      if (!bar) return;
-      const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
-      document.getElementById('factBankArea').style.setProperty('--kf-bar-h', (bar.getBoundingClientRect().height / zoom).toFixed(2) + 'px');
+      const area = document.getElementById('factBankArea');
+      if (!area) return;
+      area.style.setProperty('--kf-bar-h', syncBarStack(area).toFixed(2) + 'px');
     }
     /* Draws the current page: the facts that match, in order, cut into pages of whole blocks, and the page the
        reader is on built into the list. */
@@ -442,7 +437,7 @@
         (pages.length > 1 ? ` Showing ${before + 1} to ${before + onPage}.` : '');
       emptyState.hidden = shownFacts.length !== 0;
       renderPager(pager, { page, pages: pages.length, noun: 'facts', onPage: n => { page = n; renderPage(); showListTop(allFactsView); } });
-      refreshMore();
+      refreshReset();
       syncBarHeight();
     }
     // Any change to the filters, the search or the sort starts the list again at page 1.
@@ -535,18 +530,20 @@
       const foundationalBox = document.getElementById('kfFoundational');
       foundationalBox.closest('.ctl-check').hidden = !liveFacts.some(f => f.foundational);
 
-      // "More filters" holds Evidence, the two rating minimums, the keyword chips and (when it applies) Foundational.
-      wireMoreFilters('kfMoreToggle', 'kfMorePanel');
-
-      // "Clear filters" resets every filter. It leaves the search text and the sort alone.
-      clearBtn.addEventListener('click', () => {
-        evType = 'all'; minPol = 1; minTruth = 1; onlyFoundational = false; activeKw.clear();
+      // Reset all puts the search, the order and every filter back, and the first page.
+      resetBtn.addEventListener('click', () => {
+        const box = document.getElementById('kfSearch');
+        if (!resetCount() && !(box && box.value)) { announce.textContent = 'Nothing is chosen or filtered.'; return; }   // words typed but not yet applied count too
+        q = ''; evType = 'all'; minPol = 1; minTruth = 1; onlyFoundational = false; sortBy = 'date'; ordered = null; activeKw.clear(); factBankQuery = '';
+        box.value = '';
         evSelect.value = 'all';
         document.getElementById('kfMinPol').value = '1';
         document.getElementById('kfMinTruth').value = '1';
+        document.getElementById('kfSort').value = 'date';
         foundationalBox.checked = false;
         refreshKw();
         applyFilters();
+        announce.textContent = 'Everything is reset: every fact is showing, most recent first.';
       });
 
       document.getElementById('kfSearch').addEventListener('input', e => { q = e.target.value.toLowerCase(); applyFilters(); });
@@ -558,10 +555,10 @@
 
       handleCardEvents(allFactsView);
 
-      // A pinned source header sticks just under the filter bar, whose height changes (More filters opens, the bar
-      // wraps on a narrow screen), so the bar's height is read into --kf-bar-h rather than guessed.
-      const bar = document.querySelector('#factBankArea .controls');
-      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncBarHeight).observe(bar);
+      // A pinned source header sticks just under the stacked filter bar, whose height changes (the blocks wrap on a
+      // narrow screen, a phone turns the stick off), so the bar's height is read into --kf-bar-h rather than guessed.
+      if (typeof ResizeObserver !== 'undefined') document.querySelectorAll('#factBankArea .bar-toolbar, #factBankArea .bar-chips, #factBankArea .bar-search').forEach(el => new ResizeObserver(syncBarHeight).observe(el));
+      window.addEventListener('resize', syncBarHeight);   // a phone or a short window turns the stick off, which changes no block's size
       syncBarHeight();
 
       // A source's facts link may have arrived before this view was built. applyFilters() draws page 1.

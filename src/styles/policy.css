@@ -2,13 +2,12 @@
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
   .policy-view #policyArea           { display: block; }
-  /* Agenda and Enforcement: placeholder tabs. The shared masthead leads each (copy in TAB_DESCS.agenda and TAB_DESCS.enforcement) and one note sits under it, in the
+  /* Agenda, and Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
      Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. Each area takes the
      masthead's inset from .cards-area. */
-  #agendaArea, #enforcementArea      { display: none; }
+  #agendaArea                        { display: none; }
   .agenda-view #agendaArea           { display: block; }
-  .enforcement-view #enforcementArea { display: block; }
-  .agenda-view .cards-area, .enforcement-view .cards-area { padding-top: 0; }
+  .agenda-view .cards-area, .enforcement-view .cards-area, .cases-view .cards-area, .all-view .cards-area { padding-top: 0; }
   .placeholder-note {
     max-width: var(--lede-measure); margin: 24px 0 0; padding: 9px 14px;
     background: rgba(235,195,130,0.16); border-left: 3px solid var(--gold); border-radius: 0 var(--r-card) var(--r-card) 0;
@@ -25,10 +24,16 @@
   #aboutArea                         { display: none; }
   .about-view #aboutArea             { display: block; }
   .about-view .header-tab-desc       { display: none; }
-  /* Legislation: the map and tables (legislation.css). The area takes the masthead's inset from .cards-area. */
+  /* Government action: its four sections, All, Cases, Enforcement and Legislation, are ONE area (#legislationArea: the toolbar, the topic chips, the search, the map and the section's own list; legislation.css).
+     The area takes the masthead's inset from .cards-area. A control or a list that belongs to some of the sections is shown only there: gov-leg-only for the bills' own (Legislation and All), gov-lists-only
+     for the lists' own controls (Enforcement and Cases), gov-all-only for what only All holds (the midterm results table), and the enforcement and cases lists (#enforcementArea) everywhere but Legislation. */
   #legislationArea                   { display: none; }
-  .legislation-view #legislationArea { display: block; }
+  .all-view #legislationArea, .legislation-view #legislationArea, .enforcement-view #legislationArea, .cases-view #legislationArea { display: block; }
   .legislation-view .cards-area      { padding-top: 0; }
+  .enforcement-view .gov-leg-only, .cases-view .gov-leg-only { display: none; }
+  .legislation-view .gov-lists-only, .all-view .gov-lists-only { display: none; }
+  .legislation-view .gov-all-only, .enforcement-view .gov-all-only, .cases-view .gov-all-only { display: none; }
+  .legislation-view #enforcementArea { display: none; }
   /* ── ABOUT: the front page ───────────────────────────────────────────────────────────────────────────────────
      It sets its text in the styles the other tabs already use, bar one (the part headings, below): the shared
      masthead opener (the display serif lede and the 15px standfirst), then numbered parts that each open with a
@@ -98,6 +103,9 @@
     font-family: var(--sans);
   }
   .about-note strong { color: var(--text); font-weight: 600; }   /* semibold, as the other tabs' 13px labels */
+  /* The same note in the gold of a caution, as the Fact Bank's pilot-release notice wears it (the gold rule and tint of a fact's "Take note").
+     Its text keeps the body colour: the muted grey of the plain note measures 4.0:1 on the gold, under the 4.5:1 that 13px text needs. */
+  .about-note.warn { border-left-color: var(--gold); background: rgba(235,195,130,0.16); color: var(--text); }
   /* Each part ends by pointing at its tabs. The pill is the Fact Bank's (.act-btn in this file), value for value. */
   .about-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
   .about-link {
@@ -146,8 +154,8 @@
   /* text-wrap: pretty keeps a one-word last line (a stranded "is.") off the paragraph. */
   #factBankArea .intro-text { font-size: 15px; line-height: 1.7; max-width: var(--lede-measure); text-wrap: pretty; }
   /* Last element in the masthead, so it carries the closing hairline, at the shared measure. The note
-     inside is the same caution callout as a fact's "Take note" (.fact-caveat.warn: gold rule, tinted
-     ground, small uppercase label, regular type), so the pilot caveat reads as part of this page. */
+     inside is the About page's "How this section is built" note (.about-note) in the gold of a fact's "Take note"
+     (.about-note.warn), so the pilot caveat is laid out like the other notes about how the site is made. */
   #factBankArea .intro-note { max-width: var(--lede-measure); padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 
   /* ── COLLAPSE MACHINERY ── */
@@ -424,44 +432,6 @@
     .tab-group-label { font-size: 9px; letter-spacing: 0.06em; }
   }
 
-  /* Disruption chips */
-
-  .pol-empty-msg {
-    display: none; padding: 36px 40px;
-    font-size: 13px; color: var(--muted); font-style: italic;
-  }
-
-  /* ── Policy Matrix ───────────────────────────────────────── */
-  /* ── Policy Overview (Column Grid) ─────────────────────────── */
-  .pol-columns { display: none; }
-  .pol-col {
-    border: 1px solid var(--border);
-    border-radius: var(--r-card); overflow: hidden;
-    border-top: 2px solid color-mix(in srgb, var(--pol-cat-color, var(--border)) 45%, var(--border));
-    background: var(--surface);
-  }
-  .pol-col-header {
-    padding: 12px 14px 10px;
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-  }
-  .pol-col-title {
-    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
-    color: color-mix(in srgb, var(--pol-cat-color, var(--text)) 45%, var(--text));
-    font-family: var(--sans);
-    line-height: 1.3; margin-bottom: 4px;
-  }
-  .pol-col-desc {
-    font-size: 10.5px; color: var(--muted); line-height: 1.45;
-    font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-  }
-  .pol-col-count {
-    display: inline-block; font-size: 10px; color: var(--muted);
-    margin-top: 4px; font-variant-numeric: tabular-nums;
-  }
-  .pol-col-distbar { display: none; }
-  .pol-col-distbar-seg { display: none; }
-
   /* ── Policy category rows ─────────────────────────────────── */
   /* Four merged categories stacked as rows in curated order — the four
      pathways of Becky Chao's April 2026 brief, in her order (Economic
@@ -487,7 +457,8 @@
     background: color-mix(in srgb, var(--cat-color, transparent) 6%, transparent);
   }
   /* Type sizes on this tab are the site's, not its own: the area title is About's section-heading size (20px bold), the
-     count the header's group-label spec, the tile title the Papers card-header spec, the toggle one weight in both states. */
+     count the header's group-label spec, the tile title the body size in bold (14px, a step under the Papers card title, because three
+     tiles share a row and 15.5px read as slightly too large here), the toggle one weight in both states. */
   .pol-cat-row-title {
     display: flex; align-items: baseline; gap: 9px;
     font-family: var(--sans);
@@ -535,7 +506,7 @@
   .pol-cat-card-title {
     flex: 1;
     font-family: 'Public Sans', sans-serif;
-    font-size: 15.5px; font-weight: 700; line-height: 1.3;
+    font-size: 14px; font-weight: 700; line-height: 1.3;
     color: var(--headline);
   }
   /* Persistent, faint affordance: darkens toward the category color and
@@ -555,50 +526,6 @@
     .pol-cat-card-arrow { transition: opacity 0.15s, color 0.15s; }
     .pol-cat-card:hover .pol-cat-card-arrow { transform: rotate(-90deg); }
   }
-  /* View mode toggle */
-
-  .pol-item-list {
-    display: flex; flex-direction: column; gap: 8px; padding: 10px;
-  }
-  .pol-item-wrap {
-    border: 1px solid color-mix(in srgb, var(--level-color, var(--border)) 18%, var(--border));
-    border-radius: var(--r-card); overflow: hidden; position: relative;
-    background: color-mix(in srgb, var(--level-color, #ffffff) 6%, #ffffff);
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  }
-  .pol-item-wrap::before {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(135deg, var(--level-color, transparent) 0%, transparent 45%);
-    opacity: 0.06; pointer-events: none; z-index: 0;
-  }
-  .pol-item-wrap::after {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, color-mix(in srgb, var(--level-color, transparent) 60%, transparent) 0%, transparent 65%);
-    border-radius: var(--r-card) var(--r-card) 0 0;
-  }
-  .pol-item-wrap:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(44,50,84,0.1);
-    border-color: color-mix(in srgb, var(--level-color, var(--border)) 35%, var(--border));
-  }
-  .pol-item {
-    display: flex; flex-direction: row; align-items: flex-start; gap: 8px;
-    padding: 10px 12px 11px; cursor: pointer;
-    position: relative; z-index: 1;
-  }
-  .pol-item-badge {
-    display: inline-block; flex-shrink: 0; margin-top: 1px;
-    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
-    color: color-mix(in srgb, var(--level-color, var(--muted)) 65%, var(--muted));
-    background: color-mix(in srgb, var(--level-color, var(--muted)) 7%, transparent);
-    border: 1px solid color-mix(in srgb, var(--level-color, var(--muted)) 18%, var(--border));
-    border-radius: var(--r-tag); padding: 2px 7px;
-    white-space: nowrap;
-  }
-  .pol-item-title {
-    font-size: 11.5px; font-weight: 500; color: var(--text); line-height: 1.35; flex: 1;
-  }
-  .pol-item-wrap:hover .pol-item-title { color: var(--accent); }
 
   /* ── Policy Map / Links sub-view toggle ──────────────────────
      Deliberately its own class. It once shared `.lens-toggle` (the
@@ -628,7 +555,7 @@
   .pol-links-svg { display: block; width: 100%; height: auto; min-height: 560px; }
   .pol-links-band-label {
     font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;   /* the .lbl-grot label style */
     fill: var(--muted); opacity: 0.75;
   }
   .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
@@ -643,19 +570,21 @@
      long policy titles can wrap onto multiple lines instead of running off
      as one long unbroken string. */
   .pol-links-node-label-fo { overflow: visible; pointer-events: none; }
+  /* 13px is the notes size on the other tabs. It is in the graph's own units, so at the page's width the graph is drawn a little smaller (about 12px);
+     LABEL_FS in renderPolicyLinksGraph is this number, which the layout uses to keep the labels apart. */
   .pol-links-node-label {
     font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
-    font-size: 9.5px; line-height: 1.28; color: var(--text);
+    font-size: 13px; line-height: 1.28; color: var(--text);
     white-space: normal; overflow-wrap: break-word;
     transition: opacity 0.15s, font-weight 0.15s, color 0.15s;
   }
   .pol-links-node.dimmed .pol-links-node-label { opacity: 0.3; }
-  .pol-links-node.lit .pol-links-node-label { font-weight: 700; color: var(--headline); }
+  .pol-links-node.lit .pol-links-node-label { font-weight: 600; color: var(--headline); }
   .pol-links-node-hit { fill: transparent; cursor: pointer; }
   .pol-links-legend {
-    display: flex; flex-wrap: wrap; gap: 14px;
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
     padding: 12px 16px; border-top: 1px solid var(--border);
-    font-family: 'Public Sans', sans-serif; font-size: 11px; color: var(--muted);
+    font-family: var(--sans); font-size: 13px; line-height: 1.4; color: var(--text);   /* the Legislation map legend's style */
   }
   .pol-links-legend-item { display: flex; align-items: center; gap: 6px; }
   .pol-links-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -663,8 +592,6 @@
   @media (max-width: 700px) {
     .pol-subview-toggle { margin: 16px 16px 0; }
     .pol-links-wrap { padding: 16px 16px 40px; }
-
-    .pol-columns { padding-left: 16px; padding-right: 16px; grid-template-columns: 1fr; }
 
     /* Policy Map: tighten row padding; auto-fill collapses cards to 1-up */
     .pol-cat-rows { padding: 18px 16px 40px; gap: 18px; }

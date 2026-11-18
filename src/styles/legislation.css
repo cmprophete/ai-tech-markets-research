@@ -1,7 +1,7 @@
   /* ── LEGISLATION TAB ─────────────────────────────────────────────────────────────────────────────────────────
-     A map of the states and two tables (src/js/60-legislation.js builds them). The type is the site's: the section titles and the
+     A map of the states and its card, the bills table and the midterm results table (src/js/60-legislation.js builds them; Enforcement and Cases share the map, the toolbar and the area). The type is the site's: the section titles and the
      panel title are the 20px bold of the Landscape area titles, the small labels are the header's group-label spec, text is 14px,
-     the chips are the Papers chips and the layer toggle is the Landscape Map/Links toggle. The fills are the site's palette:
+     the chips are the Papers chips and the section switch is the Landscape Map/Links toggle. The fills are the site's palette:
      navy for the strongest state of a layer, tints of it below, gold hatching for "uncalled". The variables live on the area
      so the tables and the legend can use them too. */
   #legislationArea {
@@ -15,7 +15,11 @@
     --leg-b3: color-mix(in srgb, var(--green-deep) 65%, var(--navy));
     padding-bottom: 72px;
   }
-  .leg-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin: 0; }
+  /* The toolbar is two things side by side: the controls (the switch, the Show and Status menus, the checkbox), which wrap among themselves in .leg-controls-main, and the Reset button, which stays at the top right of the
+     toolbar at every width. It used to be one more item in the same wrapping row, and when the checkbox took the room it dropped to a row of its own (the owner's screenshot, 2026-11-18). On a phone the controls take the
+     whole row and the button goes under them, as wide as the row. */
+  .leg-controls { display: flex; align-items: flex-start; gap: 10px 14px; margin: 0; }
+  .leg-controls-main { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; flex: 1 1 0; min-width: 0; }
   .leg-controls .pol-subview-toggle { margin: 0; }
   .leg-select-pair { display: flex; align-items: center; gap: 8px; }
   .leg-ctl-label { font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em; color: var(--text); }
@@ -27,27 +31,27 @@
     border: 1px solid var(--divider); color: var(--text);
     border-radius: var(--r-ctl); padding: 8px 28px 8px 10px; font-size: 13px; font-family: var(--sans);
     outline: none; cursor: pointer; min-width: 190px;
+    /* A fixed width, not the width of its longest option ("Federal (Congress, agencies and courts)", on All, made it 350px and pushed the checkbox to a second line): the owner asked to narrow it so the checkbox sits
+       beside Status again (2026-11-18). A longer choice is cut with an ellipsis, and its full name is the menu's tooltip (legSyncShow). */
+    width: 210px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
   }
   .leg-select:focus { border-color: var(--green); }
-  /* The Fact Bank's pill, value for value (.act-btn in this file). */
-  .leg-clear {
-    background: var(--light-beige); border: 1px solid var(--navy); color: var(--navy);
-    border-radius: var(--r-ctl); padding: 4px 12px; font-family: var(--grot);
-    font-size: 12px; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; white-space: nowrap;
-    transition: background 0.15s, color 0.15s;
-  }
-  .leg-clear:hover { background: var(--navy); color: var(--beige); }
-  .leg-clear[hidden] { display: none; }
-  /* The toolbar (the layers, the office toggle, the Show menu, Clear) and the filter bar stick together at the top of the window, as the filter bars on Papers and the Fact Bank do (the owner's
-     requests, 2026-11-12: first the search and filters, then "include the jurisdictions and toggles in the sticky bar as well"), while the map and the tables scroll under them. One wrapper does the
-     sticking, so the shared .controls bar (filterbar.css), which sticks by itself on the other two tabs, is not sticky inside it and gives its background, border and padding to the wrapper. On the
-     results layer the filter bar is out of view and the wrapper holds the toolbar alone. Not stuck, the toolbar sits where it did (the wrapper's 10px of margin and 12px of padding are the 22px it
-     had). The note explaining the topics sits under the chips. */
-  .leg-sticky { position: sticky; top: 0; z-index: 100; margin-top: 10px; padding: 12px 0 10px; background: var(--beige); border-bottom: 1px solid var(--divider); }
-  #legislationArea .controls { position: static; margin: 12px 0 0; padding: 0; background: none; border-bottom: 0; }
-  /* An open "More filters" panel is tall (the topic chips): in the sticky bar it would fill a phone's whole window, so its body scrolls inside a share of the window's height instead. */
-  #legSticky .more-panel > div { max-height: 45vh; overflow-y: auto; overscroll-behavior: contain; }
-  .leg-topic-note { margin: 0; max-width: 72ch; font-family: var(--grot); font-size: 12px; line-height: 1.5; letter-spacing: 0.02em; color: var(--text); opacity: 0.85; }
+  /* The Reset button (the owner, 2026-11-18: the small Clear pill and the Clear filters link were hard to see, and she chose one Reset button in the toolbar): it puts the whole tab back as it opens, sits at the right end of
+     the sticky toolbar and is always there, so it is never hunted for. It is solid navy with the count of what is on while something is on (.is-on), and an outline otherwise. It is the same size as the Sort menu and the other selects beside it (the owner, 2026-11-18): their 13px type, 8px of padding and 1px border, so the same height. */
+  /* On this tab the button's look is the shared .reset-btn (filterbar.css); here is only where it sits: at the right end of the toolbar, whatever the width. */
+  #legislationArea .leg-reset { margin-left: auto; flex: none; }
+  /* The toolbar (the section switch, the Show menu, on Legislation and All the Status menu and the checkbox, and the Reset button), the topic chips and the search bar are three blocks, each with the shared .controls class
+     (the chips, selects and result line are styled under it in filterbar.css) and none sticky by that class's own rule. The toolbar sticks at the top of the window, as the filter bars on Papers and the
+     Fact Bank do (the owner's requests, 2026-11-12: first the search and filters, then "include the jurisdictions and toggles in the sticky bar as well"), and the chips and then the search bar stick under
+     it, in every section (2026-11-18: "topics should be included in the sticky bar in all views"; the chips are tall, and the window loses their height while they stick). legSyncBarHeight measures the
+     toolbar into --leg-toolbar-h (where the chips stick), the chips into --leg-topics-h (where the search bar sticks, under both) and the three into --leg-bar-h (what a title scrolled to has to clear).
+     On a phone and on a short window nothing sticks: a toolbar, the chips and a search bar stacked would fill the window. */
+  #legislationArea .controls { position: static; margin: 0; padding: 0; background: var(--beige); border-bottom: 0; }
+  #legislationArea #legSticky { position: sticky; top: 0; z-index: 102; margin-top: 18px; padding: 10px 0; }
+  #legislationArea #legTopicsBar { position: sticky; top: var(--leg-toolbar-h, 0px); z-index: 101; display: flow-root; padding: 2px 0 0; }   /* flow-root keeps the chips' bottom margin inside the sticky box, so nothing shows through under it */
+  #legislationArea #legTopicsBar .pill-row { margin: 0 0 8px; }
+  #legislationArea #legFilters { position: sticky; top: calc(var(--leg-toolbar-h, 0px) + var(--leg-topics-h, 0px)); z-index: 100; padding: 8px 0 10px; border-bottom: 1px solid var(--divider); }
+  @media (max-width: 640px), (max-height: 760px) { #legislationArea #legSticky, #legislationArea #legTopicsBar, #legislationArea #legFilters { position: static; } }
 
   .leg-stage { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; margin-top: 18px; }
   .leg-map-wrap { min-width: 0; }
@@ -74,7 +78,7 @@
   /* The map and, in a gutter at its right edge, one button for each state too small to point at (LEG_SMALL in src/js/60-legislation.js):
      nine, north to south, from Vermont to DC. A button wears its state's colour and gets the map's pink-and-navy ring when its state is
      pointed at or pinned, or when the button has the keyboard's focus. On a phone the gutter goes and the buttons become a row under the
-     map. The type is the Clear pill's (.leg-clear above). */
+     map. The type is the small pill type of the Fact Bank's buttons. */
   .leg-map-box { position: relative; padding-right: 46px; }
   /* The column is nine buttons of 24px and eight gaps of 3px, 240px in all. It starts 14% down the map, level with the Northeast, but
      never lower than the map's height less its own (244px, with a little to spare), so on a short map, with the panel beside it or in
@@ -107,6 +111,8 @@
   .leg-map-source { margin: 14px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
   .leg-map-source a { color: var(--accent); text-underline-offset: 2px; }
   .leg-map-source a:hover { text-decoration-thickness: 2px; }
+  /* The date on a line of its own, so it is found without reading the citations above it. */
+  .leg-map-updated { display: block; margin-top: 4px; }
 
   .leg-panel { background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); padding: 18px 18px 16px; min-height: 220px; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
   /* The card never grows taller than the map column beside it. Its slot is a grid item that is stretched to the row's height, which the map sets, and that
@@ -128,31 +134,27 @@
   .leg-office-body > * { font-size: 14px; line-height: 1.5; color: var(--text); margin: 0; }
   .leg-office-body > * + * { margin-top: 4px; }
   .leg-office-body > .leg-muted { color: var(--muted); }
-  .leg-office-toggle[hidden] { display: none; }
-  .leg-chip {
-    display: inline-flex; align-items: center; white-space: nowrap;
-    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6;
-    border-radius: var(--r-tag); padding: 2.5px 9px;
-    background: var(--beige); border: 1px solid var(--divider); color: var(--text);
-  }
-  .leg-chip--d-gain   { background: var(--leg-gain); border-color: var(--leg-gain); color: var(--light-beige); }
-  .leg-chip--d-hold   { background: var(--leg-hold); border-color: color-mix(in srgb, var(--navy) 40%, var(--divider)); color: var(--headline); }
-  .leg-chip--r-hold   { background: var(--leg-rhold); border-color: color-mix(in srgb, var(--pink) 60%, var(--divider)); color: var(--headline); }
-  .leg-chip--r-gain   { background: var(--leg-rgain); border-color: var(--leg-rgain); color: var(--headline); }
-  .leg-chip--uncalled { background: color-mix(in srgb, var(--gold) 30%, var(--light-beige)); border-color: var(--gold); color: var(--headline); }
+  /* A race's result: a square in the party's colour (the map's fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a race
+     not yet called are the news, so those are bold. They were coloured pills, one in every cell. */
+  .leg-result { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .leg-result--news { font-weight: 600; color: var(--headline); }
+  .leg-swatch--sm { width: 10px; height: 10px; border-radius: 2px; }
 
   .leg-section { margin-top: 38px; }
-  /* The 2026 Midterm results layer shows only the results: the bills' filter bar and table are hidden by the script (legPaint). */
-  #legFilters[hidden], #legBillsSection[hidden] { display: none; }
-  /* Whatever display a rule in this tab gives an element (the map stage is a grid, the Show menu a flex row), the hidden attribute wins: the script hides each layer's
-     other content with it (legPaint), and the bills' filter bar and table, hidden on the results layer, would otherwise still draw there. */
+  /* A table's block ends with a divider under its page numbers: the table, the note under it, the page numbers, then the line (the owner, 2026-11-18: each blurb below its table and above the divider, and the page numbers above it
+     as well). The pager draws its own line above itself (pager.css, for the Papers and Fact Bank lists, where it parts the cards from the numbers); here that line is turned off and the section carries the line instead,
+     so a table with a single page, which has no pager, has it too. */
+  #legislationArea .leg-section { padding-bottom: 24px; border-bottom: 1px solid var(--divider); }
+  #legislationArea .pager { margin: 22px 0 0; padding-top: 0; border-top: 0; }
+  /* Whatever display a rule in this tab gives an element (the map stage is a grid, the Show menu a flex row), the hidden attribute wins: the script hides the checkbox until some bill only lightly
+     mentions AI, Clear until a place is pinned, and the lists' controls and note while a section has no rows. */
   #legislationArea [hidden] { display: none; }
   .leg-section-title {
     display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
     font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--headline);
   }
-  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now the size and weight of a column title in the Policy
-     tab (15px bold, .pol-col-title), in navy and in the same family as the title, so it reads as part of it. */
+  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now 15px bold, in navy and in the same family
+     as the title, so it reads as part of it. */
   .leg-scope { font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--navy); font-variant-numeric: tabular-nums; }
   /* The Bills section's title has no words of its own: it is the jurisdiction and the count ("New York · 8 bills"), at the size, weight and colour of a section title
      (the owner's request, 2026-11-12), so the span takes everything from the heading around it. */
@@ -182,6 +184,7 @@
   .leg-more { margin: 12px 0 0; }
   .leg-more-link { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
   .leg-more-link:hover { color: var(--headline); text-decoration-thickness: 2px; }
+  /* The blocks of key cases and enforcement actions in the card (enfCardBlock, src/js/55-enforcement.js) are a count and a link, with no titles (the owner, 2026-11-18); the link is a .leg-more-link, which the card's click handler reads for the list it is for (data-kind). */
   .leg-table-wrap { overflow-x: auto; background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); }
   /* After a page change the table takes focus (so a keyboard reader starts at its first row); it is not a tab stop. */
   #legBillsTable:focus, #legResultsTable:focus { outline: none; }
@@ -203,9 +206,9 @@
      House, Governor", 214px with its padding) whole at a normal desktop width, 19% (229px at a 1280px window); in a narrower window it
      wraps rather than take room from the three results columns, which carry the notes. The minimums are the widest thing that cannot
      wrap, so the columns also agree in a narrow window: the longest state name (New Hampshire, 131px with its padding) and the widest
-     result chip (127px). */
+     result (a square and "Democratic gain" in bold, 160px with its padding). */
   .leg-table--results th:nth-child(1) { width: 12%; min-width: 134px; }
-  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 130px; }
+  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 160px; }
   .leg-table--results th:nth-child(3) { width: 29%; }
   .leg-table--results th:nth-child(5) { width: 19%; }
   .leg-status-note { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
@@ -219,6 +222,20 @@
   .leg-table a { color: var(--accent); text-underline-offset: 2px; }
   .leg-table a:hover { text-decoration-thickness: 2px; }
   .leg-source { max-width: var(--lede-measure); margin: 12px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+
+  /* ── Enforcement and Cases (src/js/55-enforcement.js) ── Their list sits in the same area as the bills' (#enforcementArea, under the map), and reuses the toolbar, the chips, the search bar, the tables and the
+     section titles (the classes above), so it adds only what is its own: a title that stands out in the Matter column and that column's minimum width, and the columns' shares: Date and Who acted
+     do not wrap into towers, Matter takes the most, Outcome and Source the rest. */
+  #enforcementArea { margin-top: 38px; }
+  .enf-title { font-weight: 600; color: var(--headline); }
+  .leg-table .leg-col-matter { min-width: 300px; }
+  .leg-table--enf th:nth-child(1) { width: 13%; min-width: 132px; }
+  .leg-table--enf th:nth-child(2) { width: 16%; min-width: 130px; }
+  .leg-table--enf th:nth-child(3) { width: 42%; }
+  .leg-table--enf th:nth-child(4) { width: 17%; min-width: 130px; }
+  .leg-table--enf th:nth-child(5) { width: 12%; min-width: 92px; }
+  /* A source is shown as its host ("myfloridalegal.com"), which has no place to break: allowed to, so the column does not push the table wider than a 1024px window. */
+  .leg-table--enf td:nth-child(5) { overflow-wrap: anywhere; }
 
   @media (max-width: 860px) {
     .leg-stage { grid-template-columns: minmax(0, 1fr); }
@@ -237,8 +254,11 @@
     .leg-tiles { position: static; width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 14px; }
     .leg-tiles-label { display: block; flex: 0 0 100%; margin: 0 0 -4px; }
     .leg-tile { width: 44px; height: 34px; }
-    /* two views in one pill group: a little tighter, so "2026 Midterm results" and "Bills" fit a phone's width */
+    /* four sections in one pill group: a little tighter, so "All", "Cases", "Enforcement" and "Legislation" fit a phone's width */
     .leg-controls .pol-subview-toggle { max-width: 100%; }
     .leg-controls .pol-subview-btn { padding-left: 9px; padding-right: 9px; }
+    .leg-controls { flex-wrap: wrap; }
+    .leg-controls-main { flex: 1 1 100%; }
+    #legislationArea .leg-reset { flex: 1 1 100%; justify-content: center; margin-left: 0; }
   }
-  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-clear, .leg-tile { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-tile { transition: none; } }

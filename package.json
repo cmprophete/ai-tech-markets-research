@@ -1,0 +1,14 @@
+{
+  "name": "ai-tracker-tests",
+  "private": true,
+  "description": "Test tooling only. The site itself has no dependencies: no bundler, no CDN, no modules.",
+  "scripts": {
+    "test": "node tests/routes.js && node tests/interactions.js"
+  },
+  "devDependencies": {
+    "jsdom": "31.0.1"
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  }
+}

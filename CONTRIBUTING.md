@@ -16,8 +16,8 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 |---|---|---|
 | **a research entry (add, edit, approve, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
 | **a theme / policy** | `data/tracker-data.js` (by hand) | reload; no build step |
-| **a midterm result or a stage (Legislation tab)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
-| **an enforcement action or a key case (for the Enforcement tab, a placeholder)** | `data/legislation-actions.js` (by hand; the row format and the rules are at the top of the file) | reload; no build step |
+| **a midterm result or a stage (Legislation section)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
+| **an enforcement action or a key case (for the Enforcement and Cases sections of Government action)** | `data/legislation-actions.js` (by hand; the row format and the rules are at the top of the file) | reload; no build step |
 | **a topic in the Legislation filter (its name, or the words that find it)** | `LEGISLATION_TOPICS` in `data/legislation-data.js` (by hand; how a bill gets a topic is in the comment above it, and in [`docs/legislation-sources.md`](docs/legislation-sources.md)) | reload; no build step |
 | **the bills (Legislation tab)** | `python3 tools/openstates_fetch.py` and `python3 tools/congress_fetch.py`, then `python3 tools/legislation.py build`, writes `data/legislation-bills.js`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
 | **a state bill's summary where Open States has none (Illinois, New Jersey)** | `python3 tools/state_summaries.py` reads each legislature's own summary into `content/legislation-state-summaries.json` (by the tool, never by hand), then `python3 tools/legislation.py build`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
@@ -80,7 +80,7 @@ src/styles/tokens.css        @font-face, :root, type scale, masthead, chevron
 src/styles/shell.css         header band, tab groups
 src/styles/cards.css         app layout, the Papers list, card grid, themes
 src/styles/filterbar.css     the search-and-filters bar (Papers and Fact Bank)
-src/styles/pager.css         the pager under the Papers and Fact Bank lists and the Legislation bills and results tables
+src/styles/pager.css         the pager under the Papers and Fact Bank lists and the Legislation bills table
 src/styles/modals.css        sources modal, policy pop-out
 src/styles/policy.css        policy map, columns, and the per-view show/hide rules
 src/styles/focus.css         :focus-visible, global
@@ -100,7 +100,7 @@ table, and `setView()` lives in `70-render.js`.
 ## Tests
 
 ```sh
-npm install jsdom                       # once
+npm install                             # once: installs jsdom, pinned in package.json
 node tests/interactions.js              # clicking and keyboard
 node tests/routes.js                    # every route (snapshot)
 node tests/routes.js --write            # re-record after an intended change
@@ -120,8 +120,10 @@ re-record to clear a red run.
 view nav is one delegated listener reading `data-view` attributes, and a typo
 there would leave every route green and every button dead.
 
-Neither runs in the pre-commit hook. Run them before pushing anything that
-touches `src/js/` or the view markup.
+Neither runs in the pre-commit hook, but both run on every push in GitHub Actions
+(see "Checks on every push" below). Run them before pushing anything that touches
+`src/js/` or the view markup, so the push does not go red. jsdom is pinned to one
+version in `package.json`: bump it on purpose, and re-run both suites when you do.
 
 ## Two guards
 
@@ -133,3 +135,20 @@ touches `src/js/` or the view markup.
 
 If guard 1 trips, you almost certainly edited `index.html` instead of `src/`;
 move the change into `src/` before rebuilding, because rebuilding discards it.
+
+## Checks on every push
+
+`.github/workflows/ci.yml` (the **Checks** workflow) runs on every push to a branch:
+the same two guards (a fresh build of `index.html`, no file over 2 MB),
+`tools/research.py check` and `selftest`, a syntax check of the Python files, and
+both jsdom suites. It does not need the hook, so it still protects a machine that
+never ran `git config core.hooksPath .githooks`. When a run goes red, the name of
+the failing step says what broke.
+
+- Commit `index.html` in the same push as the `src/` change it was built from, or
+  the push shows a red "Page matches src/" step until the next one.
+- It does not check the nightly research sync's own commit: GitHub starts no other
+  workflow for a push made with the built-in token. The sync validates the Sheet
+  itself before it writes anything.
+- To make a red check block a merge, add a branch protection rule that requires
+  the `checks` job (a repository setting: Settings > Branches).
