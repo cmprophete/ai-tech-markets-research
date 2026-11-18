@@ -5,6 +5,11 @@ into the tracker without changing a word. These are the rules for that. The
 enforced version lives in [`CLAUDE.md`](../CLAUDE.md); if the two ever drift,
 CLAUDE.md wins.
 
+A card that has a Google Doc is not placed by hand at all: the Doc is the author's
+copy and `tools/policy_docs.py` carries it onto the site under the same rule. The
+additions that route needs are marked below; the workflow is in
+[`policy-doc-sync.md`](policy-doc-sync.md).
+
 ## The rule in one line
 
 Policy-card prose is authored copy, not a draft. It goes in exactly as written,
@@ -14,6 +19,12 @@ em-dashes and all. Claude's only job is to place it and encode it for the file.
 
 - The `POLICY_DATA` array in [`data/tracker-data.js`](../data/tracker-data.js),
   hand-edited.
+- For a card that has a Google Doc, its words (`title`, `summary`, `rationale`, `strengths`,
+  `risks`, `landscape` and a `references` list) and the day the Doc was last modified
+  (`docUpdated`, shown on the card as "Last updated") come from
+  [`data/policy-text.js`](../data/policy-text.js), which `tools/policy_docs.py` generates from the
+  Doc and the page lays over `POLICY_DATA`. Never hand-edited. Every other field of the card stays
+  in `POLICY_DATA`, and the sync never touches it.
 - It loads at runtime, so a change needs only a browser reload: no `build.py`,
   no rebuild. Editing only `data/tracker-data.js` does not touch `index.html`,
   so the pre-commit build guard does not fire.
@@ -37,7 +48,21 @@ a valid JavaScript string that renders as HTML, so Claude may:
   `<` to `&lt;`, `>` to `&gt;` (rare in policy prose);
 - write the author's paragraph breaks as `<br><br>`.
 
-That is the entire list. If a change is not on it, Claude does not make it.
+For text that comes from a Google Doc through `tools/policy_docs.py` the list also has
+these, and nothing else:
+
+- `>` to `&gt;` (with `&` and `<` above);
+- the author's bullet lists as `<ul><li>...</li></ul>`, and bold as `<strong>`;
+- the author's hyperlinks as real links,
+  `<a href="..." target="_blank" rel="noopener noreferrer">` (the owner decided on
+  2026-11-17 that they are **not** converted to `{{cite}}` markers);
+- curly quotes, dashes and other typographic characters kept as the characters they are.
+  Older cards store some of these as named entities (`&ldquo;`, `&mdash;`); the displayed
+  text is the same, so the check below compares decoded text.
+
+That is the entire list. If a change is not on it, Claude does not make it. (A blank line
+between two paragraphs is not a change: it is the paragraph break the author typed, and it
+becomes one `<br><br>` like any other; the owner decided this on 2026-11-18.)
 
 ## The fields
 
@@ -80,7 +105,8 @@ and shown nowhere. Their `why` is still the author's prose, so it stays verbatim
 3. **Fill structure.** Claude asks the author for `id`, `category`,
    and any `pairsWith` / `competesWith`, rather than inventing them.
 4. **Verify.** Claude reconstructs the plain text from each field (undo the JS
-   escaping, turn `<br><br>` back into paragraph breaks, decode entities) and
+   escaping, turn `<br><br>` back into paragraph breaks, decode entities, read
+   `<ul><li>`, `<strong>` and links back into bullets, bold and links) and
    confirms it matches the pasted source character-for-character. Claude reports
    either "verbatim: all fields match" or the exact difference, and never
    silently resolves a mismatch.
