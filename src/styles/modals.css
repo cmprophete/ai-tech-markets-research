@@ -130,3 +130,19 @@
   }
   .pol-modal-text { font-size: 14px; color: var(--text); line-height: 1.7; }
   .pol-modal-text.muted { color: var(--muted); }
+
+  /* ── Text synced from a card's Google Doc (docs/policy-doc-sync.md): real links, bullet lists, References ───────── */
+  .pol-modal-text ul { margin: 8px 0; padding-left: 20px; }
+  .pol-modal-text li { margin: 4px 0; }
+  .pol-modal-text li::marker { color: var(--accent); }
+  .pol-modal-text a, .pol-modal-list a {
+    color: var(--accent); text-decoration: none; word-break: break-word;
+    border-bottom: 1px dotted color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .pol-modal-text a:hover, .pol-modal-list a:hover { border-bottom-style: solid; }
+  @media print {
+    body.pol-modal-open .pol-modal-text a, body.pol-modal-open .pol-modal-list a { color: inherit; border-bottom: none; }
+    body.pol-modal-open .pol-modal-text a::after, body.pol-modal-open .pol-modal-list a::after {
+      content: " (" attr(href) ")"; font-size: 9px; color: #555; word-break: break-all;
+    }
+  }
