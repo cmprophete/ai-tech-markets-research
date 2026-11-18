@@ -9,6 +9,15 @@ name: Checks
 #                             by hand. Run `python3 build.py` and commit index.html with the change.
 #   Research data validates   content/research.csv and the data files disagree, or a row is incomplete.
 #   Research tool self-test   tools/research.py no longer round-trips the CSV or breaks a status rule.
+#   Cases and enforcement data validates
+#                             content/cases.csv and content/enforcement.csv are invalid, or
+#                             data/legislation-actions.js is not what they build (edited by hand).
+#   Cases and enforcement tool self-test
+#                             tools/actions.py no longer keeps its rules or round-trips the file.
+#   Policy Doc tool self-test tools/policy_docs.py or tools/docx_reader.py no longer reads a nasty fixture exactly, refuses
+#   Policy Doc tool tests     one it should, or catches a deliberate breakage (see docs/policy-doc-sync.md).
+#   Policy map data validates data/policy-map.js lists a card that is not on the site, or was edited by hand.
+#   Policy map tool self-test tools/policy_map.py no longer keeps its rules or round-trips the file.
 #   Python files compile      a file in build.py or tools/ has a syntax error.
 #   No file over 2 MB         large derived data does not belong in this repo (see the pre-commit hook).
 #   Route tests               the jsdom suites in tests/; see "Tests" in CONTRIBUTING.md.
@@ -58,6 +67,24 @@ jobs:
 
       - name: Research tool self-test
         run: python3 tools/research.py selftest
+
+      - name: Cases and enforcement data validates
+        run: python3 tools/actions.py check
+
+      - name: Cases and enforcement tool self-test
+        run: python3 tools/actions.py selftest
+
+      - name: Policy Doc tool self-test
+        run: python3 tools/policy_docs.py selftest
+
+      - name: Policy Doc tool tests
+        run: python3 -m unittest discover -s tests -p "test_*.py"
+
+      - name: Policy map data validates
+        run: python3 tools/policy_map.py check
+
+      - name: Policy map tool self-test
+        run: python3 tools/policy_map.py selftest
 
       - name: Python files compile
         run: python3 -m py_compile build.py tools/*.py
