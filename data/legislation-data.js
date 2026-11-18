@@ -19,7 +19,7 @@
      topics      the source's own category labels, as a list, for example ["Transparency", "Liability"]            (optional)
                  (the page's own Topic filter is separate: LEGISLATION_TOPICS below, worked out from each bill's text)
      subjects    the legislature's own subject index terms, as a list, as it wrote them                          (optional)
-     passing     true when the bill only mentions AI in its text, not its title or summary: hidden until the checkbox "Include bills that only mention AI" (under More filters) is on  (optional)
+     passing     true when the bill only mentions AI in its text, not its title or summary: hidden until the checkbox "Include bills that only lightly mention AI" (beside the Status menu) is on  (optional)
      summary     what it would do: the legislature's own summary where it gives one, else our own words        (optional)
      lastAction  { date: "2026-03-01", text: "Referred to committee" }                      (optional)
      source      { label: "Legislature", url: "https://..." }                                (optional)
@@ -36,7 +36,7 @@
 
    MIDTERM_RESULTS, MIDTERM_SOURCES, MIDTERM_PAGES, MIDTERM_NOTE and MIDTERM_NATIONAL are the 2026 midterm results shown
    beside the legislation, labelled as election results, not legislation. They come from the Associated Press's midterm results
-   (Senate, House and governor, state by state), cited in MIDTERM_SOURCES, and from nothing else. Each state can carry three
+   (Senate, House and governor, state by state), cited in MIDTERM_SOURCES, and from nothing else. They are shown in each state's card, as totals in the overview, and in the results table under the bills. Each state can carry three
    offices, and the link in its Source column is built from the state's name and MIDTERM_PAGES:
      senate     { result, detail? }   the state's 2026 Senate race, if it has one
      governor   { result, detail? }   the state's 2026 governor race, if it has one
@@ -61,7 +61,7 @@ const LEGISLATION_STAGES = {
   'failed':        { label: 'Failed',               active: false },  // died in committee, vetoed, withdrawn, or the session ended
 };
 
-/* TOPICS. The topic chips under "More filters" and the "Topics:" line in the bills table come from this list and from nothing else. A bill's
+/* TOPICS. The topic chips (always showing, above the search) and the "Topics:" line in the bills table come from this list and from nothing else. A bill's
    topics are worked out in the page, each time it loads, by matching these words against the bill's own text: they are our reading, not
    any legislature's or anyone else's list. A topic is assigned to a bill when one of its words is in the bill's
    title, or when two different words of it are in the bill's summary or in the subject terms the legislature (or, for a federal bill, the Congressional Research Service) assigned
