@@ -18,6 +18,9 @@ The aim is to add new papers about once a month (the table in the [root README](
 says who does what, and how often, for every part of the site). The sync runs every day,
 so whatever is set to `approved` reaches the site within a day.
 
+The same Sheet has two more tabs, `cases` and `enforcement`, which feed the key cases and the enforcement
+actions the same way: see "The cases and enforcement tabs" below.
+
 ## Editing the Sheet
 
 Work in the research tab of the Google Sheet, not in `research.csv`, which is only
@@ -103,9 +106,69 @@ has a bad date or an unknown category, if a `status` or `foundational` word is n
 of the allowed ones, or if two rows share an id: they tell you which row (its number,
 its id and its title or link).
 
+## The cases and enforcement tabs
+
+The same Sheet has two more tabs, **`enforcement`** (an agency or an attorney general acted) and **`cases`**
+(a court decided, or is deciding). They feed the Enforcement and Cases sections of the Government action tab
+the same way the research tab feeds Papers: the daily sync (`tools/actions.py`, the second step of
+`.github/workflows/research-sync.yml`) is the **only writer** of `data/legislation-actions.js` and of their
+snapshots `content/enforcement.csv` and `content/cases.csv`. Add, change, approve and archive rows **in the
+Sheet**; never edit those three files, and never commit a local `build`. `python3 tools/actions.py check`
+(which CI runs) fails if the data file is not what the snapshots build, so a hand edit is caught.
+
+The two tabs have the same columns, read by header name (their order does not matter):
+
+| Column | What goes in it |
+|---|---|
+| `status` | `under review`, `approved` or `archived`, from the dropdown. **Blank means under review.** Only `approved` rows are published, and only they are checked, so a row can be written over several days and nothing half-finished reaches the site. |
+| `date` | The date of the action or the ruling, as on the source page. |
+| `who acted` | The agency or attorney general, or the court: `Federal Trade Commission`, `Texas Attorney General`, `U.S. District Court, N.D. Cal.`. |
+| `jurisdiction` | `Federal`, or the state (also DC and Puerto Rico) whose attorney general acted or whose court decided. It decides where the row is listed. |
+| `matter` | What to call it, on one line: `FTC and Rite Aid`, `Mobley v. Workday`. |
+| `description` | One or two sentences in our own words: what was alleged or decided, and what was required. |
+| `outcome` | How it ended or stands: `Consent order`, `Lawsuit filed (pending)`. Optional. |
+| `checked` | The date the outcome was last checked against the source. A case moves, so an outcome always says when it was looked at; it is needed whenever there is an outcome. |
+| `source` | The agency's or the court's own page (http or https). |
+| `topics` | Optional. The topics it bears on, as the labels of `LEGISLATION_TOPICS` (`data/legislation-data.js`), separated by **semicolons** because some labels have commas: `Consumer protection and disclosure; Privacy and data`. |
+| `notes` | Free text, never shown on the site. |
+
+The rules are strict (they came with the first batch, 2026-11-17): only the agency's or the court's own page
+is a source, never a news story, a law firm's note or a tracker's write-up; every entry is checked against
+that page before it is approved, and read by someone with legal training; the words are ours, and an
+allegation is "alleged", never "found" (most actions are settlements without an admission, and a ruling is
+only what that court held). Nothing here is legal advice, and the page says nothing like it. The `status`
+column is how that read is enforced: leave a row under review until it has been read, then approve it.
+
+To **add** a row: add it to the right tab and leave `status` blank while you write it; set it to `approved`
+when it is complete and has been read. To **update** one (a case moves): change `outcome` and `checked`. To
+**retire** one without losing it: set `status` to `archived` and say why in `notes`. Each of these reaches
+the site at the next sync (the Actions tab can run it at once); there is nothing to run or commit. A row's id
+is made by the tool from its matter and its year, and the page only needs it to be unique.
+
+**An approved row that is incomplete stops the pull** (a missing source, a date that is not a date, a
+jurisdiction that is not Federal or a state, an outcome with no `checked` date, a topic that is not one of
+the page's): nothing is written, the lists stay as they were, and the run ends red with the row's number and
+what is wrong. The research is still synced and committed, because the two steps are separate.
+
+**How the sync reads the tabs.** Each tab is published as CSV (**File > Share > Publish to web**, pick the
+tab, choose **CSV**), and the two links are the repository variables `CASES_SHEET_URL` and
+`ENFORCEMENT_SHEET_URL` (the one-time setup is in the header comment of the workflow). Until both are set the
+step prints a notice and leaves the lists as they are. A published tab is readable by anyone who has its
+link, rows under review and `notes` included, as the research tab is. If a tab comes back with no rows at all
+while the snapshot has some, the build refuses to write (a bad export is far likelier than a decision to take
+every row off the site); `--allow-empty` overrides that.
+
+```sh
+python3 tools/actions.py check                                       # validate the snapshots and that the data file is what they build; writes nothing
+python3 tools/actions.py check --cases <url> --enforcement <url>     # the same, on the tabs as the Sheet has them now
+python3 tools/actions.py build --cases <url> --enforcement <url>     # what the sync runs (scratch copy only)
+python3 tools/actions.py selftest                                    # the rules, on tiny in-memory sheets
+```
+
 ## Scope
 
-This pipeline owns only the **research list** (`RESEARCH_DATA`). Everything else is outside the Sheet:
+`tools/research.py` owns only the **research list** (`RESEARCH_DATA`), and `tools/actions.py` the cases and the
+enforcement actions (above). Everything else is outside the Sheet:
 the policy cards (`POLICY_DATA`) and the category list in `data/tracker-data.js`, the Fact Bank
 (`data/fact-bank-data.js`), the paper summaries (`data/paper-summaries.js`) and the legislation data are
 edited by hand or written by a tool of their own (the table in the [root README](../README.md) says which).
@@ -115,6 +178,7 @@ anything kept only in the repo's copy of a paper would be wiped at the next sync
 
 ## Also in this folder
 
+`cases.csv` and `enforcement.csv` are the snapshots of the Sheet's two other tabs (above), written only by the sync.
 `legislation-state-summaries.json` is not part of the research pipeline. It holds the legislatures' own
 summaries for some state bills (Illinois, New Jersey and Maryland), read from their sites by
 `tools/state_summaries.py`, and is never edited by hand; see
