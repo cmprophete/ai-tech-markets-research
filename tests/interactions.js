@@ -13,12 +13,22 @@
 const { load, settle } = require('./dom.js');
 
 let failed = 0;
+// The Government action tab's masthead, the owner's own words (GOV_COPY in src/js/60-legislation.js): the same in every section, with no count in it.
+const GOV_HEADER = 'What is government doing about AI?';
+const GOV_BLURB = 'A centralized repository of active bills, key cases and enforcement actions about AI, both federal and in the states, alongside the 2026 midterm results. Use the switch to see everything together or one kind at a time, and hover a state or choose a place in the Show menu to narrow what you see.';
 const ok = (name, cond, detail) => {
   console.log((cond ? '  PASS  ' : '  FAIL  ') + name + (cond || !detail ? '' : '\n           ' + detail));
   if (!cond) failed++;
 };
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
+/* data/legislation-actions.js has rows now (the first batch went in on 2026-11-17). A test that wants the Enforcement and Cases sections as they are while the file is empty, or wants its own rows to be the only ones, or
+   is about the bills and does not want the map's card to carry an Enforcement block, loads the page with the real array set aside: it becomes an unused constant and LEGISLATION_ACTIONS is empty. */
+const noActions = html => {
+  const marker = 'const LEGISLATION_ACTIONS = [';
+  if (!html.includes(marker)) throw new Error('data/legislation-actions.js no longer declares LEGISLATION_ACTIONS as an array literal: noActions cannot set the real rows aside');
+  return html.replace(marker, 'const LEGISLATION_ACTIONS = []; const __REAL_ACTIONS = [');
+};
 const click = (w, d, id) => {
   const el = d.getElementById(id);
   if (!el) throw new Error('no element #' + id);
@@ -34,8 +44,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
     ['viewFactBank', 'fact-bank', '#fact-bank'],
     ['viewAgenda', 'agenda', '#agenda'],
     ['viewPolicy', 'policy', '#policy'],
-    ['viewLegislation', 'legislation', '#legislation'],
-    ['viewEnforcement', 'enforcement', '#enforcement'],
+    ['viewGovernment', 'all', '#all'],   // one tab for All, Cases, Enforcement and Legislation: from another tab it opens the section that was open last, All at first
   ];
   for (const [id, view, hash] of cases) {
     click(w, d, id);
@@ -47,9 +56,40 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   }
 }
 
+/* ── Government action: one tab, four sections ───────────────────────────────────────────────────────────────────
+   The nav has ONE tab for All, Cases, Enforcement and Legislation (until 2026-11-17 they were two tabs, Enforcement and Legislation; the owner preferred one; All, which holds everything, was added on 2026-11-18). Under the
+   masthead a switch moves between the four sections, each a view of its own with an address of its own (#all, #cases, #enforcement, #legislation); the nav tab stays marked for all four, the open section is pressed in the switch,
+   and the tab opens the section that was open last, All at first. The switch is there for the four sections only. */
+{
+  const { w, d } = load('index.html', '#about');
+  const SECTIONS = [['govSwitchAll', 'all', '#all'], ['govSwitchCases', 'cases', '#cases'], ['govSwitchEnforcement', 'enforcement', '#enforcement'], ['govSwitchLegislation', 'legislation', '#legislation']];
+  const nav = d.getElementById('viewGovernment'), pressed = () => SECTIONS.filter(([id]) => d.getElementById(id).getAttribute('aria-pressed') === 'true').map(([id]) => id).join();
+  // the switch is in the toolbar of the Government action area, so it shows when no ancestor is hidden: 'none' while another tab is open, 'block' on the three sections
+  const shown = () => { for (let n = d.getElementById('govSwitch'); n && n !== d.body; n = n.parentElement) if (w.getComputedStyle(n).display === 'none') return 'none'; return 'block'; };
+  ok('the switch has four buttons, All first and then the owner\'s order, Cases, Enforcement, Legislation, and it is hidden, with none pressed, while another tab is open',
+     [...d.querySelectorAll('#govSwitch .pol-subview-btn')].map(b => b.textContent.trim()).join() === 'All,Cases,Enforcement,Legislation' && pressed() === '' && shown() === 'none', shown());
+  for (const [id, view, hash] of SECTIONS) {
+    click(w, d, id);
+    ok(`the ${view} section opens from the switch: its view, its address, its button pressed, the switch showing, and the one nav tab, Enforcement and Legislation, marked and labelling the panel`,
+       bodyView(d) === view && w.location.hash === hash && pressed() === id && shown() === 'block' &&
+       nav.classList.contains('active') && nav.getAttribute('aria-selected') === 'true' && d.getElementById('viewPanel').getAttribute('aria-labelledby') === 'viewGovernment',
+       `${bodyView(d)} ${w.location.hash} ${pressed()}`);
+    ok(`the ${view} section has the tab's masthead, and it asks a question`, d.getElementById('headerTabDescLede').textContent.trim().endsWith('?'), d.getElementById('headerTabDescLede').textContent);
+  }
+  ok('the four sections share one header: the same question in every section (the owner, 2026-11-18: no different header and blurb for each view)', new Set(SECTIONS.map(([id]) => (click(w, d, id), d.getElementById('headerTabDescLede').textContent.trim()))).size === 1);
+  click(w, d, 'govSwitchCases'); click(w, d, 'viewPolicy');
+  ok('leaving the tab unmarks it and hides the switch', !nav.classList.contains('active') && shown() === 'none', shown());
+  click(w, d, 'viewGovernment');
+  ok('opening the tab again from the nav goes back to the section that was open last (Cases), with its address', bodyView(d) === 'cases' && w.location.hash === '#cases' && pressed() === 'govSwitchCases', `${bodyView(d)} ${w.location.hash}`);
+  const direct = load('index.html', '#enforcement');
+  ok('an address opens its own section with that button pressed in the switch and the one tab marked',
+     bodyView(direct.d) === 'enforcement' && direct.d.getElementById('govSwitchEnforcement').getAttribute('aria-pressed') === 'true' && direct.d.getElementById('viewGovernment').classList.contains('active'));
+}
+
 /* ── the grouped nav and the front page ───────────────────────────────────
    The header nav is three labelled groups: Research (Fact Bank, Papers: alphabetical), Policy (Agenda, a placeholder, then Landscape) and
-   Government action (Enforcement, a placeholder, then Legislation: the group of its own that Legislation became on 2026-11-12, when it left Policy, named that evening). About has no door
+   Government action (ONE tab, labelled Enforcement and Legislation in the owner's words above the group label; it holds Cases, Enforcement and Legislation, which were two tabs, Enforcement and Legislation,
+   until 2026-11-17, and Legislation was the group of its own from 2026-11-12, when it left Policy). About has no door
    cards: it sets out the three names as sections, each opening with the question it answers and then what the dashboard offers for it. The Research and Policy copy is the owner's own and is
    guarded below; the Government action section (added 2026-11-12 at the owner's request, after the owner asked for About to carry the day's work) is drafted copy for the owner to edit. */
 {
@@ -57,23 +97,23 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const groups = [...d.querySelectorAll('.header-tabs > .tab-group')].map(g =>
     `${g.dataset.group}:${g.querySelector('.tab-group-label').textContent.trim()}:` +
     [...g.querySelectorAll('.tab-group-btns > .header-nav-btn')].map(b => b.id).join('+'));
-  ok('the nav is three labelled groups: Research (Fact Bank, Papers), Policy (Agenda, Landscape) and Government action (Enforcement, Legislation)',
-     groups.join() === 'research:Research:viewFactBank+viewCards,policy:Policy:viewAgenda+viewPolicy,government:Government action:viewEnforcement+viewLegislation', groups.join());
-  ok('the tabs read Fact Bank, Papers, Agenda, Landscape, Enforcement, Legislation',
-     [...d.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim()).join() === 'Fact Bank,Papers,Agenda,Landscape,Enforcement,Legislation');
+  ok('the nav is three labelled groups: Research (Fact Bank, Papers), Policy (Agenda, Landscape) and Government action, whose one tab reads Enforcement and Legislation',
+     groups.join() === 'research:Research:viewFactBank+viewCards,policy:Policy:viewAgenda+viewPolicy,government:Government action:viewGovernment', groups.join());
+  ok('the tabs read Fact Bank, Papers, Agenda, Landscape, Enforcement and Legislation (Cases, Enforcement and Legislation are the last one\'s sections, not tabs)',
+     [...d.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim()).join() === 'Fact Bank,Papers,Agenda,Landscape,Enforcement and Legislation' && !d.getElementById('viewEnforcement') && !d.getElementById('viewLegislation'));
   ok('the tabs of each group are in alphabetical order',
      [...d.querySelectorAll('.tab-group')].every(g => {
        const names = [...g.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim());
        return names.join() === [...names].sort().join();
      }));
-  ok('the group labels are for the eye (aria-hidden), and the tabs that would not make sense on their own (Agenda, Landscape, Enforcement) carry a fuller accessible name that still contains the visible text, and Legislation is clear alone (it has none)',
+  ok('the group labels are for the eye (aria-hidden), and the tabs that would not make sense on their own (Agenda, Landscape) carry a fuller accessible name that still contains the visible text, and the Enforcement and Legislation tab is clear alone (it has none)',
      [...d.querySelectorAll('.tab-group-label')].every(l => l.getAttribute('aria-hidden') === 'true') &&
-     ['viewAgenda', 'viewPolicy', 'viewEnforcement'].every(id => {
+     ['viewAgenda', 'viewPolicy'].every(id => {
        const b = d.getElementById(id);
        return b.getAttribute('aria-label').toLowerCase().includes(b.textContent.trim().toLowerCase());
      }) &&
-     ['viewAgenda', 'viewPolicy', 'viewEnforcement'].map(id => d.getElementById(id).getAttribute('aria-label')).join() === 'Policy agenda,Policy landscape,Enforcement actions and key cases' &&
-     !d.getElementById('viewLegislation').hasAttribute('aria-label'));
+     ['viewAgenda', 'viewPolicy'].map(id => d.getElementById(id).getAttribute('aria-label')).join() === 'Policy agenda,Policy landscape' &&
+     !d.getElementById('viewGovernment').hasAttribute('aria-label'));
   // Each group's accent is a line of its own in the stylesheet; a group without one quietly takes the green default of
   // the first rule, so a new group would look like Research until someone noticed.
   const navCss = [...d.querySelectorAll('style')].map(el => el.textContent).join('\n');
@@ -105,9 +145,9 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
        const t = [...aboutSecs[0].querySelectorAll('.about-section-text')];
        return t.length === 2 && t[1].textContent.startsWith('Each question calls for a different kind of answer');
      })() && aboutSecs[aboutSecs.length - 1].lastElementChild.matches('.about-credit'));
-  ok('each section ends with links to the tabs it describes: Research to the Fact Bank and Papers, Policy to Landscape, Government action to Enforcement and Legislation (Agenda is a placeholder with nothing to say yet, so it is not linked)',
+  ok('each section ends with links to the tabs and sections it describes: Research to the Fact Bank and Papers, Policy to Landscape, Government action to Cases, Enforcement and Legislation (Agenda is a placeholder with nothing to say yet, so it is not linked)',
      labelled.length === 3 && labelled.every(sec => sec.lastElementChild.matches('.about-links')) &&
-     labelled.map(sec => [...sec.querySelectorAll('.about-links a')].map(a => a.getAttribute('href')).join()).join('|') === '#fact-bank,#papers|#policy|#enforcement,#legislation');
+     labelled.map(sec => [...sec.querySelectorAll('.about-links a')].map(a => a.getAttribute('href')).join()).join('|') === '#fact-bank,#papers|#policy|#all,#cases,#enforcement,#legislation');
   ok('each question is one paragraph: a lead statement run on into its questions, marked up without changing a word',
      labelled.length === 3 && labelled.every(sec => {
        const q = sec.querySelector('.about-question'), kids = [...q.children];
@@ -165,40 +205,503 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the screen reader announcement names the view', d.getElementById('viewAnnounce').textContent === 'Policy agenda view');
 }
 
-/* ── Enforcement: a placeholder tab, first in the Government action group ───────────────────────────────────────────
-   It opens, asks its question, says it is coming (enforcement actions and key cases), and shows one note: nothing is here yet, with a link to Legislation (#legislation).
-   Nothing is behind it, and it does not ask for the bills file. */
+/* ── Enforcement and Cases: the placeholders, while data/legislation-actions.js has no row of their kind ─────────────────────
+   Each section opens, asks its question, says it is coming, and shows one note: nothing is here yet, with a link to Legislation (#legislation). Nothing is behind it, and it does not ask for the bills file.
+   The real file has rows now, so the page is loaded with them set aside (noActions): this is the state the sections are in for as long as the file is empty, and the state a section goes back to if every row
+   of its kind is taken out. */
 {
-  const { w, d } = load('index.html', '#enforcement');
-  ok('#enforcement opens the enforcement view', bodyView(d) === 'enforcement', `body view was ${bodyView(d)}`);
-  ok('#enforcement keeps its address bar', w.location.hash === '#enforcement', `hash was ${w.location.hash}`);
-  const btn = d.getElementById('viewEnforcement');
-  ok('#enforcement marks the Enforcement button active, and not Legislation, and the panel is labelled by it',
-     btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewLegislation').classList.contains('active') &&
-     d.getElementById('viewPanel').getAttribute('aria-labelledby') === 'viewEnforcement');
-  ok('the masthead asks a question and says enforcement actions and key cases are coming soon',
-     d.getElementById('headerTabDescLede').textContent.trim().endsWith('?') && /coming soon/i.test(d.getElementById('headerTabDescText').textContent) && /enforcement actions and key cases/i.test(d.getElementById('headerTabDescText').textContent));
-  const note = d.querySelector('#enforcementArea .placeholder-note');
-  ok('the placeholder says nothing is here yet and links to Legislation (#legislation)',
-     !!note && /nothing is here yet/i.test(note.textContent) && note.querySelector('a').getAttribute('href') === '#legislation');
-  ok('it is a view of its own and asks for no bills: the legislation view class is off and the bills file has not been asked for',
-     !d.body.classList.contains('legislation-view') && d.getElementById('legislationArea').getAttribute('data-bills') === 'idle', d.body.className);
-  ok('the screen reader announcement names the view', d.getElementById('viewAnnounce').textContent === 'Enforcement actions and key cases view');
+  const ASK = [['enforcement', 'Enforcement actions', 'enforcement actions', 'govSwitchEnforcement', 'Government action: Enforcement view'], ['cases', 'Key cases', 'key cases', 'govSwitchCases', 'Government action: Cases view']];
+  for (const [route, What, what, switchId, announce] of ASK) {
+    const { w, d } = load('index.html', '#' + route, { transform: noActions });
+    ok(`#${route} opens the ${route} view`, bodyView(d) === route, `body view was ${bodyView(d)}`);
+    ok(`#${route} keeps its address bar`, w.location.hash === '#' + route, `hash was ${w.location.hash}`);
+    const btn = d.getElementById('viewGovernment');
+    ok(`#${route} marks the Enforcement and Legislation tab active (and not Landscape), presses its own button in the switch, and the panel is labelled by the tab`,
+       btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active') &&
+       d.getElementById(switchId).getAttribute('aria-pressed') === 'true' && d.getElementById('viewPanel').getAttribute('aria-labelledby') === 'viewGovernment');
+    ok(`the ${route} masthead is the tab's, the same question as every section, and says nothing of the ${what} coming soon (the placeholder note under the map does)`,
+       d.getElementById('headerTabDescLede').textContent.trim() === 'What is government doing about AI?' && !/Coming soon/.test(d.getElementById('headerTabDescText').textContent), d.getElementById('headerTabDescText').textContent);
+    const note = d.querySelector('#enforcementArea .placeholder-note');
+    ok('the placeholder says nothing is here yet, names what will be listed, and links to Legislation (#legislation)',
+       !!note && !note.hidden && /nothing is here yet/i.test(note.textContent) && d.getElementById('enfPlaceholderWhat').textContent === What && note.querySelector('a').getAttribute('href') === '#legislation' && d.getElementById('enfLive').hidden);
+    ok('it is a view of its own, with the map in it, so the bills are fetched for the map: the legislation view class is off and the bills file has been asked for',
+       !d.body.classList.contains('legislation-view') && ['loading', 'ready'].includes(d.getElementById('legislationArea').getAttribute('data-bills')), d.body.className);
+    ok('the screen reader announcement names the tab and the section', d.getElementById('viewAnnounce').textContent === announce, d.getElementById('viewAnnounce').textContent);
+  }
 }
 
-/* ── the Landscape masthead: its counts come from the data ────────────────────
-   The map's masthead says how many policies it lists and in how many areas. Those figures are computed from the data the
-   map is drawn from (they were typed once as "Twenty-seven" and went stale at 32), so the masthead is checked against what
-   the page actually lists. A masthead without the count sentence, such as the agenda's when that half is shown, passes. */
+/* ── Enforcement and Cases: the lists, once the data has rows ────────────────────────────────────────────────────────────────
+   These checks load the page with the real rows set aside (noActions) and put test rows of our own in (nothing is real: example.org links and invented titles), so the counts they assert do not move when a row
+   is added to the real file. The first row of a kind turns its section on, and they prove everything that happens then: the placeholder gives way and the masthead is said from the rows; Enforcement and Cases
+   are ONE list drawn twice, each kind in its own section with its own count, never added together, newest first; a status is plain text and a source a link only when it is http or https; the Show menu is the
+   Legislation menu with Federal named for the agencies and courts; the place is SHARED by the three sections and carried in the address (#enforcement/texas, #cases/texas); the topic filter is the Papers
+   chips, ANDed, and a topic the other section has no row for is dropped on the way across; and the map's card counts the place it shows and links to each section that has rows there. First, a guard on the real
+   file: every row it holds is checked for all its fields, a real topic, an http link and the house style. The real rows as they ship are checked in the block after this one. */
+(async () => {
+  const FIX = [
+    { id: 'zz-fed-1', kind: 'enforcement', level: 'federal', body: 'Test Agency', date: '2026-03-24', title: 'Test Agency and Example Co.', uses: ['consumer'],
+      what: 'Alleged that Example Co. overstated what its product does; the proposed order bans it from selling business opportunities.', outcome: 'Proposed order', status: 'Pending', asOf: '2026-11-17', url: 'https://www.example.org/agency/1' },
+    { id: 'zz-fed-2', kind: 'enforcement', level: 'federal', body: 'Test Commission', date: '2025-12-22', title: 'Test Commission and Sample Inc.', uses: ['consumer', 'bias'],
+      what: 'Reopened and set aside an earlier order.', outcome: 'Order set aside', status: 'Final', asOf: '2026-11-17', url: 'https://example.org/agency/2' },
+    { id: 'zz-tx-1', kind: 'enforcement', level: 'state', state: 'TX', body: 'Texas Attorney General', date: '2026-05-01', title: 'Texas and Sample Inc.', uses: ['kids', 'chatbots'],
+      what: 'Alleged that a chatbot exposed minors to harm.', outcome: 'Lawsuit', status: 'Pending', asOf: '2026-11-17', url: 'https://example.org/tx/1' },
+    { id: 'zz-ca-1', kind: 'case', level: 'state', state: 'CA', body: 'California Superior Court', date: '2026-02-02', title: 'Doe v. Sample Inc.', uses: ['liability'],
+      what: 'The court held that a claim could proceed.', outcome: 'Ruling', status: 'Appealed', asOf: '2026-11-17', url: 'javascript:alert(1)' },
+    { id: 'zz-case-1', kind: 'case', level: 'federal', body: 'U.S. District Court, N.D. Cal.', date: '2025-05-16', title: 'Roe v. Example', uses: ['work', 'bias'],
+      what: 'A collective action was conditionally certified.', outcome: 'Ruling', status: 'Pending', url: 'https://example.org/court/1' },
+  ];
+  const { w, d } = load('index.html', '#enforcement', { transform: noActions });
+  const area = d.getElementById('enforcementArea'), legArea = d.getElementById('legislationArea');
+  const fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true }));
+  const change = (el, v) => { el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+  const refresh = () => { area.dispatchEvent(new w.Event('enforcement:refresh')); legArea.dispatchEvent(new w.Event('legislation:refresh')); };
+  const goto = id => fire(d.getElementById(id), 'click');   // a button of the switch under the masthead
+  const card = () => d.getElementById('legPanel').textContent.replace(/\s+/g, ' ').trim();
+  const secs = () => [...d.querySelectorAll('#enfLists section')];
+  const titleOf = s => s.querySelector('.leg-section-title').textContent.trim();
+  const idsOf = s => [...s.querySelectorAll('tbody tr:not(.leg-empty-row)')].map(r => r.dataset.id).join();
+  const mast = () => d.getElementById('headerTabDescText').textContent;
+  const hrefs = () => [...d.querySelectorAll('#legPanel a.leg-enf-link')].map(a => a.getAttribute('href')).join();
+  const shownBlock = id => { for (let n = d.getElementById(id); n && n !== d.body; n = n.parentElement) if (w.getComputedStyle(n).display === 'none') return false; return true; };
+  const place = d.getElementById('legStateSelect'), legSel = place;   // the Show menu is one menu for the three sections
+  const pills = () => [...d.querySelectorAll('#enfTopicPills button[data-topic]')], pillN = b => Number(b.querySelector('.kw-count').textContent);
+  const pill = id => pills().find(b => b.dataset.topic === id);
+
+  // the guard on the real file
+  const real = JSON.parse(w.eval('JSON.stringify(__REAL_ACTIONS)'));   // the real file's rows, set aside by noActions
+  const topicIds = JSON.parse(w.eval('JSON.stringify(LEGISLATION_TOPICS.map(t => t.id))'));
+  const placeCodes = JSON.parse(w.eval('JSON.stringify(Object.keys(US_MAP.states).concat(Object.keys(LEGISLATION_TERRITORIES)))'));
+  const incomplete = real.filter(a => !(a.id && ['enforcement', 'case'].includes(a.kind) && ['federal', 'state'].includes(a.level) && (a.level === 'state' ? placeCodes.includes(a.state) : !a.state) && a.body && /^\d{4}-\d{2}-\d{2}$/.test(a.date) &&
+    a.title && Array.isArray(a.uses) && a.uses.length > 0 && a.uses.every(u => topicIds.includes(u)) && a.what && /^https?:\/\//.test(a.url) && (!a.asOf || /^\d{4}-\d{2}-\d{2}$/.test(a.asOf)))).map(a => a.id);
+  ok('every row in the real file is complete: an id nobody else has, a kind, a level (and a real state for a state row only), who acted, a date, a title, topics that exist, our own words, an http link, and a date checked in the right form',
+     incomplete.length === 0 && new Set(real.map(a => a.id)).size === real.length, incomplete.join(', '));
+  const dashed = real.filter(a => /[\u2013\u2014]/.test([a.title, a.body, a.what, a.outcome, a.status].join(' '))).map(a => a.id);
+  ok('no row uses an em-dash or an en-dash (the repo\'s style rule for page copy)', dashed.length === 0, dashed.join(', '));
+
+  // with no rows
+  ok('with no rows the section is still the placeholder: the note shows and the list is hidden', !d.getElementById('enfPlaceholder').hidden && d.getElementById('enfLive').hidden);
+  fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
+  ok('and the map\'s card says nothing of enforcement (it does not advertise a list that is not there)', !/Cases and enforcement|Federal agencies and courts|None listed|See the (enforcement actions|key cases)/.test(card()), card());
+
+  // the first rows: Enforcement
+  w.eval(`LEGISLATION_ACTIONS.push(${FIX.map(r => JSON.stringify(r)).join(',')})`);
+  refresh();
+  ok('the first rows turn Enforcement on: the note goes, and the list, the Show menu and the filter bar show', d.getElementById('enfPlaceholder').hidden && !d.getElementById('enfLive').hidden && secs().length === 1 && !!place && !!d.getElementById('enfSearch'));
+  ok('the tab\'s masthead is the owner\'s own blurb, the same words however many rows there are: it quotes no count', mast() === GOV_BLURB, mast());
+  ok('its one list has its own count, and no case is in it', secs().map(titleOf).join('|') === 'All jurisdictions · 3 enforcement actions' && !/Doe v\.|Roe v\./.test(secs()[0].textContent), secs().map(titleOf).join('|'));
+  ok('the list is newest first', idsOf(secs()[0]) === 'zz-tx-1,zz-fed-1,zz-fed-2', idsOf(secs()[0]));
+  const tx = d.querySelector('#enfLists tr[data-id="zz-tx-1"]');
+  ok('a row gives the date, who acted, the matter in our words with its topics, the outcome with its status and when it was checked, and the source as a link to the agency\'s own page',
+     tx.children[0].textContent === 'May 1, 2026' && tx.children[1].textContent === 'Texas Attorney General' && /Texas and Sample Inc\./.test(tx.children[2].textContent) && /Alleged that a chatbot exposed minors/.test(tx.children[2].textContent) &&
+     /Topics: Children and teens, Chatbots and companions/.test(tx.children[2].textContent) && tx.children[3].textContent.trim().startsWith('Lawsuit') && /Pending, checked November 17, 2026/.test(tx.children[3].textContent) &&
+     tx.children[4].querySelector('a').getAttribute('href') === 'https://example.org/tx/1' && tx.children[4].textContent === 'example.org', tx.textContent);
+  ok('the status is plain text, not a pill, and nothing in the list is a pill or a row of dots', !d.querySelector('#enfLists .leg-chip, #enfLists .kw-pill, #enfLists .leg-step, #enfLists .leg-track'));
+  ok('the search box and its label name what is searched', d.getElementById('enfSearch').placeholder === 'Search the enforcement actions…' && d.getElementById('enfSearch').getAttribute('aria-label') === 'Search the enforcement actions');
+
+  // Sort: the same menu as on Legislation, in the same place (after the search, in the search bar's first row), one setting for the tab, and not a filter
+  const sortSel = d.getElementById('enfSort');
+  ok('there is a Sort menu after the search box, in the search bar\'s first row: Most recent by default, then Oldest and Jurisdiction, named for what it sorts; the bills\' own Sort menu is not showing here',
+     !!sortSel && sortSel.closest('.controls-row') === d.getElementById('enfSearch').closest('.controls-row') && !!(d.getElementById('enfSearch').compareDocumentPosition(sortSel) & 4) && sortSel.value === 'recent' &&
+     [...sortSel.options].map(o => o.textContent).join() === 'Most recent,Oldest,Jurisdiction' && sortSel.getAttribute('aria-label') === 'Sort the enforcement actions' &&
+     w.getComputedStyle(d.getElementById('enfSortPair')).display !== 'none' && w.getComputedStyle(d.getElementById('legSort').closest('.ctl-pair')).display === 'none');
+  change(sortSel, 'oldest');
+  ok('Sort by Oldest reverses the list, and the Reset button counts the order as one thing to put back, with the section: Reset all (2)', idsOf(secs()[0]) === 'zz-fed-2,zz-fed-1,zz-tx-1' && d.getElementById('legResetText').textContent === 'Reset all (2)', idsOf(secs()[0]) + ' ' + d.getElementById('legResetText').textContent);
+  change(sortSel, 'jurisdiction');
+  ok('Sort by Jurisdiction puts the federal agencies first, then the states, each place\'s rows newest first', idsOf(secs()[0]) === 'zz-fed-1,zz-fed-2,zz-tx-1', idsOf(secs()[0]));
+  goto('govSwitchLegislation');
+  ok('the order is one setting for the tab: Legislation\'s own Sort menu says Jurisdiction too', d.getElementById('legSort').value === 'jurisdiction');
+  change(d.getElementById('legSort'), 'oldest');
+  goto('govSwitchCases');
+  ok('and a choice made on Legislation is the order Cases opens in: Oldest, the federal case from May 2025 first, the menu saying so and named for the cases',
+     d.getElementById('enfSort').value === 'oldest' && idsOf(secs()[0]) === 'zz-case-1,zz-ca-1' && d.getElementById('enfSort').getAttribute('aria-label') === 'Sort the key cases', idsOf(secs()[0]));
+  change(d.getElementById('enfSort'), 'jurisdiction');
+  ok('on Cases Jurisdiction puts the federal case first, then California\'s', idsOf(secs()[0]) === 'zz-case-1,zz-ca-1', idsOf(secs()[0]));
+  change(d.getElementById('enfSort'), 'recent');
+  goto('govSwitchEnforcement');
+  ok('Most recent puts the order back everywhere: Enforcement is newest first again, and so is the bills\' menu', idsOf(secs()[0]) === 'zz-tx-1,zz-fed-1,zz-fed-2' && sortSel.value === 'recent' && d.getElementById('legSort').value === 'recent', idsOf(secs()[0]));
+
+  // the map follows the section: shaded by this section's rows, with a legend that counts them
+  const legendItems = () => [...d.querySelectorAll('#legLegend .leg-legend-item')].map(i => i.textContent.replace(/\s+/g, ' ').trim()).join(' | ');
+  const shadedNow = () => [...d.querySelectorAll('#legMap path.leg-state')].filter(p => /fill-b/.test(p.getAttribute('class'))).map(p => p.dataset.state).sort().join();
+  ok('the map is shaded by this section\'s rows: Texas has an enforcement action and is the only state shaded, and the legend counts actions, not bills (50 states with none, one with one, two federal ones apart)',
+     shadedNow() === 'TX' && legendItems() === 'No actions 50 | 1 action 1 | Federal actions, not on the map 2' && !/bill/.test(legendItems()), legendItems());
+  ok('the small-state buttons follow too, and the map says how to choose a place', !d.querySelector('#legTiles .leg-tile[class*="fill-"]') && /Show menu/.test(d.getElementById('legMap').getAttribute('aria-label')));
+
+  // the Show menu and the shared place
+  const opt = v => [...place.options].find(o => o.value === v);
+  ok('the Show menu is one menu for the four sections, with Federal named for the body each is about: the federal agencies and courts here, Congress on Legislation, all three on All',
+     opt('federal').textContent === 'Federal (agencies and courts)' && opt('TX').textContent === 'Texas' && (goto('govSwitchLegislation'), opt('federal').textContent === 'Federal (Congress)') &&
+     (goto('govSwitchAll'), opt('federal').textContent === 'Federal (Congress, agencies and courts)') && (goto('govSwitchCases'), opt('federal').textContent === 'Federal (agencies and courts)') && (goto('govSwitchEnforcement'), opt('federal').textContent === 'Federal (agencies and courts)'), [...place.options].slice(0, 3).map(o => o.textContent).join(' | '));
+  change(place, 'TX');
+  ok('choosing Texas narrows the list to Texas (its one action), shows Clear, and the address says so',
+     secs().map(titleOf).join('|') === 'Texas · 1 enforcement action' && idsOf(secs()[0]) === 'zz-tx-1' && d.getElementById('legReset').classList.contains('is-on') && w.location.hash === '#enforcement/texas', secs().map(titleOf).join('|') + ' ' + w.location.hash);
+  goto('govSwitchCases');
+  ok('the place is shared by the sections: Cases is on Texas too (none listed there), under an address of its own',
+     place.value === 'TX' && secs().map(titleOf).join('|') === 'Texas · 0 key cases' && /None listed for Texas yet\./.test(secs()[0].textContent) && w.location.hash === '#cases/texas', secs().map(titleOf).join('|') + ' ' + w.location.hash);
+  goto('govSwitchLegislation');
+  ok('and so is Legislation: its menu and its card are on Texas, and its address is the bills\' own', legSel.value === 'TX' && d.querySelector('#legPanel .leg-panel-title').textContent === 'Texas' && w.location.hash === '#legislation', w.location.hash);
+  goto('govSwitchEnforcement');
+  ok('coming back to Enforcement is still Texas', place.value === 'TX' && w.location.hash === '#enforcement/texas' && secs().map(titleOf).join('|') === 'Texas · 1 enforcement action', w.location.hash);
+  change(place, '');
+  ok('Choosing All jurisdictions puts every jurisdiction back, here and on Legislation, and the address loses the place', place.value === '' && legSel.value === '' && w.location.hash === '#enforcement' && secs().map(titleOf)[0] === 'All jurisdictions · 3 enforcement actions', w.location.hash);
+
+  // the routes
+  const rf = load('index.html', '#enforcement/federal'), rt = load('index.html', '#cases/texas'), rn = load('index.html', '#enforcement/new-york'), rx = load('index.html', '#cases/nowhere');
+  ok('#enforcement/federal, #cases/texas and a two-word state open the section on that place, with the address kept and the section\'s button pressed',
+     bodyView(rf.d) === 'enforcement' && rf.d.getElementById('legStateSelect').value === 'federal' && rf.w.location.hash === '#enforcement/federal' &&
+     bodyView(rt.d) === 'cases' && rt.d.getElementById('legStateSelect').value === 'TX' && rt.w.location.hash === '#cases/texas' && rt.d.getElementById('govSwitchCases').getAttribute('aria-pressed') === 'true' &&
+     rn.d.getElementById('legStateSelect').value === 'NY' && rn.w.location.hash === '#enforcement/new-york',
+     [rf, rt, rn].map(r => r.w.location.hash + ' ' + r.d.getElementById('legStateSelect').value).join(' | '));
+  ok('a place that is not one (a stale or mistyped link) opens the section on every jurisdiction, and the address is rewritten to say so', bodyView(rx.d) === 'cases' && rx.d.getElementById('legStateSelect').value === '' && rx.w.location.hash === '#cases', rx.w.location.hash);
+
+  // the topic filter, on Enforcement
+  ok('the topic filter is the Papers chips: All, then only the topics some enforcement action bears on, in the order of the bills\' topics, each with the count it would leave',
+     pills().map(b => b.dataset.topic).join() === 'all,chatbots,kids,bias,consumer' && pills().map(pillN).join() === '3,1,1,1,2' && pills()[0].getAttribute('aria-pressed') === 'true', pills().map(b => b.dataset.topic + ' ' + pillN(b)).join(' | '));
+  fire(pill('consumer'), 'click');
+  ok('choosing a topic narrows the list, marks the chip and counts it in the Reset button, with the section: Reset all (2)', secs().map(titleOf).join('|') === 'All jurisdictions · 2 enforcement actions' &&
+     pill('consumer').getAttribute('aria-pressed') === 'true' && d.getElementById('legResetText').textContent === 'Reset all (2)' && d.getElementById('enfResultLine').textContent === '2 of 3 enforcement actions.', d.getElementById('enfResultLine').textContent);
+  fire(pill('bias'), 'click');
+  ok('two topics together mean both (consumer and bias leave the one action that bears on both), and a topic with nothing behind it is dimmed', idsOf(secs()[0]) === 'zz-fed-2' && pill('chatbots').disabled && pillN(pill('chatbots')) === 0, idsOf(secs()[0]));
+  ok('the section\'s own chips narrow the map too: with consumer and bias chosen only the one federal action is left, so no state is shaded and the legend counts 51 with none and one federal action',
+     shadedNow() === '' && legendItems() === 'No actions 51 | Federal actions, not on the map 1', legendItems());
+  goto('govSwitchCases');
+  ok('a topic picked on Enforcement is dropped on the way to Cases if Cases has no row for it (consumer), and kept if it has (bias): Cases shows its one case on bias',
+     pills().map(b => b.dataset.topic).join() === 'all,work,bias,liability' && pill('bias').getAttribute('aria-pressed') === 'true' && pill('consumer') === undefined && secs().map(titleOf).join('|') === 'All jurisdictions · 1 key case' && idsOf(secs()[0]) === 'zz-case-1', pills().map(b => b.dataset.topic).join());
+  fire(pills()[0], 'click');
+  ok('All clears the topics: the chips on Cases are All, then the topics some case bears on, each with its count', pills().map(pillN).join() === '2,1,1,1' && pills()[0].getAttribute('aria-pressed') === 'true' && d.getElementById('legResetText').textContent === 'Reset all (1)', pills().map(b => b.dataset.topic + ' ' + pillN(b)).join(' | '));
+
+  // Cases
+  ok('Cases is its own section: its list has its own count and no action in it, and the caution that a ruling is only what that court held is in the note under it',
+     /A ruling is only what that court held, and a case can still change/.test(secs()[0].querySelector('.leg-source').textContent) &&
+     secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases' && !/Test Agency|Texas and Sample/.test(secs()[0].textContent), mast());
+  ok('the cases are newest first', idsOf(secs()[0]) === 'zz-ca-1,zz-case-1', idsOf(secs()[0]));
+  ok('on Cases the map follows Cases: California has a case and is the only state shaded, and the legend counts cases, with the federal one apart',
+     shadedNow() === 'CA' && legendItems() === 'No cases 50 | 1 case 1 | Federal cases, not on the map 1', legendItems());
+  const ca = d.querySelector('#enfLists tr[data-id="zz-ca-1"]'), noAsOf = d.querySelector('#enfLists tr[data-id="zz-case-1"]');
+  ok('a source is a link only when it is http or https (a javascript: address is a dash), and a status with no date checked has no "checked"',
+     !ca.children[4].querySelector('a') && ca.children[4].textContent === '–' && /Pending/.test(noAsOf.children[3].textContent) && !/checked/.test(noAsOf.children[3].textContent), ca.children[4].innerHTML);
+  change(place, 'CA');
+  ok('choosing California lists its one case, under an address of its own', secs().map(titleOf).join('|') === 'California · 1 key case' && idsOf(secs()[0]) === 'zz-ca-1' && w.location.hash === '#cases/california', secs().map(titleOf).join('|') + ' ' + w.location.hash);
+  change(place, '');
+  const search = d.getElementById('enfSearch');
+  goto('govSwitchEnforcement');
+  search.value = 'chatbot'; search.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260);
+  ok('searching finds a row by any of its words, topics included, and Reset all clears the search too', idsOf(secs()[0]) === 'zz-tx-1' && (fire(d.getElementById('legReset'), 'click'), search.value === '' && bodyView(d) === 'all' && secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 3 enforcement actions'));
+  goto('govSwitchEnforcement');
+
+  // the map's card: Enforcement, Legislation and All each hold their own data, and All holds everything
+  const labelsNow = () => [...d.querySelectorAll('#legPanel .leg-block .leg-label')].map(x => x.textContent).join();
+  const kindLinks = () => [...d.querySelectorAll('#legPanel .leg-more-link[data-kind]')].map(b => b.dataset.kind).join();   // the "See more details below" links of the cases' and the enforcement actions' blocks
+  const jumps = []; w.Element.prototype.scrollIntoView = function () { jumps.push(this.id); };   // a test DOM has no layout: record where the page is sent
+  fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
+  ok('on Enforcement the card for Texas holds only what Enforcement lists there (its one action), with a "See more details below" link for it and nothing about the bills',
+     labelsNow() === 'Enforcement actions' && /1 enforcement action/.test(card()) && !/key case/.test(card()) && kindLinks() === 'enforcement' && d.querySelector('#legPanel .leg-more-link').textContent === 'See more details below' && !/Bills/.test(card()) && !/Texas and Sample Inc\./.test(card()), card());
+  fire(d.querySelector('#legPanel .leg-more-link[data-kind="enforcement"]'), 'click');
+  ok('following it pins Texas, so the list below is about Texas, and takes the reader to that list: its title, with the keyboard on its table',
+     place.value === 'TX' && secs().map(titleOf).join('|') === 'Texas · 1 enforcement action' && jumps.join() === 'enfTitle-enforcement' && d.activeElement === d.getElementById('enfTable-enforcement'), secs().map(titleOf).join('|') + ' / ' + jumps.join() + ' / ' + (d.activeElement && d.activeElement.id));
+  change(place, '');
+  fire(d.querySelector('#legMap path[data-state="AL"]'), 'mouseover');
+  ok('a place with nothing listed gets no link: Alabama says None listed for it on Enforcement, and nothing to follow', /None listed for Alabama yet\./.test(card()) && !d.querySelector('#legPanel .leg-more-link'), card());
+  goto('govSwitchLegislation');
+  fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
+  ok('on Legislation the card for Texas holds the bills alone: nothing of what Enforcement and Cases list, and no midterm results', labelsNow() === 'Bills' && !/Enforcement|Pieces|Sample/.test(card()), card());
+  goto('govSwitchAll');
+  fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
+  ok('on All it holds everything, in the owner\'s order: the midterm results, the bills, then the key cases and the enforcement actions, each a block of its own', labelsNow() === '2026 Midterm results,Bills,Key cases,Enforcement actions', labelsNow());
+  ok('the card for Texas has a block for each kind, key cases first: the cases say none are listed for Texas, with no link, and the enforcement actions count its one action, without its title, and end with "See more details below"',
+     /Key cases\s*None listed for Texas yet\./.test(card()) && /Enforcement actions\s*1 enforcement action\.\s*See more details below/.test(card()) && !/Texas and Sample Inc\./.test(card()) && kindLinks() === 'enforcement', card() + ' | ' + kindLinks());
+  fire(d.querySelector('#legMap path[data-state="CA"]'), 'mouseover');
+  ok('the card for California counts its one case, without its title, and ends that block with "See more details below"; the enforcement actions have none for California and no link',
+     /Key cases\s*1 key case\.\s*See more details below/.test(card()) && !/Doe v\. Sample Inc\./.test(card()) && /Enforcement actions\s*None listed for California yet\./.test(card()) && kindLinks() === 'case', card() + ' | ' + kindLinks());
+  fire(d.querySelector('#legMap path[data-state="AL"]'), 'mouseover');
+  ok('a state with none says "None listed" in each block (the list is kept by hand, so never "none") and has no link in either', (card().match(/None listed for Alabama yet\./g) || []).length === 2 && kindLinks() === '', card());
+  fire(d.getElementById('legMapBox'), 'mouseleave'); await wait(520);
+  ok('the card for the whole country counts everything, kind by kind, and has no link: it is not a place, and the lists below are in full', /United States/.test(card()) && /2 key cases, federal and in the states\./.test(card()) && /3 enforcement actions, federal and in the states\./.test(card()) && kindLinks() === '', card() + ' | ' + kindLinks());
+  change(legSel, 'federal');
+  ok('the card for Federal on All names both bodies, Congress and the federal agencies and courts, and counts the agencies\' and courts\' rows in a block for each kind, each with its link',
+     /Federal \(Congress, agencies and courts\)/.test(card()) && /Bills in Congress/.test(card()) && /Key cases\s*1 key case\./.test(card()) && /Enforcement actions\s*2 enforcement actions\./.test(card()) && kindLinks() === 'case,enforcement', card() + ' | ' + kindLinks());
+
+  // All's page: the midterm results, the bills, then the key cases and the enforcement actions, narrowed together by the bills' own search and chips, by the place and by the Sort menu
+  fire(d.getElementById('legReset'), 'click');
+  goto('govSwitchAll');
+  const order = () => [...d.querySelectorAll('#legResultsSection, #legBillsSection, #enfLists section')].map(e => e.id || e.dataset.kind).join();
+  const resultLine = () => d.getElementById('legResultLine').textContent;
+  const nBillsAll = Number((/^([\d,]+) of /.exec(resultLine()) || [])[1].replace(/,/g, ''));
+  ok('on All the page holds the midterm results first, then the bills, then the key cases, then the enforcement actions, each with its own count',
+     order() === 'legResultsSection,legBillsSection,case,enforcement' && secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 3 enforcement actions' && idsOf(secs()[0]) === 'zz-ca-1,zz-case-1' && idsOf(secs()[1]) === 'zz-tx-1,zz-fed-1,zz-fed-2', order() + ' ' + secs().map(titleOf).join('|'));
+  ok('in each list the note is right under the table and above the divider under the page numbers: heading, table, note, pager; and the notes carry the cautions the two blurbs used to: an allegation is not a finding, and a ruling is only what that court held',
+     secs().length === 2 && secs().every(s => [...s.children].map(c => c.tagName + (c.classList.contains('leg-source') ? '.note' : '')).join() === 'H3,DIV,P.note,NAV') && /^Each entry is checked against the court's own page/.test(secs()[0].querySelector('.leg-source').textContent) && /A ruling is only what that court held/.test(secs()[0].querySelector('.leg-source').textContent) &&
+     /^Each entry is checked against the agency's or attorney general's own page/.test(secs()[1].querySelector('.leg-source').textContent) && /an allegation is described as an allegation/.test(secs()[1].querySelector('.leg-source').textContent), secs().map(s => [...s.children].map(c => c.tagName).join()).join(' | '));
+  ok('the result line counts the bills and then each list, on its own and never added together',
+     resultLine() === `${nBillsAll.toLocaleString('en-US')} of ${nBillsAll.toLocaleString('en-US')} bills, 2 of 2 key cases and 3 of 3 enforcement actions.`, resultLine());
+  ok('the masthead is the same words on All with rows of both kinds and the bills loaded', mast() === GOV_BLURB, mast());
+  const allMastText = mast();
+  const mastOf = () => d.getElementById('headerTabDescLede').textContent.trim() + ' | ' + mast();
+  const seenMasts = ['govSwitchAll', 'govSwitchCases', 'govSwitchEnforcement', 'govSwitchLegislation', 'govSwitchAll'].map(sid => (goto(sid), mastOf()));
+  ok('every section has the same header and the same blurb, whichever is open: one masthead for the tab (the owner, 2026-11-18)', new Set(seenMasts).size === 1 && /^What is government doing about AI\? \| /.test(seenMasts[0]), seenMasts.join('\n'));
+  ok('the legend counts the three together, as items, and says so', /Items are the bills, key cases and enforcement actions, counted together/.test(d.getElementById('legLegend').textContent) && /Federal items, not on the map/.test(d.getElementById('legLegend').textContent) && !/Federal bills/.test(d.getElementById('legLegend').textContent));
+  const bar = d.getElementById('legSearch');
+  bar.value = 'chatbot'; bar.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260);
+  ok('the bills\' search narrows the lists too: "chatbot" leaves the one enforcement action about chatbots and no key case, and the result line says so',
+     idsOf(secs()[1]) === 'zz-tx-1' && secs().map(titleOf).join('|') === 'All jurisdictions · 0 key cases|All jurisdictions · 1 enforcement action' && /, 0 of 2 key cases and 1 of 3 enforcement actions\.$/.test(resultLine()) && /No key cases match the search and filters chosen\./.test(secs()[0].textContent), resultLine());
+  fire(d.getElementById('legReset'), 'click');
+  fire(d.querySelector('#legTopicPills button[data-topic="bias"]'), 'click');
+  ok('so do the bills\' topic chips: Bias and automated decisions leaves one key case and one enforcement action', idsOf(secs()[0]) === 'zz-case-1' && idsOf(secs()[1]) === 'zz-fed-2' && /, 1 of 2 key cases and 1 of 3 enforcement actions\.$/.test(resultLine()), resultLine());
+  fire(d.getElementById('legReset'), 'click');
+  change(place, 'TX');
+  ok('a place narrows the lists as it narrows the bills and the results: Texas has no key case and one enforcement action, and the address stays #all',
+     secs().map(titleOf).join('|') === 'Texas · 0 key cases|Texas · 1 enforcement action' && idsOf(secs()[1]) === 'zz-tx-1' && d.getElementById('legResultsScope').textContent === 'Texas · 2026 Midterm results' && w.location.hash === '#all', secs().map(titleOf).join('|') + ' ' + w.location.hash);
+  fire(d.getElementById('legReset'), 'click');
+  change(d.getElementById('legSort'), 'oldest');
+  ok('the Sort menu orders every list: Oldest puts the 2025 case and the December 2025 action first', idsOf(secs()[0]) === 'zz-case-1,zz-ca-1' && idsOf(secs()[1]) === 'zz-fed-2,zz-fed-1,zz-tx-1', idsOf(secs()[0]) + ' ' + idsOf(secs()[1]));
+  change(d.getElementById('legSort'), 'recent');
+  goto('govSwitchLegislation');
+  ok('Legislation holds the bills alone: no list of cases or enforcement actions, no midterm results table, and the same masthead as every other section',
+     !shownBlock('enforcementArea') && !shownBlock('legResultsSection') && shownBlock('legBillsSection') && mast() === allMastText, mast());
+
+  // the Reset button puts the whole tab back as it opens (the owner: "reset should also reset views"): no place, no filter in ANY section, the order, and the All view; its count says how many things differ
+  goto('govSwitchLegislation');
+  fire(d.querySelector('#legTopicPills button[data-topic="bias"]'), 'click');
+  goto('govSwitchEnforcement');
+  const resetText = () => d.getElementById('legResetText').textContent;
+  ok('on Enforcement the Reset button counts a topic chosen on Legislation, which is not on this page, and the section itself: Reset all (2)', resetText() === 'Reset all (2)' && d.getElementById('legReset').classList.contains('is-on'), resetText());
+  fire(pill('consumer'), 'click');
+  change(place, 'TX');
+  change(d.getElementById('enfSort'), 'oldest');
+  ok('it counts this section\'s own chip, the place and the order as well: Reset all (5)', resetText() === 'Reset all (5)', resetText());
+  fire(d.getElementById('legReset'), 'click');
+  ok('pressing it returns to All and clears the chip, the place and the order, and the address is #all', bodyView(d) === 'all' && place.value === '' && w.location.hash === '#all' && resetText() === 'Reset all' && d.getElementById('legSort').value === 'recent', resetText() + ' ' + w.location.hash);
+  goto('govSwitchLegislation');
+  ok('the topic chosen on Legislation, which was not on the page when it was pressed, is cleared too', d.querySelector('#legTopicPills button[data-topic="bias"]').getAttribute('aria-pressed') === 'false' && d.querySelector('#legTopicPills button[data-topic="all"]').getAttribute('aria-pressed') === 'true' && resetText() === 'Reset all (1)', resetText());
+  goto('govSwitchEnforcement');
+  ok('and so is the chip chosen on Enforcement: it is not still chosen when the section is open again', pills()[0].getAttribute('aria-pressed') === 'true' && pills().every(b => b.dataset.topic === 'all' || b.getAttribute('aria-pressed') === 'false'), pills().map(b => b.dataset.topic + ':' + b.getAttribute('aria-pressed')).join());
+
+  // paging (the owner, 2026-11-18: a max of ten a page): nine more enforcement rows make twelve, so the list fills a page and spills onto a second
+  const extra = Array.from({ length: 9 }, (_, i) => ({ id: `zz-pg-${i + 1}`, kind: 'enforcement', level: 'federal', body: 'Test Agency', date: `2024-0${i + 1}-15`, title: `Paging test ${i + 1}`, uses: ['consumer'],
+    what: 'A row that only exists to fill a page.', outcome: 'Settlement', status: 'Final', asOf: '2026-11-17', url: `https://example.org/pg/${i + 1}` }));
+  w.eval(`LEGISLATION_ACTIONS.push(${extra.map(r => JSON.stringify(r)).join(',')})`);
+  refresh();
+  goto('govSwitchEnforcement');
+  const pager = () => d.querySelector('#enfLists nav.pager'), status = () => (pager().querySelector('.pager-status') || {}).textContent;
+  ok('a list of twelve shows ten, says so in its title (the count is every row in view, not the page\'s), and has a pager that counts two pages',
+     secs().map(titleOf).join('|') === 'All jurisdictions · 12 enforcement actions' && secs()[0].querySelectorAll('tbody tr').length === 10 && !pager().hidden && status() === 'Page 1 of 2' && pager().getAttribute('aria-label') === 'Pages of enforcement actions', secs().map(titleOf).join('|') + ' ' + status());
+  fire(pager().querySelector('button[aria-label="Next page"]'), 'click');
+  ok('Next turns to the second page, which holds the other two (the oldest), takes the keyboard to the list, and the title still counts twelve',
+     idsOf(secs()[0]) === 'zz-pg-2,zz-pg-1' && status() === 'Page 2 of 2' && d.activeElement === d.getElementById('enfTable-enforcement') && /· 12 enforcement actions/.test(titleOf(secs()[0])), idsOf(secs()[0]));
+  fire(pager().querySelector('button[aria-label="Previous page"]'), 'click');
+  ok('Previous goes back to page one, newest first: the Texas action, then the two federal ones, then the paging rows from the newest', idsOf(secs()[0]).startsWith('zz-tx-1,zz-fed-1,zz-fed-2,zz-pg-9,zz-pg-8') && secs()[0].querySelectorAll('tbody tr').length === 10 && status() === 'Page 1 of 2');
+  fire(pager().querySelector('button[aria-label="Next page"]'), 'click');
+  change(d.getElementById('enfSort'), 'oldest');
+  ok('changing the order starts again at page one (a page the reader turned to is not kept when what is in view changes)', status() === 'Page 1 of 2' && idsOf(secs()[0]).startsWith('zz-pg-1,zz-pg-2'), status() + ' ' + idsOf(secs()[0]));
+  change(d.getElementById('enfSort'), 'recent');
+  fire(pager().querySelector('button[aria-label="Next page"]'), 'click');
+  const lastSearch = d.getElementById('enfSearch');
+  lastSearch.value = 'paging'; lastSearch.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260);
+  ok('a search starts again at page one, and a result that fits on one page has no pager', secs().map(titleOf).join('|') === 'All jurisdictions · 9 enforcement actions' && pager().hidden && secs()[0].querySelectorAll('tbody tr').length === 9, secs().map(titleOf).join('|'));
+  fire(d.getElementById('legReset'), 'click');
+  goto('govSwitchAll');
+  ok('on All each list has its own pager: the enforcement actions have two pages, the two key cases none',
+     [...d.querySelectorAll('#enfLists nav.pager')].map(n => n.dataset.kind + ':' + (n.hidden ? 'none' : (n.querySelector('.pager-status') || {}).textContent)).join('|') === 'case:none|enforcement:Page 1 of 2' && secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 12 enforcement actions', secs().map(titleOf).join('|'));
+  fire(d.querySelector('#enfLists nav.pager[data-kind="enforcement"] button[aria-label="Next page"]'), 'click');
+  ok('and turning one list\'s page leaves the other alone', idsOf(secs()[1]) === 'zz-pg-2,zz-pg-1' && idsOf(secs()[0]) === 'zz-ca-1,zz-case-1', idsOf(secs()[1]));
+  w.eval("for (let i = LEGISLATION_ACTIONS.length - 1; i >= 0; i--) if (/^zz-pg-/.test(LEGISLATION_ACTIONS[i].id)) LEGISLATION_ACTIONS.splice(i, 1)");
+  refresh();
+})();
+
+/* ── Enforcement and Cases: the real rows, as they ship ───────────────────────────────────────────────────────────────
+   The block above uses rows of its own, so it cannot say what the real file does to the page. These checks load each section as it ships and compare it with the rows in data/legislation-actions.js, whatever
+   they are, so they stay true as rows are added: a section's list is on when the file has a row of its kind; its count is the number of rows of its kind, and its masthead says the same count in words; every
+   row shows who acted, the matter and a link to its own source, newest first; a place's address lists that place's rows; and the map's card for a state counts that state's rows, kind by kind (and says "None
+   listed" for one with none). */
+{
+  const ONES = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
+  const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const spell = n => n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? '-' + ONES[n % 10] : '');
+  const KINDS = [['enforcement', 'enforcement action', 'enforcement actions', 'enforcement'], ['case', 'key case', 'key cases', 'cases']];
+  const secsOf = doc => [...doc.querySelectorAll('#enfLists section')], titleOf = s => s.querySelector('.leg-section-title').textContent.trim();
+  const countOf = (rows, k) => rows.filter(a => a.kind === k).length;
+  const word = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  let realRows = null;
+  for (const [kind, one, many, route] of KINDS) {
+    const { w, d } = load('index.html', '#' + route);
+    const real = realRows = JSON.parse(w.eval('JSON.stringify(LEGISLATION_ACTIONS)')), mine = real.filter(a => a.kind === kind);
+    const mast = () => d.getElementById('headerTabDescText').textContent;
+    const pathFor = code => d.querySelector(`#legMap path[data-state="${code}"]`);
+    const nameOf = code => ((d.getElementById('legStateSelect') ? [...d.getElementById('legStateSelect').options] : []).find(o => o.value === code) || { textContent: '' }).textContent.trim();
+    ok(`${route}: the list is on exactly when the real file has a row of its kind: the placeholder note gives way to the list`, (mine.length > 0) === (d.getElementById('enfPlaceholder').hidden && !d.getElementById('enfLive').hidden));
+    if (!mine.length) continue;
+    ok(`${route}: the list's count is the number of real rows of its kind, and no row of another kind is in it; a page holds at most ten, and the pager is there exactly when there are more`,
+       secsOf(d).map(titleOf).join('|') === `All jurisdictions · ${word(mine.length, one, many)}` && secsOf(d).length === 1 && secsOf(d)[0].querySelectorAll('tbody tr').length === Math.min(mine.length, 10) &&
+       d.querySelector('#enfLists nav.pager').hidden === (mine.length <= 10) && (mine.length <= 10 || d.querySelector('#enfLists .pager-status').textContent === `Page 1 of ${Math.ceil(mine.length / 10)}`), secsOf(d).map(titleOf).join('|'));
+    // every row, page by page: the pager is walked to its last page and back, copying each row before the next page replaces it
+    const walked = [];
+    for (let guard = 0; guard < 20; guard++) {
+      [...d.querySelectorAll('#enfLists tbody tr:not(.leg-empty-row)')].forEach(tr => walked.push({ id: tr.dataset.id, body: tr.children[1].textContent, matter: tr.children[2].textContent, href: ((tr.children[4].querySelector('a') || {}).getAttribute || (() => ''))
+        .call(tr.children[4].querySelector('a') || {}, 'href') }));
+      const next = d.querySelector('#enfLists nav.pager:not([hidden]) button[aria-label="Next page"]');
+      if (!next || next.disabled) break;
+      next.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    }
+    const back = d.querySelector('#enfLists nav.pager:not([hidden]) button[data-page="1"]');
+    if (back) back.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    ok(`${route}: walking the pager lists every real row once, ten to a page, and the first page is back when it is walked back`, walked.length === mine.length && new Set(walked.map(r => r.id)).size === mine.length && secsOf(d)[0].querySelectorAll('tbody tr').length === Math.min(mine.length, 10), walked.length + ' of ' + mine.length);
+    const lead = `${spell(mine.length)} ${mine.length === 1 ? one : many}`;
+    ok(`${route}: the tab's masthead is the owner's blurb, which quotes no count, so it says the same with ${mine.length} ${mine.length === 1 ? one : many} as with any other number`, mast() === GOV_BLURB, mast().slice(0, 140));
+    const missing = mine.filter(a => {
+      const r = walked.find(x => x.id === a.id);
+      return !(r && r.body === a.body && r.matter.includes(a.title) && r.matter.includes(a.what.slice(0, 40)) && r.href === a.url);
+    }).map(a => a.id);
+    ok(`${route}: every real row of its kind is listed with who acted, its title, its words, and a link to the agency's or court's own page (the very address in the data)`, missing.length === 0, missing.join(', '));
+    ok(`${route}: the list is newest first, from the first page to the last`, (() => { const dates = walked.map(r => real.find(a => a.id === r.id).date); return dates.every((x, j) => j === 0 || dates[j - 1] >= x); })());
+    const st = mine.find(a => a.state && pathFor(a.state));
+    if (st) {
+      const rows = mine.filter(a => a.state === st.state), name = nameOf(st.state), slug = name.toLowerCase().replace(/\s+/g, '-');
+      const pg = load('index.html', `#${route}/${slug}`);
+      ok(`#${route}/${slug} lists only ${name}'s rows of its kind (${rows.length}), with its own count`,
+         pg.d.getElementById('legStateSelect').value === st.state && secsOf(pg.d).map(titleOf).join('|') === `${name} · ${word(rows.length, one, many)}`, secsOf(pg.d).map(titleOf).join('|'));
+    }
+  }
+  // the map's card, once, on All (the one card that holds both kinds): it counts a state's rows kind by kind, with no titles, and links to each list that has some there
+  const { w, d } = load('index.html', '#all');
+  const real = realRows || [], card = () => d.getElementById('legPanel').textContent.replace(/\s+/g, ' ').trim();
+  const pathFor = code => d.querySelector(`#legMap path[data-state="${code}"]`);
+  const nameOf = code => ((d.getElementById('legStateSelect') ? [...d.getElementById('legStateSelect').options] : []).find(o => o.value === code) || { textContent: '' }).textContent.trim();
+  const st = real.find(a => a.state && pathFor(a.state));
+  if (st) {
+    const rows = real.filter(a => a.state === st.state), name = nameOf(st.state), slug = name.toLowerCase().replace(/\s+/g, '-');
+    pathFor(st.state).dispatchEvent(new w.MouseEvent('mouseover', { bubbles: true }));
+    const kindsAll = [...KINDS].reverse();   // All's order: the key cases, then the enforcement actions
+    const blocks = [...d.querySelectorAll('#legPanel .leg-block')].filter(b => ['Key cases', 'Enforcement actions'].includes(b.querySelector('.leg-label').textContent));
+    ok(`the map's card for ${name} has a block for each kind, key cases first: its count, with no titles, where it has rows, and a "See more details below" link only for a kind that has some there; "None listed" and no link where it has none`,
+       blocks.map(b => b.querySelector('.leg-label').textContent).join() === 'Key cases,Enforcement actions' && kindsAll.every(([k, one, many], i) => {
+         const n = countOf(rows, k), b = blocks[i], link = b.querySelector('.leg-more-link');
+         return n ? b.textContent.includes(word(n, one, many)) && rows.filter(a => a.kind === k).every(a => !b.textContent.includes(a.title)) && !!link && link.dataset.kind === k && link.textContent === 'See more details below'
+                  : b.textContent.includes(`None listed for ${name} yet.`) && !link;
+       }), card());
+  }
+  const none = Object.keys(JSON.parse(w.eval('JSON.stringify(US_MAP.states)'))).find(c => !real.some(a => a.state === c) && pathFor(c));
+  if (real.length && none) {
+    pathFor(none).dispatchEvent(new w.MouseEvent('mouseover', { bubbles: true }));
+    const nm = d.querySelector('#legPanel .leg-panel-title').textContent.trim();
+    ok('a state with none listed says "None listed" for it (the list is kept by hand, so never "none") and has no link', card().includes(`None listed for ${nm} yet.`) && !d.querySelector('#legPanel .leg-more-link[data-kind]'), card());
+  }
+}
+
+/* ── Government action: one toolbar, the topics above the search, and the map in every section ──────────────────────────
+   The owner's request, 2026-11-18: the Show menu next to the Cases | Enforcement | Legislation switch in every view; the topic chips above the search in every view; on Legislation the Status menu next to the Show
+   menu, the checkbox (now "Include bills that only lightly mention AI") next to Status, and the topics always showing; the Legislation map visible in every view; and no view of its own for the midterm results (their
+   data stays, by state, in the card). The four sections (All holds everything; Legislation, Enforcement and Cases each hold their own data alone, the owner's 2026-11-18 request for an All view) are one area (#legislationArea), so each check runs on each section. */
+(async () => {
+  const SECTIONS = [['all', 'All'], ['legislation', 'Legislation'], ['enforcement', 'Enforcement'], ['cases', 'Cases']];
+  for (const [route, name] of SECTIONS) {
+    const { w, d } = load('index.html', '#' + route);
+    await settle(10);
+    const isAll = route === 'all', isLeg = route === 'legislation', leg = isAll || isLeg;   // leg: the bills' own controls (Status, the checkbox, the chips, the search, Sort) are the ones showing
+    const shown = el => { for (let n = el; n && n !== d.body; n = n.parentElement) if (w.getComputedStyle(n).display === 'none') return false; return true; };
+    const id = x => d.getElementById(x), before = (a, b) => !!(id(a).compareDocumentPosition(id(b)) & 4);
+    ok(`${name}: the Show menu comes right after the Cases | Enforcement | Legislation switch, in the same toolbar row`,
+       d.querySelector('#legSticky .leg-controls-main').firstElementChild === id('govSwitch') && id('govSwitch').nextElementSibling === id('legShowPair') && shown(id('govSwitch')) && shown(id('legShowPair')));
+    ok(`${name}: ${leg ? 'the Status menu comes right after the Show menu (and its Clear button), and the checkbox right after the Status menu' : 'the bills\' own Status menu and checkbox are not shown'}`,
+       leg ? (id('legShowPair').nextElementSibling === id('legStatusPair') && id('legStatusPair').nextElementSibling === id('legPassingWrap') && shown(id('legStatusPair')) && shown(id('legPassingWrap')))
+           : (!shown(id('legStatusPair')) && !shown(id('legPassingWrap'))));
+    const chipsId = leg ? 'legTopicPills' : 'enfTopicPills', otherChips = leg ? 'enfTopicPills' : 'legTopicPills', searchId = leg ? 'legSearch' : 'enfSearch', otherSearch = leg ? 'enfSearch' : 'legSearch';
+    ok(`${name}: the topic chips are above the search bar and showing, and the other section's chips and search are not`,
+       before(chipsId, searchId) && shown(id(chipsId)) && !shown(id(otherChips)) && shown(id(searchId)) && !shown(id(otherSearch)) && id(chipsId).querySelectorAll('button[data-topic]').length > 1, route);
+    const noun = { all: 'items', legislation: 'bills', enforcement: 'actions', cases: 'cases' }[route];   // what the map counts, and the legend says, in each section
+    ok(`${name}: the map and its card are showing, shaded by ${noun}, with the sources under it`,
+       shown(id('legStage')) && d.querySelectorAll('#legMap path.leg-state').length === 51 && new RegExp(`Federal ${noun}, not on the map`).test(id('legLegend').textContent) && (leg || !/bills/.test(id('legLegend').textContent)) &&
+       id('legMapSource').textContent.startsWith(leg ? 'Sources: ' : 'Source: ') && id('legPanel').textContent.includes('United States') && !d.getElementById('legLayerResults') && !d.getElementById('legOfficeToggle'));
+    ok(`${name}: the section's own lists are showing and the others' are not: the bills on Legislation and All, the cases and enforcement lists on All, Enforcement and Cases, and the midterm results table, first, on All alone`,
+       shown(id('legBillsSection')) === leg && shown(id('enforcementArea')) === !isLeg && shown(id('legResultsSection')) === isAll &&
+       (!isAll || (!!(id('legResultsSection').compareDocumentPosition(id('legBillsSection')) & 4) && !!(id('legBillsSection').compareDocumentPosition(id('enforcementArea')) & 4))), route);
+    const cardLabels = [...d.querySelectorAll('#legPanel .leg-block .leg-label')].map(x => x.textContent);
+    const ownLabel = route === 'cases' ? 'Key cases' : 'Enforcement actions';
+    ok(`${name}: the card holds ${isAll ? 'everything, the midterm results first, then the bills, then the key cases and the enforcement actions' : isLeg ? 'the bills alone' : 'this section\'s own block alone'}`,
+       isAll ? cardLabels.join() === '2026 Midterm results,National totals,Bills,Key cases,Enforcement actions' : isLeg ? cardLabels.join() === 'Bills' : cardLabels.join() === ownLabel, cardLabels.join());
+    const sortId = leg ? 'legSort' : 'enfSort', otherSort = leg ? 'enfSort' : 'legSort';
+    ok(`${name}: there is a Sort menu in the search bar's first row after the search box, with the three choices, and the other section's menu is not showing`,
+       shown(id(sortId)) && !shown(id(otherSort)) && id(sortId).closest('.controls-row') === id(searchId).closest('.controls-row') && before(searchId, sortId) &&
+       [...id(sortId).options].map(o => o.value).join() === 'recent,oldest,jurisdiction' && [...id(sortId).options].map(o => o.textContent).join() === (leg ? 'Most recent action,Oldest action,Jurisdiction' : 'Most recent,Oldest,Jurisdiction'), route);
+    ok(`${name}: there is no More filters toggle, and the Show menu says "All jurisdictions" first`,
+       !d.querySelector('#legislationArea .more-toggle') && id('legStateSelect').options[0].textContent === 'All jurisdictions');
+    if (leg) continue;
+    // on Enforcement and Cases the map follows the section: a state is shaded when it has rows of the kind, the federal rows are counted apart in the legend, the lists' own chips narrow it, and the bills' own filters do not apply
+    const path = code => d.querySelector(`#legMap path[data-state="${code}"]`), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true }));
+    const real = JSON.parse(w.eval('JSON.stringify(LEGISLATION_ACTIONS)')), kind = route === 'cases' ? 'case' : 'enforcement', mine = real.filter(a => a.kind === kind), st = real.find(a => a.kind === kind && a.state && path(a.state));
+    const items = () => [...d.querySelectorAll('#legLegend .leg-legend-item')].map(i => i.textContent.replace(/\s+/g, ' ').trim());
+    const shadedNow = () => [...d.querySelectorAll('#legMap path.leg-state')].filter(p => /fill-b/.test(p.getAttribute('class'))).map(p => p.getAttribute('data-state')).sort().join();
+    const withRows = [...new Set(mine.filter(a => a.state && path(a.state)).map(a => a.state))].sort(), nFedRows = mine.filter(a => a.level === 'federal').length;
+    ok(`${name}: the map shades exactly the states that have ${noun} listed (${withRows.join(', ') || 'none'}), and the legend counts the other states as having none and the ${nFedRows} federal ${noun} apart`,
+       shadedNow() === withRows.join() && items().includes(`No ${noun} ${51 - withRows.length}`) && items().includes(`Federal ${noun}, not on the map ${nFedRows}`) && !/bills/.test(items().join()), items().join(' | '));
+    const topicChip = [...d.querySelectorAll('#enfTopicPills button[data-topic]')].find(b => b.dataset.topic !== 'all' && !b.disabled && mine.some(a => !(a.uses || []).includes(b.dataset.topic)));
+    if (topicChip) {
+      const tp = topicChip.dataset.topic, left = mine.filter(a => (a.uses || []).includes(tp)), leftStates = [...new Set(left.filter(a => a.state && path(a.state)).map(a => a.state))].sort().join(), leftFed = left.filter(a => a.level === 'federal').length;
+      fire(topicChip, 'click');
+      ok(`${name}: the section's own topic chips narrow the map as well: with ${tp} chosen it shades ${leftStates || 'no state'} and counts ${leftFed} federal ${leftFed === 1 ? noun.replace(/s$/, '') : noun}`,
+         shadedNow() === leftStates && items().includes(`Federal ${noun}, not on the map ${leftFed}`), items().join(' | '));
+      fire(d.querySelector('#enfTopicPills button[data-topic="all"]'), 'click');
+    }
+    // the Sort menu on the real rows: Most recent by default, Oldest, and Jurisdiction (the federal ones first, then the states A to Z, each place's rows newest first)
+    const sortSel = id('enfSort'), setSort = v => { sortSel.value = v; sortSel.dispatchEvent(new w.Event('change', { bubbles: true })); };
+    const listIds = () => [...id('enfLists').querySelectorAll('tbody tr:not(.leg-empty-row)')].map(r => r.getAttribute('data-id'));
+    const stateNameOf = code => [...id('legStateSelect').options].find(o => o.value === code).textContent;
+    const byNewest = (a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title), byOldest = (a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title);
+    ok(`${name}: Most recent is the default and lists the rows newest first (the first ten)`, sortSel.value === 'recent' && listIds().join() === mine.slice().sort(byNewest).slice(0, 10).map(a => a.id).join(), listIds().join());
+    setSort('oldest');
+    ok(`${name}: Oldest lists them oldest first (the first ten)`, listIds().join() === mine.slice().sort(byOldest).slice(0, 10).map(a => a.id).join(), listIds().join());
+    setSort('jurisdiction');
+    ok(`${name}: Jurisdiction lists the federal ones first, then the states A to Z, each place's rows newest first (the first ten)`,
+       listIds().join() === mine.slice().sort((a, b) => ((a.level === 'federal' ? 0 : 1) - (b.level === 'federal' ? 0 : 1)) || (a.state ? stateNameOf(a.state).localeCompare(stateNameOf(b.state)) : 0) || byNewest(a, b)).slice(0, 10).map(a => a.id).join(), listIds().join());
+    setSort('recent');
+    const nameOfPlace = code => [...id('legStateSelect').options].find(o => o.value === code).textContent;
+    const showMenu = id('legStateSelect'); showMenu.value = 'federal'; showMenu.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const fedLabels = [...d.querySelectorAll('#legPanel .leg-block .leg-label')].map(x => x.textContent);
+    ok(`${name}: choosing Federal names the agencies and courts in the card as well: the title says so, the section's block is the only one, and it has its link exactly when there are federal rows`,
+       d.querySelector('#legPanel .leg-panel-title').textContent === 'Federal (agencies and courts)' && fedLabels.join() === ownLabel && (!!d.querySelector('#legPanel .leg-more-link[data-kind]') === mine.some(a => a.level === 'federal')), fedLabels.join());
+    showMenu.value = ''; showMenu.dispatchEvent(new w.Event('change', { bubbles: true }));   // let go of Federal with the menu: the Reset button would leave this section
+    // a place with no row of the kind gets no link, only the words that nothing is listed for it
+    const bare = ['AL', 'IA', 'KS'].find(c => !mine.some(a => a.state === c) && path(c));
+    fire(path(bare), 'mouseover');
+    ok(`${name}: ${nameOfPlace(bare)} has no ${noun} listed, so its card says None listed for it and has no "See more details below" link`, d.getElementById('legPanel').textContent.includes(`None listed for ${nameOfPlace(bare)} yet.`) && !d.querySelector('#legPanel .leg-more-link'), d.getElementById('legPanel').textContent);
+    if (st) {
+      fire(path(st.state), 'click');
+      const nHere = real.filter(a => a.kind === kind && a.state === st.state).length, stateName = [...id('legStateSelect').options].find(o => o.value === st.state).textContent;
+      ok(`${name}: clicking ${stateName} on the map pins it, narrows the list to its rows and puts it in the address`,
+         id('legStateSelect').value === st.state && id('legReset').classList.contains('is-on') && w.location.hash === `#${route}/${stateName.toLowerCase().replace(/\s+/g, '-')}` &&
+         id('enfLists').querySelector('.leg-section-title').textContent.trim().startsWith(`${stateName} · ${nHere} `), id('enfLists').querySelector('.leg-section-title').textContent + ' ' + w.location.hash);
+      fire(path(st.state), 'mouseover');
+      const stateLabels = [...d.querySelectorAll('#legPanel .leg-block .leg-label')].map(x => x.textContent);
+      const kindLink = d.querySelector('#legPanel .leg-more-link');
+      ok(`${name}: the card for ${stateName} holds this section's block alone, with a "See more details below" link for its rows, and nothing about the bills or the midterm results`,
+         stateLabels.join() === ownLabel && !!kindLink && kindLink.textContent === 'See more details below' && kindLink.getAttribute('data-kind') === kind && !/Bills|Midterm/.test(d.getElementById('legPanel').textContent), stateLabels.join());
+    }
+  }
+  // the bills' own filters apply on Legislation and All only: set on Legislation, they show there and on All and nowhere else
+  const { w, d } = load('index.html', '#legislation');
+  await settle(10);
+  const id = x => d.getElementById(x), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true })), legend = () => id('legLegend').textContent;
+  const fedIn = () => Number((/Federal bills, not on the map\s*([\d,]+)/.exec(legend()) || [])[1].replace(/,/g, ''));
+  const chip = [...d.querySelectorAll('#legTopicPills button[data-topic]')].find(b => !['all', 'none'].includes(b.dataset.topic) && !b.disabled && Number(b.querySelector('.kw-count').textContent.replace(/,/g, '')) > 0 && fedIn() > 0);
+  const fedAll = fedIn();
+  fire(chip, 'click');
+  const fedFiltered = fedIn();
+  ok('on Legislation a topic narrows the map\'s counts; on Enforcement the bills\' topic does not apply (the legend counts actions, not bills), and coming back finds the topic still chosen',
+     fedFiltered < fedAll && (fire(id('govSwitchEnforcement'), 'click'), !/bills/.test(legend()) && /Federal actions, not on the map/.test(legend())) && (fire(id('govSwitchLegislation'), 'click'), fedIn() === fedFiltered && chip.getAttribute('aria-pressed') === 'true'), `${fedAll} / ${fedFiltered}`);
+})();
+
+/* ── the Landscape masthead: the number of areas comes from the data ────────────────────
+   The map's masthead says in how many areas it draws the policies. That figure is computed from the data the map is drawn from
+   (the count of policies was typed once as "Twenty-seven" and went stale at 32, and the owner had it taken out on 2026-11-18, so the
+   masthead starts "Policy interventions" with no number), so the masthead is checked against what the page actually lists. */
 {
   const { d } = load('index.html', '#policy');
   const ONES = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
   const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
   const num = word => { word = word.toLowerCase(); if (ONES.includes(word)) return ONES.indexOf(word); const [t, o] = word.split('-'); return (TENS[t] || NaN) + (o ? ONES.indexOf(o) : 0); };
   const text = d.getElementById('headerTabDescText').textContent;
-  const m = /^(\S+) policy interventions grouped into (\S+) policy areas/.exec(text);
+  const m = /^Policy interventions grouped into (\S+) policy areas, listed alphabetically within each\. Click any policy for rationale, precedents, and supporting research\.$/.exec(text);
   const listed = d.querySelectorAll('#policyArea .pol-cat-card').length, rows = d.querySelectorAll('#policyArea .pol-cat-row').length;
-  ok('the Landscape masthead counts the policies the map lists and the areas it draws them in', !m || (num(m[1]) === listed && num(m[2]) === rows && listed > 0), `${text} | listed ${listed} in ${rows} rows`);
+  ok('the Landscape masthead no longer counts the policies, and still says how many areas the map draws them in, computed from the map', !!m && num(m[1]) === rows && rows > 0 && listed > 0, `${text} | listed ${listed} in ${rows} rows`);
 }
 
 /* ── Landscape: the Links graph keeps its labels apart ──────────────────────────────────────────────────────
@@ -349,16 +852,16 @@ for (const old of ['#sources', '#research', '#changelog']) {
      btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true');
 }
 
-/* ── Legislation: a map of the states, a panel that follows the pointer, and two tables ─────────────────────────
-   The tab opens; its masthead says what is loaded, from the data; the map draws all 50 states and DC; pointing at a state shows it
-   in the panel; clicking pins it and narrows both tables. The bills (federal ones from GovInfo, state ones from Open States) are a
-   file of their own, fetched when the tab first opens, so every test here waits for them. The midterm results (Senate, House,
-   governor) come from the Associated Press's pages and are cited in every row and below the map. Part A checks the shipped bills
-   and the view the tab opens on, part B the midterm results layer, part C paging, the hover panel's cap, the territories and each
-   layer's sources, and part D the bill paths with five test bills of its own (the real ones are set aside and put back), so that
-   what counts as active (introduced and not failed) and what is left out are both checked. */
+/* ── Legislation: a map of the states, a card that follows the pointer, and the bills ────────────────────────────────
+   The section opens; its masthead says what is loaded, from the data; the map draws all 50 states and DC; pointing at a state shows it in the card (its bills and its midterm results); clicking pins it and narrows the
+   bills table. The bills (federal ones from GovInfo, state ones from Open States) are a file of their own, fetched when a section of Government action first opens, so every test here waits for them. The midterm results
+   (Senate, House, governor) come from the Associated Press's pages and are cited below the map; they are by state, in the card (they were a layer of their own until 2026-11-18). Part A checks the shipped bills and the
+   view the section opens on, part B the midterm results in the card and pinning, part C paging, the hover card's cap, the territories and the sources, and part D the bill paths with five test bills of its own (the real
+   ones are set aside and put back), so that what counts as active (introduced and not failed) and what is left out are both checked. */
 const legislationTests = async () => {
-  const { w, d } = load('index.html', '#legislation');
+  // These checks run on All, which holds the bills, the midterm results and the card with all of it (Legislation alone holds the bills: its own checks are after these). The Enforcement rows are set aside (noActions): the
+  // card shows them in a block of its own, which the Enforcement checks test; these checks are about the bills and the results.
+  const { w, d } = load('index.html', '#all', { transform: noActions });
   await settle(10);
   const fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true }));
   const path = code => d.querySelector(`#legMap path[data-state="${code}"]`);
@@ -392,12 +895,12 @@ const legislationTests = async () => {
   const names = Object.values(feeds).map(f => f.short || f.org), joinNames = names.length > 2 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names.join(' and ');
 
   /* ── A. the shipped bills, and the view the tab opens on ─────────────────────────────────────────────────── */
-  ok('#legislation opens the legislation view', bodyView(d) === 'legislation', `body view was ${bodyView(d)}`);
-  ok('#legislation keeps its address bar', w.location.hash === '#legislation', `hash was ${w.location.hash}`);
-  const btn = d.getElementById('viewLegislation');
-  ok('#legislation marks the Legislation button active, and not Landscape',
-     btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active'));
-  ok('the screen reader announcement names the view', d.getElementById('viewAnnounce').textContent === 'Legislation view');
+  ok('#all opens the All view', bodyView(d) === 'all', `body view was ${bodyView(d)}`);
+  ok('#all keeps its address bar', w.location.hash === '#all', `hash was ${w.location.hash}`);
+  const btn = d.getElementById('viewGovernment');
+  ok('#all marks the Enforcement and Legislation tab active, and not Landscape, and presses All in the switch',
+     btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active') && d.getElementById('govSwitchAll').getAttribute('aria-pressed') === 'true');
+  ok('the screen reader announcement names the tab and the section', d.getElementById('viewAnnounce').textContent === 'Government action: All view');
   ok('the bills are loaded: the federal ones from GovInfo, the state ones from Open States, as many as each says it holds (the ones that only mention AI counted apart), and from nobody else',
      area.getAttribute('data-bills') === 'ready' && nBills > 0 && Object.keys(feeds).join() === 'govinfo,openstates' && nFed === feeds.govinfo.included && nFedPassing === feeds.govinfo.passing && nState === feeds.openstates.included &&
      w.eval("LEGISLATION_DATA.every(b => b.source && /^https?:\\/\\//.test(b.source.url) && (b.level === 'federal' ? b.source.label === 'Congress.gov' && b.source.url.startsWith('https://www.congress.gov/bill/119th-congress/') && b.session === '119th Congress' : ['Legislature', 'Open States'].includes(b.source.label)))"),
@@ -415,9 +918,8 @@ const legislationTests = async () => {
   ok('where the note says a legislature\'s own summary was read from its site (Illinois), every one of that state\'s bills carries it: run tools/state_summaries.py, then the build, when this fails',
      !/Illinois/.test(feeds.openstates.summaries || '') || w.eval("LEGISLATION_DATA.filter(b => b.state === 'IL').every(b => b.summary && b.summary.length > 20)"),
      w.eval("LEGISLATION_DATA.filter(b => b.state === 'IL' && !b.summary).map(b => b.bill).join()"));
-  ok('the masthead asks a question, counts the bills from the data, says where they come from, and says the same in digits throughout',
-     d.getElementById('headerTabDescLede').textContent.trim().endsWith('?') &&
-     mastheadText().startsWith(`${num(nBills)} active bills: ${num(nState)} in `) && mastheadText().includes(`and ${num(nFed)} in Congress, from ${joinNames}.`), mastheadText());
+  ok('the tab\'s masthead is the owner\'s own question and blurb: a centralized repository of the bills, cases and actions, with the midterm results, and how to use the switch and the Show menu; it quotes no count',
+     d.getElementById('headerTabDescLede').textContent.trim() === GOV_HEADER && mastheadText() === GOV_BLURB, mastheadText());
   const chrome = [...d.querySelectorAll('#legislationArea button, #legislationArea h2, #legislationArea h3, #legLegend, #legMapSource')].map(e => e.textContent).join(' ') + mastheadText();
   ok('nothing on the tab mentions the Blue Rose memo or calls the layers by their old names', !/Blue Rose|memo/i.test(chrome) && !/Senate results|Active legislation/.test(chrome), chrome.slice(0, 200));
   const paths = [...d.querySelectorAll('#legMap path.leg-state')];
@@ -437,14 +939,12 @@ const legislationTests = async () => {
   ok('the Show menu offers "All jurisdictions", then Federal (Congress), then each of the 51 states once, then Puerto Rico, the one territory a source covers',
      options.length === 54 && options[0].textContent === 'All jurisdictions' && options[1].value === 'federal' && groups === 'Federal:1,States:51,Territories:1' &&
      options.slice(2).every(o => o.value && o.value !== 'federal' && o.textContent) && new Set(options.map(o => o.value)).size === 54, groups);
-  ok('there are two views, 2026 Midterm results and Bills (the two layers of the map), and the 2026 Midterm results layer chooses between the Senate, the House and governors',
-     d.getElementById('legLayerResults').textContent === '2026 Midterm results' && d.getElementById('legLayerBills').textContent === 'Bills' && !d.getElementById('legLayerUseCases') && !d.getElementById('legUseCases') &&
-     [...d.querySelectorAll('.leg-controls button[data-layer]')].map(b => b.textContent).join() === '2026 Midterm results,Bills' && d.querySelector('.leg-controls [role="group"]').getAttribute('aria-label') === 'View' &&
-     [...d.querySelectorAll('#legOfficeToggle button')].map(b => b.textContent).join() === 'Senate,House,Governor');
-  ok('the Bills section has no word Bills in its title: the title is the jurisdiction and the count, the section is still named Bills for a screen reader, and the results section keeps its own title',
+  ok('the section switch is the first thing in the toolbar, then the Show menu, then the Status menu and the checkbox for the bills that only lightly mention AI, and the Reset button last, in that order',
+     [...d.querySelectorAll('#legSticky .leg-controls-main > *')].map(e => e.id).join() === 'govSwitch,legShowPair,legStatusPair,legPassingWrap' && d.querySelector('#legSticky .leg-controls').lastElementChild === d.getElementById('legReset') &&
+     [...d.querySelectorAll('#govSwitch button')].map(b => b.textContent).join() === 'All,Cases,Enforcement,Legislation' && !d.getElementById('legLayerResults') && !d.getElementById('legOfficeToggle'), [...d.querySelectorAll('#legSticky .leg-controls-main > *')].map(e => e.id).join());
+  ok('the Bills section has no word Bills in its title: the title is the jurisdiction and the count, and the section is still named Bills for a screen reader',
      d.getElementById('legBillsTitle').textContent.trim() === `All jurisdictions · ${num(nBills)} bills` && d.getElementById('legBillsTitle').textContent.trim() === d.getElementById('legBillsScope').textContent.trim() &&
-     d.getElementById('legBillsSection').getAttribute('aria-label') === 'Bills' && !d.getElementById('legBillsSection').hasAttribute('aria-labelledby') &&
-     /^2026 Midterm results/.test(d.getElementById('legResultsTitle').textContent.trim()), d.getElementById('legBillsTitle').textContent);
+     d.getElementById('legBillsSection').getAttribute('aria-label') === 'Bills' && !d.getElementById('legBillsSection').hasAttribute('aria-labelledby'), d.getElementById('legBillsTitle').textContent);
   const stageCounts = JSON.parse(w.eval("(() => { const c = {}; LEGISLATION_DATA.filter(b => !b.passing && LEGISLATION_STAGES[b.stage] && LEGISLATION_STAGES[b.stage].active).forEach(b => { c[b.stage] = (c[b.stage] || 0) + 1; }); return JSON.stringify(c); })()"));
   const stageOrder = w.eval("Object.keys(LEGISLATION_STAGES).filter(k => LEGISLATION_STAGES[k].active).join()").split(',');
   const statsBar = () => d.getElementById('legBillsStats'), segs = () => [...statsBar().querySelectorAll('.leg-stats-seg')];
@@ -461,34 +961,46 @@ const legislationTests = async () => {
      segs().every(x => x.getAttribute('title') === `${stageName(x.getAttribute('data-stage'))}: ${num(segN(x))} (${pctOf(segN(x), nBills)})`),
      segs().map(x => x.getAttribute('data-stage') + ':' + segN(x)).join() + ' | ' + statsBar().textContent);
   const legCss = [...d.querySelectorAll('style')].map(el => el.textContent).join('\n');
-  const stickyBar = d.getElementById('legSticky');
-  ok('the toolbar (the layers, the office toggle, the Show menu, Clear) and the search and filter bar stick together at the top of the window, as the bars on Papers and the Fact Bank do: one sticky wrapper holds both, the shared bar is not sticky on its own inside it, and a title jumped to keeps clear of them',
-     !!stickyBar && stickyBar.contains(d.querySelector('.leg-controls')) && stickyBar.contains(d.getElementById('legFilters')) && stickyBar.parentElement === d.getElementById('legislationArea') &&
-     !!d.querySelector('#legSticky .leg-controls #legStateSelect') && !!d.querySelector('#legSticky .leg-controls #legLayerBills') && !!d.querySelector('#legSticky .leg-controls #legOfficeSenate') &&
-     /\.leg-sticky\s*\{[^}]*position:\s*sticky;\s*top:\s*0/.test(legCss) && /#legislationArea \.controls\s*\{[^}]*position:\s*static/.test(legCss) &&
+  const stickyBar = d.getElementById('legSticky'), searchBar = d.getElementById('legFilters'), topicsBar = d.getElementById('legTopicsBar');
+  ok('the toolbar, the topic chips and the search bar all stick at the top of the window, in that order, each under the one before (the chips under the toolbar, the search bar under both): each is a child of the area and none holds another, and a title jumped to keeps clear of all three',
+     !!stickyBar && stickyBar.parentElement === d.getElementById('legislationArea') && searchBar.parentElement === d.getElementById('legislationArea') && topicsBar.parentElement === d.getElementById('legislationArea') &&
+     [...d.getElementById('legislationArea').children].map(e => e.id).slice(0, 3).join() === 'legSticky,legTopicsBar,legFilters' && !!d.querySelector('#legSticky .leg-controls #legStateSelect') && !!d.querySelector('#legSticky .leg-controls #govSwitch') &&
+     /#legislationArea #legSticky\s*\{[^}]*position:\s*sticky;\s*top:\s*0/.test(legCss) && /#legislationArea #legTopicsBar\s*\{[^}]*position:\s*sticky;\s*top:\s*var\(--leg-toolbar-h/.test(legCss) &&
+     /#legislationArea #legFilters\s*\{[^}]*position:\s*sticky;\s*top:\s*calc\(var\(--leg-toolbar-h,\s*0px\)\s*\+\s*var\(--leg-topics-h/.test(legCss) &&
      /\.leg-section-title\s*\{\s*scroll-margin-top:\s*calc\(var\(--leg-bar-h,\s*0px\)\s*\+\s*16px\)/.test(legCss) &&
-     /^\d+(\.\d+)?px$/.test(d.getElementById('legislationArea').style.getPropertyValue('--leg-bar-h').trim()), d.getElementById('legislationArea').style.getPropertyValue('--leg-bar-h'));
-  ok('the toolbar has the layers, the Show menu and (when something is pinned) Clear: no Federal button, since Congress is the Federal entry in the Show menu, and no switch; and the panel says where to find Federal',
-     !d.getElementById('legFed') && ![...d.querySelectorAll('.leg-controls button')].some(b => /Federal|Include bills/.test(b.textContent)) && !!d.querySelector('#legStateSelect option[value="federal"]') &&
-     /choose Federal in the Show menu/.test(mastheadText()) && /choose Federal in the Show menu/.test(panel()), mastheadText());
+     /@media \(max-width: 640px\), \(max-height: 760px\)\s*\{\s*#legislationArea #legSticky, #legislationArea #legTopicsBar, #legislationArea #legFilters\s*\{\s*position:\s*static/.test(legCss));
+  ok('the Show menu is a fixed, narrow width, not the width of its longest option, so the checkbox can sit beside Status (the owner, 2026-11-18): a long choice is cut with an ellipsis and its full name is the tooltip',
+     /\.leg-select \{[^}]*width:\s*210px;\s*text-overflow:\s*ellipsis/.test(legCss) && d.getElementById('legStateSelect').title === d.getElementById('legStateSelect').options[d.getElementById('legStateSelect').selectedIndex].textContent);
+  ok('the Reset button cannot drop to a row of its own on a desktop (the owner\'s screenshot, 2026-11-18): the controls wrap among themselves in their own group, the toolbar row itself does not wrap, and the button keeps its size',
+     !/flex-wrap/.test((/\n  \.leg-controls \{([^}]*)\}/.exec(legCss) || [])[1] || 'flex-wrap') && /\n  \.leg-controls-main \{[^}]*flex-wrap:\s*wrap[^}]*min-width:\s*0/.test(legCss) && /#legislationArea \.leg-reset \{[^}]*flex:\s*none/.test(legCss));
+  ok('each table block ends with its divider under the note and the page numbers (the owner, 2026-11-18): the section carries the line, the pager has none of its own here, and the pager is the last thing in the section, after the note',
+     /#legislationArea \.leg-section\s*\{[^}]*border-bottom:\s*1px solid var\(--divider\)/.test(legCss) && /#legislationArea \.pager\s*\{[^}]*border-top:\s*0/.test(legCss) &&
+     ['legResultsSection', 'legBillsSection'].every(sid => { const s = d.getElementById(sid); return s.lastElementChild.matches('nav.pager') && s.lastElementChild.previousElementSibling.classList.contains('leg-source'); }));
+  ok('the topics sit above the search bar, always showing: the chips come before the search box, there is no note under them, there is no More filters toggle and no panel for it, and the Status menu and the checkbox are in the toolbar, not behind anything',
+     !d.getElementById('legMoreToggle') && !d.getElementById('legMorePanel') && !d.getElementById('legMoreCount') && !d.querySelector('#legislationArea .more-toggle, #legislationArea .more-panel') &&
+     !!(d.getElementById('legTopicPills').compareDocumentPosition(d.getElementById('legSearch')) & 4) && topicsBar.compareDocumentPosition(searchBar) === 4 && !!d.querySelector('#legSticky #legStatus') && !!d.querySelector('#legSticky #legPassing') &&
+     w.getComputedStyle(d.getElementById('legTopicPills')).display !== 'none' && !d.getElementById('legTopicNote') && !d.querySelector('#legTopicsBar p'));
+  ok('there is no Federal button, since Congress is the Federal entry in the Show menu, and the masthead says where to find places (the card no longer has the hint)',
+     !d.getElementById('legFed') && ![...d.querySelectorAll('.leg-controls button')].some(b => /Federal/.test(b.textContent)) && !!d.querySelector('#legStateSelect option[value="federal"]') &&
+     /choose a place in the Show menu/.test(mastheadText()) && !/Hover a state to see how its bills stand|choose Federal in the Show menu/.test(panel()), mastheadText());
   ok('the data covers every race AP lists: 50 states, 35 Senate seats, 36 governor races and all 435 House districts',
      nStates === 50 && races('senate') === 35 && races('governor') === 36 && seats === 435, `${nStates} states, ${races('senate')} Senate, ${races('governor')} governor, ${seats} districts`);
   // the Bills layer: the shading steps are thirds of the states that have bills, and the legend names what each holds
   const readSteps = () => [...d.querySelectorAll('#legLegend .leg-legend-item')].map(i => {
-    const sw = i.querySelector('.leg-swatch'), lv = sw && (sw.className.match(/fill-b(\d)/) || [])[1], m = /^([\d,]+)(?: to ([\d,]+))? bills?\b/.exec(i.textContent.trim());
+    const sw = i.querySelector('.leg-swatch'), lv = sw && (sw.className.match(/fill-b(\d)/) || [])[1], m = /^([\d,]+)(?: to ([\d,]+))? items?\b/.exec(i.textContent.trim());   // on All the legend counts items (the bills, here: no other rows are loaded in this block)
     return lv && m ? { lv: +lv, lo: +m[1].replace(/,/g, ''), hi: +(m[2] || m[1]).replace(/,/g, ''), n: +i.querySelector('.leg-muted-count').textContent } : null;
   }).filter(Boolean);
   const steps = readSteps();
   const stepOf = n => (steps.find(s => n >= s.lo && n <= s.hi) || {}).lv;
   const most = Math.max(...Object.values(counts)), fewest = Math.min(...Object.values(counts));
-  const noBills = (() => { const i = [...d.querySelectorAll('#legLegend .leg-legend-item')].find(x => /^No bills/.test(x.textContent.trim())); return i ? +i.querySelector('.leg-muted-count').textContent : 0; })();
-  ok('the map opens on the Bills layer, shaded by thirds of the states that have bills: every state is in the step its count falls in, and the legend\'s ranges run from the fewest to the most and account for every state',
-     d.getElementById('legMap').getAttribute('data-layer') === 'bills' && d.getElementById('legLayerBills').getAttribute('aria-pressed') === 'true' && steps.length >= 1 && steps.length <= 3 &&
+  const noBills = (() => { const i = [...d.querySelectorAll('#legLegend .leg-legend-item')].find(x => /^No items/.test(x.textContent.trim())); return i ? +i.querySelector('.leg-muted-count').textContent : 0; })();
+  ok('the map is shaded by thirds of the states that have items (here bills only): every state is in the step its count falls in, and the legend\'s ranges run from the fewest to the most and account for every state',
+     steps.length >= 1 && steps.length <= 3 &&
      Object.keys(counts).every(c => new RegExp(`fill-b${stepOf(counts[c])}\\b`).test(path(c).getAttribute('class'))) && steps[0].lo === fewest && steps[steps.length - 1].hi === most &&
      steps.reduce((s, x) => s + x.n, 0) + noBills === 51 && noBills === 51 - Object.keys(counts).length, legend());
-  ok('the legend counts the federal bills and the territory bills, which are not on the map', new RegExp(`Federal bills, not on the map\\s*${num(nFed)}`).test(legend()) &&
-     (nTerritory ? new RegExp(`Territory bills, not on the map\\s*${num(nTerritory)}`).test(legend()) : !/Territory bills/.test(legend())), legend());
-  ok('the small-state buttons are shaded like their states on this layer too: a state with bills, a shade; one without, none', tilesMatch() && tiles.every(b => !!counts[b.textContent] === /fill-b[123]/.test(b.getAttribute('class'))), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
+  ok('the legend counts the federal and the territory items (here bills), which are not on the map, and says what an item is', new RegExp(`Federal items, not on the map\\s*${num(nFed)}`).test(legend()) &&
+     (nTerritory ? new RegExp(`Territory items, not on the map\\s*${num(nTerritory)}`).test(legend()) : !/Territory items/.test(legend())) && /Items are the bills, key cases and enforcement actions, counted together/.test(legend()), legend());
+  ok('the small-state buttons are shaded like their states: a state with bills, a shade; one without, none', tilesMatch() && tiles.every(b => !!counts[b.textContent] === /fill-b[123]/.test(b.getAttribute('class'))), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
   const billsTable = () => d.getElementById('legBillsTable'), pager = d.getElementById('legBillsPager');
   const heads = () => [...billsTable().querySelectorAll('th')].map(t => t.textContent).join();
   const monthNo = m => ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].indexOf(m) + 1;
@@ -500,20 +1012,21 @@ const legislationTests = async () => {
   ok('the bills table opens on its first page, the most recent last action first, with the number of bills in its title, and the pager counts the pages',
      rows('legBillsTable') === Math.min(PAGE, nBills) && heads() === 'Jurisdiction,Bill,Title,Status,Last action,Summary,Source' && dates()[0] === newestAction && inOrder(dates(), true) &&
      d.getElementById('legSort').value === 'recent' && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && !pager.hidden && pager.querySelector('.pager-status').textContent === `Page 1 of ${pagesOf(nBills)}`, `${rows('legBillsTable')} rows, ${heads()}, ${dates().slice(0, 4)}`);
-  const passNote = n => `${num(n)} more active ${n === 1 ? 'bill mentions' : 'bills mention'} AI only in ${n === 1 ? 'its' : 'their'} text; "Include bills that only mention AI", under More filters, adds ${n === 1 ? 'it' : 'them'}.`;
-  ok('a note under the table says what the federal list and the state list are, where the summaries come from, how many more bills the search found and why they are left out (not active), and how many more the checkbox under More filters would add',
+  const passNote = n => `${num(n)} more active ${n === 1 ? 'bill mentions' : 'bills mention'} AI only in ${n === 1 ? 'its' : 'their'} text; "Include bills that only lightly mention AI" adds ${n === 1 ? 'it' : 'them'}.`;
+  ok('a note under the table says what the federal list and the state list are, where the summaries come from, how many more bills the search found and why they are left out (not active), and how many more the checkbox would add',
      d.getElementById('legBillsNote').textContent === `Federal bills are ${feeds.govinfo.scope}. ${feeds.govinfo.summaries} State bills are ${feeds.openstates.scope}. ${feeds.openstates.summaries ? feeds.openstates.summaries + ' ' : ''}Open States found ${joinAnd(feeds.openstates.omitted.filter(o => o.n).map(o => `${num(o.n)} more bills that ${o.why}`))}; none is included.${nPassing ? ` ${passNote(nPassing)}` : ''}`, d.getElementById('legBillsNote').textContent);
-  /* the checkbox, under More filters, for the bills that only mention AI in their text */
+  /* the checkbox, in the toolbar next to the Status menu, for the bills that only lightly mention AI in their text */
   const passWrap = d.getElementById('legPassingWrap'), passBox = d.getElementById('legPassing'), pcode = nPassing ? w.eval("LEGISLATION_DATA.find(b => b.passing && b.level === 'state').state") : '';
-  ok('under More filters a checkbox offers the bills that only mention AI in their text, says how many, and starts off: none of them is in the table',
-     nPassing > 0 && !passWrap.hidden && !passBox.checked && passBox.type === 'checkbox' && !!passWrap.closest('#legMorePanel') && passWrap.querySelector('.leg-muted-count').textContent === num(nPassing) &&
+  ok('a checkbox in the toolbar, next to the Status menu, offers the bills that only lightly mention AI in their text, says how many, and starts off: none of them is in the table',
+     nPassing > 0 && !passWrap.hidden && !passBox.checked && passBox.type === 'checkbox' && !!passWrap.closest('#legSticky') && passWrap.previousElementSibling.id === 'legStatusPair' &&
+     passWrap.textContent.trim().startsWith('Include bills that only lightly mention AI') && !/only mention AI/.test(passWrap.textContent) && passWrap.querySelector('.leg-muted-count').textContent === num(nPassing) &&
      !/Mentions AI only in its text/.test(billsTable().textContent), passWrap.textContent);
   const stepsOff = steps.map(x => `${x.lo}-${x.hi}`).join();
   fire(passBox, 'click');
   const onTotal = nBills + nPassing, countsOn = JSON.parse(w.eval("(() => { const c = {}; LEGISLATION_DATA.forEach(b => { if (b.level === 'state' && US_MAP.states[b.state]) c[b.state] = (c[b.state] || 0) + 1; }); return JSON.stringify(c); })()"));
   const stepsOn = readSteps();
-  ok('turning it on adds them everywhere at once: the number of bills in the title, the masthead, the map shading and legend (recomputed from the larger counts), and the note',
-     passBox.checked && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(onTotal)} bills` && mastheadText().startsWith(`${num(onTotal)} active bills`) &&
+  ok('turning it on adds them everywhere at once: the number of bills in the title, the map shading and legend (recomputed from the larger counts), and the note; the masthead quotes no count and does not move',
+     passBox.checked && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(onTotal)} bills` && mastheadText() === GOV_BLURB &&
      stepsOn.length >= 1 && stepsOn[stepsOn.length - 1].hi === Math.max(...Object.values(countsOn)) && stepsOn[0].lo === Math.min(...Object.values(countsOn)) &&
      Object.keys(countsOn).every(c => new RegExp(`fill-b${(stepsOn.find(s => countsOn[c] >= s.lo && countsOn[c] <= s.hi) || {}).lv}\\b`).test(path(c).getAttribute('class'))) &&
      /Bills that mention AI only in their text are included, and marked\./.test(d.getElementById('legBillsNote').textContent), `${stepsOff} -> ${stepsOn.map(x => `${x.lo}-${x.hi}`).join()} | ${mastheadText().slice(0, 60)}`);
@@ -521,51 +1034,29 @@ const legislationTests = async () => {
   const pRows = [...billsTable().querySelectorAll('tbody tr')].filter(r => /Mentions AI only in its text/.test(r.textContent)).length, pInState = w.eval(`LEGISLATION_DATA.filter(b => b.level === 'state' && b.state === '${pcode}' && b.passing).length`);
   ok('and each such bill is marked in the table as one that only mentions AI in its text: in a state that has some, as many marked rows as it has such bills (up to the page)',
      pRows === Math.min(pInState, PAGE) && pRows > 0 && d.getElementById('legBillsScope').textContent === `${w.eval(`US_MAP.states.${pcode}.name`)} · ${num(countOf(pcode) + pInState)} ${countOf(pcode) + pInState === 1 ? 'bill' : 'bills'}`, `${pRows} marked of ${pInState}`);
-  fire(d.getElementById('legClear'), 'click');
+  d.getElementById('legStateSelect').value = ''; d.getElementById('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));   // let go of the state with the menu: the Reset button would turn the checkbox off too
   fire(passBox, 'click');
-  ok('turning it off again puts everything back: the count, the masthead, the shading steps and the marks', !passBox.checked &&
-     d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && mastheadText().startsWith(`${num(nBills)} active bills`) && readSteps().map(x => `${x.lo}-${x.hi}`).join() === stepsOff &&
+  ok('turning it off again puts everything back: the count, the shading steps and the marks', !passBox.checked &&
+     d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && mastheadText() === GOV_BLURB && readSteps().map(x => `${x.lo}-${x.hi}`).join() === stepsOff &&
      !/Mentions AI only in its text/.test(billsTable().textContent) && d.getElementById('legBillsNote').textContent.includes(passNote(nPassing)));
   d.getElementById('legStateSelect').value = 'federal'; d.getElementById('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
   ok('a federal bill shows its title, its bill number and Congress, its stage and the dates it was introduced, its summary, and a link to Congress.gov, and carries no category labels from anyone',
      (() => { const r = [...billsTable().querySelectorAll('tbody tr')].find(x => /TAKE IT DOWN/.test(x.textContent)) || billsTable().querySelectorAll('tbody tr')[1];
        return /119th Congress/.test(r.textContent) && /Introduced /.test(r.textContent) && !/labels: /.test(r.textContent) && !!r.querySelector('a[href^="https://www.congress.gov/bill/119th-congress/"]'); })());
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
 
-  /* ── B. the midterm results layer ────────────────────────────────────────────────────────────────────────── */
-  fire(d.getElementById('legLayerResults'), 'click');
-  ok('choosing Midterm results colours the map by the Senate races, and the legend counts come from the data',
-     d.getElementById('legMap').getAttribute('data-layer') === 'results' && d.getElementById('legMap').getAttribute('data-office') === 'senate' &&
-     new RegExp(`Democratic gain\\s*${cnt('senate', 'd-gain')}`).test(legend()) && new RegExp(`Republican hold\\s*${cnt('senate', 'r-hold')}`).test(legend()) &&
-     new RegExp(`Uncalled\\s*${cnt('senate', 'uncalled')}`).test(legend()) && new RegExp(`No 2026 Senate race\\s*${51 - races('senate')}`).test(legend()), legend());
-  ok('the buttons wear their states\' colours: on the Senate layer New Hampshire is a Democratic hold and Vermont, which has no Senate race, has none',
-     tilesMatch() && /fill-d-hold/.test(tile('NH').getAttribute('class')) && !/fill-/.test(tile('VT').getAttribute('class')), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
-  fire(d.getElementById('legOfficeHouse'), 'click');
-  ok('choosing House colours each state by which party won more of its seats, and the legend counts them',
-     d.getElementById('legMap').getAttribute('data-office') === 'house' && new RegExp(`Democrats won more seats\\s*${houseStates('d')}`).test(legend()) &&
-     new RegExp(`Republicans won more seats\\s*${houseStates('r')}`).test(legend()) && new RegExp(`Split evenly\\s*${houseStates('even')}`).test(legend()) &&
-     /fill-h-d/.test(path('CA').getAttribute('class')) && /fill-h-r/.test(path('TX').getAttribute('class')) && /fill-h-even/.test(path('WI').getAttribute('class')), legend());
-  ok('the buttons follow the House layer too: each small state\'s delegation went to Democrats, and its button says so', tilesMatch() && tiles.every(b => b.textContent === 'DC' || /fill-h-d/.test(b.getAttribute('class'))) && !/fill-/.test(tile('DC').getAttribute('class')),
-     tiles.map(b => b.textContent + ':' + fillOf(b)).join());
-  fire(d.getElementById('legOfficeGovernor'), 'click');
-  ok('choosing Governor colours the 36 states with a governor race, and the rest are marked as having none',
-     d.getElementById('legMap').getAttribute('data-office') === 'governor' && /fill-d-gain/.test(path('TX').getAttribute('class')) && /fill-r-hold/.test(path('FL').getAttribute('class')) &&
-     !/fill-/.test(path('MT').getAttribute('class')) && new RegExp(`No 2026 governor race\\s*${51 - races('governor')}`).test(legend()), legend());
-  ok('and the Governor layer: New Hampshire and Vermont are Republican holds, Maryland a Democratic hold, and New Jersey and Delaware, with no governor race, have none',
-     tilesMatch() && /fill-r-hold/.test(tile('NH').getAttribute('class')) && /fill-r-hold/.test(tile('VT').getAttribute('class')) && /fill-d-hold/.test(tile('MD').getAttribute('class')) &&
-     !/fill-/.test(tile('NJ').getAttribute('class')) && !/fill-/.test(tile('DE').getAttribute('class')), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
-  fire(d.getElementById('legOfficeSenate'), 'click');
+  /* ── B. the midterm results, by state: in the card, and in a table under the bills (they were a layer of their own until 2026-11-18) ────────────────────────────────── */
   const mapSource = d.getElementById('legMapSource'), links = [...mapSource.querySelectorAll('a')].map(a => a.getAttribute('href'));
-  ok('on this layer the source is cited in a line directly below the map, with a link to AP\'s midterm results page, the one source for the Senate, the House and governors, and nothing else',
-     d.getElementById('legLegend').nextElementSibling === mapSource && /^Source: The Associated Press, “2026 Midterm Election Results: Senate, House and Governor Races”/.test(mapSource.textContent) &&
-     links.length === 1 && links[0] === AP && !/U\.S\. Senate Election Results/.test(mapSource.textContent), mapSource.textContent);
   const apStamp = w.eval('MIDTERM_SOURCES.ap.updated');
-  ok('and the line ends with when the page was last updated, on a line of its own: AP\'s own stamp, as written',
-     !!apStamp && mapSource.querySelectorAll('.leg-map-updated').length === 1 && mapSource.querySelector('.leg-map-updated').textContent === `Last updated ${apStamp}.` &&
-     mapSource.textContent.endsWith(` Last updated ${apStamp}.`), mapSource.textContent);
+  ok('there is no results layer any more: no layer toggle, no office toggle, nothing marked data-layer or data-office, and the map is shaded by bills alone; the results are a table of their own, above the bills table',
+     !d.getElementById('legLayerResults') && !d.getElementById('legLayerBills') && !d.getElementById('legOfficeToggle') &&
+     !area.hasAttribute('data-layer') && !d.getElementById('legMap').hasAttribute('data-layer') && !d.querySelector('#legislationArea [data-office], #legislationArea [data-layer]') &&
+     !!d.getElementById('legResultsTable') && !!(d.getElementById('legResultsSection').compareDocumentPosition(d.getElementById('legBillsSection')) & 4));
+  ok('the line below the map cites the midterm results\' source as well, AP\'s results page with a link to it, after the two that the bills come from',
+     d.getElementById('legLegend').nextElementSibling === mapSource && /The Associated Press, “2026 Midterm Election Results: Senate, House and Governor Races”/.test(mapSource.textContent) && links.includes(AP) && links.indexOf(AP) === links.length - 1, mapSource.textContent);
   fire(path('TX'), 'mouseover');
-  ok('pointing at Texas shows its Senate, House and governor results, with no source line and no links: AP is cited under the map and in the results table',
-     /Texas/.test(panel()) && /SenateDemocratic gain/.test(panel()) && /HouseDemocrats 14, Republicans 24/.test(panel()) && /GovernorDemocratic gain/.test(panel()) &&
+  ok('pointing at Texas shows its bills and its Senate, House and governor results in one card, with no source line and no links: the sources are cited under the map',
+     /Texas/.test(panel()) && /Bills/.test(panel()) && /2026 Midterm results/.test(panel()) && /SenateDemocratic gain/.test(panel()) && /HouseDemocrats 14, Republicans 24/.test(panel()) && /GovernorDemocratic gain/.test(panel()) &&
      !/Source/.test(panel()) && !d.querySelector('#legPanel a'), panel());
   ok('the pointed-at state is outlined', d.getElementById('legRingHover').getAttribute('d') === path('TX').getAttribute('d') && path('TX').getAttribute('d').length > 20);
   fire(path('NE'), 'mouseover');
@@ -582,38 +1073,23 @@ const legislationTests = async () => {
   fire(path('MT'), 'mouseover');
   ok('a state with no governor race says so', /Montana/.test(panel()) && /No 2026 governor race/.test(panel()), panel());
   fire(path('DC'), 'mouseover');
-  ok('DC, which AP lists no races for, says so, and on this layer its card lists no bills',
-     /District of Columbia/.test(panel()) && /AP lists no 2026 races for District of Columbia/.test(panel()) && d.querySelectorAll('#legPanel .leg-bill-list li').length === 0 && !/Bills/.test(panel()), panel());
+  ok('DC, which AP lists no races for, says so, and its card lists no bills, only that none have been added, and has no "See more details below" link: there is nothing in the table below to see',
+     /District of Columbia/.test(panel()) && /AP lists no 2026 races for District of Columbia/.test(panel()) && d.querySelectorAll('#legPanel .leg-bill-list li').length === 0 && /No legislation has been added for District of Columbia yet\./.test(panel()) && !d.querySelector('#legPanel .leg-more-link'), panel());
   await leaveMap();
-  ok('moving off the map returns the panel to the overview, with the national totals AP showed and who they are from, and no word of bills on this layer',
-     /United States/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === '' && /National totals/.test(panel()) &&
-     !/ bills? in /.test(panel()) && !/federal bill/.test(panel()) && !/Bills/.test(panel()) &&
+  const resLine = (office, noun) => `${office[0].toUpperCase() + office.slice(1)}: ${races(office)} ${noun} were up: ${cnt(office, 'd-gain')} Democratic gains, ${cnt(office, 'd-hold')} Democratic holds, ${cnt(office, 'r-hold')} Republican holds${cnt(office, 'r-gain') ? `, ${cnt(office, 'r-gain')} Republican gains` : ''} and ${cnt(office, 'uncalled')} uncalled.`;
+  const hsum = JSON.parse(w.eval("(() => { let d = 0, r = 0, o = 0; Object.values(MIDTERM_RESULTS).forEach(s => { const h = s.house || {}; d += h.d || 0; r += h.r || 0; o += (h.dLead || 0) + (h.rLead || 0) + (h.runoff || 0); }); return JSON.stringify({ d, r, o }); })()"));
+  ok('moving off the map returns the card to the overview: the bills, a line for each office\'s results counted from the data, and the national totals AP showed, with no source line under them (AP is cited under the map)',
+     /United States/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === '' && /Bills/.test(panel()) && / bills? in /.test(panel()) && /federal bills/.test(panel()) &&
+     panel().includes(resLine('senate', 'seats')) && panel().includes(`House, by state: Democrats won ${hsum.d} districts, Republicans ${hsum.r}, and ${hsum.o} are not yet called.`) && panel().includes(resLine('governor', 'races')) &&
+     !/Hover a state to see its results\./.test(panel()) && /National totals/.test(panel()) &&
      panel().includes(`Senate: Democrats ${nat.senate.democrats}, Republicans ${nat.senate.republicans}, ${nat.senate.toBeCalled} to be called.`) &&
      panel().includes(`House: Democrats ${nat.house.democrats}, Republicans ${nat.house.republicans}, ${nat.house.toBeCalled} to be called.`) &&
-     panel().includes(`Governors: Democrats ${nat.governor.democrats}, Republicans ${nat.governor.republicans}, ${nat.governor.toBeCalled} to be called.`) && /The Associated Press, updated/.test(panel()), panel());
-  /* the layer is only about the results */
-  ok('the 2026 Midterm results layer is only about the results: the filter bar and the bills table are out of view, the results table is in view, and the map is described as the results',
-     area.getAttribute('data-layer') === 'results' && d.getElementById('legFilters').hidden && d.getElementById('legBillsSection').hidden && !d.getElementById('legResultsSection').hidden &&
-     /midterm results/.test(d.getElementById('legMap').getAttribute('aria-label')) && !/bill|legislation/i.test(d.getElementById('legMap').getAttribute('aria-label')), d.getElementById('legMap').getAttribute('aria-label'));
-  ok('its masthead asks about the midterms and counts the races from the data, with no word of bills',
-     /^How did the 2026 midterms go\?$/.test(d.getElementById('headerTabDescLede').textContent.trim()) &&
-     mastheadText() === `The 2026 midterm results, according to The Associated Press: ${races('senate')} Senate seats, ${races('governor')} governor races and ${seats} House districts, in ${nStates} states. Hover a state to see how its races went; the table below lists every state.` &&
-     !/bill|legislation/i.test(mastheadText() + d.getElementById('headerTabDescLede').textContent), mastheadText());
-  const groupState = () => [...d.querySelectorAll('#legStateSelect optgroup')].map(g => `${g.label}:${g.hidden && g.disabled ? 'out' : 'in'}`).join();
-  ok('the Show menu offers only the states here (Congress and Puerto Rico have no results to show)', groupState() === 'Federal:out,States:in,Territories:out', groupState());
-  fire(path('TX'), 'mouseover');
-  ok('a state\'s card on this layer holds only its results: no Bills heading and no list of bills', /Texas/.test(panel()) && /2026 Midterm results/.test(panel()) && !/Bills/.test(panel()) && d.querySelectorAll('#legPanel .leg-bill-list').length === 0, panel());
-  await leaveMap();
-  fire(d.getElementById('legLayerBills'), 'click');
-  ok('back on Bills the filter bar, the bills table and the bills in the card return, the Show menu has Congress and the territory again, and the masthead is about bills',
-     area.getAttribute('data-layer') === 'bills' && !d.getElementById('legFilters').hidden && !d.getElementById('legBillsSection').hidden && groupState() === 'Federal:in,States:in,Territories:in' &&
-     /^What is currently on the table\?$/.test(d.getElementById('headerTabDescLede').textContent.trim()) && /active bills/.test(mastheadText()) && /Bills/.test(panel()), mastheadText());
-  const showMenu = d.getElementById('legStateSelect'); showMenu.value = 'federal'; showMenu.dispatchEvent(new w.Event('change', { bubbles: true }));
-  fire(d.getElementById('legLayerResults'), 'click');
-  ok('choosing the results layer lets go of Congress, which has no results: nothing is pinned, the menu says All jurisdictions, and the card is the overview',
-     showMenu.value === '' && d.getElementById('legClear').hidden && /United States/.test(panel()) && !/Federal/.test(panel()), panel());
-  const resultsTable = d.getElementById('legResultsTable');
-  const resultsPager = d.getElementById('legResultsPager');
+     panel().includes(`Governors: Democrats ${nat.governor.democrats}, Republicans ${nat.governor.republicans}, ${nat.governor.toBeCalled} to be called.`) && !/The Associated Press, updated/.test(panel()), panel());
+  /* the results table, under the bills table: ten states to a page, a column for each office, each row linking to AP's pages for that state */
+  const resultsTable = d.getElementById('legResultsTable'), resultsPager = d.getElementById('legResultsPager');
+  ok('the results table has a title written like the other sections\' (the place, a dot, then what it is): All jurisdictions · 2026 Midterm results, in the same type as the bills\' title',
+     d.getElementById('legResultsTitle').textContent.trim() === 'All jurisdictions · 2026 Midterm results' && d.getElementById('legResultsTitle').textContent.trim() === d.getElementById('legResultsScope').textContent.trim() &&
+     d.getElementById('legResultsScope').className === d.getElementById('legBillsScope').className && d.getElementById('legResultsTitle').className === d.getElementById('legBillsTitle').className, d.getElementById('legResultsTitle').textContent);
   ok(`before a state is chosen the results table lists the states ${RPAGE} to a page, with a column for each office, and a pager that counts the pages`,
      rows('legResultsTable') === Math.min(RPAGE, nStates) && [...resultsTable.querySelectorAll('th')].map(t => t.textContent).join() === 'State,Senate,House,Governor,Source' &&
      !resultsPager.hidden && resultsPager.querySelector('.pager-status').textContent === `Page 1 of ${rpagesOf(nStates)}` && resultsPager.getAttribute('aria-label') === 'Pages of states', resultsPager.textContent);
@@ -629,6 +1105,7 @@ const legislationTests = async () => {
      seenStates.length === nStates && new Set(seenStates).size === nStates && seenStates.join() === stateOrder.join() &&
      resultsPager.querySelector('.pager-status').textContent === `Page ${rpagesOf(nStates)} of ${rpagesOf(nStates)}` && resultsPager.querySelector('button[aria-label="Next page"]').disabled, stateSizes.join());
   fire(resultsPager.querySelector('button[data-page="2"]'), 'click');   // Iowa is on the second page
+  ok('choosing a page of the results table takes the keyboard to that table, as the bills\' pager does', d.activeElement === resultsTable);
   const resultsShape = () => { const t = resultsTable.querySelector('table'); return !!t && t.classList.contains('leg-table--results') && [...t.querySelectorAll('th')].map(h => h.textContent).join() === 'State,Senate,House,Governor,Source'; };
   ok('the results table is the one whose column widths are fixed in the stylesheet (leg-table--results, columns State, Senate, House, Governor, Source), so every page of states is laid out as one state is', resultsShape());
   const ia = resultsTable.querySelector('tr[data-state="IA"]');
@@ -638,25 +1115,29 @@ const legislationTests = async () => {
   const note = d.getElementById('legSource').textContent;
   ok('the note under the results table reports it whenever the district results do not add up to AP\'s chamber total, and only then',
      (sumD === nat.house.democrats && sumR === nat.house.republicans) ? !/add up to/.test(note) : (new RegExp(`add up to ${sumD} Democratic and ${sumR} Republican wins`).test(note) && note.includes(`showed ${nat.house.democrats} and ${nat.house.republicans}`)), note);
+  ok('and it starts with the standing note: each row links to AP\'s page for each of that state\'s races', /^Each row links to AP.s page for each of that state.s races\./.test(note), note);
+  ok('the note sits right under the results table and above the divider that starts its pager, in the results section, so the table says where its links go', resultsTable.nextElementSibling === d.getElementById('legSource') && d.getElementById('legSource').nextElementSibling === resultsPager && d.getElementById('legResultsSection').contains(d.getElementById('legSource')));
+  ok('and the bills table has its note the same way: under the table, above its pager', billsTable().nextElementSibling === d.getElementById('legBillsNote') && d.getElementById('legBillsNote').nextElementSibling === pager);
   fire(path('GA'), 'click');
   const gaN = countOf('GA');
   ok('clicking Georgia pins it: the menu follows, Clear shows, and both tables narrow to it, the bills table to Georgia\'s bills',
-     d.getElementById('legStateSelect').value === 'GA' && !d.getElementById('legClear').hidden && rows('legResultsTable') === 1 && /Georgia/.test(resultsTable.textContent) &&
+     d.getElementById('legStateSelect').value === 'GA' && d.getElementById('legReset').classList.contains('is-on') && rows('legResultsTable') === 1 && /Georgia/.test(resultsTable.textContent) &&
      rows('legBillsTable') === Math.min(PAGE, gaN) && [...billsTable().querySelectorAll('tbody tr')].every(r => r.getAttribute('data-state') === 'GA') &&
      d.getElementById('legBillsScope').textContent === `Georgia · ${num(gaN)} ${gaN === 1 ? 'bill' : 'bills'}`, `${rows('legBillsTable')} rows for ${gaN} bills`);
   ok('narrowed to one state it is the same table with the same columns, so it keeps the same widths, and with one row it has no pager', resultsShape() && rows('legResultsTable') === 1 && resultsPager.hidden);
   ok('a state\'s bills table has a Summary column only if one of its bills has a summary: only the columns something fills',
      heads() === `Jurisdiction,Bill,Title,Status,Last action,${w.eval("LEGISLATION_DATA.some(b => b.state === 'GA' && !b.passing && b.summary)") ? 'Summary,' : ''}Source`, heads());
   await leaveMap();
-  ok('a pinned state keeps the panel and its outline after the pointer leaves', /Georgia/.test(panel()) && d.getElementById('legRingPinned').getAttribute('d') === path('GA').getAttribute('d'));
-  fire(d.getElementById('legClear'), 'click');
-  ok('Clear returns to all states', d.getElementById('legStateSelect').value === '' && d.getElementById('legClear').hidden && rows('legResultsTable') === Math.min(RPAGE, nStates) && resultsPager.querySelector('.pager-status').textContent === `Page 1 of ${rpagesOf(nStates)}` && rows('legBillsTable') === Math.min(PAGE, nBills));
+  ok('a pinned state keeps the card and its outline after the pointer leaves', /Georgia/.test(panel()) && d.getElementById('legRingPinned').getAttribute('d') === path('GA').getAttribute('d'));
+  fire(d.getElementById('legReset'), 'click');
+  ok('Clear returns to all jurisdictions', d.getElementById('legStateSelect').value === '' && !d.getElementById('legReset').classList.contains('is-on') && rows('legBillsTable') === Math.min(PAGE, nBills) &&
+     rows('legResultsTable') === Math.min(RPAGE, nStates) && resultsPager.querySelector('.pager-status').textContent === `Page 1 of ${rpagesOf(nStates)}`);
   const sel = d.getElementById('legStateSelect');
   sel.value = 'AK'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
-  ok('choosing a state in the menu does what clicking it does, for keyboard users', /Alaska/.test(panel()) && rows('legResultsTable') === 1);
-  fire(d.getElementById('legClear'), 'click');
+  ok('choosing a state in the menu does what clicking it does, for keyboard users', /Alaska/.test(panel()) && d.getElementById('legBillsScope').textContent.startsWith('Alaska') && rows('legResultsTable') === 1);
+  fire(d.getElementById('legReset'), 'click');
   fire(tile('RI'), 'mouseover');
-  ok('pointing at a small state\'s button does what pointing at its shape does: the panel shows the state, the map outlines it, and the button is marked',
+  ok('pointing at a small state\'s button does what pointing at its shape does: the card shows the state, the map outlines it, and the button is marked',
      /Rhode Island/.test(panel()) && /Democratic hold/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === path('RI').getAttribute('d') && tile('RI').classList.contains('is-hover'), panel());
   fire(path('CT'), 'mouseover');
   ok('pointing at a small state\'s shape marks its button, and only its button', tile('CT').classList.contains('is-hover') && !tile('RI').classList.contains('is-hover') && tiles.filter(b => b.classList.contains('is-hover')).length === 1);
@@ -664,24 +1145,23 @@ const legislationTests = async () => {
   ok('moving off the map unmarks the buttons', tiles.every(b => !b.classList.contains('is-hover')) && /United States/.test(panel()));
   fire(tile('RI'), 'click');
   ok('clicking a small state\'s button pins it: the button is pressed and outlined, the menu follows, Clear shows, and both tables narrow to it',
-     tile('RI').getAttribute('aria-pressed') === 'true' && tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === 'RI' && !d.getElementById('legClear').hidden &&
-     d.getElementById('legRingPinned').getAttribute('d') === path('RI').getAttribute('d') && rows('legResultsTable') === 1 && /Rhode Island/.test(resultsTable.textContent) && tiles.filter(b => b.getAttribute('aria-pressed') === 'true').length === 1);
+     tile('RI').getAttribute('aria-pressed') === 'true' && tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === 'RI' && d.getElementById('legReset').classList.contains('is-on') &&
+     d.getElementById('legRingPinned').getAttribute('d') === path('RI').getAttribute('d') && d.getElementById('legBillsScope').textContent.startsWith('Rhode Island') && rows('legResultsTable') === 1 && /Rhode Island/.test(resultsTable.textContent) && tiles.filter(b => b.getAttribute('aria-pressed') === 'true').length === 1);
   fire(tile('RI'), 'click');
-  ok('clicking it again lets go', tile('RI').getAttribute('aria-pressed') === 'false' && !tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === '' && rows('legResultsTable') === Math.min(RPAGE, nStates));
+  ok('clicking it again lets go', tile('RI').getAttribute('aria-pressed') === 'false' && !tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === '' && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && rows('legResultsTable') === Math.min(RPAGE, nStates));
   tile('DE').dispatchEvent(new w.Event('focusin', { bubbles: true }));
   ok('giving a button the keyboard\'s focus previews its state, as pointing at it does', /Delaware/.test(panel()) && tile('DE').classList.contains('is-hover') && d.getElementById('legRingHover').getAttribute('d') === path('DE').getAttribute('d'), panel());
   tile('DE').dispatchEvent(new w.Event('focusout', { bubbles: true }));
-  ok('and taking the focus away returns the panel to the overview', /United States/.test(panel()) && !tile('DE').classList.contains('is-hover'));
+  ok('and taking the focus away returns the card to the overview', /United States/.test(panel()) && !tile('DE').classList.contains('is-hover'));
   sel.value = 'NJ'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
   ok('choosing a small state in the Show menu marks its button pressed too, and only that one', tile('NJ').getAttribute('aria-pressed') === 'true' && tiles.filter(b => b.getAttribute('aria-pressed') === 'true').length === 1 && /New Jersey/.test(panel()));
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   ok('Clear lets go of it', tiles.every(b => b.getAttribute('aria-pressed') === 'false' && !b.classList.contains('is-pinned')));
 
-  /* ── C. paging, the hover panel's cap, the territories, and each layer's sources ─────────────────────────── */
-  fire(d.getElementById('legLayerBills'), 'click');
+  /* ── C. paging, the hover card's cap, the territories, and the sources ─────────────────────────── */
   // A jurisdiction's card gives its stats (its bill count, and the stats bar's bar and key) and links to the details below; it previews none of its bills (the owner had the previews taken
   // out, 2026-11-12). With no bills it says so instead. The only list items in it are the stats key's.
-  const cardOk = total => !d.querySelector('#legPanel .leg-bill-list') && !!d.querySelector('#legPanel .leg-more-link') && !/more in the table below/.test(panel()) &&
+  const cardOk = total => !d.querySelector('#legPanel .leg-bill-list') && (!!d.querySelector('#legPanel .leg-more-link') === !!total) && !/more in the table below/.test(panel()) &&   // the link is only for a place that has bills to show
     [...d.querySelectorAll('#legPanel li')].every(li => li.closest('.leg-stats-key')) &&
     (total ? d.querySelector('#legPanel .leg-card-total').textContent === `${num(total)} ${total === 1 ? 'bill' : 'bills'}` && !!d.querySelector('#legPanel .leg-stats--card .leg-stats-bar') : !d.querySelector('#legPanel .leg-card-total'));
   const firstRow = () => billsTable().querySelector('tbody tr').textContent;
@@ -706,7 +1186,7 @@ const legislationTests = async () => {
   ok('choosing a jurisdiction starts its table on page 1 again, with its own count and pages',
      rows('legBillsTable') === Math.min(PAGE, caN) && d.getElementById('legBillsScope').textContent === `California · ${num(caN)} bills` &&
      (pagesOf(caN) > 1 ? pager.querySelector('.pager-status').textContent === `Page 1 of ${pagesOf(caN)}` : pager.hidden), `${rows('legBillsTable')} rows of ${caN}`);
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   fire(path('NY'), 'mouseover');
   const nyN = countOf('NY');
   ok('the hover card gives a state\'s stats and a link to the details below, and previews none of its bills', cardOk(nyN), panel());
@@ -721,20 +1201,12 @@ const legislationTests = async () => {
      d.querySelector('#legPanel .leg-stats--card .leg-stats-bar').getAttribute('aria-label') === `Where the ${num(nyN)} ${nyN === 1 ? 'bill stands' : 'bills stand'}: ${nyParts.map(k => `${num(nyStages[k])} ${stageName(k).toLowerCase()} (${pctSaid(nyStages[k], nyN)})`).join(', ')}.`, panel());
   ok('and a link that says See more details below', !!moreLink() && moreLink().textContent === 'See more details below' && moreLink().getAttribute('data-more') === 'NY', panel());
   let jumps = [];
-  ['legBillsTitle', 'legResultsTitle'].forEach(id => { d.getElementById(id).scrollIntoView = function () { jumps.push(this.id); }; });   // a test DOM has no layout: record where the page is sent
+  ['legBillsTitle'].forEach(id => { d.getElementById(id).scrollIntoView = function () { jumps.push(this.id); }; });   // a test DOM has no layout: record where the page is sent
   fire(moreLink(), 'click');
   ok('following the link pins the state, so the tables below are about it, and takes the reader to the details: the Bills title, with focus on the table',
      d.getElementById('legStateSelect').value === 'NY' && d.getElementById('legBillsScope').textContent === `New York · ${num(nyN)} ${nyN === 1 ? 'bill' : 'bills'}` && rows('legResultsTable') === 1 &&
      jumps.join() === 'legBillsTitle' && d.activeElement === billsTable(), `${d.getElementById('legStateSelect').value} / ${jumps} / ${d.getElementById('legBillsScope').textContent}`);
-  fire(d.getElementById('legClear'), 'click');
-  fire(d.getElementById('legLayerResults'), 'click');
-  jumps = [];
-  ok('on the results layer the state\'s card has the link too, after its results', !!moreLink() && /New York/.test(panel()) && !d.querySelector('#legPanel .leg-bill-list') && moreLink().textContent === 'See more details below', panel());
-  fire(moreLink(), 'click');
-  ok('and it takes the reader to the results: the 2026 Midterm results title, with focus on that table, narrowed to the state',
-     d.getElementById('legStateSelect').value === 'NY' && jumps.join() === 'legResultsTitle' && d.activeElement === d.getElementById('legResultsTable') && rows('legResultsTable') === 1 && d.getElementById('legResultsPager').hidden, jumps.join());
-  fire(d.getElementById('legClear'), 'click');
-  fire(d.getElementById('legLayerBills'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   // the card stays for the pointer to reach its link: with nothing pinned, the state last pointed at stays for a moment after the pointer leaves the map, and while the pointer is on the card
   d.getElementById('legMap').dispatchEvent(new w.MouseEvent('mouseleave', { bubbles: true }));
   ok('after the pointer leaves the map the card stays on the state for a moment, so the pointer can reach its link', /New York/.test(panel()) && !!moreLink(), panel());
@@ -750,50 +1222,50 @@ const legislationTests = async () => {
   fire(path('NY'), 'mouseover');
   d.getElementById('legMap').dispatchEvent(new w.MouseEvent('mouseleave', { bubbles: true }));
   ok('with a state pinned the card goes back to it at once, not to the last state the pointer crossed', /Georgia/.test(panel()) && !/New York/.test(panel()) && !!moreLink() && moreLink().getAttribute('data-more') === 'GA', panel());
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   fire(path('NY'), 'mouseover');
   await leaveMap();
   sel.value = 'PR'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
   const prN = countOf('PR');
-  ok('a territory, which has no shape on the map, is chosen from the menu: its card gives its stats, and the results table says AP lists no races for it',
-     /Puerto Rico/.test(panel()) && cardOk(prN) &&
-     /AP lists no 2026 races for Puerto Rico/.test(d.getElementById('legResultsTable').textContent), panel());
+  ok('a territory, which has no shape on the map, is chosen from the menu: its card gives its stats, and its results block and the results table say AP lists no races for it',
+     /Puerto Rico/.test(panel()) && cardOk(prN) && /AP lists no 2026 races for Puerto Rico/.test(panel()) && /AP lists no 2026 races for Puerto Rico/.test(d.getElementById('legResultsTable').textContent), panel());
   ok('and Puerto Rico\'s bills are named for it in the table', rows('legBillsTable') === Math.min(PAGE, prN) && [...billsTable().querySelectorAll('tbody tr')].every(r => /Puerto Rico/.test(r.firstElementChild.textContent)));
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   sel.value = 'federal'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
   ok('choosing Federal in the Show menu narrows the bills table to Congress\'s bills, paged, and the card gives Congress\'s stats with the link to them',
      sel.value === 'federal' && rows('legBillsTable') === Math.min(PAGE, nFed) &&
      cardOk(nFed) &&
      heads() === 'Jurisdiction,Bill,Title,Status,Last action,Summary,Source' && d.getElementById('legBillsNote').textContent === `Federal bills are ${feeds.govinfo.scope}. ${feeds.govinfo.summaries}${nFedPassing ? ' ' + passNote(nFedPassing) : ''}`, `${heads()} | ${d.getElementById('legBillsNote').textContent}`);
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   const links2 = [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href'));
-  ok('on the Bills layer the line below the map cites GovInfo for the federal bills and Open States for the state bills, each with a link to its page, and not AP or any tracker',
+  ok('the line below the map cites GovInfo for the federal bills and Open States for the state bills, each with a link to its page, and then the Associated Press for the midterm results in the card, and no tracker',
      /^Sources: U\.S\. Government Publishing Office, “Bill Status XML Bulk Data” \(bulk data, read /.test(d.getElementById('legMapSource').textContent) &&
-     /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) &&
-     links2.join() === Object.values(feeds).map(f => f.url).join() && !/Associated Press|tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
-  const newestRead = Object.values(feeds).map(f => f.read).filter(Boolean).sort().pop();
-  ok('and it ends with when the page was last updated: the newest of the feeds\' dates, while each feed\'s own date stays in its citation',
-     !!newestRead && d.querySelectorAll('#legMapSource .leg-map-updated').length === 1 && d.querySelector('#legMapSource .leg-map-updated').textContent === `Last updated ${longDay(newestRead)}.` &&
-     d.getElementById('legMapSource').textContent.endsWith(` Last updated ${longDay(newestRead)}.`) &&
-     Object.values(feeds).every(f => d.getElementById('legMapSource').textContent.includes(`read ${longDay(f.read)})`)), d.getElementById('legMapSource').textContent);
+     /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) && /The Associated Press, “2026 Midterm Election Results/.test(d.getElementById('legMapSource').textContent) &&
+     links2.join() === Object.values(feeds).map(f => f.url).concat([AP]).join() && !/tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
+  // the newest of the sources' own dates: the feeds give the day they were read, AP the stamp its results were copied with ("November 17, 2026, 9:44 AM"), and the latest wins
+  const stampKey = s => { const m = /^([A-Za-z]+) (\d{1,2}), (\d{4})(?:, (\d{1,2}):(\d{2}) ([AP]M))?$/.exec(s); return Date.UTC(+m[3], MONTHS.indexOf(m[1]), +m[2], (+m[4] || 0) % 12 + (m[6] === 'PM' ? 12 : 0), +m[5] || 0); };
+  const allStamps = Object.values(feeds).map(f => f.read && longDay(f.read)).concat([apStamp]).filter(Boolean), newestStamp = allStamps.slice().sort((a, b) => stampKey(b) - stampKey(a))[0];
+  ok('and it ends with when the page was last updated, on a line of its own: the newest of the sources\' dates (AP\'s own stamp, as written, or a feed\'s day), while each source\'s own date stays in its citation',
+     !!newestStamp && d.querySelectorAll('#legMapSource .leg-map-updated').length === 1 && d.querySelector('#legMapSource .leg-map-updated').textContent === `Last updated ${newestStamp}.` &&
+     d.getElementById('legMapSource').textContent.endsWith(` Last updated ${newestStamp}.`) && Object.values(feeds).every(f => d.getElementById('legMapSource').textContent.includes(`read ${longDay(f.read)})`)) &&
+     d.getElementById('legMapSource').textContent.includes(`updated ${apStamp})`), d.getElementById('legMapSource').textContent);
   const readDays = Object.keys(feeds).map(k => [k, feeds[k].read]);
   readDays.forEach(([k]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ''`));
-  fire(d.getElementById('legLayerResults'), 'click'); fire(d.getElementById('legLayerBills'), 'click');
-  ok('with no feed dated the line makes up no date: it still cites the sources, and says nothing about when they were updated',
+  w.eval('MIDTERM_SOURCES.ap.updated = ""');
+  area.dispatchEvent(new w.Event('legislation:refresh'));
+  ok('with no source dated the line makes up no date: it still cites the sources, and says nothing about when they were updated',
      /^Sources: /.test(d.getElementById('legMapSource').textContent) && !/Last updated/.test(d.getElementById('legMapSource').textContent) && !d.querySelector('#legMapSource .leg-map-updated'), d.getElementById('legMapSource').textContent);
   readDays.forEach(([k, v]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ${JSON.stringify(v)}`));
-  fire(d.getElementById('legLayerResults'), 'click'); fire(d.getElementById('legLayerBills'), 'click');
-  fire(d.getElementById('legLayerResults'), 'click');
-  ok('and back on Midterm results it cites AP alone', links.length === 1 && [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href')).join() === AP);
-  fire(d.getElementById('legLayerBills'), 'click');
+  w.eval(`MIDTERM_SOURCES.ap.updated = ${JSON.stringify(apStamp)}`);
+  area.dispatchEvent(new w.Event('legislation:refresh'));
 
   /* ── D. the bill paths, with five bills of our own ───────────────────────────────────────────────────────── */
   const real = w.eval('LEGISLATION_DATA.splice(0)');
   area.dispatchEvent(new w.Event('legislation:refresh'));
-  ok('with no bills the masthead says so, and names its one source, the midterm results; and the table says nothing is loaded',
-     /no legislation has been added yet/i.test(mastheadText()) && /how its 2026 midterm races went, according to The Associated Press;/.test(mastheadText()) &&
+  ok('with no bills the masthead is the same words (it quotes no count), and the table says nothing is loaded',
+     mastheadText() === GOV_BLURB &&
      rows('legBillsTable') === 0 && /No legislation has been added yet/.test(billsTable().textContent) && pager.hidden && d.getElementById('legBillsTitle').textContent.trim() === 'All jurisdictions · 0 bills', mastheadText());
-  ok('and with no bills that only mention AI the checkbox is not offered', passWrap.hidden && !/Include bills that only mention AI/.test(d.getElementById('legBillsNote').textContent));
+  ok('and with no bills that only lightly mention AI the checkbox is not offered', passWrap.hidden && !/Include bills that only lightly mention AI/.test(d.getElementById('legBillsNote').textContent));
   w.eval(`LEGISLATION_DATA.push(
     { id: 'zz-1', level: 'state', state: 'TX', bill: 'HB 1', title: 'A test bill', stage: 'committee', status: 'Referred to the House Technology Committee', summary: 'Does a thing.',
       lastAction: { date: '2026-03-01', text: 'Referred to committee' }, source: { label: 'Test source', url: 'https://example.org/bill' } },
@@ -807,7 +1279,7 @@ const legislationTests = async () => {
      /^Federal/.test(billsTable().querySelectorAll('tbody tr')[1].textContent), billsTable().textContent);
   ok('a note under the table says how many bills were left out, and why',
      /2 bills in the data are not shown as active: 1 failed, 1 with no stage given/.test(d.getElementById('legBillsNote').textContent), d.getElementById('legBillsNote').textContent);
-  ok('the masthead counts both levels, in words while the count is small', /Three active bills: two in two states and one in Congress/.test(mastheadText()), mastheadText());
+  ok('with three bills in the data the masthead is still the same words', mastheadText() === GOV_BLURB, mastheadText());
   ok('a bill shows its stage as plain text, with the source\'s own words beneath when they differ, its last action, and a dash for what a source does not give',
      /In committee/.test(billsTable().querySelector('tr[data-state="TX"]').textContent) && /Referred to the House Technology Committee/.test(billsTable().querySelector('tr[data-state="TX"]').textContent) &&
      /March 1, 2026: Referred to committee/.test(billsTable().textContent) && /–/.test(billsTable().querySelector('tr[data-state="OH"]').textContent));
@@ -816,43 +1288,41 @@ const legislationTests = async () => {
   ok('the state card counts the state\'s active bill, in committee, and not its failed one', cardOk(1) && d.querySelector('#legPanel .leg-stats--card .leg-stats-key').textContent === '1 in committee (100%)', panel());
   await leaveMap();
   d.getElementById('legStateSelect').value = 'federal'; d.getElementById('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
-  ok('choosing Federal in the Show menu shows Congress\'s stats in the card: its one bill, and a link to it below', /Federal \(Congress\)/.test(panel()) && cardOk(1) && d.querySelector('#legPanel .leg-more-link').getAttribute('data-more') === 'federal', panel());
-  ok('and pins it: both tables narrow to Congress',
+  ok('choosing Federal in the Show menu shows Congress\'s stats in the card: its one bill, and a link to it below', /Federal \(Congress, agencies and courts\)/.test(panel()) && /Bills in Congress/.test(panel()) && cardOk(1) && d.querySelector('#legPanel .leg-more-link').getAttribute('data-more') === 'federal', panel());
+  ok('and pins it: both tables narrow to Congress, the results table says the results are by state, and the card says so too',
      d.getElementById('legStateSelect').value === 'federal' && rows('legBillsTable') === 1 && /H\.R\. 3/.test(billsTable().textContent) &&
-     rows('legResultsTable') === 0 && /results are by state/.test(d.getElementById('legResultsTable').textContent) && /Federal \(Congress\)/.test(d.getElementById('legBillsScope').textContent));
+     rows('legResultsTable') === 0 && /results are by state/.test(d.getElementById('legResultsTable').textContent) && /results are by state/.test(panel()) && /Federal \(Congress\)/.test(d.getElementById('legBillsScope').textContent));
   ok('and when there is nothing to show (Federal) the results table still has its columns', resultsShape());
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   ok('Clear returns from Federal to all jurisdictions', d.getElementById('legStateSelect').value === '' && rows('legBillsTable') === 3);
   sel.value = 'OH'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
   ok('a column that is empty for every bill in view is left out: Ohio\'s one bill has no last action and no summary, so the table has neither column', heads() === 'Jurisdiction,Bill,Title,Status,Source', heads());
-  fire(d.getElementById('legClear'), 'click');
-  fire(d.getElementById('legLayerBills'), 'click');
-  ok('the Bills layer shades only states with an active state bill, and the legend counts the federal bills that are not on the map',
-     d.getElementById('legMap').getAttribute('data-layer') === 'bills' && /fill-b1/.test(path('TX').getAttribute('class')) && /fill-b1/.test(path('OH').getAttribute('class')) && !/fill-b/.test(path('CA').getAttribute('class')) &&
-     /1 bill\s*2/.test(legend()) && /Federal bills, not on the map\s*1/.test(legend()), legend());
-  ok('the buttons follow the Bills layer as well: none of the small states has a test bill, so none is shaded', tilesMatch() && tiles.every(b => !/fill-/.test(b.getAttribute('class'))), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
+  fire(d.getElementById('legReset'), 'click');
+  ok('the map shades only states with an active state bill, and the legend counts the federal bills that are not on the map',
+     /fill-b1/.test(path('TX').getAttribute('class')) && /fill-b1/.test(path('OH').getAttribute('class')) && !/fill-b/.test(path('CA').getAttribute('class')) &&
+     /1 item\s*2/.test(legend()) && /Federal items, not on the map\s*1/.test(legend()), legend());
+  ok('the buttons follow the shading as well: none of the small states has a test bill, so none is shaded', tilesMatch() && tiles.every(b => !/fill-/.test(b.getAttribute('class'))), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
   w.eval('LEGISLATION_DATA.length = 0');
   w.__real = real; w.eval('LEGISLATION_DATA.push(...window.__real)');
   area.dispatchEvent(new w.Event('legislation:refresh'));
-  ok('with the real bills put back the tab is as it opened, checkbox included', rows('legBillsTable') === Math.min(PAGE, nBills) && mastheadText().startsWith(`${num(nBills)} active bills`) && !passWrap.hidden && passWrap.querySelector('.leg-muted-count').textContent === num(nPassing));
+  ok('with the real bills put back the tab is as it opened, checkbox included', rows('legBillsTable') === Math.min(PAGE, nBills) && mastheadText() === GOV_BLURB && !passWrap.hidden && passWrap.querySelector('.leg-muted-count').textContent === num(nPassing));
   await leaveMap();
 
-  /* ── E. the filter bar: search, and topic chips behind More filters ─────────────────────────────────────────────
+  /* ── E. the filter bar: the topic chips, the Status menu, the checkbox and the search ─────────────────────────────────────────────
      First on the shipped bills (what the page does with real data), then on ten test bills and three test topics of our own, whose words and
      counts can be worked out by hand: a word in the title, two different words in the summary, a whole-word marker, AND between chips, "No topic",
      search across everything a row shows, the switch and the filters together, a jurisdiction pinned, an empty result, and paging. */
-  const searchBox = d.getElementById('legSearch'), moreToggle = d.getElementById('legMoreToggle'), clearFilters = d.getElementById('legFilterClear');
+  const searchBox = d.getElementById('legSearch'), clearFilters = d.getElementById('legReset');   // the Reset button: is-on says something is chosen or filtered
   const chips = () => [...d.querySelectorAll('#legTopicPills button[data-topic]')], chipOf = id => d.querySelector(`#legTopicPills button[data-topic="${id}"]`);
   const chipText = b => b.textContent.replace(/\s+/g, ' ').trim(), chipN = b => Number(b.querySelector('.kw-count').textContent.replace(/,/g, ''));
-  const resultLine = () => d.getElementById('legResultLine').textContent, moreBadge = d.getElementById('legMoreCount');
+  const resultLine = () => d.getElementById('legResultLine').textContent;
   const typeInto = async text => { searchBox.value = text; searchBox.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260); };
   const titles = () => [...billsTable().querySelectorAll('tbody tr:not(.leg-empty-row)')].map(tr => tr.querySelector('td.leg-col-title').childNodes[0].textContent);
   const topicDefs = JSON.parse(w.eval('JSON.stringify(LEGISLATION_TOPICS.map(t => ({ id: t.id, label: t.label, words: t.words.length })))'));
   const mastBefore = mastheadText();
-  ok('under the toolbar there is a filter bar: a search box, More filters (closed, with no badge) and a result line that counts the bills against all of them, with no Clear filters yet',
+  ok('above the map there is a filter bar: a search box under the topics, and a result line that counts the bills against all the filters, with no Clear filters yet',
      !!d.getElementById('legFilters') && d.getElementById('legFilters').classList.contains('controls') && searchBox.type === 'search' && searchBox.getAttribute('aria-label') &&
-     moreToggle.getAttribute('aria-expanded') === 'false' && !d.getElementById('legMorePanel').classList.contains('open') && moreBadge.hidden && clearFilters.hidden &&
-     resultLine() === `${num(nBills)} of ${num(nBills)} bills.`, resultLine());
+     !clearFilters.classList.contains('is-on') && resultLine() === `${num(nBills)} of ${num(nBills)} bills.`, resultLine());
   ok('the topics are defined in the data, each with an id, a label and some words, and no two share an id',
      topicDefs.length >= 5 && new Set(topicDefs.map(t => t.id)).size === topicDefs.length && topicDefs.every(t => t.id && t.label && t.words > 0 && t.id !== 'all' && t.id !== 'none'), JSON.stringify(topicDefs.map(t => t.id)));
   /* A bill's status and a race's result are labels to read, so they are not pills (a pill looks like a button): the status is its stage in words, as plain text; a result is a square in the
@@ -863,55 +1333,61 @@ const legislationTests = async () => {
      statusRows.length > 0 && statusRows.every(tr => { const cell = tr.children[3], first = cell.firstChild; return !!first && first.nodeType === 3 && stageLabels.includes(first.textContent) && !cell.querySelector('.leg-chip, .leg-step, .leg-track'); }),
      statusRows.slice(0, 2).map(tr => tr.children[3].textContent).join(' | '));
   const RESULT_WORDS = { 'd-gain': 'Democratic gain', 'd-hold': 'Democratic hold', 'r-hold': 'Republican hold', 'r-gain': 'Republican gain', uncalled: 'Uncalled' };
-  const raceCells = [...d.querySelectorAll('#legResultsTable tbody tr:not(.leg-empty-row) .leg-result')];
-  ok('a race\'s result is a square in the party\'s colour and the words, not a pill: a gain or a race not yet called is bold, a hold is plain',
+  const raceCells = [];
+  ['TX', 'NE', 'AK'].forEach(c => { fire(path(c), 'mouseover'); raceCells.push(...d.querySelectorAll('#legPanel .leg-result')); });
+  ok('a race\'s result in the card is a square in the party\'s colour and the words, not a pill: a gain or a race not yet called is bold, a hold is plain',
      raceCells.length > 0 && raceCells.every(el => {
        const sw = el.querySelector('.leg-swatch'), key = sw && (sw.className.match(/fill-(d-gain|d-hold|r-hold|r-gain|uncalled)/) || [])[1];
        return !!key && sw.getAttribute('aria-hidden') === 'true' && el.textContent.trim() === RESULT_WORDS[key] && el.classList.contains('leg-result--news') === ['d-gain', 'r-gain', 'uncalled'].includes(key);
-     }) && raceCells.some(el => el.classList.contains('leg-result--news')) && raceCells.some(el => !el.classList.contains('leg-result--news')) && !d.querySelector('#legResultsTable .leg-chip'), raceCells.length + ' results');
+     }) && raceCells.some(el => el.classList.contains('leg-result--news')) && raceCells.some(el => !el.classList.contains('leg-result--news')) && !d.querySelector('#legPanel .leg-chip'), raceCells.length + ' results');
+  await leaveMap();
+  const tableCells = [...d.querySelectorAll('#legResultsTable tbody tr:not(.leg-empty-row) .leg-result')];
+  ok('a race\'s result in the results table is the same square and words as in the card, not a pill: a gain or a race not yet called is bold, a hold is plain',
+     tableCells.length > 0 && tableCells.every(el => {
+       const sw = el.querySelector('.leg-swatch'), key = sw && (sw.className.match(/fill-(d-gain|d-hold|r-hold|r-gain|uncalled)/) || [])[1];
+       return !!key && sw.getAttribute('aria-hidden') === 'true' && el.textContent.trim() === RESULT_WORDS[key] && el.classList.contains('leg-result--news') === ['d-gain', 'r-gain', 'uncalled'].includes(key);
+     }) && !d.querySelector('#legResultsTable .leg-chip'), tableCells.length + ' results');
   ok('the chips are All, then one for each topic in the data\'s order, then No topic; each carries its count, and All counts every bill',
      chips().length === topicDefs.length + 2 && chipText(chips()[0]).startsWith('All') && chipN(chips()[0]) === nBills && chipText(chips()[chips().length - 1]).startsWith('No topic') &&
      topicDefs.every((t, i) => chipText(chips()[i + 1]).startsWith(t.label)) && chips().every(b => b.getAttribute('aria-pressed') === (b.dataset.topic === 'all' ? 'true' : 'false')), chips().map(chipText).join(' | '));
-  fire(moreToggle, 'click');
-  ok('More filters opens the panel that holds the chips, and says what the topics are and how many bills have none',
-     d.getElementById('legMorePanel').classList.contains('open') && moreToggle.getAttribute('aria-expanded') === 'true' &&
-     new RegExp(`${num(chipN(chipOf('none')))} of ${num(nBills)} have none`).test(d.getElementById('legTopicNote').textContent), d.getElementById('legTopicNote').textContent);
+  ok('the topics are always showing, and there is no note under them about how a topic is assigned or how many bills have none',
+     w.getComputedStyle(d.getElementById('legTopicPills')).display !== 'none' && !d.getElementById('legTopicNote') && !/our reading of each bill/.test(d.getElementById('legislationArea').textContent) && !/have none\./.test(d.getElementById('legTopicsBar').textContent));
   const pickable = chips().find(b => !['all', 'none'].includes(b.dataset.topic) && !b.disabled && chipN(b) > 0 && chipN(b) < nBills);
   if (pickable) {
     const k = chipN(pickable), label = chipText(pickable).replace(/\s*[\d,]+$/, '');
     fire(pickable, 'click');
-    ok(`choosing a topic (${label}) narrows the result line, the table and its title to the ${k} bills that have it, marks the chip, shows the badge and Clear filters, and leaves the masthead saying what is loaded`,
-       resultLine() === `${num(k)} of ${num(nBills)} bills.` && pickable.getAttribute('aria-pressed') === 'true' && moreBadge.textContent === '1' && !moreBadge.hidden && !clearFilters.hidden &&
+    ok(`choosing a topic (${label}) narrows the result line, the table and its title to the ${k} bills that have it, marks the chip, shows Clear filters, and leaves the masthead saying what is loaded`,
+       resultLine() === `${num(k)} of ${num(nBills)} bills.` && pickable.getAttribute('aria-pressed') === 'true' && clearFilters.classList.contains('is-on') &&
        rows('legBillsTable') === Math.min(PAGE, k) && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(k)} ${k === 1 ? 'bill' : 'bills'}` && mastheadText() === mastBefore,
        `${resultLine()} / ${d.getElementById('legBillsScope').textContent}`);
-    const fedLeft = Number(((/Federal bills, not on the map\s*([\d,]+)/.exec(legend()) || [])[1] || '0').replace(/,/g, '')), stateLeft = k - fedLeft;
+    const fedLeft = Number(((/Federal items, not on the map\s*([\d,]+)/.exec(legend()) || [])[1] || '0').replace(/,/g, '')), stateLeft = k - fedLeft;
     ok('every bill left shows the topic on its row, and the panel\'s overview and the Federal count follow the filter (the state bills and the federal bills left add up to the bills the topic has)',
        [...billsTable().querySelectorAll('tbody tr')].every(tr => tr.textContent.includes('Topics: ') && tr.textContent.includes(label)) && stateLeft >= 0 &&
        (stateLeft ? new RegExp(`${num(stateLeft)} ${stateLeft === 1 ? 'bill' : 'bills'} in `).test(panel()) : !/ bills? in /.test(panel().replace(/federal bills?/, ''))) &&
        (fedLeft ? new RegExp(`${num(fedLeft)} federal ${fedLeft === 1 ? 'bill' : 'bills'}`).test(panel()) : !/federal bill/.test(panel())), `${k} left: ${stateLeft} state, ${fedLeft} federal; ` + panel());
     fire(clearFilters, 'click');
-    ok('Clear filters puts everything back (the chips, the badge, the table, the result line) and returns the keyboard to the search box',
-       resultLine() === `${num(nBills)} of ${num(nBills)} bills.` && chipOf('all').getAttribute('aria-pressed') === 'true' && moreBadge.hidden && clearFilters.hidden &&
-       rows('legBillsTable') === Math.min(PAGE, nBills) && d.activeElement === searchBox, resultLine());
+    ok('Reset all puts everything back (the chips, the table, the result line)',
+       resultLine() === `${num(nBills)} of ${num(nBills)} bills.` && chipOf('all').getAttribute('aria-pressed') === 'true' && !clearFilters.classList.contains('is-on') &&
+       rows('legBillsTable') === Math.min(PAGE, nBills), resultLine());
   } else ok('there is a topic that some, but not all, of the bills have (so the filter can be shown to narrow the list)', false, chips().map(chipText).join(' | '));
   const sample = String(w.eval("(() => { const re = /^[A-Za-z]{7,}$/; const b = LEGISLATION_DATA.find(x => !x.passing && x.title && x.title.split(/\\s+/).some(y => re.test(y))); return b ? b.title.split(/\\s+/).find(y => re.test(y)) : ''; })()") || '').toLowerCase();
   await typeInto(sample);
   ok(`searching for a word (${sample}) keeps the bills with it somewhere in what a row shows, and no others`,
-     rows('legBillsTable') > 0 && [...billsTable().querySelectorAll('tbody tr')].every(tr => tr.textContent.toLowerCase().includes(sample)) && !clearFilters.hidden &&
+     rows('legBillsTable') > 0 && [...billsTable().querySelectorAll('tbody tr')].every(tr => tr.textContent.toLowerCase().includes(sample)) && clearFilters.classList.contains('is-on') &&
      new RegExp(`^${rows('legBillsTable') < PAGE ? rows('legBillsTable') : '\\d[\\d,]*'} of ${num(nBills)} bills\\.$`).test(resultLine()), resultLine());
   await typeInto('qqzzxx');
   ok('a search nothing matches says so, in the table and the panel, with no pager and a count of none, and the chips run down to nothing',
      rows('legBillsTable') === 0 && /No bills match the search and filters chosen\./.test(billsTable().textContent) && pager.hidden && /No bills match/.test(panel()) && d.getElementById('legBillsTitle').textContent.trim() === 'All jurisdictions · 0 bills' &&
      resultLine() === `0 of ${num(nBills)} bills.` && chips().filter(b => !['all'].includes(b.dataset.topic)).every(b => b.disabled), billsTable().textContent);
   fire(clearFilters, 'click');
-  ok('and Clear filters clears the search too', searchBox.value === '' && rows('legBillsTable') === Math.min(PAGE, nBills) && resultLine() === `${num(nBills)} of ${num(nBills)} bills.`);
+  ok('and Reset all clears the search too', searchBox.value === '' && rows('legBillsTable') === Math.min(PAGE, nBills) && resultLine() === `${num(nBills)} of ${num(nBills)} bills.`);
 
   // ── sort and status on the shipped bills
   const sortSelR = d.getElementById('legSort'), setSortR = v => { sortSelR.value = v; sortSelR.dispatchEvent(new w.Event('change', { bubbles: true })); };
   const oldestAction = w.eval("LEGISLATION_DATA.filter(b => !b.passing && b.lastAction && b.lastAction.date).map(b => b.lastAction.date).sort()[0]");
   setSortR('oldest');
-  ok('Sort by Oldest action starts the table with the oldest last action, in order, and starts again at page 1 (it is not a filter: no badge, no Clear filters)',
-     dates()[0] === oldestAction && inOrder(dates(), false) && pager.querySelector('.pager-status').textContent === `Page 1 of ${pagesOf(nBills)}` && moreBadge.hidden && clearFilters.hidden, `${dates().slice(0, 3)} vs ${oldestAction}`);
+  ok('Sort by Oldest action starts the table with the oldest last action, in order, and starts again at page 1 (it is not a filter, but the Reset button counts the order: Reset all (1))',
+     dates()[0] === oldestAction && inOrder(dates(), false) && pager.querySelector('.pager-status').textContent === `Page 1 of ${pagesOf(nBills)}` && clearFilters.classList.contains('is-on') && d.getElementById('legResetText').textContent === 'Reset all (1)', `${dates().slice(0, 3)} vs ${oldestAction}`);
   setSortR('jurisdiction');
   ok('Sort by Jurisdiction puts Congress first (the first page is all federal bills while there are as many as a page)', nFed >= PAGE ? [...billsTable().querySelectorAll('tbody tr')].every(r => /^Federal/.test(r.firstElementChild.textContent)) : /^Federal/.test(billsTable().querySelector('tbody tr').textContent));
   setSortR('recent');
@@ -922,12 +1398,37 @@ const legislationTests = async () => {
   const stagePick = stageList.find(s => s.n > 0 && s.n < nBills);
   if (stagePick) {
     statusR.value = stagePick.k; statusR.dispatchEvent(new w.Event('change', { bubbles: true }));
-    ok(`choosing a status (${stagePick.label}) narrows the table, the result line and the badge to the ${stagePick.n} bills at that stage, and every row says so`,
-       resultLine() === `${num(stagePick.n)} of ${num(nBills)} bills.` && rows('legBillsTable') === Math.min(PAGE, stagePick.n) && moreBadge.textContent === '1' && !clearFilters.hidden && mastheadText() === mastBefore &&
+    ok(`choosing a status (${stagePick.label}) narrows the table and the result line to the ${stagePick.n} bills at that stage, and every row says so`,
+       resultLine() === `${num(stagePick.n)} of ${num(nBills)} bills.` && rows('legBillsTable') === Math.min(PAGE, stagePick.n) && clearFilters.classList.contains('is-on') && mastheadText() === mastBefore &&
        [...billsTable().querySelectorAll('tbody tr')].every(tr => tr.textContent.includes(stagePick.label)), resultLine());
     fire(clearFilters, 'click');
-    ok('and Clear filters puts the status back to all', statusR.value === '' && resultLine() === `${num(nBills)} of ${num(nBills)} bills.` && moreBadge.hidden);
+    ok('and Reset all puts the status back to all', statusR.value === '' && resultLine() === `${num(nBills)} of ${num(nBills)} bills.`);
   } else ok('there is a stage that some, but not all, of the bills are at', false, stageList.map(s => s.label + s.n).join());
+
+  // ── the Reset button: one button for the jurisdiction and every filter (the owner's choice, 2026-11-18)
+  const resetText = () => d.getElementById('legResetText').textContent, liveSaid = () => d.getElementById('legAnnounce').textContent;
+  ok('the Reset button is always there, the last thing in the sticky toolbar, a button and not a link, and reads Reset all, as an outline, while nothing is chosen or filtered',
+     clearFilters.matches('button') && !!clearFilters.closest('#legSticky') && clearFilters.parentElement.lastElementChild === clearFilters && !clearFilters.hidden && !clearFilters.classList.contains('is-on') && resetText() === 'Reset all' && clearFilters.getAttribute('title').length > 20);
+  fire(clearFilters, 'click');
+  ok('pressing it with nothing on says so, rather than doing nothing silently', /Nothing is chosen or filtered/.test(liveSaid()), liveSaid());
+  setSortR('oldest');
+  const topicPick = chips().find(b => !['all', 'none'].includes(b.dataset.topic) && !b.disabled && chipN(b) > 0 && chipN(b) < nBills);
+  fire(topicPick, 'click');
+  statusR.value = stagePick.k; statusR.dispatchEvent(new w.Event('change', { bubbles: true }));
+  await typeInto('a');
+  if (!passWrap.hidden) fire(passBox, 'click');
+  d.getElementById('legStateSelect').value = 'TX'; d.getElementById('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
+  const nOn = 1 + 1 + 1 + 1 + 1 + (passWrap.hidden ? 0 : 1);   // the state, the topic, the status, the word, the order (Oldest), and the checkbox when it is offered
+  ok(`with a state, a topic, a status, a word, the order and the checkbox on, the button turns solid and counts them: Reset all (${nOn})`, clearFilters.classList.contains('is-on') && resetText() === `Reset all (${nOn})`, resetText());
+  fire(clearFilters, 'click');
+  ok('pressing it clears all of them at once: the state, the topic, the status, the word, the checkbox and the order (back to Most recent), and puts the table and the result line back',
+     d.getElementById('legStateSelect').value === '' && searchBox.value === '' && statusR.value === '' && !passBox.checked && chipOf('all').getAttribute('aria-pressed') === 'true' && resultLine() === `${num(nBills)} of ${num(nBills)} bills.` &&
+     !clearFilters.classList.contains('is-on') && resetText() === 'Reset all' && sortSelR.value === 'recent' && /Everything is reset/.test(liveSaid()), resultLine() + ' | ' + resetText());
+  setSortR('recent');
+  searchBox.value = 'qqzzxx'; searchBox.dispatchEvent(new w.Event('input', { bubbles: true }));
+  fire(clearFilters, 'click');
+  await wait(300);
+  ok('words typed but not yet applied are cleared too, and the pending search does not come back after the button is pressed', searchBox.value === '' && resultLine() === `${num(nBills)} of ${num(nBills)} bills.` && resetText() === 'Reset all', searchBox.value + ' | ' + resultLine());
 
 
   // ── on bills and topics of our own ──
@@ -956,20 +1457,20 @@ const legislationTests = async () => {
      (() => { fire(chipOf('pets'), 'click'); return titles().sort().join('|') === ['Animal welfare', 'Cat and puppy parks', 'Dog licensing', 'Registering a vehicle with a dog'].join('|'); })() && resultLine() === '4 of 8 bills.', titles().join('|'));
   ok('each row names its topics, and the chips now count what choosing them would leave: Cars 1 (the vehicle with a dog), Rules 0 and dimmed, No topic 2',
      /Topics: Pets/.test(billsTable().textContent) && /Topics: Pets, Cars|Topics: Cars, Pets/.test(billsTable().textContent) && chipN(chipOf('cars')) === 1 && chipN(chipOf('rules')) === 0 && chipOf('rules').disabled && !chipOf('none').disabled, summary());
-  ok('the map follows: Texas, Ohio and California are shaded for the pet bills (2, 1 and 1), the federal bills are not (none has pets), and the masthead still counts all eight', 
-     /fill-b/.test(path('TX').getAttribute('class')) && /fill-b/.test(path('OH').getAttribute('class')) && /fill-b/.test(path('CA').getAttribute('class')) && /Federal bills, not on the map\s*0/.test(legend()) &&
-     /Eight active bills: six in three states and two in Congress/.test(mastheadText()), mastheadText() + ' / ' + legend());
+  ok('the map follows: Texas, Ohio and California are shaded for the pet bills (2, 1 and 1), the federal bills are not (none has pets), and the masthead is unchanged', 
+     /fill-b/.test(path('TX').getAttribute('class')) && /fill-b/.test(path('OH').getAttribute('class')) && /fill-b/.test(path('CA').getAttribute('class')) && /Federal items, not on the map\s*0/.test(legend()) &&
+     mastheadText() === GOV_BLURB, mastheadText() + ' / ' + legend());
   fire(chipOf('cars'), 'click');
-  ok('two chips together mean both: Pets and Cars leave the one bill that has both, and the badge says 2', titles().join('|') === 'Registering a vehicle with a dog' && resultLine() === '1 of 8 bills.' && moreBadge.textContent === '2', titles().join('|'));
+  ok('two chips together mean both: Pets and Cars leave the one bill that has both', titles().join('|') === 'Registering a vehicle with a dog' && resultLine() === '1 of 8 bills.', titles().join('|'));
   fire(chipOf('pets'), 'click');
-  ok('taking Pets off leaves Cars alone: three bills', titles().length === 3 && resultLine() === '3 of 8 bills.' && moreBadge.textContent === '1', titles().join('|'));
+  ok('taking Pets off leaves Cars alone: three bills', titles().length === 3 && resultLine() === '3 of 8 bills.', titles().join('|'));
   fire(chipOf('none'), 'click');
   ok('No topic stands alone: it drops the other chips and leaves the two bills with no topic (a dog in one line of a summary, and "Category")',
-     titles().sort().join('|') === 'Animal welfare|Category review' && chipOf('none').getAttribute('aria-pressed') === 'true' && chipOf('cars').getAttribute('aria-pressed') === 'false' && moreBadge.textContent === '1', titles().join('|'));
+     titles().sort().join('|') === 'Animal welfare|Category review' && chipOf('none').getAttribute('aria-pressed') === 'true' && chipOf('cars').getAttribute('aria-pressed') === 'false', titles().join('|'));
   fire(chipOf('pets'), 'click');
   ok('and choosing a topic takes No topic off', chipOf('none').getAttribute('aria-pressed') === 'false' && chipOf('pets').getAttribute('aria-pressed') === 'true' && titles().length === 4);
   fire(chipOf('all'), 'click');
-  ok('All clears the topics', resultLine() === '8 of 8 bills.' && chips().filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.topic).join() === 'all' && moreBadge.hidden);
+  ok('All clears the topics', resultLine() === '8 of 8 bills.' && chips().filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.topic).join() === 'all');
   await typeInto('dog');
   ok('search finds a word anywhere a row shows it, titles and summaries alike: "dog" is in four of the eight', titles().length === 4 && resultLine() === '4 of 8 bills.', titles().join('|'));
   await typeInto('Dog PUPPY');
@@ -991,7 +1492,7 @@ const legislationTests = async () => {
   await leaveMap();
   sel.value = 'OH'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
   ok('a jurisdiction pinned and a topic chosen narrow together, and the table\'s title counts the result', titles().join('|') === 'Registering a vehicle with a dog' && d.getElementById('legBillsScope').textContent === 'Ohio · 1 bill', d.getElementById('legBillsScope').textContent);
-  fire(d.getElementById('legClear'), 'click');
+  sel.value = ''; sel.dispatchEvent(new w.Event('change', { bubbles: true }));   // let go of Ohio with the menu, keeping the topic
   ok('the switch counts the bills it would add under the filters: one pet bill only mentions AI, so it offers 1, and turning it on makes five of nine',
      !passWrap.hidden && passWrap.querySelector('.leg-muted-count').textContent === '1' && (fire(passBox, 'click'), true) && titles().length === 5 && resultLine() === '5 of 9 bills.' && /Dog tax/.test(billsTable().textContent) &&
      /Mentions AI only in its text/.test(billsTable().textContent), titles().join('|'));
@@ -1015,22 +1516,22 @@ const legislationTests = async () => {
   ok('the Status menu offers All statuses and the stages that count as active, each with its count: three introduced, four in committee, one enacted, none passed (dimmed); the failed bill is not a status',
      statusSummary() === 'All statuses|Introduced (3)|In committee (4)|Passed one chamber (0)!|Passed both chambers (0)!|Enacted (1)', statusSummary());
   setStatus('committee');
-  ok('choosing a status narrows to the bills at that stage, with the badge at 1 and Clear filters shown, and the masthead still counting all eight',
-     nums().sort().join() === 'AB 31,AB 32,HB 11,SB 22' && resultLine() === '4 of 8 bills.' && moreBadge.textContent === '1' && !clearFilters.hidden && /Eight active bills/.test(mastheadText()) &&
+  ok('choosing a status narrows to the bills at that stage, with Reset shown, and the masthead unchanged',
+     nums().sort().join() === 'AB 31,AB 32,HB 11,SB 22' && resultLine() === '4 of 8 bills.' && clearFilters.classList.contains('is-on') && mastheadText() === GOV_BLURB &&
      [...billsTable().querySelectorAll('tbody tr')].every(tr => /In committee/.test(tr.textContent)), nums().join());
   ok('the topic chips are counted under the status: Pets 3, Cars 1, Rules 0 and dimmed, No topic 1',
      chipN(chipOf('pets')) === 3 && chipN(chipOf('cars')) === 1 && chipN(chipOf('rules')) === 0 && chipOf('rules').disabled && chipN(chipOf('none')) === 1, summary());
   fire(chipOf('pets'), 'click');
-  ok('a status and a topic together: In committee and Pets leave three bills, the badge says 2, and the Status menu is counted under the topic (introduced 1, committee 3, enacted none and dimmed)',
-     nums().sort().join() === 'AB 31,HB 11,SB 22' && moreBadge.textContent === '2' && statusSummary() === 'All statuses|Introduced (1)|In committee (3)|Passed one chamber (0)!|Passed both chambers (0)!|Enacted (0)!', statusSummary() + ' / ' + nums().join());
+  ok('a status and a topic together: In committee and Pets leave three bills, and the Status menu is counted under the topic (introduced 1, committee 3, enacted none and dimmed)',
+     nums().sort().join() === 'AB 31,HB 11,SB 22' && statusSummary() === 'All statuses|Introduced (1)|In committee (3)|Passed one chamber (0)!|Passed both chambers (0)!|Enacted (0)!', statusSummary() + ' / ' + nums().join());
   await typeInto('ohio');
   ok('and with a search as well: Ohio, Pets and In committee leave the one bill', nums().join() === 'SB 22' && resultLine() === '1 of 8 bills.', nums().join());
   fire(clearFilters, 'click');
-  ok('Clear filters puts the status back to all, and leaves the order alone (Jurisdiction, as chosen)', statusSel.value === '' && resultLine() === '8 of 8 bills.' && moreBadge.hidden && sortSel.value === 'jurisdiction' && nums().join() === 'H.R. 42,H.R. 41,AB 31,AB 32,SB 21,SB 22,HB 12,HB 11', nums().join());
+  ok('Reset all puts the status back to all, and the order back to Most recent', statusSel.value === '' && resultLine() === '8 of 8 bills.' && sortSel.value === 'recent', sortSel.value);
   setSort('recent');
   setStatus('committee'); fire(passBox, 'click');
-  ok('the checkbox under More filters adds the committee bill that only mentions AI (five of nine) and counts in the badge with the status (2); Clear filters turns it off again with everything else',
-     nums().length === 5 && resultLine() === '5 of 9 bills.' && moreBadge.textContent === '2' && passBox.checked && (fire(clearFilters, 'click'), true) && !passBox.checked && resultLine() === '8 of 8 bills.' && moreBadge.hidden, nums().join());
+  ok('the checkbox adds the committee bill that only lightly mentions AI (five of nine) with the status; Clear filters turns it off again with everything else',
+     nums().length === 5 && resultLine() === '5 of 9 bills.' && passBox.checked && (fire(clearFilters, 'click'), true) && !passBox.checked && resultLine() === '8 of 8 bills.', nums().join());
   // the stats bar on the test bills: three introduced, four in committee, one enacted
   ok('on the test bills the stats bar says where the eight stand: 3 introduced (38%), 4 in committee (50%), 1 enacted (13%), in the stages\' order, each percentage rounded on its own (they come to 101)',
      statsLabel() === 'Where the 8 bills stand: 3 introduced (38%), 4 in committee (50%), 1 enacted (13%).' && segs().map(segN).join() === '3,4,1' &&
@@ -1038,7 +1539,7 @@ const legislationTests = async () => {
      segs().map(x => x.getAttribute('title')).join('|') === 'Introduced: 3 (38%)|In committee: 4 (50%)|Enacted: 1 (13%)', statsLabel());
   const ohSel = d.getElementById('legStateSelect'); ohSel.value = 'OH'; ohSel.dispatchEvent(new w.Event('change', { bubbles: true }));
   ok('it follows the state chosen in the Show menu: Ohio has two bills, one in committee and one enacted, and the title says the same', statsLabel() === 'Where the 2 bills stand: 1 in committee (50%), 1 enacted (50%).' && scopeN() === 2, statsLabel());
-  fire(d.getElementById('legClear'), 'click');
+  fire(d.getElementById('legReset'), 'click');
   setStatus('committee');
   ok('it follows the Status menu: only the four in committee are left, one segment', statsLabel() === 'Where the 4 bills stand: 4 in committee (100%).' && segs().length === 1 && scopeN() === 4, statsLabel());
   setStatus('');
@@ -1088,14 +1589,14 @@ const legislationLoadTests = async () => {
   const area = d.getElementById('legislationArea');
   ok('the bills are NOT loaded with the page: no rows, no source details, and the Legislation area has not asked for them',
      w.eval('typeof LEGISLATION_FEEDS') === 'undefined' && w.eval('LEGISLATION_DATA.length') === 0 && area.getAttribute('data-bills') === 'idle', area.getAttribute('data-bills'));
-  click(w, d, 'viewLegislation');
-  ok('opening the tab asks for them: the area says loading, and the masthead says so', area.getAttribute('data-bills') === 'loading' && /Loading the legislation/.test(d.getElementById('headerTabDescText').textContent), area.getAttribute('data-bills'));
+  click(w, d, 'viewGovernment');
+  ok('opening the tab asks for them: the area says loading, and so does the result line; the masthead is the same words while they load', area.getAttribute('data-bills') === 'loading' && /Loading the bills/.test(d.getElementById('legResultLine').textContent) && d.getElementById('headerTabDescText').textContent === GOV_BLURB, area.getAttribute('data-bills'));
   await settle(10);
-  ok('and they arrive: the area is ready, the data holds the bills, and the masthead counts them',
+  ok('and they arrive: the area is ready, the data holds the bills, and the result line counts them; the masthead has not moved',
      area.getAttribute('data-bills') === 'ready' && w.eval('LEGISLATION_DATA.length') > 0 && w.eval('typeof LEGISLATION_FEEDS') === 'object' &&
-     d.getElementById('headerTabDescText').textContent.startsWith(`${w.eval('LEGISLATION_DATA.filter(b => !b.passing).length').toLocaleString('en-US')} active bills`), d.getElementById('headerTabDescText').textContent);
+     d.getElementById('legResultLine').textContent.startsWith(`${w.eval('LEGISLATION_DATA.filter(b => !b.passing).length').toLocaleString('en-US')} of `) && d.getElementById('headerTabDescText').textContent === GOV_BLURB, d.getElementById('legResultLine').textContent);
   const again = w.eval('LEGISLATION_DATA.length');
-  click(w, d, 'viewPolicy'); click(w, d, 'viewLegislation'); await settle(10);
+  click(w, d, 'viewPolicy'); click(w, d, 'viewGovernment'); await settle(10);
   ok('opening the tab again does not load them twice', w.eval('LEGISLATION_DATA.length') === again && w.eval('document.querySelectorAll("script[src$=\'legislation-bills.js\']").length') === 1);
   const direct = load('index.html', '#legislation');
   await settle(10);
@@ -1189,31 +1690,27 @@ const legislationLoadTests = async () => {
   d.querySelector('#allFactsView .fact-card').click();   // close it again
   ok('fact cards carry no plain-English line',
      [...d.querySelectorAll('#allFactsView .fact-card')].every(c => !c.querySelector('.fc-claim') && !c.querySelector('.fc-plain')));
-  ok('the filter bar keeps search and Sort in view, with Evidence, both rating minimums and Keywords behind "More filters"',
+  ok('the filter bar is the same three blocks as the Government action tab\'s, in the same order, always showing (no More filters): the toolbar (Evidence, both rating minimums, with the Reset button at its right end), the keyword chips, and the search bar (search, Sort and the result line)',
      (() => {
-       const row = d.querySelector('#factBankArea .controls > .controls-row');
-       const inRow = id => !!row.querySelector('#' + id);
-       const panel = d.getElementById('kfMorePanel');
-       return !!row.querySelector('.search-wrap') && ['kfSort', 'kfMoreToggle'].every(inRow) &&
-         !inRow('kfEvidence') && !inRow('kfMinPol') && !inRow('kfMinTruth') && !inRow('kwPills') &&
-         !!panel.querySelector('#kfEvidence') && !!panel.querySelector('#kfMinPol') && !!panel.querySelector('#kfMinTruth') && !!panel.querySelector('#kwPills');
+       const kids = [...d.getElementById('factBankArea').children].map(e => e.id).join();
+       const tb = d.getElementById('kfToolbar'), ch = d.getElementById('kfChips'), sb = d.getElementById('kfFilters');
+       return kids.includes('kfToolbar,kfChips,kfFilters') && tb.classList.contains('bar-toolbar') && ch.classList.contains('bar-chips') && sb.classList.contains('bar-search') &&
+         ['kfEvidence', 'kfMinPol', 'kfMinTruth'].every(id => !!tb.querySelector('#' + id)) && tb.querySelector('.bar-toolbar-row').lastElementChild === d.getElementById('kfReset') &&
+         !!ch.querySelector('#kwPills') && !!sb.querySelector('.search-wrap') && !!sb.querySelector('#kfSort') && !!sb.querySelector('#kfResultLine') &&
+         !d.getElementById('kfMoreToggle') && !d.getElementById('kfMorePanel') && !d.getElementById('kfMoreCount') && !d.getElementById('kfClear') && !d.querySelector('#factBankArea .more-toggle, #factBankArea .more-panel');
      })());
-  ok('Evidence sits beside Political noteworthiness and Truth, in that order, in one row of the panel',
+  ok('Evidence sits beside Political noteworthiness and Truth, in that order, in the toolbar',
      (() => {
-       const r = d.getElementById('kfEvidence').closest('.controls-row');
+       const r = d.getElementById('kfEvidence').closest('.bar-toolbar-main');
        const selects = [...r.querySelectorAll('select')];
-       return r === d.getElementById('kfMinPol').closest('.controls-row') && r === d.getElementById('kfMinTruth').closest('.controls-row') &&
+       return !!r && r === d.getElementById('kfMinPol').closest('.bar-toolbar-main') && r === d.getElementById('kfMinTruth').closest('.bar-toolbar-main') &&
          ['kfEvidence', 'kfMinPol', 'kfMinTruth'].map(id => selects.indexOf(d.getElementById(id))).join() === '0,1,2';
      })());
-  ok('"More filters" starts closed, and opens and closes its panel',
-     (() => {
-       const tg = d.getElementById('kfMoreToggle'), pn = d.getElementById('kfMorePanel');
-       const start = tg.getAttribute('aria-expanded') === 'false' && !pn.classList.contains('open');
-       tg.click();
-       const opened = tg.getAttribute('aria-expanded') === 'true' && pn.classList.contains('open');
-       tg.click();
-       return start && opened && tg.getAttribute('aria-expanded') === 'false' && !pn.classList.contains('open');
-     })());
+  const barCss = [...d.querySelectorAll('style')].map(el => el.textContent).join('\n');
+  ok('the three blocks stick in order, each under the one before, as on the Government action tab (the toolbar at the top, the chips under it, the search bar under both), nothing sticks on a phone or a short window, and a jump to the list keeps clear of all three',
+     /#factBankArea \.bar-toolbar[^{]*\{[^}]*position:\s*sticky;\s*top:\s*0/.test(barCss) && /#factBankArea \.bar-chips[^{]*\{[^}]*position:\s*sticky;\s*top:\s*var\(--bar-toolbar-h/.test(barCss) &&
+     /#factBankArea \.bar-search[^{]*\{[^}]*position:\s*sticky;\s*top:\s*calc\(var\(--bar-toolbar-h,\s*0px\)\s*\+\s*var\(--bar-chips-h/.test(barCss) &&
+     /@media \(max-width: 640px\), \(max-height: 760px\)\s*\{[^}]*#factBankArea \.bar-search[^}]*position:\s*static/.test(barCss) && /#cardsGrid, #allFactsView \{ scroll-margin-top: calc\(var\(--bar-h/.test(barCss));
   ok('the Foundational checkbox stays hidden while no fact is marked foundational',
      d.getElementById('kfFoundational').closest('.ctl-check').hidden === !(w.FACT_BANK || []).some(f => f.foundational));
   /* A card's source is read from its own View Summary link, not from its id: record ids are opaque
@@ -1289,19 +1786,31 @@ const legislationLoadTests = async () => {
   }
   {
     const chips = [...d.querySelectorAll('#kwPills .kw-pill')];
-    const badge = () => d.getElementById('kfMoreCount'), clear = () => d.getElementById('kfClear');
+    const reset = () => d.getElementById('kfReset'), resetText = () => d.getElementById('kfResetText').textContent;   // the Reset button: solid with the count while anything differs from how the tab opens
     // The list holds one page, so the number of matches is read from the result line.
     const lineB = () => d.getElementById('kfResultLine').textContent;
     const visible = () => Number(lineB().match(/^(\d+) of/)[1]);
     const total = Number(lineB().match(/of (\d+) facts/)[1]);
     const pagerB = d.getElementById('kfPager');
-    ok('the filter state starts clean: "All" pressed, no badge, no "Clear filters"',
+    ok('the filter state starts clean: "All" pressed, and the Reset button is an outline reading Reset all',
        chips[0].dataset.kw === 'all' && chips[0].getAttribute('aria-pressed') === 'true' &&
-       d.querySelectorAll('#kwPills .kw-pill[aria-pressed="true"]').length === 1 && badge().hidden && clear().hidden);
+       d.querySelectorAll('#kwPills .kw-pill[aria-pressed="true"]').length === 1 && !reset().classList.contains('is-on') && resetText() === 'Reset all');
     chips[1].click();
-    ok('choosing a keyword narrows the list, releases "All", and shows the badge and "Clear filters"',
+    ok('choosing a keyword narrows the list, releases "All", and the Reset button turns solid and counts it: Reset all (1)',
        chips[0].getAttribute('aria-pressed') === 'false' && chips[1].getAttribute('aria-pressed') === 'true' &&
-       visible() > 0 && visible() < total && !badge().hidden && badge().textContent === '1' && !clear().hidden);
+       visible() > 0 && visible() < total && reset().classList.contains('is-on') && resetText() === 'Reset all (1)');
+    ok('under a filter each header still agrees with its cards ("k of N facts"), and a lone match is a plain card',
+       (() => {
+         const lst = d.getElementById('allFactsView');
+         const cards = [...lst.querySelectorAll('.cwrap')];
+         const heads = [...lst.querySelectorAll('.g-head')];
+         return heads.every(h => {
+           const id = h.querySelector('a.act-btn').getAttribute('href').replace('#entry/', '');
+           const mine = cards.filter(x => pidOf(x) === id);
+           return mine.length >= 2 && mine.every(x => x.classList.contains('in-group')) &&
+             new RegExp('^' + mine.length + ' (facts|of \\d+ facts)$').test(h.querySelector('.g-count').textContent);
+         }) && cards.filter(x => !x.classList.contains('in-group')).every(x => cards.filter(y => pidOf(y) === pidOf(x)).length === 1);
+       })());
     const pol = d.getElementById('kfMinPol'), ev = d.getElementById('kfEvidence');
     ok('under a filter each header still agrees with its cards ("k of N facts"), and a lone match is a plain card',
        (() => {
@@ -1316,26 +1825,33 @@ const legislationLoadTests = async () => {
          }) && cards.filter(x => !x.classList.contains('in-group')).every(x => cards.filter(y => pidOf(y) === pidOf(x)).length === 1);
        })());
     pol.value = '4'; pol.dispatchEvent(new w.Event('change', { bubbles: true }));
-    ok('a rating minimum, now inside the panel, is counted in the badge',
-       !clear().hidden && badge().textContent === '2');
+    ok('a rating minimum is counted too: Reset all (2)', resetText() === 'Reset all (2)');
     ev.value = ev.options[1].value; ev.dispatchEvent(new w.Event('change', { bubbles: true }));
-    ok('Evidence, now inside the panel, is counted in the badge too',
-       !clear().hidden && badge().textContent === '3');
-    clear().click();
-    ok('"Clear filters" resets Evidence, the rating minimums and the keywords, and restores the whole list',
+    ok('Evidence is counted too: Reset all (3)', resetText() === 'Reset all (3)');
+    reset().click();
+    ok('Reset all puts Evidence, the rating minimums and the keywords back and restores the whole list',
        chips[0].getAttribute('aria-pressed') === 'true' && chips[1].getAttribute('aria-pressed') === 'false' &&
        pol.value === '1' && d.getElementById('kfMinTruth').value === '1' && ev.value === 'all' &&
-       badge().hidden && clear().hidden && visible() === total);
+       !reset().classList.contains('is-on') && resetText() === 'Reset all' && visible() === total);
     ev.value = ev.options[1].value; ev.dispatchEvent(new w.Event('change', { bubbles: true }));
     ok('a filter that leaves one page of cards hides the pager', visible() < 50 && pagerB.hidden && !/Showing/.test(lineB()));
-    clear().click();
-    ok('clearing it brings the pager and page 1 back', !pagerB.hidden && (pagerB.querySelector('[aria-current="page"]') || {}).textContent === '1');
+    reset().click();
+    ok('resetting it brings the pager and page 1 back', !pagerB.hidden && (pagerB.querySelector('[aria-current="page"]') || {}).textContent === '1');
+    // the search words and the order count and reset too (the owner, 2026-11-18: Reset all, as on the Government action tab)
+    const kfBox = d.getElementById('kfSearch'), kfSort = d.getElementById('kfSort'), kfWords = String(w.eval('FACT_BANK').find(f => f.fact).fact).split(/\s+/).find(x => /^[A-Za-z]{6,}$/.test(x)).toLowerCase();
+    kfBox.value = kfWords; kfBox.dispatchEvent(new w.Event('input', { bubbles: true }));
+    kfSort.value = 'political'; kfSort.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok('the search words and the order count as well: Reset all (2)', resetText() === 'Reset all (2)' && reset().classList.contains('is-on') && visible() > 0 && visible() < total, resetText() + ' / ' + lineB());
+    reset().click();
+    ok('Reset all clears the search and puts the order back to Most recent, with every fact showing',
+       kfBox.value === '' && kfSort.value === 'date' && visible() === total && resetText() === 'Reset all' && /Everything is reset/.test(d.getElementById('kfAnnounce').textContent), lineB());
+    reset().click();
+    ok('pressing it with nothing to reset says so, rather than doing nothing silently', /Nothing is chosen or filtered/.test(d.getElementById('kfAnnounce').textContent), d.getElementById('kfAnnounce').textContent);
   }
   /* ── the Papers bar ───────────────────────────────────────────────────────
      The Papers tab's search-and-filters bar is the Fact Bank's bar (src/styles/filterbar.css),
-     so it has the same shape: search and Sort in a row, every filter behind
-     "More filters", then a result line and "Clear filters". The sidebar and the pill rows it
-     replaced are gone. */
+     so it has the same shape as the Government action tab's: the toolbar (Methodology, Category and Region, always showing, with the Reset button at its right end), then the search bar (search, Sort and the
+     result line), each sticky under the one before. The sidebar and the pill rows it replaced are gone. */
   {
     const pg = load('index.html', '#papers');
     const pw = pg.w, pd = pg.d;
@@ -1345,7 +1861,7 @@ const legislationLoadTests = async () => {
     const rows = () => pd.querySelectorAll('#cardsGrid .src-row').length;
     const line = () => pd.getElementById('ppResultLine').textContent;
     const matches = () => Number(line().match(/^(\d+) of/)[1]);
-    const badge = () => pd.getElementById('ppMoreCount'), clear = () => pd.getElementById('ppClear');
+    const reset = () => pd.getElementById('ppReset'), resetText = () => pd.getElementById('ppResetText').textContent;   // the Reset button: solid with the count while anything differs from how the tab opens
     const total = matches();
     ok('the Papers list holds every paper but shows 50 rows at a time, with a pager under it',
        total > 100 && rows() === 50 && !pd.getElementById('ppPager').hidden && line() === `${total} of ${total} papers. Showing 1 to 50.`,
@@ -1353,55 +1869,51 @@ const legislationLoadTests = async () => {
     ok('the sidebar, the pill rows, the sort toggle and the drawer button are gone',
        !pd.getElementById('sidebar') && !pd.getElementById('inlineFilters') && !pd.getElementById('sortBtn') &&
        !pd.getElementById('sidebarToggle') && !pd.getElementById('searchInput'));
-    const row = pd.querySelector('#papersArea .controls > .controls-row');
-    const inRow = id => !!row && row.contains(pd.getElementById(id));
-    ok('search, Sort and "More filters" share the bar\'s first row, and Methodology is not in it',
-       !!row && !!row.querySelector('.search-wrap') && ['ppSort', 'ppMoreToggle'].every(inRow) && !inRow('ppMethod'));
-    ok('Methodology, Category and Region sit inside the "More filters" panel, Methodology beside Category',
-       ['ppMethod', 'ppCategory', 'ppRegion'].every(id => pd.getElementById('ppMorePanel').contains(pd.getElementById(id))) &&
-       pd.getElementById('ppMethod').closest('.controls-row') === pd.getElementById('ppCategory').closest('.controls-row'));
-    ok('"More filters" starts closed, and opens and closes its panel',
-       (() => {
-         const tg = pd.getElementById('ppMoreToggle'), pn = pd.getElementById('ppMorePanel');
-         const start = tg.getAttribute('aria-expanded') === 'false' && !pn.classList.contains('open');
-         tg.click();
-         const opened = tg.getAttribute('aria-expanded') === 'true' && pn.classList.contains('open');
-         tg.click();
-         return start && opened && tg.getAttribute('aria-expanded') === 'false' && !pn.classList.contains('open');
-       })());
+    const kidsP = [...pd.getElementById('papersArea').children].map(e => e.id).join();
+    const tbP = pd.getElementById('ppToolbar'), sbP = pd.getElementById('ppFilters');
+    ok('the bar is the same two blocks as the Government action tab\'s toolbar and search bar, in that order, always showing (no More filters): the toolbar holds Category, Methodology and Region with the Reset button at its right end, the search bar holds search, Sort and the result line',
+       kidsP.includes('ppToolbar,ppFilters') && tbP.classList.contains('bar-toolbar') && sbP.classList.contains('bar-search') && ['ppCategory', 'ppMethod', 'ppRegion'].every(id => !!tbP.querySelector('#' + id)) &&
+       tbP.querySelector('.bar-toolbar-row').lastElementChild === pd.getElementById('ppReset') && !!sbP.querySelector('.search-wrap') && !!sbP.querySelector('#ppSort') && !!sbP.querySelector('#ppResultLine') &&
+       !pd.getElementById('ppMoreToggle') && !pd.getElementById('ppMorePanel') && !pd.getElementById('ppMoreCount') && !pd.getElementById('ppClear') && !pd.querySelector('#papersArea .more-toggle, #papersArea .more-panel'));
+    ok('Category, Methodology and Region are one row of the toolbar, in that order',
+       (() => { const r = pd.getElementById('ppCategory').closest('.bar-toolbar-main'), s = [...r.querySelectorAll('select')]; return !!r && ['ppCategory', 'ppMethod', 'ppRegion'].map(id => s.indexOf(pd.getElementById(id))).join() === '0,1,2'; })());
+    const barCssP = [...pd.querySelectorAll('style')].map(el => el.textContent).join('\n');
+    ok('the toolbar and the search bar stick in order, the search bar under the toolbar, and nothing sticks on a phone or a short window',
+       /#papersArea \.bar-toolbar[^{]*\{[^}]*position:\s*sticky;\s*top:\s*0/.test(barCssP) && /#papersArea \.bar-search[^{]*\{[^}]*position:\s*sticky;\s*top:\s*calc\(var\(--bar-toolbar-h,\s*0px\)\s*\+\s*var\(--bar-chips-h/.test(barCssP) &&
+       /@media \(max-width: 640px\), \(max-height: 760px\)\s*\{[^}]*#papersArea \.bar-search[^}]*position:\s*static/.test(barCssP));
     ok('every Methodology, Category and Region has an option, with a count in its label',
        [['ppMethod', n => n === 6], ['ppCategory', n => n >= 10], ['ppRegion', n => n === 2]].every(([id, fits]) => {
          const opts = [...pd.getElementById(id).options].filter(o => o.value !== 'all');
          return fits(opts.length) && opts.every(o => / \(\d+\)$/.test(o.textContent));
        }));
-    ok('the bar starts clean: the whole list, no badge, no "Clear filters"',
-       line().startsWith(`${total} of ${total} papers.`) && badge().hidden && clear().hidden);
+    ok('the bar starts clean: the whole list, and the Reset button is an outline reading Reset all',
+       line().startsWith(`${total} of ${total} papers.`) && !reset().classList.contains('is-on') && resetText() === 'Reset all');
 
     const months = () => [...pd.querySelectorAll('#cardsGrid .src-meta')].map(m => Date.parse('1 ' + m.textContent.split(' · ').pop()));
     const ordered = (a, dir) => a.every((v, i) => i === 0 || (dir === 'desc' ? a[i - 1] >= v : a[i - 1] <= v));
     ok('the list starts newest first', ordered(months(), 'desc'));
     pick('ppSort', 'asc');
-    ok('Sort "Oldest first" reverses it without dropping a paper, and Sort is not a filter (no "Clear filters")',
-       ordered(months(), 'asc') && matches() === total && rows() === 50 && clear().hidden);
+    ok('Sort "Oldest first" reverses it without dropping a paper; it is not a filter, but the Reset button counts the order: Reset all (1)',
+       ordered(months(), 'asc') && matches() === total && rows() === 50 && resetText() === 'Reset all (1)');
     pick('ppSort', 'desc');
     ok('and back to "Newest first"', ordered(months(), 'desc') && matches() === total && rows() === 50);
 
     pick('ppMethod', 'peer-reviewed');
-    ok('choosing a Methodology narrows the list, counts in the badge and shows "Clear filters"',
-       matches() > 0 && matches() < total && rows() === Math.min(matches(), 50) && !clear().hidden && badge().textContent === '1' && !badge().hidden);
+    ok('choosing a Methodology narrows the list and counts in the Reset button: Reset all (1)',
+       matches() > 0 && matches() < total && rows() === Math.min(matches(), 50) && reset().classList.contains('is-on') && resetText() === 'Reset all (1)');
     const cat = [...pd.getElementById('ppCategory').options].find(o => o.value !== 'all' && !o.disabled);
     pick('ppCategory', cat.value);
-    ok('a Category counts in the badge too, and narrows the list further',
-       badge().textContent === '2' && matches() > 0 && matches() < total);
+    ok('a Category counts too, and narrows the list further',
+       resetText() === 'Reset all (2)' && matches() > 0 && matches() < total);
     const reg = [...pd.getElementById('ppRegion').options].find(o => o.value !== 'all' && !o.disabled);
     pick('ppRegion', reg.value);
-    ok('and so does a Region', badge().textContent === '3' && matches() > 0);
+    ok('and so does a Region', resetText() === 'Reset all (3)' && matches() > 0);
     ok('an option with nothing behind it is disabled unless it is the current choice',
        [...pd.getElementById('ppMethod').options].every(o => o.value === 'all' || o.disabled === (/\(0\)$/.test(o.textContent) && pd.getElementById('ppMethod').value !== o.value)));
-    clear().click();
-    ok('"Clear filters" resets Methodology, Category and Region and restores the list',
+    reset().click();
+    ok('Reset all puts Methodology, Category and Region back and restores the list',
        ['ppMethod', 'ppCategory', 'ppRegion'].every(id => pd.getElementById(id).value === 'all') &&
-       matches() === total && rows() === 50 && clear().hidden && badge().hidden && line().startsWith(`${total} of ${total} papers.`));
+       matches() === total && rows() === 50 && !reset().classList.contains('is-on') && resetText() === 'Reset all' && line().startsWith(`${total} of ${total} papers.`));
 
     const box = pd.getElementById('ppSearch');
     box.value = 'zzzz no paper has this text'; fire(box, 'input');
@@ -1414,13 +1926,13 @@ const legislationLoadTests = async () => {
     box.value = 'surveillance'; fire(box, 'input');
     await wait(300);
     const narrowed = matches();
-    ok('a search narrows the list; it is not a filter, so it brings no "Clear filters"', narrowed > 0 && narrowed < total && clear().hidden);
+    ok('a search narrows the list, and counts in the Reset button: Reset all (1)', narrowed > 0 && narrowed < total && resetText() === 'Reset all (1)');
     pick('ppMethod', 'analysis');
-    clear().click();
-    ok('"Clear filters" leaves the search text alone',
-       box.value === 'surveillance' && matches() === narrowed && pd.getElementById('ppMethod').value === 'all');
-    box.value = ''; fire(box, 'input');
-    await wait(300);
+    reset().click();
+    ok('Reset all clears the search too, and the Methodology, and puts the order back',
+       box.value === '' && matches() === total && pd.getElementById('ppMethod').value === 'all' && pd.getElementById('ppSort').value === 'desc' && resetText() === 'Reset all' && /Everything is reset/.test(pd.getElementById('ppAnnounce').textContent));
+    reset().click();
+    ok('pressing it with nothing to reset says so, rather than doing nothing silently', /Nothing is chosen or filtered/.test(pd.getElementById('ppAnnounce').textContent), pd.getElementById('ppAnnounce').textContent);
 
     ok('there is no Database / What\'s New toggle: Papers is one list, and Sort puts the newest first',
        !pd.getElementById('researchSubviewToggle') && !pd.getElementById('resSubviewChangelog') && !pd.getElementById('changelogArea') && !pd.body.classList.contains('changelog-subview'));
@@ -1450,8 +1962,8 @@ const legislationLoadTests = async () => {
     ok('a page number jumps straight to that page, and the list takes focus', current() === '3' && pd.activeElement === grid && /Showing 101 to 150\./.test(line()));
     const m = pd.getElementById('ppMethod'); m.value = 'peer-reviewed'; fire(m, 'change');
     ok('a filter starts again at page 1, and a short result has no pager', rows().length > 0 && rows().length < 50 && pager.hidden && !/Showing/.test(line()));
-    pd.getElementById('ppClear').click();
-    ok('clearing it brings page 1 and the pager back', current() === '1' && rows().length === 50 && !pager.hidden);
+    pd.getElementById('ppReset').click();
+    ok('resetting it brings page 1 and the pager back', current() === '1' && rows().length === 50 && !pager.hidden);
     // a #entry link (a fact's View Summary) narrows the list to the paper, as a source's facts link narrows the Fact Bank
     const research = pw.eval('RESEARCH_DATA');
     const target = research.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[170];
