@@ -1,9 +1,9 @@
   /* ── Enforcement and Cases ────────────────────────────────────────────────────────────────────
      Two of the four sections of the Government action tab (All and Legislation, the others, are 60-legislation.js). Enforcement lists what agencies and attorneys general have done about AI, and Cases what courts
-     have decided or are deciding, both from LEGISLATION_ACTIONS (data/legislation-actions.js, by hand: the row format and the rules for it, which are strict, are at the top of that file). They are ONE list
+     have decided or are deciding, both from LEGISLATION_ACTIONS (data/legislation-actions.js, which tools/actions.py generates from the `enforcement` and `cases` tabs of the Google Sheet and nobody edits by hand: the row format is at the top of that file, and the rules for filling a row in, which are strict, are in content/README.md). They are ONE list
      drawn twice: the open view (enforcement or cases, activeView) says which kind of row is listed, and the two share the list's area (#enforcementArea), the search and the topic chips and, with Legislation, the toolbar, the Show menu and the map (the Government action area, src/views/60-legislation.html). While the
      file has no row of the kind the section is the placeholder it was (the note in src/views/60-legislation.html, under the tab's one masthead); the first row of the kind turns its list on, so nothing about
-     a section changes on the live site until someone has checked a row and put it in.
+     a section changes on the live site until a row has been approved in the Sheet.
 
      One tab, four sections, one PLACE. The nav has one tab, Government action; a switch in the toolbar (src/views/60-legislation.html) moves between All, Cases, Enforcement and Legislation, and each section
      has an address of its own (#cases, #enforcement, #legislation). A jurisdiction is a filter here, not a home, so the place chosen in the Show menu or on the map is SHARED by the three (legView.pinned in
