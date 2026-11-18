@@ -267,9 +267,17 @@
      lone fact below is never under another source's header. --kf-bar-h is the bar's live height (80-fact-bank.js).
      The header tucks 1px under the bar (the bar's z-index is higher, so the overlap is hidden): whatever rounding the
      browser does on a zoomed page, no line can open between them for the cards to show through.
-     Not on a phone, where the bar and a header together would take too much of the screen. */
+     Not on a phone, where the bar and a header together would take too much of the screen.
+     The header's top corners are rounded, and the cards scrolling past behind it are square: through the two small
+     cutouts at those corners a card's own square corner showed (and the green rule down its left side). The page-coloured
+     shadow fills the cutouts. It is lifted by its own spread, so it ends exactly at the header's bottom edge and never
+     covers a card below; the part that rises above the header hides under the bar, and the part beside it lies on the
+     page margin, which is the same colour (the header sits 28px under the group above it, more than the 12px the shadow rises). */
   @media (min-width: 641px) {
-    #factBankArea .g-head { position: sticky; top: calc(var(--kf-bar-h, 0px) - 1px); z-index: 30; }
+    #factBankArea .g-head {
+      position: sticky; top: calc(var(--kf-bar-h, 0px) - 1px); z-index: 30;
+      box-shadow: 0 -6px 0 6px var(--beige);
+    }
   }
   /* The header's type is the paper card's (.src-title and .src-meta in cards.css) and a single fact's band's: the title
      in Public Sans 15.5px bold, the byline 13px, so a source reads at one size in both tabs. (The title was 18px with a
