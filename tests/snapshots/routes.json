@@ -126,19 +126,34 @@
     "announce": "Policy agenda view",
     "hash": "#agenda"
   },
+  "#all": {
+    "errors": [],
+    "bodyClasses": [
+      "all-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: All view",
+    "hash": "#all"
+  },
   "#legislation": {
     "errors": [],
     "bodyClasses": [
       "legislation-view"
     ],
     "nav": [
-      "viewLegislation"
+      "viewGovernment"
     ],
     "navSelected": [
-      "viewLegislation"
+      "viewGovernment"
     ],
-    "panelLabelledBy": "viewLegislation",
-    "announce": "Legislation view",
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Legislation view",
     "hash": "#legislation"
   },
   "#enforcement": {
@@ -147,14 +162,104 @@
       "enforcement-view"
     ],
     "nav": [
-      "viewEnforcement"
+      "viewGovernment"
     ],
     "navSelected": [
-      "viewEnforcement"
+      "viewGovernment"
     ],
-    "panelLabelledBy": "viewEnforcement",
-    "announce": "Enforcement actions and key cases view",
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Enforcement view",
     "hash": "#enforcement"
+  },
+  "#cases": {
+    "errors": [],
+    "bodyClasses": [
+      "cases-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Cases view",
+    "hash": "#cases"
+  },
+  "#enforcement/federal": {
+    "errors": [],
+    "bodyClasses": [
+      "enforcement-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Enforcement view",
+    "hash": "#enforcement/federal"
+  },
+  "#enforcement/texas": {
+    "errors": [],
+    "bodyClasses": [
+      "enforcement-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Enforcement view",
+    "hash": "#enforcement/texas"
+  },
+  "#cases/texas": {
+    "errors": [],
+    "bodyClasses": [
+      "cases-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Cases view",
+    "hash": "#cases/texas"
+  },
+  "#enforcement/nowhere": {
+    "errors": [],
+    "bodyClasses": [
+      "enforcement-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Enforcement view",
+    "hash": "#enforcement"
+  },
+  "#cases/nowhere": {
+    "errors": [],
+    "bodyClasses": [
+      "cases-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Cases view",
+    "hash": "#cases"
   },
   "#solutions": {
     "errors": [],

@@ -4,7 +4,7 @@ A curated research database and synthesis on AI, automation, and the economy,
 published as a single self-contained page (`index.html`) that is embedded as an
 iframe on the Economic Security Project site.
 
-Six tabs in three groups, plus an **About** page that opens the site: Research (**Fact Bank** and **Papers**), Policy (**Agenda**, a placeholder for now, and **Landscape**, the policy map) and Government action (**Enforcement**, a placeholder for enforcement actions and key cases; and **Legislation**, a map of the states with a table of bills and one of the 2026 midterm results).
+Five tabs in three groups, plus an **About** page that opens the site: Research (**Fact Bank** and **Papers**), Policy (**Agenda**, a placeholder for now, and **Landscape**, the policy map) and Government action (one tab, labelled **Enforcement and Legislation**, with four sections switched under its masthead: **All**, where the tab opens, which holds everything (the 2026 midterm results by state, the bills, the key cases and the enforcement actions, with a card for each state that holds all of it); **Cases** and **Enforcement**, the court rulings and the agency and attorney general actions about AI listed in `data/legislation-actions.js`; and **Legislation**, the bills alone, a map of the states with a table of bills; each of the three holds its own data alone, on a map shaded by it).
 
 ## Setup (once per machine)
 

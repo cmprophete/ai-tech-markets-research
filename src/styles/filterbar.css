@@ -1,10 +1,10 @@
   /* ═══════════════════════════════════════════════════════════
      FILTER BAR
-     The search-and-filters bar at the top of the Papers list and of the Fact Bank list, and under the Legislation tab's toolbar: one
-     component, three uses, sticky in all three. Search and Sort share a row, a "More filters" toggle opens every filter,
-     and a result line with "Clear filters" closes the bar. Each tab brings its own facets
-     (Papers: Methodology, Category, Region; Fact Bank: Evidence, the two ratings, keywords) and its
-     own script, and shares this markup shape and these styles, so the three bars cannot drift apart.
+     The search-and-filters bar at the top of the Papers list and of the Fact Bank list and, as the same blocks, in the Government action area: one component, three uses, and ONE structure (the owner, 2026-11-18:
+     "structured the same as enforcement and legislation"). Up to three blocks stacked, each sticky under the one before: the toolbar (the filters, always showing, with the Reset button at its right end), the chips
+     (topics, keywords) where a tab has them, and the search bar (search, Sort and the result line). There is no "More filters" dropdown on any of them, and no Clear filters link: the Reset button puts the search, the
+     order and every filter back. Each tab brings its own facets (Papers: Category, Methodology, Region; Fact Bank: Evidence, the two ratings, Foundational, keywords) and its own script, and shares this markup shape
+     and these styles, so the three bars cannot drift apart.
      Scoped under .controls so the generic class names below cannot leak into the rest of the app.
      ═══════════════════════════════════════════════════════════ */
   .controls {
@@ -50,42 +50,42 @@
     font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em;
     color: var(--headline); white-space: nowrap;
   }
-  /* More filters: a tab's filters sit behind one toggle, so the bar stays one row of search and
-     Sort. (Fact Bank: Evidence, the two rating minimums, the keyword chips and, when it applies,
-     Foundational. Papers: Methodology, Category and Region.) The badge counts what is switched on
-     inside the panel, and "Clear filters" shows whenever it does. */
-  /* The toggle sits in the same row as the selects and reads as one more dropdown, so it is
-     formatted like them: same border, fill, type, text colour and chevron colour. */
-  .controls .more-toggle {
-    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
-    background: var(--light-beige); border: 1px solid var(--divider); border-radius: var(--r-ctl);
-    padding: 8px 9px 8px 10px; font-family: var(--sans); font-size: 13px; font-weight: 400;
-    color: var(--text); white-space: nowrap; transition: background 0.15s;
+  /* The stacked bar of Papers and the Fact Bank, the same three blocks as the Government action tab's (the owner, 2026-11-18: "structured the same as enforcement and legislation"): the toolbar (the filters, with the Reset
+     button at its right end), the chips (the Fact Bank's keywords) and the search bar (search, Sort and the result line), each sticky under the one before. Each block carries the shared .controls class, whose own sticky
+     rule is turned off here and given back block by block: .bar-toolbar sticks at the top, .bar-chips under it (--bar-toolbar-h) and .bar-search under both (--bar-toolbar-h plus --bar-chips-h), which syncBarStack
+     (00-state.js) measures live; --bar-h, the three together, is what a jump to the list and the Fact Bank's pinned source headers have to clear. */
+  #papersArea .controls, #factBankArea .controls { position: static; margin: 0; padding: 0; background: var(--beige); border-bottom: 0; }
+  #papersArea .bar-toolbar, #factBankArea .bar-toolbar { position: sticky; top: 0; z-index: 102; padding: 10px 0; }
+  #papersArea .bar-chips, #factBankArea .bar-chips { position: sticky; top: var(--bar-toolbar-h, 0px); z-index: 101; display: flow-root; padding: 2px 0 0; }
+  #papersArea .bar-chips .pill-row, #factBankArea .bar-chips .pill-row { margin: 0 0 8px; }
+  #papersArea .bar-search, #factBankArea .bar-search { position: sticky; top: calc(var(--bar-toolbar-h, 0px) + var(--bar-chips-h, 0px)); z-index: 100; padding: 8px 0 10px; border-bottom: 1px solid var(--divider); }
+  /* The toolbar is the filters, which wrap among themselves in .bar-toolbar-main, and the Reset button, which stays at the top right at every width (on a phone it goes under them, as wide as the row). */
+  .bar-toolbar-row { display: flex; align-items: flex-start; gap: 10px 14px; }
+  .bar-toolbar-main { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; flex: 1 1 0; min-width: 0; }
+  .bar-toolbar-row .reset-btn { margin-left: auto; }
+  /* A jump to the list (the pager) lands just below the stacked bar, whose live height is --bar-h. */
+  #cardsGrid, #allFactsView { scroll-margin-top: calc(var(--bar-h, 0px) + 12px); }
+  /* The Reset button (the owner, 2026-11-18: one button, always there, in place of the small Clear and Clear filters links): solid navy with the count of what differs from how the tab opens while something does
+     (.is-on), an outline otherwise. It is the same size as the Sort menu beside it: the selects' 13px type, 8px of padding and 1px border, so the same height. Government action, Papers and the Fact Bank share it. */
+  .controls .reset-btn {
+    display: inline-flex; align-items: center; gap: 7px; flex: none; padding: 8px 14px;
+    background: transparent; border: 1px solid var(--navy); color: var(--navy); border-radius: var(--r-ctl);
+    font-family: var(--sans); font-size: 13px; font-weight: 600; line-height: normal; letter-spacing: 0.01em; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
   }
-  .controls .more-toggle:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
-  .controls .more-toggle .chev { color: var(--navy); }
-  .controls .more-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
-  .controls .more-count {
-    background: var(--navy); color: #fff; border-radius: var(--r-tag);
-    font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 17px;
-  }
-  /* Closed, the panel is also visibility:hidden, so its controls are out of the tab order and the
-     accessibility tree instead of being clipped but still focusable. The delay on the way out lets
-     the collapse finish before it hides; on the way in it shows at once. */
-  .controls .more-panel {
-    display: grid; grid-template-rows: 0fr; visibility: hidden;
-    transition: grid-template-rows 0.25s ease, visibility 0s linear 0.25s;
-  }
-  .controls .more-panel.open { grid-template-rows: 1fr; visibility: visible; transition-delay: 0s; }
-  .controls .more-panel > div { overflow: hidden; min-height: 0; }
-  .controls .more-body {
-    display: flex; flex-direction: column; gap: 10px;
-    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider);
-  }
+  .controls .reset-btn svg { flex: none; width: 13px; height: 13px; }
+  .controls .reset-btn:hover { background: var(--navy); color: var(--beige); }
+  .controls .reset-btn.is-on { background: var(--navy); color: var(--beige); }
+  .controls .reset-btn.is-on:hover { background: var(--headline); border-color: var(--headline); }
+  .controls .reset-btn:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  /* The Papers and Fact Bank bars are now two or three rows tall (the filters are always showing), so on a phone and on a short window they scroll with the page instead of sticking, as the Government action bars do. */
+  /* On a phone and on a short window nothing sticks: a toolbar, chips and search bar stacked would fill the window (the same rule as the Government action bars). */
+  @media (max-width: 640px), (max-height: 760px) { #papersArea .bar-toolbar, #papersArea .bar-chips, #papersArea .bar-search, #factBankArea .bar-toolbar, #factBankArea .bar-chips, #factBankArea .bar-search { position: static; } }
+  @media (max-width: 640px) { .bar-toolbar-row { flex-wrap: wrap; } .bar-toolbar-main { flex: 1 1 100%; } .bar-toolbar-row .reset-btn { flex: 1 1 100%; justify-content: center; margin-left: 0; } }
   .controls .pill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .controls .pill-row > .kw-label { margin-right: 4px; }   /* type comes from .ctl-label, like Evidence, Truth and Sort */
   /* display:flex / inline-flex would otherwise override the hidden attribute on these */
-  .controls .ctl-check[hidden], .controls .more-count[hidden], .controls .clear-filters[hidden] { display: none; }
+  .controls .ctl-check[hidden] { display: none; }
   .controls .kw-pill {
     display: inline-flex; align-items: center; gap: 6px;
     font-family: var(--grot); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
@@ -106,16 +106,10 @@
     color: var(--text); padding: 10px 0 0;
   }
   .controls .result-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 14px; }
-  .controls .clear-filters {
-    font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
-    color: var(--navy); text-decoration: underline; text-underline-offset: 2px;
-    background: none; border: 0; padding: 10px 0 0; cursor: pointer;
-  }
-  .controls .clear-filters:hover { color: var(--headline); }
 
   /* The Foundational checkbox (Fact Bank, only when some fact is marked foundational) */
   .controls .ctl-check { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--headline); cursor: pointer; white-space: nowrap; }
 
   @media (prefers-reduced-motion: reduce) {
-    .controls .more-panel, .controls .more-toggle .chev { transition: none; }
+    .controls .reset-btn { transition: none; }
   }

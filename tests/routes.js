@@ -33,8 +33,12 @@ const ROUTES = [
   '#changelog',   // retired: the What's New feed was removed (the address bar is rewritten to #papers)
   '#fact-bank', '#policy',
   '#agenda',       // Agenda, a placeholder tab, first in the Policy group
-  '#legislation',  // Legislation, the first tab of the Government action nav group
-  '#enforcement',  // Enforcement, a placeholder tab, the first of the Government action nav group
+  '#all',          // All, the first of the four sections of the Government action tab: everything at once, and where the tab opens
+  '#legislation',  // Legislation, the bills alone
+  '#enforcement',  // Enforcement, one of the three sections of the Government action tab (a placeholder until the data file has a row of its kind)
+  '#cases',        // Cases, the third section
+  '#enforcement/federal', '#enforcement/texas', '#cases/texas',   // the same sections on a place, which they share with Legislation
+  '#enforcement/nowhere', '#cases/nowhere',                       // not a place: every jurisdiction, and the address is rewritten to the section's own
   '#solutions',   // retired tab, now an alias of #policy (the address bar is rewritten)
   // Removed routes, pinned so their fall-through to About cannot regress
   // silently. The Economy tab (Data Tracker + Job Displacement) and its routes
@@ -46,7 +50,7 @@ const ROUTES = [
 
 // Every nav button, in the header's order of ids: without Agenda, Enforcement and Legislation here the
 // snapshot could not say which tab reads as current on their routes.
-const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy', 'viewAgenda', 'viewEnforcement', 'viewLegislation'];
+const NAV_IDS   = ['viewCards', 'viewFactBank', 'viewPolicy', 'viewAgenda', 'viewGovernment'];
 
 const txt = el => (el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : null);
 

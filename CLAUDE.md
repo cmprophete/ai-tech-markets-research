@@ -97,11 +97,13 @@ browser against a local server) over reasoning about whether it would work.
   a row there and nothing else. `setView()` lives in `src/js/70-render.js`, and
   adding a tab also means its button in `src/views/10-header.html`, its area in
   `src/views/`, its show/hide rule in `src/styles/policy.css`, and the view lists
-  in `setView()`. The Government action group is a worked example of all of these: its
-  Legislation tab has an area, a script and a stylesheet of its own
-  (`60-legislation.html`, `60-legislation.js`, `legislation.css`) and two views
-  switched inside it, and the Agenda and Enforcement placeholders
-  (`40-agenda.html`, `65-enforcement.html`) are the smallest examples.
+  in `setView()`. The Government action tab is a worked example of all of these: one
+  nav tab with four sections (All, Cases, Enforcement, Legislation), each a view of its own switched in the toolbar. The four
+  share one area, toolbar, chips, search and map (`60-legislation.html`, `60-legislation.js`,
+  `legislation.css`; a control or a list that belongs to some of the sections carries
+  `gov-leg-only`, `gov-lists-only` or `gov-all-only`, shown by `policy.css`), Enforcement and Cases share
+  one list and script (`55-enforcement.js`), and the Agenda placeholder (`40-agenda.html`)
+  is the smallest example.
 - Ordering is significant and lives in `src/index.template.html`: CSS cascade
   order and JS execution order inside the app IIFE are just the order the
   `@@include@@` directives appear.

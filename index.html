@@ -303,7 +303,7 @@
     .header-text { flex-basis: 100%; text-align: center; }
   }
 
-  /* Grouped nav tabs: a rule under each group's tabs, with the group's label below it (Research, Policy, Government action),
+  /* Grouped nav tabs: a rule under each group's tabs, with the group's label below it (Research, Policy, Government action; the last has been one tab since 2026-11-17, labelled Enforcement and Legislation),
      so the tabs sit above their label. (It was flat for a day on 2026-11-11 and went back to groups at the owner's
      request; Legislation left Policy for a group of its own on 2026-11-12, also at the owner's request, and the group has been called Government action since that evening.)
 
@@ -783,11 +783,11 @@
 
   /* ═══════════════════════════════════════════════════════════
      FILTER BAR
-     The search-and-filters bar at the top of the Papers list and of the Fact Bank list, and under the Legislation tab's toolbar: one
-     component, three uses, sticky in all three. Search and Sort share a row, a "More filters" toggle opens every filter,
-     and a result line with "Clear filters" closes the bar. Each tab brings its own facets
-     (Papers: Methodology, Category, Region; Fact Bank: Evidence, the two ratings, keywords) and its
-     own script, and shares this markup shape and these styles, so the three bars cannot drift apart.
+     The search-and-filters bar at the top of the Papers list and of the Fact Bank list and, as the same blocks, in the Government action area: one component, three uses, and ONE structure (the owner, 2026-11-18:
+     "structured the same as enforcement and legislation"). Up to three blocks stacked, each sticky under the one before: the toolbar (the filters, always showing, with the Reset button at its right end), the chips
+     (topics, keywords) where a tab has them, and the search bar (search, Sort and the result line). There is no "More filters" dropdown on any of them, and no Clear filters link: the Reset button puts the search, the
+     order and every filter back. Each tab brings its own facets (Papers: Category, Methodology, Region; Fact Bank: Evidence, the two ratings, Foundational, keywords) and its own script, and shares this markup shape
+     and these styles, so the three bars cannot drift apart.
      Scoped under .controls so the generic class names below cannot leak into the rest of the app.
      ═══════════════════════════════════════════════════════════ */
   .controls {
@@ -833,42 +833,42 @@
     font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em;
     color: var(--headline); white-space: nowrap;
   }
-  /* More filters: a tab's filters sit behind one toggle, so the bar stays one row of search and
-     Sort. (Fact Bank: Evidence, the two rating minimums, the keyword chips and, when it applies,
-     Foundational. Papers: Methodology, Category and Region.) The badge counts what is switched on
-     inside the panel, and "Clear filters" shows whenever it does. */
-  /* The toggle sits in the same row as the selects and reads as one more dropdown, so it is
-     formatted like them: same border, fill, type, text colour and chevron colour. */
-  .controls .more-toggle {
-    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
-    background: var(--light-beige); border: 1px solid var(--divider); border-radius: var(--r-ctl);
-    padding: 8px 9px 8px 10px; font-family: var(--sans); font-size: 13px; font-weight: 400;
-    color: var(--text); white-space: nowrap; transition: background 0.15s;
+  /* The stacked bar of Papers and the Fact Bank, the same three blocks as the Government action tab's (the owner, 2026-11-18: "structured the same as enforcement and legislation"): the toolbar (the filters, with the Reset
+     button at its right end), the chips (the Fact Bank's keywords) and the search bar (search, Sort and the result line), each sticky under the one before. Each block carries the shared .controls class, whose own sticky
+     rule is turned off here and given back block by block: .bar-toolbar sticks at the top, .bar-chips under it (--bar-toolbar-h) and .bar-search under both (--bar-toolbar-h plus --bar-chips-h), which syncBarStack
+     (00-state.js) measures live; --bar-h, the three together, is what a jump to the list and the Fact Bank's pinned source headers have to clear. */
+  #papersArea .controls, #factBankArea .controls { position: static; margin: 0; padding: 0; background: var(--beige); border-bottom: 0; }
+  #papersArea .bar-toolbar, #factBankArea .bar-toolbar { position: sticky; top: 0; z-index: 102; padding: 10px 0; }
+  #papersArea .bar-chips, #factBankArea .bar-chips { position: sticky; top: var(--bar-toolbar-h, 0px); z-index: 101; display: flow-root; padding: 2px 0 0; }
+  #papersArea .bar-chips .pill-row, #factBankArea .bar-chips .pill-row { margin: 0 0 8px; }
+  #papersArea .bar-search, #factBankArea .bar-search { position: sticky; top: calc(var(--bar-toolbar-h, 0px) + var(--bar-chips-h, 0px)); z-index: 100; padding: 8px 0 10px; border-bottom: 1px solid var(--divider); }
+  /* The toolbar is the filters, which wrap among themselves in .bar-toolbar-main, and the Reset button, which stays at the top right at every width (on a phone it goes under them, as wide as the row). */
+  .bar-toolbar-row { display: flex; align-items: flex-start; gap: 10px 14px; }
+  .bar-toolbar-main { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; flex: 1 1 0; min-width: 0; }
+  .bar-toolbar-row .reset-btn { margin-left: auto; }
+  /* A jump to the list (the pager) lands just below the stacked bar, whose live height is --bar-h. */
+  #cardsGrid, #allFactsView { scroll-margin-top: calc(var(--bar-h, 0px) + 12px); }
+  /* The Reset button (the owner, 2026-11-18: one button, always there, in place of the small Clear and Clear filters links): solid navy with the count of what differs from how the tab opens while something does
+     (.is-on), an outline otherwise. It is the same size as the Sort menu beside it: the selects' 13px type, 8px of padding and 1px border, so the same height. Government action, Papers and the Fact Bank share it. */
+  .controls .reset-btn {
+    display: inline-flex; align-items: center; gap: 7px; flex: none; padding: 8px 14px;
+    background: transparent; border: 1px solid var(--navy); color: var(--navy); border-radius: var(--r-ctl);
+    font-family: var(--sans); font-size: 13px; font-weight: 600; line-height: normal; letter-spacing: 0.01em; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
   }
-  .controls .more-toggle:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
-  .controls .more-toggle .chev { color: var(--navy); }
-  .controls .more-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
-  .controls .more-count {
-    background: var(--navy); color: #fff; border-radius: var(--r-tag);
-    font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 17px;
-  }
-  /* Closed, the panel is also visibility:hidden, so its controls are out of the tab order and the
-     accessibility tree instead of being clipped but still focusable. The delay on the way out lets
-     the collapse finish before it hides; on the way in it shows at once. */
-  .controls .more-panel {
-    display: grid; grid-template-rows: 0fr; visibility: hidden;
-    transition: grid-template-rows 0.25s ease, visibility 0s linear 0.25s;
-  }
-  .controls .more-panel.open { grid-template-rows: 1fr; visibility: visible; transition-delay: 0s; }
-  .controls .more-panel > div { overflow: hidden; min-height: 0; }
-  .controls .more-body {
-    display: flex; flex-direction: column; gap: 10px;
-    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider);
-  }
+  .controls .reset-btn svg { flex: none; width: 13px; height: 13px; }
+  .controls .reset-btn:hover { background: var(--navy); color: var(--beige); }
+  .controls .reset-btn.is-on { background: var(--navy); color: var(--beige); }
+  .controls .reset-btn.is-on:hover { background: var(--headline); border-color: var(--headline); }
+  .controls .reset-btn:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  /* The Papers and Fact Bank bars are now two or three rows tall (the filters are always showing), so on a phone and on a short window they scroll with the page instead of sticking, as the Government action bars do. */
+  /* On a phone and on a short window nothing sticks: a toolbar, chips and search bar stacked would fill the window (the same rule as the Government action bars). */
+  @media (max-width: 640px), (max-height: 760px) { #papersArea .bar-toolbar, #papersArea .bar-chips, #papersArea .bar-search, #factBankArea .bar-toolbar, #factBankArea .bar-chips, #factBankArea .bar-search { position: static; } }
+  @media (max-width: 640px) { .bar-toolbar-row { flex-wrap: wrap; } .bar-toolbar-main { flex: 1 1 100%; } .bar-toolbar-row .reset-btn { flex: 1 1 100%; justify-content: center; margin-left: 0; } }
   .controls .pill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .controls .pill-row > .kw-label { margin-right: 4px; }   /* type comes from .ctl-label, like Evidence, Truth and Sort */
   /* display:flex / inline-flex would otherwise override the hidden attribute on these */
-  .controls .ctl-check[hidden], .controls .more-count[hidden], .controls .clear-filters[hidden] { display: none; }
+  .controls .ctl-check[hidden] { display: none; }
   .controls .kw-pill {
     display: inline-flex; align-items: center; gap: 6px;
     font-family: var(--grot); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
@@ -889,18 +889,12 @@
     color: var(--text); padding: 10px 0 0;
   }
   .controls .result-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 14px; }
-  .controls .clear-filters {
-    font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
-    color: var(--navy); text-decoration: underline; text-underline-offset: 2px;
-    background: none; border: 0; padding: 10px 0 0; cursor: pointer;
-  }
-  .controls .clear-filters:hover { color: var(--headline); }
 
   /* The Foundational checkbox (Fact Bank, only when some fact is marked foundational) */
   .controls .ctl-check { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--headline); cursor: pointer; white-space: nowrap; }
 
   @media (prefers-reduced-motion: reduce) {
-    .controls .more-panel, .controls .more-toggle .chev { transition: none; }
+    .controls .reset-btn { transition: none; }
   }
   /* ═══════════════════════════════════════════════════════════
      PAGER
@@ -1070,13 +1064,12 @@
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
   .policy-view #policyArea           { display: block; }
-  /* Agenda and Enforcement: placeholder tabs. The shared masthead leads each (copy in TAB_DESCS.agenda and TAB_DESCS.enforcement) and one note sits under it, in the
+  /* Agenda, and Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
      Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. Each area takes the
      masthead's inset from .cards-area. */
-  #agendaArea, #enforcementArea      { display: none; }
+  #agendaArea                        { display: none; }
   .agenda-view #agendaArea           { display: block; }
-  .enforcement-view #enforcementArea { display: block; }
-  .agenda-view .cards-area, .enforcement-view .cards-area { padding-top: 0; }
+  .agenda-view .cards-area, .enforcement-view .cards-area, .cases-view .cards-area, .all-view .cards-area { padding-top: 0; }
   .placeholder-note {
     max-width: var(--lede-measure); margin: 24px 0 0; padding: 9px 14px;
     background: rgba(235,195,130,0.16); border-left: 3px solid var(--gold); border-radius: 0 var(--r-card) var(--r-card) 0;
@@ -1093,10 +1086,16 @@
   #aboutArea                         { display: none; }
   .about-view #aboutArea             { display: block; }
   .about-view .header-tab-desc       { display: none; }
-  /* Legislation: the map and tables (legislation.css). The area takes the masthead's inset from .cards-area. */
+  /* Government action: its four sections, All, Cases, Enforcement and Legislation, are ONE area (#legislationArea: the toolbar, the topic chips, the search, the map and the section's own list; legislation.css).
+     The area takes the masthead's inset from .cards-area. A control or a list that belongs to some of the sections is shown only there: gov-leg-only for the bills' own (Legislation and All), gov-lists-only
+     for the lists' own controls (Enforcement and Cases), gov-all-only for what only All holds (the midterm results table), and the enforcement and cases lists (#enforcementArea) everywhere but Legislation. */
   #legislationArea                   { display: none; }
-  .legislation-view #legislationArea { display: block; }
+  .all-view #legislationArea, .legislation-view #legislationArea, .enforcement-view #legislationArea, .cases-view #legislationArea { display: block; }
   .legislation-view .cards-area      { padding-top: 0; }
+  .enforcement-view .gov-leg-only, .cases-view .gov-leg-only { display: none; }
+  .legislation-view .gov-lists-only, .all-view .gov-lists-only { display: none; }
+  .legislation-view .gov-all-only, .enforcement-view .gov-all-only, .cases-view .gov-all-only { display: none; }
+  .legislation-view #enforcementArea { display: none; }
   /* ── ABOUT: the front page ───────────────────────────────────────────────────────────────────────────────────
      It sets its text in the styles the other tabs already use, bar one (the part headings, below): the shared
      masthead opener (the display serif lede and the 15px standfirst), then numbered parts that each open with a
@@ -1663,9 +1662,9 @@
   }
 
   /* ── LEGISLATION TAB ─────────────────────────────────────────────────────────────────────────────────────────
-     A map of the states and two tables (src/js/60-legislation.js builds them). The type is the site's: the section titles and the
+     A map of the states and its card, the bills table and the midterm results table (src/js/60-legislation.js builds them; Enforcement and Cases share the map, the toolbar and the area). The type is the site's: the section titles and the
      panel title are the 20px bold of the Landscape area titles, the small labels are the header's group-label spec, text is 14px,
-     the chips are the Papers chips and the layer toggle is the Landscape Map/Links toggle. The fills are the site's palette:
+     the chips are the Papers chips and the section switch is the Landscape Map/Links toggle. The fills are the site's palette:
      navy for the strongest state of a layer, tints of it below, gold hatching for "uncalled". The variables live on the area
      so the tables and the legend can use them too. */
   #legislationArea {
@@ -1679,7 +1678,11 @@
     --leg-b3: color-mix(in srgb, var(--green-deep) 65%, var(--navy));
     padding-bottom: 72px;
   }
-  .leg-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin: 0; }
+  /* The toolbar is two things side by side: the controls (the switch, the Show and Status menus, the checkbox), which wrap among themselves in .leg-controls-main, and the Reset button, which stays at the top right of the
+     toolbar at every width. It used to be one more item in the same wrapping row, and when the checkbox took the room it dropped to a row of its own (the owner's screenshot, 2026-11-18). On a phone the controls take the
+     whole row and the button goes under them, as wide as the row. */
+  .leg-controls { display: flex; align-items: flex-start; gap: 10px 14px; margin: 0; }
+  .leg-controls-main { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; flex: 1 1 0; min-width: 0; }
   .leg-controls .pol-subview-toggle { margin: 0; }
   .leg-select-pair { display: flex; align-items: center; gap: 8px; }
   .leg-ctl-label { font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.03em; color: var(--text); }
@@ -1691,27 +1694,27 @@
     border: 1px solid var(--divider); color: var(--text);
     border-radius: var(--r-ctl); padding: 8px 28px 8px 10px; font-size: 13px; font-family: var(--sans);
     outline: none; cursor: pointer; min-width: 190px;
+    /* A fixed width, not the width of its longest option ("Federal (Congress, agencies and courts)", on All, made it 350px and pushed the checkbox to a second line): the owner asked to narrow it so the checkbox sits
+       beside Status again (2026-11-18). A longer choice is cut with an ellipsis, and its full name is the menu's tooltip (legSyncShow). */
+    width: 210px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
   }
   .leg-select:focus { border-color: var(--green); }
-  /* The Fact Bank's pill, value for value (.act-btn in this file). */
-  .leg-clear {
-    background: var(--light-beige); border: 1px solid var(--navy); color: var(--navy);
-    border-radius: var(--r-ctl); padding: 4px 12px; font-family: var(--grot);
-    font-size: 12px; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; white-space: nowrap;
-    transition: background 0.15s, color 0.15s;
-  }
-  .leg-clear:hover { background: var(--navy); color: var(--beige); }
-  .leg-clear[hidden] { display: none; }
-  /* The toolbar (the layers, the office toggle, the Show menu, Clear) and the filter bar stick together at the top of the window, as the filter bars on Papers and the Fact Bank do (the owner's
-     requests, 2026-11-12: first the search and filters, then "include the jurisdictions and toggles in the sticky bar as well"), while the map and the tables scroll under them. One wrapper does the
-     sticking, so the shared .controls bar (filterbar.css), which sticks by itself on the other two tabs, is not sticky inside it and gives its background, border and padding to the wrapper. On the
-     results layer the filter bar is out of view and the wrapper holds the toolbar alone. Not stuck, the toolbar sits where it did (the wrapper's 10px of margin and 12px of padding are the 22px it
-     had). The note explaining the topics sits under the chips. */
-  .leg-sticky { position: sticky; top: 0; z-index: 100; margin-top: 10px; padding: 12px 0 10px; background: var(--beige); border-bottom: 1px solid var(--divider); }
-  #legislationArea .controls { position: static; margin: 12px 0 0; padding: 0; background: none; border-bottom: 0; }
-  /* An open "More filters" panel is tall (the topic chips): in the sticky bar it would fill a phone's whole window, so its body scrolls inside a share of the window's height instead. */
-  #legSticky .more-panel > div { max-height: 45vh; overflow-y: auto; overscroll-behavior: contain; }
-  .leg-topic-note { margin: 0; max-width: 72ch; font-family: var(--grot); font-size: 12px; line-height: 1.5; letter-spacing: 0.02em; color: var(--text); opacity: 0.85; }
+  /* The Reset button (the owner, 2026-11-18: the small Clear pill and the Clear filters link were hard to see, and she chose one Reset button in the toolbar): it puts the whole tab back as it opens, sits at the right end of
+     the sticky toolbar and is always there, so it is never hunted for. It is solid navy with the count of what is on while something is on (.is-on), and an outline otherwise. It is the same size as the Sort menu and the other selects beside it (the owner, 2026-11-18): their 13px type, 8px of padding and 1px border, so the same height. */
+  /* On this tab the button's look is the shared .reset-btn (filterbar.css); here is only where it sits: at the right end of the toolbar, whatever the width. */
+  #legislationArea .leg-reset { margin-left: auto; flex: none; }
+  /* The toolbar (the section switch, the Show menu, on Legislation and All the Status menu and the checkbox, and the Reset button), the topic chips and the search bar are three blocks, each with the shared .controls class
+     (the chips, selects and result line are styled under it in filterbar.css) and none sticky by that class's own rule. The toolbar sticks at the top of the window, as the filter bars on Papers and the
+     Fact Bank do (the owner's requests, 2026-11-12: first the search and filters, then "include the jurisdictions and toggles in the sticky bar as well"), and the chips and then the search bar stick under
+     it, in every section (2026-11-18: "topics should be included in the sticky bar in all views"; the chips are tall, and the window loses their height while they stick). legSyncBarHeight measures the
+     toolbar into --leg-toolbar-h (where the chips stick), the chips into --leg-topics-h (where the search bar sticks, under both) and the three into --leg-bar-h (what a title scrolled to has to clear).
+     On a phone and on a short window nothing sticks: a toolbar, the chips and a search bar stacked would fill the window. */
+  #legislationArea .controls { position: static; margin: 0; padding: 0; background: var(--beige); border-bottom: 0; }
+  #legislationArea #legSticky { position: sticky; top: 0; z-index: 102; margin-top: 18px; padding: 10px 0; }
+  #legislationArea #legTopicsBar { position: sticky; top: var(--leg-toolbar-h, 0px); z-index: 101; display: flow-root; padding: 2px 0 0; }   /* flow-root keeps the chips' bottom margin inside the sticky box, so nothing shows through under it */
+  #legislationArea #legTopicsBar .pill-row { margin: 0 0 8px; }
+  #legislationArea #legFilters { position: sticky; top: calc(var(--leg-toolbar-h, 0px) + var(--leg-topics-h, 0px)); z-index: 100; padding: 8px 0 10px; border-bottom: 1px solid var(--divider); }
+  @media (max-width: 640px), (max-height: 760px) { #legislationArea #legSticky, #legislationArea #legTopicsBar, #legislationArea #legFilters { position: static; } }
 
   .leg-stage { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; margin-top: 18px; }
   .leg-map-wrap { min-width: 0; }
@@ -1738,7 +1741,7 @@
   /* The map and, in a gutter at its right edge, one button for each state too small to point at (LEG_SMALL in src/js/60-legislation.js):
      nine, north to south, from Vermont to DC. A button wears its state's colour and gets the map's pink-and-navy ring when its state is
      pointed at or pinned, or when the button has the keyboard's focus. On a phone the gutter goes and the buttons become a row under the
-     map. The type is the Clear pill's (.leg-clear above). */
+     map. The type is the small pill type of the Fact Bank's buttons. */
   .leg-map-box { position: relative; padding-right: 46px; }
   /* The column is nine buttons of 24px and eight gaps of 3px, 240px in all. It starts 14% down the map, level with the Northeast, but
      never lower than the map's height less its own (244px, with a little to spare), so on a short map, with the panel beside it or in
@@ -1794,7 +1797,6 @@
   .leg-office-body > * { font-size: 14px; line-height: 1.5; color: var(--text); margin: 0; }
   .leg-office-body > * + * { margin-top: 4px; }
   .leg-office-body > .leg-muted { color: var(--muted); }
-  .leg-office-toggle[hidden] { display: none; }
   /* A race's result: a square in the party's colour (the map's fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a race
      not yet called are the news, so those are bold. They were coloured pills, one in every cell. */
   .leg-result { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
@@ -1802,10 +1804,13 @@
   .leg-swatch--sm { width: 10px; height: 10px; border-radius: 2px; }
 
   .leg-section { margin-top: 38px; }
-  /* The 2026 Midterm results layer shows only the results: the bills' filter bar and table are hidden by the script (legPaint). */
-  #legFilters[hidden], #legBillsSection[hidden] { display: none; }
-  /* Whatever display a rule in this tab gives an element (the map stage is a grid, the Show menu a flex row), the hidden attribute wins: the script hides each layer's
-     other content with it (legPaint), and the bills' filter bar and table, hidden on the results layer, would otherwise still draw there. */
+  /* A table's block ends with a divider under its page numbers: the table, the note under it, the page numbers, then the line (the owner, 2026-11-18: each blurb below its table and above the divider, and the page numbers above it
+     as well). The pager draws its own line above itself (pager.css, for the Papers and Fact Bank lists, where it parts the cards from the numbers); here that line is turned off and the section carries the line instead,
+     so a table with a single page, which has no pager, has it too. */
+  #legislationArea .leg-section { padding-bottom: 24px; border-bottom: 1px solid var(--divider); }
+  #legislationArea .pager { margin: 22px 0 0; padding-top: 0; border-top: 0; }
+  /* Whatever display a rule in this tab gives an element (the map stage is a grid, the Show menu a flex row), the hidden attribute wins: the script hides the checkbox until some bill only lightly
+     mentions AI, Clear until a place is pinned, and the lists' controls and note while a section has no rows. */
   #legislationArea [hidden] { display: none; }
   .leg-section-title {
     display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
@@ -1842,6 +1847,7 @@
   .leg-more { margin: 12px 0 0; }
   .leg-more-link { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--navy); text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
   .leg-more-link:hover { color: var(--headline); text-decoration-thickness: 2px; }
+  /* The blocks of key cases and enforcement actions in the card (enfCardBlock, src/js/55-enforcement.js) are a count and a link, with no titles (the owner, 2026-11-18); the link is a .leg-more-link, which the card's click handler reads for the list it is for (data-kind). */
   .leg-table-wrap { overflow-x: auto; background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); }
   /* After a page change the table takes focus (so a keyboard reader starts at its first row); it is not a tab stop. */
   #legBillsTable:focus, #legResultsTable:focus { outline: none; }
@@ -1880,6 +1886,20 @@
   .leg-table a:hover { text-decoration-thickness: 2px; }
   .leg-source { max-width: var(--lede-measure); margin: 12px 2px 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
 
+  /* ── Enforcement and Cases (src/js/55-enforcement.js) ── Their list sits in the same area as the bills' (#enforcementArea, under the map), and reuses the toolbar, the chips, the search bar, the tables and the
+     section titles (the classes above), so it adds only what is its own: a title that stands out in the Matter column and that column's minimum width, and the columns' shares: Date and Who acted
+     do not wrap into towers, Matter takes the most, Outcome and Source the rest. */
+  #enforcementArea { margin-top: 38px; }
+  .enf-title { font-weight: 600; color: var(--headline); }
+  .leg-table .leg-col-matter { min-width: 300px; }
+  .leg-table--enf th:nth-child(1) { width: 13%; min-width: 132px; }
+  .leg-table--enf th:nth-child(2) { width: 16%; min-width: 130px; }
+  .leg-table--enf th:nth-child(3) { width: 42%; }
+  .leg-table--enf th:nth-child(4) { width: 17%; min-width: 130px; }
+  .leg-table--enf th:nth-child(5) { width: 12%; min-width: 92px; }
+  /* A source is shown as its host ("myfloridalegal.com"), which has no place to break: allowed to, so the column does not push the table wider than a 1024px window. */
+  .leg-table--enf td:nth-child(5) { overflow-wrap: anywhere; }
+
   @media (max-width: 860px) {
     .leg-stage { grid-template-columns: minmax(0, 1fr); }
     /* one column: the card sits under the map, so there is nothing for it to stay within */
@@ -1897,11 +1917,14 @@
     .leg-tiles { position: static; width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 14px; }
     .leg-tiles-label { display: block; flex: 0 0 100%; margin: 0 0 -4px; }
     .leg-tile { width: 44px; height: 34px; }
-    /* two views in one pill group: a little tighter, so "2026 Midterm results" and "Bills" fit a phone's width */
+    /* four sections in one pill group: a little tighter, so "All", "Cases", "Enforcement" and "Legislation" fit a phone's width */
     .leg-controls .pol-subview-toggle { max-width: 100%; }
     .leg-controls .pol-subview-btn { padding-left: 9px; padding-right: 9px; }
+    .leg-controls { flex-wrap: wrap; }
+    .leg-controls-main { flex: 1 1 100%; }
+    #legislationArea .leg-reset { flex: 1 1 100%; justify-content: center; margin-left: 0; }
   }
-  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-clear, .leg-tile { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-tile { transition: none; } }
   /* ── FOCUS STYLES (Fix 1) ────────────────────────────────── */
   :focus-visible {
     outline: 2px solid var(--accent);
@@ -1925,7 +1948,7 @@
 <script src="data/tracker-data.js"></script>
 <!-- Paper summaries (a pilot, hand-maintained, not synced from the Sheet): see docs/paper-summaries.md -->
 <script src="data/paper-summaries.js"></script>
-<!-- Legislation tab (Government action group): the state outlines (generated by tools/us_map.py) and the stages and midterm results (hand-maintained): see data/legislation-data.js -->
+<!-- Legislation section (Government action tab): the state outlines (generated by tools/us_map.py) and the stages and midterm results (hand-maintained): see data/legislation-data.js -->
 <script src="data/us-map.js"></script>
 <script src="data/legislation-data.js"></script>
 <script src="data/legislation-actions.js"></script>
@@ -1950,7 +1973,10 @@
       <div class="header-tabs" role="tablist" aria-label="Select view">
         <!-- Three labelled groups, each tab above its group's label. Alphabetical within a group. The label is for the eye
              (aria-hidden), so a tab that would not make sense without its group says it in its accessible name, which still
-             contains the visible text (Agenda says "Policy agenda", Landscape "Policy landscape" and Enforcement "Enforcement actions and key cases"; the others are clear alone). -->
+             contains the visible text (Agenda says "Policy agenda" and Landscape "Policy landscape"; the others are clear alone).
+             Government action is ONE tab (since 2026-11-17, at the owner's request; it was two, Enforcement and Legislation), labelled "Enforcement and Legislation" in the owner's words, above the
+             group label Government action. It holds three sections, Cases, Enforcement and Legislation, switched in the toolbar of the area (src/views/60-legislation.html); each keeps an address of its own
+             (#cases, #enforcement, #legislation), and this button opens the one that was open last. -->
         <div class="tab-group" data-group="research" role="presentation">
           <div class="tab-group-btns" role="presentation">
             <button class="header-nav-btn" id="viewFactBank" data-view="fact-bank" role="tab" aria-selected="false" aria-controls="viewPanel">Fact Bank</button>
@@ -1967,8 +1993,7 @@
         </div>
         <div class="tab-group" data-group="government" role="presentation">
           <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewEnforcement" data-view="enforcement" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Enforcement actions and key cases">Enforcement</button>
-            <button class="header-nav-btn" id="viewLegislation" data-view="legislation" role="tab" aria-selected="false" aria-controls="viewPanel">Legislation</button>
+            <button class="header-nav-btn" id="viewGovernment" data-view="government" role="tab" aria-selected="false" aria-controls="viewPanel">Enforcement and Legislation</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Government action</div>
         </div>
@@ -2005,7 +2030,36 @@
           </div>
         </div>
 
-        <div class="controls" role="region" aria-label="Search and filters">
+        <div class="bar-toolbar controls" id="kfToolbar">
+          <div class="bar-toolbar-row">
+            <div class="bar-toolbar-main">
+            <span class="ctl-pair">
+              <label class="ctl-label" for="kfEvidence">Evidence</label>
+              <select id="kfEvidence" aria-label="Filter by evidence type">
+                <option value="all">All types</option>
+              </select>
+            </span>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="kfMinPol">Political noteworthiness</label>
+              <select id="kfMinPol" aria-label="Minimum political noteworthiness">
+                <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5</option>
+              </select>
+            </span>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="kfMinTruth">Truth</label>
+              <select id="kfMinTruth" aria-label="Minimum truthfulness rating">
+                <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5</option>
+              </select>
+            </span>
+            <label class="ctl-check" for="kfFoundational" hidden><input type="checkbox" id="kfFoundational"> Foundational sources</label>
+            </div>
+            <button class="reset-btn" type="button" id="kfReset" title="Reset the search, the order and every filter"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="kfResetText">Reset all</span></button>
+          </div>
+        </div>
+        <div class="bar-chips controls" id="kfChips">
+          <div class="pill-row" id="kwPills" role="group" aria-label="Filter by keyword"><span class="ctl-label kw-label">Keywords</span></div>
+        </div>
+        <div class="bar-search controls" id="kfFilters" role="region" aria-label="Search and filters">
           <div class="controls-row">
             <div class="search-wrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -2019,43 +2073,12 @@
                 <option value="truth">Most rigorous</option>
               </select>
             </span>
-            <button class="more-toggle" id="kfMoreToggle" aria-expanded="false" aria-controls="kfMorePanel">
-              <span class="more-label">More filters</span> <span class="more-count" id="kfMoreCount" hidden></span> <span class="ui-chevron chev" aria-hidden="true"></span>
-            </button>
-          </div>
-          <div class="more-panel" id="kfMorePanel">
-            <div>
-              <div class="more-body">
-                <div class="controls-row">
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="kfEvidence">Evidence</label>
-                    <select id="kfEvidence" aria-label="Filter by evidence type">
-                      <option value="all">All types</option>
-                    </select>
-                  </span>
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="kfMinPol">Political noteworthiness</label>
-                    <select id="kfMinPol" aria-label="Minimum political noteworthiness">
-                      <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5</option>
-                    </select>
-                  </span>
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="kfMinTruth">Truth</label>
-                    <select id="kfMinTruth" aria-label="Minimum truthfulness rating">
-                      <option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5</option>
-                    </select>
-                  </span>
-                  <label class="ctl-check" for="kfFoundational" hidden><input type="checkbox" id="kfFoundational"> Foundational sources</label>
-                </div>
-                <div class="pill-row" id="kwPills" role="group" aria-label="Filter by keyword"><span class="ctl-label kw-label">Keywords</span></div>
-              </div>
-            </div>
           </div>
           <div class="result-row">
             <div class="result-line" id="kfResultLine" aria-live="polite"></div>
-            <button class="clear-filters" id="kfClear" hidden>Clear filters</button>
           </div>
         </div>
+        <div class="sr-only" id="kfAnnounce" aria-live="polite"></div>
 
         <div id="factsArea">
           <div id="allFactsView" tabindex="-1"></div>
@@ -2098,9 +2121,11 @@
           <div class="about-section" data-group="government">
             <h2 class="about-section-label">Government action</h2>
             <p class="about-section-text about-question"><span class="q-lead">Meanwhile, governments are already acting.</span> <span class="q-ask">What are Congress and the states actually putting on the table, and where does each bill stand?</span> <span class="q-ask">What has been enforced under the laws we already have, and what have the courts said?</span></p>
-            <p class="about-section-text">Our legislation tracker lists the bills about AI that are active in Congress and the states, alongside the results of the 2026 midterms. Point at a state to see how its bills stand, from introduced to enacted, then follow the link to the full list, which you can search and filter by status and topic. Landscape gathers the bills behind each policy idea; this part tracks the bills themselves, wherever they are in the process. Enforcement, for agency actions and key cases, is still to come.</p>
-            <p class="about-note"><strong>How this section is built.</strong> Federal bills come from our own search of GovInfo&rsquo;s bill-status data, the official record of every bill: one is listed when its title names AI or a close relative of it, such as deepfakes or chatbots. State bills come from our own search of Open States, which follows each legislature&rsquo;s own record. Summaries are the legislature&rsquo;s own for state bills, and the Congressional Research Service&rsquo;s for federal bills where it has written one. Midterm results come from the Associated Press. Topics are our reading of each bill&rsquo;s title and summary, so check a bill&rsquo;s official record before you cite it.</p>
+            <p class="about-section-text">Our legislation tracker lists the bills about AI that are active in Congress and the states, alongside the results of the 2026 midterms. Point at a state to see how its bills stand, from introduced to enacted, then follow the link to the full list, which you can search and filter by status and topic. Landscape gathers the bills behind each policy idea; this part tracks the bills themselves, wherever they are in the process. Enforcement lists what agencies and attorneys general have done about AI, and Cases the court rulings that bear on it, each described in our own words and linked to the agency&rsquo;s or court&rsquo;s own page. All shows everything on one page: the midterm results, the bills, the cases and the enforcement actions.</p>
+            <p class="about-note"><strong>How this section is built.</strong> Federal bills come from our own search of GovInfo&rsquo;s bill-status data, the official record of every bill: one is listed when its title names AI or a close relative of it, such as deepfakes or chatbots. State bills come from our own search of Open States, which follows each legislature&rsquo;s own record. Summaries are the legislature&rsquo;s own for state bills, and the Congressional Research Service&rsquo;s for federal bills where it has written one. Midterm results come from the Associated Press. Enforcement and case entries are written in our own words from the agency&rsquo;s or court&rsquo;s own page, which each one links to, and the lists are not complete. Topics are our reading of each bill&rsquo;s title and summary, so check a bill&rsquo;s official record before you cite it.</p>
             <div class="about-links">
+              <a class="about-link" href="#all">All &rarr;</a>
+              <a class="about-link" href="#cases">Cases &rarr;</a>
               <a class="about-link" href="#enforcement">Enforcement &rarr;</a>
               <a class="about-link" href="#legislation">Legislation &rarr;</a>
             </div>
@@ -2111,83 +2136,89 @@
         </div>
       </div>
 
-      <!-- ── LEGISLATION ── (the Government action group's first tab, view key and route "legislation") A map of the states and, under it, two tables. src/js/60-legislation.js builds everything inside
-           #legislationArea from data/us-map.js (the outlines) and data/legislation-data.js (the bills, which are empty until
-           there is a source for them, and the midterm results from the Associated Press). The masthead above is
-           TAB_DESCS.legislation in src/js/70-render.js. The states carry no letters of their own (pointing at one names it in
-           the panel); #legTiles holds one button for each state too small to point at, which the script adds. The bills table is paged
-           (#legBillsPager), so is the results table (#legResultsPager), and the bills arrive in a file of their own the first time the tab opens (data/legislation-bills.js). #legFilters is
-           the search-and-topics bar under the toolbar. -->
+      <!-- ── GOVERNMENT ACTION ── (the one nav tab, with four sections, All, Cases, Enforcement and Legislation, each a view of its own: routes #all, #cases, #enforcement, #legislation). One area serves all four, in this
+           order from the top: the toolbar (the section switch, the Show menu, on Legislation and All the Status menu and the checkbox for the bills that only lightly mention AI, and at its right end the Reset button, which puts the whole tab back as it opens: no jurisdiction, no filter anywhere, the order reset, the All view), the topic chips,
+           the search (and on Legislation the Sort menu), the result line, the map of the states with its card, and then the section's own list: the bills here (#legBillsSection), or the rows of data/legislation-actions.js (#enforcementArea, lower down), and on All all of them, in this order: the midterm
+           results by state (#legResultsSection), the bills, the key cases and the enforcement actions. The map and the card are the same in all three (src/js/60-legislation.js builds everything above the lists from data/us-map.js, the
+           outlines, data/legislation-data.js, the stages and the 2026 midterm results from the Associated Press, and data/legislation-bills.js, the bills, which are fetched the first time any of the three
+           sections opens); src/js/55-enforcement.js draws the two lists. A control or a list that belongs to some of the sections carries gov-leg-only (the bills' own: Status, the checkbox, the topic chips, the search, Sort, the
+           result line and the bills table: shown on All and Legislation), gov-lists-only (the lists' own: the chips, the search, a Sort menu and the result line, shown on Enforcement and Cases; the two Sort menus, #legSort and #enfSort, are one setting for the tab,
+           legView.sort) or gov-all-only (the midterm results table: All alone, first), and src/styles/policy.css shows it only there. All is Legislation's controls, which then narrow the lists as well (their words and topics are the same vocabulary), and every list: the bills,
+           the enforcement actions, the key cases and the midterm results, with a card that holds all of it. Legislation, Enforcement and Cases show their own data alone. The map's states carry no letters of their own (pointing at one names it in the panel); #legTiles
+           holds one button for each state too small to point at, which the script adds. The bills table is paged (#legBillsPager), and the bills arrive in a file of their own. The masthead above, one for all four sections, is
+           govLede() and govMasthead() in src/js/60-legislation.js (TAB_DESCS in src/js/70-render.js gives all four sections the same). The place chosen in the Show menu (or on the map) is shared by the four. -->
       <div id="legislationArea">
-        <!-- The toolbar and the filter bar stick together at the top of the window (src/styles/legislation.css, .leg-sticky): the layers, the office toggle, the Show menu and Clear, then the
-             search and filters. -->
-        <div class="leg-sticky" id="legSticky">
+        <!-- The toolbar sticks at the top of the window, and the topic chips and the search bar stick under it, in every section (the owner's request, 2026-11-18: the topics belong to the sticky bar); all three scroll
+             with the page on a phone and on a short window (src/styles/legislation.css, #legSticky, #legTopicsBar and #legFilters). -->
+        <div class="leg-sticky controls" id="legSticky">
           <div class="leg-controls">
-            <div class="pol-subview-toggle" role="group" aria-label="View">
-              <button class="pol-subview-btn" type="button" id="legLayerResults" data-layer="results" aria-pressed="false">2026 Midterm results</button>
-              <button class="pol-subview-btn" type="button" id="legLayerBills" data-layer="bills" aria-pressed="false">Bills</button>
-            </div>
-            <div class="pol-subview-toggle leg-office-toggle" id="legOfficeToggle" role="group" aria-label="Race shown on the map">
-              <button class="pol-subview-btn" type="button" id="legOfficeSenate" data-office="senate" aria-pressed="false">Senate</button>
-              <button class="pol-subview-btn" type="button" id="legOfficeHouse" data-office="house" aria-pressed="false">House</button>
-              <button class="pol-subview-btn" type="button" id="legOfficeGovernor" data-office="governor" aria-pressed="false">Governor</button>
+            <div class="leg-controls-main">
+            <div class="pol-subview-toggle" id="govSwitch" role="group" aria-label="Section of Government action">
+              <button class="pol-subview-btn" type="button" id="govSwitchAll" data-gov="all" aria-pressed="false">All</button>
+              <button class="pol-subview-btn" type="button" id="govSwitchCases" data-gov="cases" aria-pressed="false">Cases</button>
+              <button class="pol-subview-btn" type="button" id="govSwitchEnforcement" data-gov="enforcement" aria-pressed="false">Enforcement</button>
+              <button class="pol-subview-btn" type="button" id="govSwitchLegislation" data-gov="legislation" aria-pressed="false">Legislation</button>
             </div>
             <div class="leg-select-pair" id="legShowPair">
               <label class="leg-ctl-label" for="legStateSelect">Show</label>
               <select id="legStateSelect" class="leg-select"><option value="">All jurisdictions</option></select>
             </div>
-            <button class="leg-clear" type="button" id="legClear" hidden>Clear</button>
+            <span class="ctl-pair gov-leg-only" id="legStatusPair">
+              <label class="ctl-label" for="legStatus">Status</label>
+              <select id="legStatus" aria-label="Filter by status"><option value="">All statuses</option></select>
+            </span>
+            <label class="ctl-check gov-leg-only" id="legPassingWrap" hidden>
+              <input type="checkbox" id="legPassing"> Include bills that only lightly mention AI <span class="leg-muted-count" id="legPassingCount"></span>
+            </label>
+            </div>
+            <button class="reset-btn leg-reset" type="button" id="legReset" title="Reset the jurisdiction, every filter in every section and the order, and return to All"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="legResetText">Reset all</span></button>
           </div>
-          <!-- The filter bar: the shared .controls bar (src/styles/filterbar.css, the same markup shape as Papers and the Fact Bank) with this tab's facets.
-               Search and Sort stay in view; behind "More filters" are Status, the checkbox that adds the bills that only mention AI, and the topic chips.
-               All of it but Sort narrows (or, for the checkbox, widens) everything the page counts (src/js/60-legislation.js, "Search and topics"); the
-               topics themselves are LEGISLATION_TOPICS in data/legislation-data.js, and the chips are drawn into #legTopicPills. Congress has no button: it
-               is the Federal entry in the Show menu. -->
-          <div class="controls" id="legFilters" role="region" aria-label="Search and filter the legislation">
-            <div class="controls-row">
-              <div class="search-wrap">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="search" id="legSearch" placeholder="Search bills, states, topics…" aria-label="Search the legislation" autocomplete="off">
-              </div>
-              <span class="ctl-pair">
-                <label class="ctl-label" for="legSort">Sort</label>
-                <select id="legSort" aria-label="Sort the legislation">
-                  <option value="recent" selected>Most recent action</option>
-                  <option value="oldest">Oldest action</option>
-                  <option value="jurisdiction">Jurisdiction</option>
-                </select>
-              </span>
-              <button class="more-toggle" id="legMoreToggle" type="button" aria-expanded="false" aria-controls="legMorePanel">
-                <span class="more-label">More filters</span> <span class="more-count" id="legMoreCount" hidden></span> <span class="ui-chevron chev" aria-hidden="true"></span>
-              </button>
+        </div>
+        <!-- The topic chips, always showing and sticking with the toolbar and the search bar: the bills' own on Legislation (#legTopicPills) and the lists' on Enforcement and Cases (#enfTopicPills). There was a note under the
+             bills' chips that said what a topic is and how many bills have none; the owner had it taken out on 2026-11-18 (the rule is in docs/legislation-sources.md, and the About page says it in a sentence). -->
+        <div class="leg-topics controls" id="legTopicsBar">
+          <div class="pill-row gov-leg-only" id="legTopicPills" role="group" aria-label="Filter by topic"></div>
+          <div class="pill-row gov-lists-only" id="enfTopicPills" role="group" aria-label="Filter by topic"></div>
+        </div>
+        <!-- The search bar: the shared .controls bar (src/styles/filterbar.css, the same markup shape as Papers and the Fact Bank). The bills' search, Sort and result line, or the lists' search and result line. -->
+        <div class="controls" id="legFilters" role="region" aria-label="Search and filter">
+          <div class="controls-row">
+            <div class="search-wrap gov-leg-only">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="legSearch" placeholder="Search bills, states, topics…" aria-label="Search the legislation" autocomplete="off">
             </div>
-            <div class="more-panel" id="legMorePanel">
-              <div>
-                <div class="more-body">
-                  <div class="controls-row">
-                    <span class="ctl-pair">
-                      <label class="ctl-label" for="legStatus">Status</label>
-                      <select id="legStatus" aria-label="Filter by status"><option value="">All statuses</option></select>
-                    </span>
-                    <label class="ctl-check" id="legPassingWrap" hidden>
-                      <input type="checkbox" id="legPassing"> Include bills that only mention AI <span class="leg-muted-count" id="legPassingCount"></span>
-                    </label>
-                  </div>
-                  <div class="pill-row" id="legTopicPills" role="group" aria-label="Filter by topic"></div>
-                  <p class="leg-topic-note" id="legTopicNote"></p>
-                </div>
-              </div>
+            <div class="search-wrap gov-lists-only" id="enfSearchWrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="enfSearch" placeholder="Search the enforcement actions…" aria-label="Search the enforcement actions" autocomplete="off">
             </div>
-            <div class="result-row">
-              <div class="result-line" id="legResultLine" aria-live="polite"></div>
-              <button class="clear-filters" id="legFilterClear" type="button" hidden>Clear filters</button>
-            </div>
+            <span class="ctl-pair gov-lists-only" id="enfSortPair">
+              <label class="ctl-label" for="enfSort">Sort</label>
+              <select id="enfSort" aria-label="Sort the enforcement actions">
+                <option value="recent" selected>Most recent</option>
+                <option value="oldest">Oldest</option>
+                <option value="jurisdiction">Jurisdiction</option>
+              </select>
+            </span>
+            <span class="ctl-pair gov-leg-only">
+              <label class="ctl-label" for="legSort">Sort</label>
+              <select id="legSort" aria-label="Sort the legislation">
+                <option value="recent" selected>Most recent action</option>
+                <option value="oldest">Oldest action</option>
+                <option value="jurisdiction">Jurisdiction</option>
+              </select>
+            </span>
+          </div>
+          <div class="result-row gov-leg-only">
+            <div class="result-line" id="legResultLine" aria-live="polite"></div>
+          </div>
+          <div class="result-row gov-lists-only" id="enfResultRow">
+            <div class="result-line" id="enfResultLine" aria-live="polite"></div>
           </div>
         </div>
         <div class="leg-stage" id="legStage">
           <div class="leg-map-wrap">
             <div class="leg-map-box" id="legMapBox">
-              <svg id="legMap" class="leg-map" viewBox="0 0 975 610" role="img" aria-label="Map of the United States. Choose a state, or Federal, in the Show menu; the panel and both tables follow it."></svg>
+              <svg id="legMap" class="leg-map" viewBox="0 0 975 610" role="img" aria-label="Map of the United States. Choose a state, or Federal, in the Show menu; the panel and the list follow it."></svg>
               <div class="leg-tiles" id="legTiles" role="group" aria-labelledby="legTilesLabel"><span class="leg-tiles-label" id="legTilesLabel">Small states</span></div>
             </div>
             <div class="leg-legend" id="legLegend"></div>
@@ -2195,33 +2226,66 @@
           </div>
           <div class="leg-panel-slot"><aside class="leg-panel" id="legPanel" aria-label="Selected state"></aside></div>
         </div>
-        <section class="leg-section" id="legBillsSection" aria-label="Bills">
+        <!-- The midterm results, by state, at the head of All (they were a view of their own until 2026-11-18; the owner asked for that view to go and the table to stay, then for All, which holds everything, and then for them first): ten states to a
+             page, each row linking to AP's pages for that state's races, the pinned jurisdiction narrowing it to its row. -->
+        <section class="leg-section gov-all-only" id="legResultsSection" aria-labelledby="legResultsTitle">
+          <h2 class="leg-section-title" id="legResultsTitle"><span class="leg-scope leg-scope--title" id="legResultsScope"></span></h2>   <!-- "Arkansas · 2026 Midterm results": the place, then what the table is, as the other sections' titles are written -->
+          <div class="leg-table-wrap" id="legResultsTable" tabindex="-1"></div>
+          <p class="leg-source" id="legSource"></p>
+          <nav class="pager" id="legResultsPager" hidden></nav>
+        </section>
+        <!-- Legislation's list: the bills, ten to a page. -->
+        <section class="leg-section gov-leg-only" id="legBillsSection" aria-label="Bills">
           <h2 class="leg-section-title" id="legBillsTitle"><span class="leg-scope leg-scope--title" id="legBillsScope"></span></h2>
           <div class="leg-stats" id="legBillsStats" hidden></div>
           <div class="leg-table-wrap" id="legBillsTable" tabindex="-1"></div>
-          <nav class="pager" id="legBillsPager" hidden></nav>
           <p class="leg-source" id="legBillsNote"></p>
+          <nav class="pager" id="legBillsPager" hidden></nav>
         </section>
-        <section class="leg-section" id="legResultsSection" aria-labelledby="legResultsTitle">
-          <h2 class="leg-section-title" id="legResultsTitle">2026 Midterm results <span class="leg-scope" id="legResultsScope"></span></h2>
-          <div class="leg-table-wrap" id="legResultsTable" tabindex="-1"></div>
-          <nav class="pager" id="legResultsPager" hidden></nav>
-          <p class="leg-source" id="legSource"></p>
-        </section>
+        <!-- ── ENFORCEMENT and CASES' list ── One area serves both: the open view (enforcement or cases) says which kind of row of data/legislation-actions.js is listed (the row format and the rules for it
+             are at the top of that file); src/js/55-enforcement.js draws it. Until that file has a row of the kind this is a placeholder: the one note below (the masthead above is the tab's, the same in every section),
+             and the lists' own controls above are hidden. The first row of the kind hides the note and shows #enfLive. -->
+        <div id="enforcementArea">
+          <p class="placeholder-note" id="enfPlaceholder"><span class="placeholder-note-label">Placeholder</span>Nothing is here yet. <span id="enfPlaceholderWhat">Enforcement actions</span> will be listed here. For now, the bills are in <a href="#legislation">Legislation</a>.</p>
+          <div id="enfLive" hidden>
+            <!-- The lists, each with its own count, its table, the note under the table (ENF_NOTE) and its pager: src/js/55-enforcement.js writes them here. A note sits under its table and above the divider that starts the pager (the owner, 2026-11-18). -->
+            <div id="enfLists"></div>
+          </div>
+        </div>
         <div class="sr-only" id="legAnnounce" aria-live="polite"></div>
-      </div>
-      <!-- ── ENFORCEMENT ── A placeholder tab, first in the Government action group of the nav (alphabetical: Enforcement, then Legislation). It is meant for enforcement actions
-           and key cases (the row format and the rules for them are at the top of data/legislation-actions.js). The masthead above carries its copy (TAB_DESCS.enforcement in
-           src/js/70-render.js); this is the one note under it. Replace the note, and that copy, when there is something to list. -->
-      <div id="enforcementArea">
-        <p class="placeholder-note"><span class="placeholder-note-label">Placeholder</span>Nothing is here yet. Enforcement actions and key cases will be listed here. For now, the bills are in <a href="#legislation">Legislation</a>.</p>
       </div>
 
       <!-- Papers, the Database sub-view: the search-and-filters bar, then the list. The bar is the
            Fact Bank's (same markup shape, same styles: src/styles/filterbar.css) with this tab's
-           facets: Sort stays in view; Methodology, Category and Region sit behind "More filters". -->
+           facets, laid out as the Government action tab's bar is (the owner, 2026-11-18: the same structure): the toolbar (Category, Methodology and Region, always showing, with the Reset button at its right end), then the search bar
+           (search, Sort and the result line), each sticky under the one before (src/styles/filterbar.css, src/js/00-state.js syncBarStack). -->
       <div id="papersArea">
-        <div class="controls" role="region" aria-label="Search and filters">
+        <div class="bar-toolbar controls" id="ppToolbar">
+          <div class="bar-toolbar-row">
+            <div class="bar-toolbar-main">
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppCategory">Category</label>
+              <select id="ppCategory" aria-label="Filter by category">
+                <option value="all">All categories</option>
+              </select>
+            </span>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppMethod">Methodology</label>
+              <select id="ppMethod" aria-label="Filter by methodology">
+                <option value="all">All types</option>
+              </select>
+            </span>
+            <span class="ctl-pair">
+              <label class="ctl-label" for="ppRegion">Region</label>
+              <select id="ppRegion" aria-label="Filter by region">
+                <option value="all">All regions</option>
+              </select>
+            </span>
+            </div>
+            <button class="reset-btn" type="button" id="ppReset" title="Reset the search, the order and every filter"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="ppResetText">Reset all</span></button>
+          </div>
+        </div>
+        <div class="bar-search controls" id="ppFilters" role="region" aria-label="Search and filters">
           <div class="controls-row">
             <div class="search-wrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -2234,41 +2298,12 @@
                 <option value="asc">Oldest first</option>
               </select>
             </span>
-            <button class="more-toggle" id="ppMoreToggle" aria-expanded="false" aria-controls="ppMorePanel">
-              <span class="more-label">More filters</span> <span class="more-count" id="ppMoreCount" hidden></span> <span class="ui-chevron chev" aria-hidden="true"></span>
-            </button>
-          </div>
-          <div class="more-panel" id="ppMorePanel">
-            <div>
-              <div class="more-body">
-                <div class="controls-row">
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="ppCategory">Category</label>
-                    <select id="ppCategory" aria-label="Filter by category">
-                      <option value="all">All categories</option>
-                    </select>
-                  </span>
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="ppMethod">Methodology</label>
-                    <select id="ppMethod" aria-label="Filter by methodology">
-                      <option value="all">All types</option>
-                    </select>
-                  </span>
-                  <span class="ctl-pair">
-                    <label class="ctl-label" for="ppRegion">Region</label>
-                    <select id="ppRegion" aria-label="Filter by region">
-                      <option value="all">All regions</option>
-                    </select>
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
           <div class="result-row">
             <div class="result-line" id="ppResultLine" aria-live="polite"></div>
-            <button class="clear-filters" id="ppClear" hidden>Clear filters</button>
           </div>
         </div>
+        <div class="sr-only" id="ppAnnounce" aria-live="polite"></div>
 
         <div class="cards-grid" id="cardsGrid" tabindex="-1"></div>
         <nav class="pager" id="ppPager" hidden></nav>
@@ -2376,14 +2411,19 @@
 
   // ── utils ────────────────────────────────────────────────────
   const escapeHTML = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  // "More filters": the disclosure that holds a filter bar's secondary controls. The Papers bar and
-  // the Fact Bank's bar share it, so the two open and close the same way.
-  function wireMoreFilters(toggleId, panelId) {
-    const toggle = document.getElementById(toggleId), panel = document.getElementById(panelId);
-    toggle.addEventListener('click', () => {
-      const open = panel.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', String(open));
-    });
+  /* The stacked bar of Papers and the Fact Bank (the toolbar, the chips and the search bar: the same three blocks as the Government action tab's, each sticky under the one before; the owner, 2026-11-18): their live
+     heights, for what has to clear them. --bar-toolbar-h on the area is where the chips stick, --bar-chips-h where the search bar sticks (under both), and --bar-h, the three together, is what a jump to the list
+     (scroll-margin-top in filterbar.css) and the Fact Bank's pinned source headers must clear. A block that is not sticky (a phone, a short window) counts as nothing. Read exactly, as legSyncBarHeight does: a rect is
+     in zoomed pixels and the sticky offset in the element's own, hence the division by the body zoom. Returns the total. */
+  function syncBarStack(area) {
+    if (!area) return 0;
+    const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
+    const stuck = el => (el && getComputedStyle(el).position === 'sticky') ? el.getBoundingClientRect().height / zoom : 0;
+    const top = stuck(area.querySelector('.bar-toolbar')), mid = stuck(area.querySelector('.bar-chips')), under = stuck(area.querySelector('.bar-search'));
+    area.style.setProperty('--bar-toolbar-h', top.toFixed(2) + 'px');
+    area.style.setProperty('--bar-chips-h', mid.toFixed(2) + 'px');
+    area.style.setProperty('--bar-h', (top + mid + under).toFixed(2) + 'px');
+    return top + mid + under;
   }
   /* ── paging ───────────────────────────────────────────────────
      The two long lists, Papers and the Fact Bank, show at most PAGE_SIZE cards at a time, with a pager
@@ -2450,8 +2490,7 @@
   // After a page change: back to the top of the list, just under the sticky filter bar, with focus on the
   // list so a keyboard or screen-reader reader starts at its first card, not at the pager they just used.
   function showListTop(list) {
-    const bar = list.closest('#papersArea, #factBankArea').querySelector('.controls');
-    window.scrollTo(0, Math.max(0, list.getBoundingClientRect().top + window.pageYOffset - bar.offsetHeight - 12));
+    if (typeof list.scrollIntoView === 'function') list.scrollIntoView({ block: 'start' });   // scroll-margin-top (filterbar.css) keeps it clear of the stacked bar
     list.focus({ preventScroll: true });
   }
   // ── filter + sort ────────────────────────────────────────────
@@ -3312,13 +3351,13 @@
      One place that knows how location.hash and app state map onto each other.
 
      Routes
-       #about #papers #fact-bank #policy #legislation
+       #about #papers #fact-bank #policy #all #legislation #enforcement #cases
                                                ... the flat views, in VIEWS below
-                                                   (#legislation is a placeholder tab)
+                                                   (#all, #legislation, #enforcement and #cases are the four sections of the one Government action tab)
                                                    (#sources, #research and #changelog are retired
                                                    aliases of #papers, and #solutions of #policy)
-       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id>
-                                               ... parameterised
+       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id> #enforcement/<place> #cases/<place>
+                                               ... parameterised (a place is federal or a state's name: #enforcement/texas)
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
      routes (Data Tracker + Job Displacement removed 2026-08).
@@ -3357,11 +3396,13 @@
     // Retired tab, merged into Policy. Kept so old links land on a real view;
     // `alias` has applyHashRoute rewrite the address bar to the canonical route.
     solutions:          { view: 'policy', alias: true },
-    // The Government action group's tabs (a nav group of its own since 2026-11-12, called Legislation until that evening; before it Legislation was second in the
-    // Policy group). `legislation` is the group's second tab, Legislation (alphabetical, after Enforcement), and keeps the route it always had.
+    // Government action is ONE tab with four sections (since 2026-11-17; Enforcement and Legislation were two tabs of a group before that; All, which holds everything, was added on 2026-11-18), each a view of its own with an address of its own,
+    // and the nav tab for all three is #viewGovernment (setView in 70-render.js marks it, and the switch under the masthead moves between them). `legislation` is the map and the bills and keeps the
+    // route it has always had (it was in the Policy group until 2026-11-12); `enforcement` and `cases` are the two kinds of row in data/legislation-actions.js (55-enforcement.js).
+    all:                { view: 'all' },   // everything at once: the bills, the enforcement actions, the key cases and the midterm results; the tab opens on it
     legislation:        { view: 'legislation' },
-    // A placeholder tab, first in the Government action group; nothing is behind it yet.
     enforcement:        { view: 'enforcement' },
+    cases:              { view: 'cases' },
   };
   // Reverse map, for currentRoute(). First key wins, so `papers` is the canonical name of the
   // cards view (the retired aliases after it never are).
@@ -3380,6 +3421,8 @@
 
   // The canonical route for the current view state (modal-free).
   function currentRoute() {
+    // The address of Enforcement and of Cases carries the place they are showing, which they share with Legislation (enfRoute in 55-enforcement.js).
+    if (activeView === 'enforcement' || activeView === 'cases') return enfRoute();
     return ROUTE_FOR_VIEW[activeView] || 'about';
   }
 
@@ -3404,6 +3447,14 @@
       }
 
       // ── parameterised ─────────────────────────────────────────────────
+      // Enforcement or Cases on a place (a link in the map's card): the place is the one the four sections share, so it is set here and the view switch draws the section. A place that is not
+      // one, a stale or mistyped link, shows every jurisdiction, and the address bar is rewritten to say so (setHash is off while a route is applied).
+      if ((head === 'enforcement' || head === 'cases') && tail) {
+        enfOpenPlace(tail);
+        setView(head);
+        history.replaceState(null, '', '#' + enfRoute());
+        return true;
+      }
       if (head === 'policy' && tail && POLICY_DATA.some(pl => pl.id === tail)) {
         setView('policy');
         openPolModalById(tail);
@@ -3442,30 +3493,322 @@
     }
   }
 
-  /* ── Legislation tab ──────────────────────────────────────────────────────────────────────────────────────────
-     A map of the states and two tables, built here from data/us-map.js (the outlines), data/legislation-data.js (the stages, and the 2026
-     midterm results from the Associated Press) and data/legislation-bills.js (the bills: federal ones from our own scan of GovInfo's bill-status
-     data (tools/congress_fetch.py), state ones from our own Open States search; generated by tools/legislation.py and fetched the first time the tab
-     opens, see legLoadBills). Two layers colour the map:
-     Bills, shaded by how many bills a state has, and 2026 Midterm results, with a choice of office (Senate, House or governor). A bill is
-     state or federal: a state bill belongs to a state on the map (or to a territory, which has no shape, only a place in the Show menu and
-     the tables), a federal bill to Congress, which has its own button and menu entry and works like picking a state. Pointing at a
-     jurisdiction previews it in the panel; clicking it, or choosing it in the Show menu, pins it and narrows both tables. A bill is ACTIVE
-     when it has been introduced and has not failed, which its stage decides (LEGISLATION_STAGES in data/legislation-data.js); only active
-     bills are listed, and a note under the table says how many were left out and why. The bills table shows LEG_PAGE_SIZE (ten) to a page, with
-     the pager the Papers list uses; the hover panel gives a jurisdiction's stats and links to the tables below (it previews none of its bills). The 2026 Midterm results table is paged too, LEG_RESULTS_PAGE_SIZE states to a page. Nothing on
-     the page is typed in: the legend's counts and ranges, the map's shading, the totals and the masthead are computed from the data. The
-     map is for pointing, and its states carry no letters: pointing at one names it in the panel. The nine states too small to point at
-     (LEG_SMALL below) also have a button beside the map, which does what its shape does. The menu, those buttons, the panel and the
-     tables are the keyboard and screen-reader way in. Congress has no button of its own: it is the Federal entry in the Show menu, like a state. A bill
-     flagged `passing` (AI is only in its text, not its title or summary) is out of view, and out of every count, until the checkbox "Include bills that
-     only mention AI", under More filters, is on. The filter bar under the toolbar (a search box and a Sort menu, and behind More filters a Status menu,
-     that checkbox and the topic chips) narrows what is counted in the same way: the shading, legend, panel and table follow it, while the masthead keeps
-     saying what is loaded (see "Search and topics" below). The view redraws on a "legislation:refresh" event on #legislationArea, which is how
-     a late data load (or a test) asks it to; #legislationArea carries data-bills="idle|loading|ready|failed" for the bills file. */
+  /* ── Enforcement and Cases ────────────────────────────────────────────────────────────────────
+     Two of the four sections of the Government action tab (All and Legislation, the others, are 60-legislation.js). Enforcement lists what agencies and attorneys general have done about AI, and Cases what courts
+     have decided or are deciding, both from LEGISLATION_ACTIONS (data/legislation-actions.js, by hand: the row format and the rules for it, which are strict, are at the top of that file). They are ONE list
+     drawn twice: the open view (enforcement or cases, activeView) says which kind of row is listed, and the two share the list's area (#enforcementArea), the search and the topic chips and, with Legislation, the toolbar, the Show menu and the map (the Government action area, src/views/60-legislation.html). While the
+     file has no row of the kind the section is the placeholder it was (the note in src/views/60-legislation.html, under the tab's one masthead); the first row of the kind turns its list on, so nothing about
+     a section changes on the live site until someone has checked a row and put it in.
+
+     One tab, four sections, one PLACE. The nav has one tab, Government action; a switch in the toolbar (src/views/60-legislation.html) moves between All, Cases, Enforcement and Legislation, and each section
+     has an address of its own (#cases, #enforcement, #legislation). A jurisdiction is a filter here, not a home, so the place chosen in the Show menu or on the map is SHARED by the three (legView.pinned in
+     60-legislation.js): pick Texas on one and it is still Texas on the others. "Federal" is two different bodies, Congress on Legislation and the federal agencies and courts here, and the two menus say so. A
+     federal row has no state; a state attorney general's action or a state court's case carries its state's USPS code, and that is where it is listed. The address carries the place (#enforcement/texas,
+     #cases/federal), so a link opens the section on it, and the map's card on Legislation (legPanel) counts the rows of the place it shows and links to each section that has some (enfCardBlock): the card is
+     the one-screen summary of a place, and the sections are where its detail is.
+
+     Actions and cases are never counted with the bills, nor with each other: a settlement or a ruling is not a bill, and a total that mixed them would mean nothing. Adding a kind is a row in ENF_KINDS, a
+     route (VIEWS in 40-router.js), a button in the switch, and its words in the data file's header (the masthead is the tab's, one for all its sections). A status and an outcome are plain text, not pills (a pill looks
+     like a button, and these are labels to read; the owner's preference, 2026-11-17); the topic filter is the Papers chips, as on Legislation.
+
+     ALL, the fourth section (the owner, 2026-11-18: "There should be an All view that's separate from the Legislation view. Currently it looks like legislation holds all the data"), holds everything, in this order in its
+     card and on its page: the midterm results, the bills, then both of these lists, the key cases and the enforcement actions (enfRenderAll; ENF_KINDS_ALL says the order). It shows the bills' controls (Status, the checkbox, the chips, the search, Sort), and those narrow the lists here as well: a
+     row's words and topics are the same vocabulary as a bill's, so what the chips and the search mean is the same on every list (enfFilt says whose state they are). Legislation, Enforcement and Cases show their own data alone.
+
+     THE MAP follows the open section. It is the same map in all four, and legPaint (60-legislation.js) shades its states by how many of that section's rows each has: the bills on Legislation, the enforcement
+     actions on Enforcement, the key cases on Cases, all three added up on All (enfMapData, above), with a legend that says which. The card holds the section's own block or blocks (enfCardBlock), each with a "See more details below" link where the place has rows. A place that has
+     none of the section's rows is left plain, which is the data's own answer: the lists are kept by hand and are not complete (see the note under each).
+
+     PAGES. A list shows ten rows to a page, as the bills' table does (LEG_PAGE_SIZE), with the Papers pager under it (enfSection, enfPagers); the title counts every row in view. Each kind keeps its own page, and a change in what
+     is in view (the place, the search, the topics, the order, the section) starts them again at 1 (enfSyncPages).
+
+     SORT. The Sort menu is on every section, in the same place (the search bar's first row, after the search), and its three choices mean the same thing on each: Most recent (the default), Oldest and
+     Jurisdiction (the federal side first, then the states A to Z, each place's rows newest first). The bills' menu is #legSort and the lists' is #enfSort, two menus because the two sections' own
+     controls are separate throughout, but one setting for the tab, legView.sort: choose Oldest on one section and the others open oldest first. Sort is not a filter, so "Clear filters" leaves it alone.
+
+     ORDER. This file runs BEFORE 60-legislation.js, because the first card is drawn when that file finishes (buildLegislationView) and the card calls enfCardBlock: what the card uses here is a
+     function declaration or a const at the top of this file. What this file takes from the Legislation script (legView, legName, legSlug, ...) is read when it runs, never when it loads. */
+  const ENF_KINDS = [
+    { kind: 'enforcement', view: 'enforcement', one: 'enforcement action', many: 'enforcement actions', tag: 'action', tags: 'actions' },   // tag and tags: the short names the map's legend counts in
+    { kind: 'case',        view: 'cases',       one: 'key case',           many: 'key cases',           tag: 'case',   tags: 'cases' },
+  ];
+  // The order All holds them in, in its card and on its page (the owner, 2026-11-18: the midterm results, the bills, "and then cases and enforcement"): the key cases, then the enforcement actions.
+  const ENF_KINDS_ALL = [ENF_KINDS[1], ENF_KINDS[0]];
+  const ENF_FED_NAME = 'Federal (agencies and courts)';   // the Legislation menu says "Federal (Congress)": two different bodies, so two names
+  // pages: the page each list is on, by kind (a list shows LEG_PAGE_SIZE rows, ten, like the bills' table: the owner, 2026-11-18, "There should be a max of 10 bills per page").
+  const enfView = { q: '', topics: new Set(), pages: { enforcement: 1, case: 1 } };
+  // The note under each list's table, above the divider under its page numbers (the owner, 2026-11-18: each blurb below its table and above the divider). It also carries the caution each section's own blurb used to
+  // carry, now that the masthead is the tab's and one for all four sections: an allegation is not a finding; a ruling is only what that court held.
+  const ENF_NOTES = {
+    enforcement: "Each entry is checked against the agency's or attorney general's own page before it goes in, and an allegation is described as an allegation: most actions end in a settlement with no admission. The list is kept by hand and is not complete: a place with none listed may still have actions we have not added.",
+    case: "Each entry is checked against the court's own page before it goes in. A ruling is only what that court held, and a case can still change. The list is kept by hand and is not complete: a place with none listed may still have cases we have not added.",
+  };
+  let enfSig = '';   // what was in view when the pages were last put right (enfSyncPages)
+  let enfSearchTimer;   // the pause before the search box narrows the list (the Reset button cancels a pending one)
+  let enfPillsFor = null;   // the kind and the list of topic ids the pills were built for
+
+  /* The list's order, a key of enfSorters (the Sort menu, whose setting is legView.sort, shared with the bills). "Most recent" and "Oldest" go by the row's date, a tie by title, and a row with no date comes
+     last either way (the data file requires a date, so that is only a guard). "Jurisdiction" puts the federal agencies and courts first, then the states A to Z, then a row with no place, each place's
+     rows newest first. */
+  const enfByDate = asc => (a, b) => { const x = String(a.date || ''), y = String(b.date || ''); if (!x !== !y) return x ? -1 : 1; return (x === y ? 0 : ((x < y) === asc ? -1 : 1)) || String(a.title || '').localeCompare(String(b.title || '')); };
+  const enfRank = a => { const p = enfPlaceOf(a); return p === LEG_FED ? 0 : p ? 1 : 2; };
+  const enfSorters = {
+    recent: enfByDate(false),
+    oldest: enfByDate(true),
+    jurisdiction: (a, b) => (enfRank(a) - enfRank(b)) || (enfRank(a) === 1 ? legName(enfPlaceOf(a)).localeCompare(legName(enfPlaceOf(b))) : 0) || enfByDate(false)(a, b),
+  };
+
+  // The kind of row the open section lists: Enforcement the enforcement actions, Cases the cases.
+  const enfCurrent = () => ENF_KINDS.find(k => k.view === activeView) || ENF_KINDS[0];
+
+  function enfRows() {
+    const raw = (typeof LEGISLATION_ACTIONS !== 'undefined' && Array.isArray(LEGISLATION_ACTIONS)) ? LEGISLATION_ACTIONS : [];
+    return raw.filter(a => a && a.id && ENF_KINDS.some(k => k.kind === a.kind));
+  }
+  const enfRowsOf = k => enfRows().filter(a => a.kind === k.kind);
+  // Where a row is listed in the Show menu: a federal row under Federal, a state attorney general's action or a state court's case under its state; a row with neither is listed only while all
+  // jurisdictions are showing.
+  function enfPlaceOf(a) { return a.state ? String(a.state) : (a.level === 'federal' ? LEG_FED : ''); }
+  const enfPlaceName = place => place === LEG_FED ? ENF_FED_NAME : legName(place);
+  const enfSlug = place => place === LEG_FED ? LEG_FED : legSlug(place);
+
+  /* The rows of the open section in view: the place, the search and the topics. skipTopics leaves the topics out, which is what the topic pills are counted against. */
+  const enfHayMemo = new WeakMap();
+  function enfHay(a) {
+    let h = enfHayMemo.get(a);
+    if (h === undefined) {
+      h = [a.title, a.body, a.what, a.outcome, a.status, a.date, a.state ? legName(a.state) : (a.level === 'federal' ? 'federal' : ''), (a.uses || []).map(legTopicLabel).join(' ')].filter(Boolean).join(' ').toLowerCase();
+      enfHayMemo.set(a, h);
+    }
+    return h;
+  }
+  const enfTopicsOk = (a, picked) => { let ok = true; picked.forEach(id => { if ((a.uses || []).indexOf(id) < 0) ok = false; }); return ok; };
+  // The search and the topics that narrow the rows: the lists' own (enfView) on Enforcement and Cases, and the bills' (legView) on All, which shows the bills' controls and lets them apply to everything it holds.
+  const enfFilt = () => activeView === 'all' ? legView : enfView;
+  function enfList(skipTopics, anyPlace, kind) {   // anyPlace leaves the place out: what the map counts, since a pinned state is outlined on it, not the only one coloured; kind says which rows (the open section's by default)
+    const f = enfFilt(), words = legWords(f.q), place = anyPlace ? null : legView.pinned;
+    return enfRowsOf(kind || enfCurrent()).filter(a => (!place || enfPlaceOf(a) === place) && words.every(w => enfHay(a).indexOf(w) >= 0) && (skipTopics || enfTopicsOk(a, f.topics)));
+  }
+  // The topics some row of the open section bears on, in the order of LEGISLATION_TOPICS (the same list as the bills' topics, so a topic means the same thing on every section).
+  function enfTopicIds() {
+    const used = new Set();
+    enfRowsOf(enfCurrent()).forEach(a => (a.uses || []).forEach(id => used.add(id)));
+    return legTopicRules().rules.map(r => r.id).filter(id => used.has(id));
+  }
+
+  /* The map's data on Enforcement and Cases (legPaint in 60-legislation.js shades and counts from it): the open section's rows by state, with the lists' own search and chips applied, as the bills' filters apply to the
+     map on Legislation, and the place left out. A federal row (an agency's action, a federal court's case) is on no state, and a row under a place with no shape (a territory) has none to colour: the legend counts
+     both apart. */
+  function enfMapData(kinds) {   // kinds: the open section's by default; All passes both
+    const ks = kinds || [enfCurrent()], counts = {};
+    let fed = 0, terr = 0;
+    ks.forEach(k => enfList(false, true, k).forEach(a => {
+      const p = enfPlaceOf(a);
+      if (p === LEG_FED) fed++; else if (p && legOnMap(p)) counts[p] = (counts[p] || 0) + 1; else if (p) terr++;
+    }));
+    return { k: ks[0], counts, fed, terr };
+  }
+  // All's result line (legFilterBar in 60-legislation.js) says, after the bills' count, how many of each list the search and the topics leave (the place is not part of the count, as for the bills): each kind on its own, never added together.
+  const enfAllLine = () => ENF_KINDS_ALL.filter(k => enfRowsOf(k).length).map(k => { const n = enfRowsOf(k).length; return `${legNum(enfList(false, true, k).length)} of ${legNum(n)} ${n === 1 ? k.one : k.many}`; });
+
+  /* The place, in the address bar and from it. */
+  function enfRoute() { return enfCurrent().view + (legView.pinned ? '/' + enfSlug(legView.pinned) : ''); }
+  function enfPlaceFromSlug(slug) {
+    const s = String(slug || '').toLowerCase();
+    if (s === LEG_FED) return LEG_FED;
+    const sel = document.getElementById('legStateSelect');
+    const codes = sel ? [...sel.options].map(o => o.value).filter(v => v && v !== LEG_FED) : [];
+    return codes.find(c => legSlug(c) === s) || null;
+  }
+  // From a link (the router): an unknown place, a stale or mistyped link, shows every jurisdiction.
+  function enfOpenPlace(slug) { legSetPinned(enfPlaceFromSlug(slug)); }
+
+  /* The map card's blocks (legPanel in 60-legislation.js), one for each kind the card holds: the key cases, then the enforcement actions, on All; the open kind alone on Enforcement and Cases. Each says what is listed for
+     the place the card shows, as a count (no titles: the list below has them, as the bills' block has no previews), and where the place has rows it ends with a "See more details below" link that pins the place and takes the reader to that list (the owner, 2026-11-18: a
+     link wherever the table below has information for the place, and none where there is no data yet to show). A place with none says "None listed", never "none" (the list is kept by hand and is not complete), and has
+     no link. A kind with no row at all in the file has no block, so the card does not advertise a list that is not there. The whole country's card is not a place and has no link: the lists below are in full.
+     code is null for the whole country, LEG_FED for the federal card, or a state's USPS code. */
+  function enfCardBlock(code, kinds) {
+    return (kinds || ENF_KINDS_ALL).map(k => {
+      const all = enfRowsOf(k);
+      if (!all.length) return '';
+      const here = code ? all.filter(a => enfPlaceOf(a) === code) : all, label = capitalizeFirst(k.many);
+      if (!here.length) return `<div class="leg-block"><div class="leg-label">${label}</div><p class="leg-muted">None listed${code ? ` for ${escapeHTML(enfPlaceName(code))}` : ''} yet.</p></div>`;
+      return `<div class="leg-block"><div class="leg-label">${label}</div><p>${legNum(here.length)} ${here.length === 1 ? k.one : k.many}${code ? '' : ', federal and in the states'}.</p>` +
+        (code ? `<p class="leg-more"><button type="button" class="leg-more-link" data-more="${escapeHTML(code)}" data-kind="${k.kind}">See more details below</button></p>` : '') + '</div>';
+    }).join('');
+  }
+  /* The card's "See more details below" in a block of cases or enforcement actions: pin the place, so the list below is about it, and take the reader to that list (legGoToDetails does the same for the bills). */
+  function enfGoToDetails(kindKey, code) {
+    const k = ENF_KINDS.find(x => x.kind === kindKey);
+    if (code && legView.pinned !== code) legSetPinned(code);
+    if (k) enfTableTop(k);
+  }
+
+  /* A list ten rows to a page, with the Papers pager under it (renderPager). A change in what is in view (the place, the search, the topics, the order, or the section) starts every list again at page 1; a page the reader
+     turns to leaves what is in view alone, so it stays. The title counts every row in view, not the page's. */
+  function enfSyncPages() {
+    const f = enfFilt(), sig = [activeView, legView.pinned || '', f.q, [...f.topics].sort().join('|'), legView.sort].join('\x01');
+    if (sig !== enfSig) { enfSig = sig; Object.keys(enfView.pages).forEach(k => { enfView.pages[k] = 1; }); }
+  }
+  function enfSection(k, rows, emptyText, scope) {
+    const pages = Math.max(1, Math.ceil(rows.length / LEG_PAGE_SIZE)), page = enfView.pages[k.kind] = Math.min(Math.max(1, enfView.pages[k.kind] || 1), pages);
+    const shown = rows.slice((page - 1) * LEG_PAGE_SIZE, page * LEG_PAGE_SIZE);
+    return `<section class="leg-section" data-kind="${k.kind}"><h3 class="leg-section-title" id="enfTitle-${k.kind}"><span class="leg-scope leg-scope--title">${scope} · ${legNum(rows.length)} ${rows.length === 1 ? k.one : k.many}</span></h3>` +
+      `<div class="leg-table-wrap" id="enfTable-${k.kind}" tabindex="-1">${legTable(['Date', 'Who acted', 'Matter', 'Outcome', 'Source'], shown.map(enfRow), emptyText, 'leg-table--enf')}</div><p class="leg-source">${escapeHTML(ENF_NOTES[k.kind])}</p><nav class="pager" data-kind="${k.kind}" hidden></nav></section>`;
+  }
+  // The pagers are drawn once the sections are in the document (renderPager writes into a <nav>); counts is each kind's number of rows in view.
+  function enfPagers(kinds, counts) {
+    kinds.forEach(k => {
+      const nav = document.querySelector(`#enfLists nav.pager[data-kind="${k.kind}"]`);
+      if (nav) renderPager(nav, { page: enfView.pages[k.kind], pages: Math.max(1, Math.ceil((counts[k.kind] || 0) / LEG_PAGE_SIZE)), noun: k.many, onPage: n => { enfView.pages[k.kind] = n; enfRender(); enfTableTop(k); } });
+    });
+  }
+  // After a page change: the top of that list, with the keyboard on it so a reader starts at its first row, not at the pager they used (as legTableTop does for the bills).
+  function enfTableTop(k) {
+    const title = document.getElementById('enfTitle-' + k.kind), wrap = document.getElementById('enfTable-' + k.kind);
+    if (title && typeof title.scrollIntoView === 'function') title.scrollIntoView({ block: 'start' });
+    if (wrap) wrap.focus({ preventScroll: true });
+  }
+
+  /* One row of a list. The date is the action's or the ruling's; the outcome is plain text with the status and the date it was last checked beneath it (a case moves, so a status always says
+     when it was looked at); the source is the agency's or court's own page, shown as its host, and is a link only when it is http or https. */
+  function enfRow(a) {
+    const url = legSafeUrl(a.url), host = url ? url.replace(/^https?:\/\/(www\.)?/i, '').split('/')[0] : '';
+    const topics = (a.uses || []).map(id => escapeHTML(legTopicLabel(id)));
+    const status = [a.status ? escapeHTML(a.status) : '', a.asOf ? `checked ${escapeHTML(legDateLong(a.asOf) || a.asOf)}` : ''].filter(Boolean).join(', ');
+    const outcome = a.outcome ? escapeHTML(a.outcome) + (status ? `<div class="leg-status-note">${status}</div>` : '') : (status || LEG_DASH);
+    return `<tr data-id="${escapeHTML(a.id)}"><td>${escapeHTML(legDateLong(a.date) || a.date || '')}</td><td>${escapeHTML(a.body || '')}</td>` +
+      `<td class="leg-col-matter"><div class="enf-title">${escapeHTML(a.title || a.id)}</div>${a.what ? `<div>${escapeHTML(a.what)}</div>` : ''}${topics.length ? `<div class="leg-status-note">Topics: ${topics.join(', ')}</div>` : ''}</td>` +
+      `<td>${outcome}</td><td>${url ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener">${escapeHTML(host)}</a>` : LEG_DASH}</td></tr>`;
+  }
+
+  // How many rows of a kind are listed in the place chosen, before the search and the topics: what an empty list needs to know to say "match the search" rather than "none listed".
+  const enfInPlace = k => enfRowsOf(k).filter(a => !legView.pinned || enfPlaceOf(a) === legView.pinned).length;
+  function enfEmpty(k, inPlace) {
+    const place = legView.pinned, where = place ? ` in ${escapeHTML(enfPlaceName(place))}` : '', f = enfFilt();
+    if ((legWords(f.q).length || f.topics.size) && inPlace > 0) return `No ${k.many}${where} match the search and filters chosen.`;
+    return place ? `None listed for ${escapeHTML(enfPlaceName(place))} yet.` : 'None listed yet.';
+  }
+
+  /* All: both kinds' lists, one after the other, each with its own count, narrowed by the place and by the search and the topics in the bar above (on All those are the bills' own, legView). A kind with no row is left out, All has no
+     placeholder, and with no row of either kind the whole area is hidden. The order is the tab's Sort setting. */
+  function enfRenderAll(live, note) {
+    const kinds = ENF_KINDS_ALL.filter(k => enfRowsOf(k).length), lists = document.getElementById('enfLists');
+    live.hidden = !kinds.length;
+    note.hidden = true;
+    if (!lists) return;
+    enfSyncPages();
+    const place = legView.pinned, scope = escapeHTML(place ? enfPlaceName(place) : 'All jurisdictions'), order = enfSorters[legView.sort] || enfSorters.recent, counts = {};
+    lists.innerHTML = kinds.map(k => {
+      const rows = enfList(false, false, k).sort(order);
+      counts[k.kind] = rows.length;
+      return enfSection(k, rows, enfEmpty(k, enfInPlace(k)), scope);
+    }).join('');
+    enfPagers(kinds, counts);
+  }
+
+  function enfRender() {
+    const live = document.getElementById('enfLive'), note = document.getElementById('enfPlaceholder');
+    if (!live || !note) return;
+    legSyncReset();   // the Reset button counts what is on, and the lists' own search and chips are part of it
+    if (activeView === 'all') { enfRenderAll(live, note); return; }
+    const k = enfCurrent(), all = enfRowsOf(k);
+    const what = document.getElementById('enfPlaceholderWhat');
+    if (what) what.textContent = capitalizeFirst(k.many);
+    live.hidden = !all.length;
+    note.hidden = !!all.length;
+    // The lists' own controls (the chips, the search and the result line, in the shared bars above the map) go while there is nothing to narrow.
+    ['enfTopicPills', 'enfSearchWrap', 'enfSortPair', 'enfResultRow'].forEach(id => { const el = document.getElementById(id); if (el) el.hidden = !all.length; });
+    if (!all.length) { legPaint(); return; }   // (the map's legend says there is nothing to shade)
+    const place = legView.pinned;   // the Show menu is the shared one (its Federal entry is renamed for these sections by govViewChanged in 60-legislation.js)
+    const search = document.getElementById('enfSearch');
+    if (search) { search.placeholder = `Search the ${k.many}…`; search.setAttribute('aria-label', `Search the ${k.many}`); }
+    const sort = document.getElementById('enfSort');   // the order is the tab's one setting (legView.sort), so the menu says what the bills' menu says
+    if (sort) { sort.value = legView.sort; sort.setAttribute('aria-label', `Sort the ${k.many}`); }
+    // The topic pills: the topics some row of this section bears on, built once for that list; each count is what choosing the topic would leave with the place and the search applied. A topic picked
+    // on the other section that this one has no row for is dropped, so the filter never hides everything for a reason the reader cannot see.
+    const ids = enfTopicIds(), wrap = document.getElementById('enfTopicPills'), key = k.kind + ':' + ids.join('|');
+    enfView.topics.forEach(id => { if (ids.indexOf(id) < 0) enfView.topics.delete(id); });
+    if (wrap && enfPillsFor !== key) {
+      enfPillsFor = key;
+      const chip = (id, label) => `<button class="kw-pill" type="button" data-topic="${escapeHTML(id)}" aria-pressed="false">${escapeHTML(label)} <span class="kw-count"></span></button>`;
+      wrap.innerHTML = ids.length ? '<span class="ctl-label kw-label">Topics</span>' + chip('all', 'All') + ids.map(id => chip(id, legTopicLabel(id))).join('') : '';
+    }
+    const base = enfList(true);
+    if (wrap) wrap.querySelectorAll('button[data-topic]').forEach(btn => {
+      const id = btn.getAttribute('data-topic'), on = id === 'all' ? !enfView.topics.size : enfView.topics.has(id);
+      const n = id === 'all' ? base.length : base.filter(a => enfTopicsOk(a, new Set([...enfView.topics, id]))).length;
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.disabled = n === 0 && !on;
+      btn.querySelector('.kw-count').textContent = legNum(n);
+    });
+    const shown = enfList();
+    const line = document.getElementById('enfResultLine');
+    if (line) line.textContent = `${legNum(shown.length)} of ${legNum(all.length)} ${all.length === 1 ? k.one : k.many}.`;
+    // The list, with its count, in the order the Sort menu says (newest first until it is changed).
+    const scope = escapeHTML(place ? enfPlaceName(place) : 'All jurisdictions'), lists = document.getElementById('enfLists');
+    if (lists) {
+      enfSyncPages();
+      const rows = shown.slice().sort(enfSorters[legView.sort] || enfSorters.recent);
+      lists.innerHTML = enfSection(k, rows, enfEmpty(k, enfInPlace(k)), scope);
+      enfPagers([k], { [k.kind]: rows.length });
+    }
+    // The map is shaded from the same rows (the search and the topics, not the place), so it is drawn again whenever the list is: after the topics a section lacks were dropped above, too.
+    legPaint();
+  }
+
+  // The place is shared by the four sections and chosen in the shared Show menu or on the shared map: legSetPinned (60-legislation.js) calls this when it changes, and when Enforcement or Cases is open the list is
+  // drawn again and the place goes in the address.
+  function enfPlaceChanged() {
+    if (activeView === 'enforcement' || activeView === 'cases') { enfRender(); setHash(enfRoute()); }
+    else if (activeView === 'all') enfRender();   // All lists the place too, and its address carries none
+  }
+  function enfFiltersChanged() { enfRender(); }
+
+  (function wireEnforcement() {
+    const area = document.getElementById('enforcementArea');
+    const search = document.getElementById('enfSearch'), wrap = document.getElementById('enfTopicPills');
+    if (!area) return;
+    if (search) search.addEventListener('input', () => { clearTimeout(enfSearchTimer); enfSearchTimer = setTimeout(() => { enfView.q = search.value; enfFiltersChanged(); }, 150); });
+    // "All" clears the topics; any other is added or taken off (the topics are ANDed, as on Legislation and in the Fact Bank: a row must bear on every one picked).
+    if (wrap) wrap.addEventListener('click', e => {
+      const b = e.target.closest ? e.target.closest('button[data-topic]') : null;
+      if (!b || b.disabled) return;
+      const id = b.getAttribute('data-topic');
+      if (id === 'all') enfView.topics.clear(); else if (enfView.topics.has(id)) enfView.topics.delete(id); else enfView.topics.add(id);
+      enfFiltersChanged();
+    });
+    // Sort is one setting for the tab (legView.sort); changing it here leaves the bills' menu to catch up the next time Legislation is drawn (legFilterBar sets it from legView.sort).
+    const sort = document.getElementById('enfSort');
+    if (sort) sort.addEventListener('change', () => { legView.sort = sort.value; enfFiltersChanged(); });
+    // A refresh means the data changed under the page (a late load, or a test): build the pills again and redraw.
+    area.addEventListener('enforcement:refresh', () => { enfPillsFor = null; enfRender(); });
+  })();
+  /* ── Government action: the map, the toolbar and Legislation's bills ──────────────────────────────────────────────
+     The one area (#legislationArea) of the Government action tab's four sections, All, Cases, Enforcement and Legislation (the two lists are drawn by 55-enforcement.js), holds, from the top: the toolbar (the section
+     switch, the Show menu and Clear, and on Legislation the Status menu and the checkbox for the bills that only lightly mention AI), the topic chips, the search, a map of the states with its card, and then the
+     section's own list. The map and the card are the same in all four sections, but each holds its own section's data: ALL holds everything (the map shaded by the bills, the key cases and the enforcement actions together, a card with all of it, every list, and the midterm
+     results first), and Legislation, Enforcement and Cases hold their own alone (the owner, 2026-11-18: "There should be an All view that's separate from the Legislation view. Currently it looks like legislation holds all the data"). This file builds them from data/us-map.js (the outlines), data/legislation-data.js (the stages, and the 2026 midterm results from the
+     Associated Press) and data/legislation-bills.js (the bills: federal ones from our own scan of GovInfo's bill-status data (tools/congress_fetch.py), state ones from our own Open States search; generated by
+     tools/legislation.py and fetched the first time any of the four sections opens, see legLoadBills). The map is shaded by how many of the open section's rows a state has: bills on Legislation, enforcement actions on
+     Enforcement, key cases on Cases (the lists' counts are enfMapData's, in 55-enforcement.js). The 2026 midterm results are by state: in the card (the
+     Senate, House and governor races), for the country in its overview, and in a table of every state under the bills table, ten states to a page, each row linking to AP's pages for that state's races. They were a
+     layer of their own until 2026-11-18, with a toggle and an office toggle that coloured the map; the owner asked for that view to go and the state by state data to stay, and asked for the table back. A bill is state or federal: a state bill belongs to a state on the map (or to a territory, which has no shape, only a place in the Show menu and the table), a
+     federal bill to Congress, which has its own entry in the Show menu and works like picking a state. Pointing at a jurisdiction previews it in the card; clicking it, or choosing it in the Show menu, pins it and
+     narrows the section's list (on Legislation, both tables). A bill is ACTIVE when it has been introduced and has not failed, which its stage decides (LEGISLATION_STAGES in data/legislation-data.js); only active bills are listed, and a note under
+     the table says how many were left out and why. The bills table shows LEG_PAGE_SIZE (ten) to a page, with the pager the Papers list uses; the card gives a jurisdiction's stats and links to the table (it previews
+     none of its bills). Nothing on the page is typed in: the legend's counts and ranges, the map's shading, the totals and the masthead are computed from the data. The map is for pointing, and its states carry no
+     letters: pointing at one names it in the card. The nine states too small to point at (LEG_SMALL below) also have a button beside the map, which does what its shape does. The menu, those buttons, the card and the
+     tables are the keyboard and screen-reader way in. Congress has no button of its own: it is the Federal entry in the Show menu, like a state, and the entry names the body each section is about ("Federal (Congress)"
+     for the bills, "Federal (agencies and courts)" for the lists). A bill flagged `passing` (AI is only in its text, not its title or summary) is out of view, and out of every count, until the checkbox "Include bills
+     that only lightly mention AI" is on. That checkbox, the Status menu, the topic chips, the search and the Sort menu are the bills' own (legBillControls): on Legislation they narrow what is counted (the shading,
+     legend, card and table follow them, while the masthead keeps saying what is loaded: see "Search and topics" below), and on Enforcement and Cases they are not shown and do not apply, so the card shows
+     every active bill (the map there follows those sections' own search and chips). The view redraws on a "legislation:refresh" event on #legislationArea, which is how a late data load (or a test) asks it to; #legislationArea carries data-bills="idle|loading|ready|failed" for
+     the bills file. */
   const LEG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const LEG_RESULT = { 'd-gain': 'Democratic gain', 'd-hold': 'Democratic hold', 'r-hold': 'Republican hold', 'r-gain': 'Republican gain', uncalled: 'Uncalled' };
-  const LEG_OFFICES = { senate: 'Senate', house: 'House', governor: 'Governor' };   // the order of the office toggle and of the table's columns
+  const LEG_OFFICES = { senate: 'Senate', house: 'House', governor: 'Governor' };   // the order of the offices in the card
   const LEG_RACE = { senate: 'Senate', governor: 'governor' };                      // "No 2026 Senate race", "No 2026 governor race"
   const LEG_DASH = '&ndash;';
   const LEG_FED = 'federal';   // the pinned and hovered key for Congress; the states use their USPS codes
@@ -3476,11 +3819,14 @@
   // button beside the map. It picks out the nine smallest (Vermont, New Hampshire, Massachusetts, Rhode Island, Connecticut, New Jersey,
   // Delaware, Maryland and DC): the next state up, Tennessee, is 52.8 wide on its narrower side, Maryland 40.7.
   const LEG_SMALL = 45;
+  // The bills' own controls (Status, the checkbox, the topic chips, the search, Sort) are shown, and apply, on Legislation and All: Enforcement and Cases have their own (55-enforcement.js), and on All the search and the chips narrow those lists too.
+  const legBillControls = () => activeView !== 'enforcement' && activeView !== 'cases';
   const legGet = {
     map:     () => (typeof US_MAP !== 'undefined' && US_MAP && US_MAP.states) ? US_MAP : null,
     // Every bill in view: a bill flagged `passing` (it only mentions AI in its text) is out of view, and out of every count, until the checkbox is on,
-    // and the filter bar's search, status and topics narrow it further. all(true) leaves those three out: what the filter bar is filtering.
-    all:     raw => { const words = legWords(legView.q), picked = legView.topics; return (typeof LEGISLATION_DATA !== 'undefined' && Array.isArray(LEGISLATION_DATA) ? LEGISLATION_DATA : []).filter(b => b && (!b.passing || legView.passing) && (raw || (legSearchOk(b, words) && legStatusOk(b) && legTopicsOk(b, picked)))); },
+    // and the filter bar's search, status and topics narrow it further. all(true) leaves those three out: what the filter bar is filtering. These four are the bills' own controls, shown on Legislation and All
+    // (legBillControls): on Enforcement and Cases none of them applies, so the card shows every active bill.
+    all:     raw => { const own = legBillControls(), words = own ? legWords(legView.q) : [], picked = own ? legView.topics : new Set(); return (typeof LEGISLATION_DATA !== 'undefined' && Array.isArray(LEGISLATION_DATA) ? LEGISLATION_DATA : []).filter(b => b && (!b.passing || (own && legView.passing)) && (raw || !own || (legSearchOk(b, words) && legStatusOk(b) && legTopicsOk(b, picked)))); },
     stages:  () => (typeof LEGISLATION_STAGES !== 'undefined' && LEGISLATION_STAGES) ? LEGISLATION_STAGES : {},
     results: () => (typeof MIDTERM_RESULTS !== 'undefined' && MIDTERM_RESULTS) ? MIDTERM_RESULTS : {},
     sources: () => (typeof MIDTERM_SOURCES !== 'undefined' && MIDTERM_SOURCES) ? MIDTERM_SOURCES : {},
@@ -3492,12 +3838,11 @@
     // Active = introduced and not failed. A bill with no known stage cannot be judged, so it is not listed as active.
     bills:   raw => legGet.all(raw).filter(b => { const st = legGet.stages()[b.stage]; return !!(st && st.active); }),
   };
-  // bills: where the bills file stands (idle until the tab first opens, then loading, then ready or failed); page: the bills table's page.
-  // passing: whether the checkbox for the bills that only mention AI in their text is on. q: what is typed in the search box; status: the stage picked in the
+  // bills: where the bills file stands (idle until a section first opens, then loading, then ready or failed); page: the bills table's page.
+  // passing: whether the checkbox for the bills that only lightly mention AI is on. q: what is typed in the search box; status: the stage picked in the
   // Status menu ('' for all); topics: the topic chips picked (a Set of ids from LEGISLATION_TOPICS, or just 'none' for the bills that match no topic);
   // sort: the table's order, a key of legSorters ('recent' by default). resultsPage: the page of the 2026 Midterm results table.
-  // layer: the view the toggle at the top of the area has chosen: 'bills' or 'results', the two layers of the map.
-  const legView = { layer: 'bills', office: 'senate', hover: null, pinned: null, page: 1, resultsPage: 1, bills: 'idle', passing: false, q: '', status: '', topics: new Set(), sort: 'recent', built: false };
+  const legView = { hover: null, pinned: null, page: 1, resultsPage: 1, bills: 'idle', passing: false, q: '', status: '', topics: new Set(), sort: 'recent', built: false };
   const legName = code => { const m = legGet.map(); return (m && m.states[code]) ? m.states[code].name : (legGet.places()[code] || code); };
   const legOnMap = code => { const m = legGet.map(); return !!(m && m.states[code]); };
   const legNum = n => Number(n).toLocaleString('en-US');
@@ -3526,7 +3871,7 @@
   }
   /* ── Search and topics ───────────────────────────────────────────────────────────────────────────────────────
      The filter bar narrows every bill the page counts: the map's shading, the legend, the panel and the table all follow it, as they follow the
-     checkbox for the bills that only mention AI. Search: every word typed must be somewhere in what a row shows (number, jurisdiction, title, summary, status, last action, subject
+     checkbox for the bills that only lightly mention AI. Search: every word typed must be somewhere in what a row shows (number, jurisdiction, title, summary, status, last action, subject
      terms and the topics below). Topics: LEGISLATION_TOPICS (data/legislation-data.js) says what they are and which
      words find them. A bill's topics are worked out here from its own text, once per bill, so the rules can be edited in the data with no rebuild:
      a topic is assigned when one of its words is in the title, or two different words of it are in the summary or the subject terms
@@ -3593,9 +3938,8 @@
     return ok;
   }
   const legStatusOk = b => !legView.status || b.stage === legView.status;
-  /* The settings that narrow what is shown (search, status, topics), and every setting the bar has off its default (those, and the checkbox that adds bills). */
-  const legNarrowing = () => legWords(legView.q).length > 0 || legView.topics.size > 0 || !!legView.status;
-  const legFiltersOn = () => legNarrowing() || legView.passing;
+  /* The settings that narrow what is shown (search, status, topics). */
+  const legNarrowing = () => legBillControls() && (legWords(legView.q).length > 0 || legView.topics.size > 0 || !!legView.status);
   /* What an empty list says: that the bills are still arriving, that the filters leave none, or that nothing has been added for the scope yet. */
   function legEmpty(scope, waiting) {
     if (waiting) return waiting;
@@ -3610,6 +3954,7 @@
     legGet.bills().forEach(b => { if (legLevel(b) === 'state' && legOnMap(b.state)) c[b.state] = (c[b.state] || 0) + 1; });
     return c;
   }
+  const legSumCounts = (a, b) => { const c = Object.assign({}, a); Object.keys(b).forEach(k => { c[k] = (c[k] || 0) + b[k]; }); return c; };   // per-state counts, added: All's map
   const legFederalCount = () => legGet.bills().filter(b => legLevel(b) === 'federal').length;
   /* The bills the checkbox controls: those flagged `passing` by tools/legislation.py (active, but AI is not in their title: a state bill that only says it in its text, a federal bill
      that only its CRS summary says it in); the checkbox is offered only when there are some. Its count is how many of them the search, status and topics leave in, within the
@@ -3617,7 +3962,7 @@
   const legPassingRows = () => (typeof LEGISLATION_DATA !== 'undefined' && Array.isArray(LEGISLATION_DATA) ? LEGISLATION_DATA : []).filter(b => b && b.passing && (legGet.stages()[b.stage] || {}).active);
   const legPassingCount = scope => { const words = legWords(legView.q); return legPassingRows().filter(b => legInScope(b, scope) && legSearchOk(b, words) && legStatusOk(b) && legTopicsOk(b, legView.topics)).length; };
   const legTerritoryCount = () => legGet.bills().filter(b => legLevel(b) === 'state' && !legOnMap(b.state)).length;
-  /* The Bills layer's shading steps are the thirds of the states that have bills, so the map reads the same whether a state has three
+  /* The map's shading steps, on every section, are the thirds of the states that have any (bills, actions or cases), so the map reads the same whether a state has three
      bills or two hundred, and the legend names the range each step holds. of(n) is 0 for no bills, else 1 to 3; ranges[i] is [fewest, most]. */
   function legSteps(counts) {
     const v = Object.keys(counts).map(k => counts[k]).filter(n => n > 0).sort((a, b) => a - b);
@@ -3654,7 +3999,6 @@
     o.open = o.dLead + o.rLead + o.runoff;
     return o;
   };
-  const legHouseKey = h => { if (!h) return ''; const c = legHouse(h); return (c.d + c.r === 0) ? 'h-none' : c.d > c.r ? 'h-d' : c.r > c.d ? 'h-r' : 'h-even'; };
   const legHouseText = h => { const c = legHouse(h); return `Democrats ${c.d}, Republicans ${c.r}`; };
   function legHouseOpen(h) {
     const c = legHouse(h), parts = [];
@@ -3670,13 +4014,6 @@
     return `<span class="leg-result${news ? ' leg-result--news' : ''}"><span class="leg-swatch leg-swatch--sm fill-${escapeHTML(r.result)}" aria-hidden="true"></span>${escapeHTML(LEG_RESULT[r.result] || r.result)}</span>`;
   };
 
-  /* The organisations the results come from: "The Associated Press". */
-  function legSourceNames() {
-    const src = legGet.sources(), orgs = [];
-    if (!Object.keys(legGet.results()).length) return '';
-    Object.keys(src).forEach(id => { if (orgs.indexOf(src[id].org) < 0) orgs.push(src[id].org); });
-    return legJoin(orgs);
-  }
   /* A state's results by office, each linked to AP's page for it: "AP: Senate, House, Governor". It is the results table's Source column.
      The state's panel carries no source line: the page is cited under the map, and every row of the table links to AP's own pages. */
   function legSourceList(code, s) {
@@ -3701,25 +4038,31 @@
     const ap = /^([A-Za-z]+) (\d{1,2}), (\d{4})(?:, (\d{1,2}):(\d{2}) ([AP]M))?$/.exec(s.updated || ''), month = ap ? LEG_MONTHS.indexOf(ap[1]) : -1;
     return month < 0 ? null : { key: Date.UTC(+ap[3], month, +ap[2], (+ap[4] || 0) % 12 + (ap[6] === 'PM' ? 12 : 0), +ap[5] || 0), text: s.updated };
   }
-  /* The line below the map: the sources of the layer being shown, each with a link, grouped by who wrote it, then when the page was last updated: the
-     newest of those sources' dates. Each source's own date stays in its citation, so a feed that is a day older than the rest still says so. The 2026
-     Midterm results layer cites AP; the Bills layer cites GovInfo (federal bills) and Open States (state bills), once their file has loaded. */
+  /* The line below the map: the sources, each with a link, grouped by who wrote it, then when the page was last updated: the newest of those sources' dates. The bills come from GovInfo (the federal ones) and Open
+     States (the state ones), once their file has loaded; the 2026 midterm results in the card come from the Associated Press. Each source's own date stays in its citation, so a feed that is a day older than the
+     rest still says so. */
   function legRenderMapSource() {
     const el = document.getElementById('legMapSource');
     if (!el) return;
-    const src = legView.layer === 'results' ? legGet.sources() : (legGet.feeds() || {}), ids = Object.keys(src), groups = [];
+    // Each section cites what it holds: Legislation the two bill feeds, All those and AP and our own list, Enforcement and Cases our own list alone.
+    const ownList = 'Key cases and enforcement actions are our own list, each entry written from the agency\'s or court\'s own page, which it links to.';
+    if (!legBillControls()) { el.textContent = 'Source: ' + ownList.replace(/^Key cases and enforcement actions are our own list/, 'our own list').replace(/\.$/, '') + '.'; return; }
+    const all = activeView === 'all', feeds = legGet.feeds() || {}, aps = all ? legGet.sources() : {}, src = {};
+    Object.keys(feeds).forEach(k => { src['bills:' + k] = feeds[k]; });
+    Object.keys(aps).forEach(k => { src['results:' + k] = aps[k]; });
+    const ids = Object.keys(src), groups = [];
     ids.forEach(id => { const g = groups.find(x => x.org === src[id].org); if (g) g.items.push(src[id]); else groups.push({ org: src[id].org, items: [src[id]] }); });
     const newest = ids.map(id => legSourceStamp(src[id])).filter(Boolean).sort((a, b) => b.key - a.key)[0];
     el.innerHTML = groups.length ? (ids.length > 1 ? 'Sources: ' : 'Source: ') + groups.map(g => `${escapeHTML(g.org)}, ${legJoin(g.items.map(legCiteLong))}`).join('; ') + '.'
+      + (all && groups.length ? ' ' + escapeHTML(ownList) : '')
       + (newest ? ` <span class="leg-map-updated">Last updated ${escapeHTML(newest.text)}.</span>` : '') : '';
   }
   function legNationalBlock() {
-    const n = legGet.national(), s = n && legGet.sources()[n.src];
+    const n = legGet.national();
     if (!n) return '';
     const line = (name, o) => o ? `${name}: Democrats ${o.democrats}, Republicans ${o.republicans}, ${o.toBeCalled} to be called.` : '';
     return `<div class="leg-block"><div class="leg-label">National totals</div>
-      <p>${[line('Senate', n.senate), line('House', n.house), line('Governors', n.governor)].filter(Boolean).join(' ')}</p>
-      ${s ? `<p class="leg-muted">${escapeHTML(s.org)}, updated ${escapeHTML(n.updated)}.</p>` : ''}</div>`;
+      <p>${[line('Senate', n.senate), line('House', n.house), line('Governors', n.governor)].filter(Boolean).join(' ')}</p></div>`;   // no source line here: AP is cited under the map, with its date (the owner, 2026-11-18)
   }
   /* The note under the results table: the standing note, plus one computed whenever the district results do not add up to AP's chamber total. */
   function legResultsNote() {
@@ -3734,37 +4077,15 @@
     return notes.filter(Boolean).join(' ');
   }
 
-  /* The masthead's question and standfirst (TAB_DESCS.legislation reads these): what is loaded, from the data. The 2026 Midterm results layer is only about the
-     results, so on it the masthead says nothing of bills. */
-  const legislationLede = () => legView.layer === 'results' ? 'How did the 2026 midterms go?' : 'What is currently on the table?';
-  function legResultsMasthead() {
-    const res = legGet.results(), states = Object.keys(res), names = legSourceNames();
-    if (!states.length) return 'No 2026 midterm results are loaded.';
-    const senate = states.filter(c => res[c].senate).length, gov = states.filter(c => res[c].governor).length;
-    const seats = states.reduce((n, c) => { const h = legHouse(res[c].house); return n + h.d + h.r + h.open; }, 0);
-    const count = (n, one, many) => `${legNum(n)} ${n === 1 ? one : many}`;
-    return `The 2026 midterm results${names ? `, according to ${names}` : ''}: ${count(senate, 'Senate seat', 'Senate seats')}, ${count(gov, 'governor race', 'governor races')} and ${count(seats, 'House district', 'House districts')}, in ${count(states.length, 'state', 'states')}. Hover a state to see how its races went; the table below lists every state.`;
-  }
-  function legislationMasthead() {
-    if (legView.layer === 'results') return legResultsMasthead();
-    const bills = legGet.bills(true), names = legSourceNames(), feeds = legGet.feeds();   // what is loaded: the search and topics do not change it
-    const via = names ? `, according to ${names}` : '';
-    if (!bills.length) {
-      if (legView.bills === 'loading') return `Loading the legislation. Hover a state to see how its 2026 midterm races went${via}.`;
-      if (legView.bills === 'failed') return `The legislation could not be loaded; reload the page to try again. Hover a state to see how its 2026 midterm races went${via}.`;
-      return `No legislation has been added yet. Hover a state to see how its 2026 midterm races went${via}; bills will appear here and in the table below as they are added.`;
-    }
-    const stateBills = bills.filter(b => legLevel(b) === 'state'), fed = bills.length - stateBills.length, n = bills.length;
-    // Words for small counts, digits once the total is large, so that one sentence never mixes the two ("1,584 in fifty-four states").
-    const spell = n <= 99, cnt = k => spell ? spellNumber(k) : legNum(k), noun = n === 1 ? 'bill' : 'bills';
-    const places = legPlaces(new Set(stateBills.map(b => b.state)), spell);
-    let lead;
-    if (stateBills.length && fed) lead = `${capitalizeFirst(cnt(n))} active ${noun}: ${cnt(stateBills.length)} in ${places} and ${cnt(fed)} in Congress`;
-    else if (fed) lead = `${capitalizeFirst(cnt(n))} active ${noun} in Congress`;
-    else lead = `${capitalizeFirst(cnt(n))} active ${noun} in ${places}`;
-    const from = feeds ? `, from ${legJoin(Object.keys(feeds).map(k => feeds[k].short || feeds[k].org))}` : '';
-    return `${lead}${from}. Hover a state, or choose Federal in the Show menu, to see its bills in the table below.`;
-  }
+  /* The masthead of the Government action tab: ONE question and ONE blurb for all four sections (the owner, 2026-11-18: "There shouldn't be a different header and blurb for each view"), which TAB_DESCS in 70-render.js
+     gives to each of them. The words are the owner's own, and they are here to edit (then run python3 build.py). The blurb quotes no count, so nothing in it can go stale; the midterm results' source is cited under the
+     map. It does not change with the section, the filters or what is loaded. */
+  const GOV_COPY = {
+    lede: 'What is government doing about AI?',
+    text: 'A centralized repository of active bills, key cases and enforcement actions about AI, both federal and in the states, alongside the 2026 midterm results. Use the switch to see everything together or one kind at a time, and hover a state or choose a place in the Show menu to narrow what you see.',
+  };
+  function govLede() { return GOV_COPY.lede; }
+  function govMasthead() { return GOV_COPY.text; }
 
   function legSvg(name, attrs) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', name);
@@ -3837,19 +4158,15 @@
     });
   }
 
-  /* Fills and the legend follow the chosen layer, and the chosen office within the midterm results. */
+  /* Fills and the legend: the map is shaded by how many of the open section's rows a state has (the thirds of the states that have some): the bills on Legislation, the enforcement actions on Enforcement, the key cases on
+     Cases. A state with none is left plain, and a federal row (a federal bill, a federal agency's action, a federal court's case) is on no state, so the legend counts it apart. The lists' counts are enfMapData's
+     (55-enforcement.js): their own search and chips apply, as the bills' do on Legislation, and the place pinned does not. The classes fill-b1 to fill-b3 are the one ramp for all three. */
   function legPaint() {
-    const map = legGet.map(), svg = document.getElementById('legMap'), res = legGet.results(), counts = legBillCounts(), steps = legSteps(counts);
-    const onResults = legView.layer === 'results', office = legView.office;
-    const key = code => {
-      if (!onResults) { const n = steps.of(counts[code] || 0); return n ? 'b' + n : ''; }
-      const s = res[code];
-      if (!s) return '';
-      return office === 'house' ? legHouseKey(s.house) : (s[office] ? s[office].result : '');
-    };
+    const map = legGet.map(), svg = document.getElementById('legMap'), lists = !legBillControls(), all = activeView === 'all';
+    const data = (lists || all) ? enfMapData(all ? ENF_KINDS : [enfCurrent()]) : null;   // the lists' rows by state: the open kind's, or on All both kinds'
+    const counts = lists ? data.counts : all ? legSumCounts(legBillCounts(), data.counts) : legBillCounts(), steps = legSteps(counts);
+    const key = code => { const n = steps.of(counts[code] || 0); return n ? 'b' + n : ''; };
     if (map && svg) {
-      svg.setAttribute('data-layer', legView.layer);
-      svg.setAttribute('data-office', office);
       svg.querySelectorAll('.leg-state').forEach(p => { const k = key(p.getAttribute('data-state')); p.setAttribute('class', 'leg-state' + (k ? ' fill-' + k : '')); });
       // The small-state buttons wear their state's colour. Only the fill class changes here: the hover and pinned classes are set elsewhere.
       document.querySelectorAll('#legTiles .leg-tile').forEach(b => {
@@ -3858,47 +4175,22 @@
         if (k) b.classList.add('fill-' + k);
       });
     }
-    [['legLayerResults', 'results'], ['legLayerBills', 'bills']].forEach(([id, k]) => {
-      const b = document.getElementById(id);
-      if (b) { b.classList.toggle('active', legView.layer === k); b.setAttribute('aria-pressed', legView.layer === k ? 'true' : 'false'); }
-    });
-    // Each layer shows only its own content. Bills: the map and its card, the bills' filter bar and table, and the results table under them. 2026 Midterm results: the map
-    // and card and the results table, the Show menu offering only the states (Congress and the territories have no results). The map says what it shows.
-    const area = document.getElementById('legislationArea'), bar = document.getElementById('legFilters'), billsSection = document.getElementById('legBillsSection'), showSel = document.getElementById('legStateSelect');
-    const clearPin = document.getElementById('legClear');
-    if (area) area.setAttribute('data-layer', legView.layer);
-    if (bar) bar.hidden = legView.layer !== 'bills';
-    if (billsSection) billsSection.hidden = legView.layer !== 'bills';
-    if (clearPin) clearPin.hidden = !legView.pinned;
-    if (showSel) showSel.querySelectorAll('optgroup').forEach(g => { const keep = !onResults || g.label === 'States'; g.hidden = !keep; g.disabled = !keep; });
-    if (svg) svg.setAttribute('aria-label', onResults ? 'Map of the United States, coloured by the 2026 midterm results. Choose a state in the Show menu; the panel and the table follow it.'
-      : 'Map of the United States. Choose a state, or Federal, in the Show menu; the panel and both tables follow it.');
-    const officeToggle = document.getElementById('legOfficeToggle');
-    if (officeToggle) {
-      officeToggle.hidden = !onResults;
-      officeToggle.querySelectorAll('button[data-office]').forEach(b => { const on = b.getAttribute('data-office') === office; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-    }
-    const total = map ? Object.keys(map.states).length : 0, states = Object.keys(res);
     const item = (cls, label, n) => `<span class="leg-legend-item"><span class="leg-swatch${cls ? ' fill-' + cls : ''}"></span>${label} <span class="leg-muted-count">${n}</span></span>`;
     const note = (label, n) => `<span class="leg-legend-item">${label} <span class="leg-muted-count">${legNum(n)}</span></span>`;
     let items;
-    if (onResults && office === 'house') {
-      const k = key2 => states.filter(c => legHouseKey(res[c].house) === key2).length;
-      items = [item('h-d', 'Democrats won more seats', k('h-d')), item('h-r', 'Republicans won more seats', k('h-r')), item('h-even', 'Split evenly', k('h-even')),
-               item('h-none', 'No seat called yet', k('h-none')), item('', 'Not in the results', total - states.length)];
-    } else if (onResults) {
-      const offs = states.filter(c => res[c][office]), tally = k => offs.filter(c => res[c][office].result === k).length;
-      items = [item('d-gain', 'Democratic gain', tally('d-gain')), item('d-hold', 'Democratic hold', tally('d-hold')), item('r-hold', 'Republican hold', tally('r-hold')),
-               tally('r-gain') ? item('r-gain', 'Republican gain', tally('r-gain')) : '', item('uncalled', 'Uncalled', tally('uncalled')),
-               item('', `No 2026 ${LEG_RACE[office]} race`, total - offs.length)].filter(Boolean);
-    } else if (legView.bills === 'loading' || legView.bills === 'failed') {
+    if (!lists && (legView.bills === 'loading' || legView.bills === 'failed')) {
       items = [`<span class="leg-legend-item">${legView.bills === 'loading' ? 'Loading the bills' : 'The bills could not be loaded'}</span>`];
+    } else if (lists && !enfRowsOf(data.k).length) {
+      items = [`<span class="leg-legend-item">No ${data.k.many} listed yet</span>`];   // a placeholder section has nothing to shade
     } else {
       const lv = [0, 0, 0, 0];
       Object.keys(map ? map.states : {}).forEach(c => { lv[steps.of(counts[c] || 0)]++; });
-      const range = r => r[0] === r[1] ? `${legNum(r[0])} ${r[0] === 1 ? 'bill' : 'bills'}` : `${legNum(r[0])} to ${legNum(r[1])} bills`;
-      items = [lv[0] ? item('', 'No bills', lv[0]) : ''].concat([1, 2, 3].filter(L => steps.ranges[L - 1]).map(L => item('b' + L, range(steps.ranges[L - 1]), lv[L])),
-               [note('Federal bills, not on the map', legFederalCount()), legTerritoryCount() ? note('Territory bills, not on the map', legTerritoryCount()) : '']).filter(Boolean);
+      const one = lists ? data.k.tag : all ? 'item' : 'bill', many = lists ? data.k.tags : all ? 'items' : 'bills';
+      const nFed = lists ? data.fed : all ? legFederalCount() + data.fed : legFederalCount(), nTerr = lists ? data.terr : all ? legTerritoryCount() + data.terr : legTerritoryCount();
+      const range = r => r[0] === r[1] ? `${legNum(r[0])} ${r[0] === 1 ? one : many}` : `${legNum(r[0])} to ${legNum(r[1])} ${many}`;
+      items = [lv[0] ? item('', `No ${many}`, lv[0]) : ''].concat([1, 2, 3].filter(L => steps.ranges[L - 1]).map(L => item('b' + L, range(steps.ranges[L - 1]), lv[L])),
+               [note(`Federal ${many}, not on the map`, nFed), nTerr ? note(`Territory ${many}, not on the map`, nTerr) : '']).filter(Boolean);
+      if (all) items.push('<span class="leg-legend-item">Items are the bills, key cases and enforcement actions, counted together</span>');   // the one place the three are added, said where it is done
     }
     const legend = document.getElementById('legLegend');
     if (legend && map) legend.innerHTML = items.join('');
@@ -3912,7 +4204,8 @@
     const bar = legStatsBar(list);
     return bar ? `<div class="leg-card-total">${legNum(list.length)} ${list.length === 1 ? 'bill' : 'bills'}</div><div class="leg-stats leg-stats--card">${bar}</div>` : '';
   }
-  /* The link in a card to the details below ("See more details below"). It is a button that does what a link would: legGoToDetails pins the jurisdiction and takes the reader to its tables. */
+  /* The link in a card to the details below ("See more details below"). It is a button that does what a link would: legGoToDetails pins the jurisdiction and takes the reader to its table, right below. Only a place that
+     has bills to show gets one, and the blocks of cases and enforcement actions have their own (enfCardBlock). */
   function legMoreLink(code) {
     return `<p class="leg-more"><button type="button" class="leg-more-link" data-more="${escapeHTML(code)}">See more details below</button></p>`;
   }
@@ -3927,45 +4220,60 @@
            row('governor', race('governor'));
   }
 
-  /* What the overview says about the midterm results, for the office the map is showing. */
+  /* What the overview says about the midterm results: a line for each office, counted from the data, and then how to see a state's. */
   function legOverviewResults() {
-    const res = legGet.results(), office = legView.office, states = Object.keys(res);
-    if (!states.length) return 'No state results are loaded.';
-    if (office === 'house') {
-      let d = 0, r = 0, open = 0;
-      states.forEach(c => { const h = legHouse(res[c].house); d += h.d; r += h.r; open += h.open; });
-      return `House, by state: Democrats won ${d} districts, Republicans ${r}, and ${open} are not yet called. Hover a state to see its delegation.`;
-    }
-    const offs = states.filter(c => res[c][office]), tally = k => offs.filter(c => res[c][office].result === k).length;
-    return `${LEG_OFFICES[office]}: ${offs.length} ${office === 'senate' ? 'seats' : 'races'} were up: ${tally('d-gain')} Democratic gains, ${tally('d-hold')} Democratic holds, ${tally('r-hold')} Republican holds` +
-           `${tally('r-gain') ? `, ${tally('r-gain')} Republican gains` : ''} and ${tally('uncalled')} uncalled. Hover a state to see its results.`;
+    const res = legGet.results(), states = Object.keys(res);
+    if (!states.length) return '<p class="leg-muted">No state results are loaded.</p>';
+    const line = office => {
+      if (office === 'house') {
+        let d = 0, r = 0, open = 0;
+        states.forEach(c => { const h = legHouse(res[c].house); d += h.d; r += h.r; open += h.open; });
+        return `House, by state: Democrats won ${d} districts, Republicans ${r}, and ${open} are not yet called.`;
+      }
+      const offs = states.filter(c => res[c][office]), tally = k => offs.filter(c => res[c][office].result === k).length;
+      return `${LEG_OFFICES[office]}: ${offs.length} ${office === 'senate' ? 'seats' : 'races'} were up: ${tally('d-gain')} Democratic gains, ${tally('d-hold')} Democratic holds, ${tally('r-hold')} Republican holds` +
+             `${tally('r-gain') ? `, ${tally('r-gain')} Republican gains` : ''} and ${tally('uncalled')} uncalled.`;
+    };
+    return Object.keys(LEG_OFFICES).map(o => `<p>${escapeHTML(line(o))}</p>`).join('');   // no hint line: the owner had "Hover a state to see its results." taken out, 2026-11-18
   }
 
   function legPanel() {
     const el = document.getElementById('legPanel');
     if (!el) return;
-    const code = legView.hover || legView.pinned, res = legGet.results(), bills = legGet.bills(), onResults = legView.layer === 'results';
+    const code = legView.hover || legView.pinned, res = legGet.results(), bills = legGet.bills();
     const waiting = legView.bills === 'loading' ? 'Loading the bills.' : legView.bills === 'failed' ? 'The bills could not be loaded.' : '';
+    // What the card holds follows the open section (the owner, 2026-11-18: "Currently it looks like legislation holds all the data"): Legislation the bills alone, Enforcement and Cases their own rows alone, and All everything:
+    // the midterm results, the bills, and then what Cases and Enforcement list, with a link into each.
+    const view = activeView, all = view === 'all', withBills = all || view === 'legislation';
+    const kinds = all ? ENF_KINDS_ALL : (view === 'enforcement' || view === 'cases') ? [enfCurrent()] : [];
+    const enf = kinds.length ? enfCardBlock(code, kinds) : '';
+    const results = body => all ? `<div class="leg-block"><div class="leg-label">2026 Midterm results</div>${body}</div>` : '';
+    const nat = all ? legNationalBlock() : '';
+    let title, bill = '', mid = '';
     if (!code) {
-      const nB = bills.length, nF = legFederalCount(), nSB = nB - nF, where = new Set(bills.filter(b => legLevel(b) === 'state').map(b => b.state));
-      const billsLine = !nB ? legEmpty(null, waiting)
-        : [nSB ? `${legNum(nSB)} ${nSB === 1 ? 'bill' : 'bills'} in ${legPlaces(where)}` : '', nF ? `${legNum(nF)} federal ${nF === 1 ? 'bill' : 'bills'}` : ''].filter(Boolean).join(' and ') + '. Hover a state to see how its bills stand, or choose Federal in the Show menu.';
-      el.innerHTML = `<h3 class="leg-panel-title">United States</h3>
-        ${onResults ? '' : `<div class="leg-block"><div class="leg-label">Bills</div><p>${billsLine}</p></div>`}
-        <div class="leg-block"><div class="leg-label">2026 Midterm results</div><p>${escapeHTML(legOverviewResults())}</p></div>${legNationalBlock()}`;
-      return;
+      title = 'United States';
+      if (withBills) {
+        const nB = bills.length, nF = legFederalCount(), nSB = nB - nF, where = new Set(bills.filter(b => legLevel(b) === 'state').map(b => b.state));
+        const billsLine = !nB ? legEmpty(null, waiting)
+          : [nSB ? `${legNum(nSB)} ${nSB === 1 ? 'bill' : 'bills'} in ${legPlaces(where)}` : '', nF ? `${legNum(nF)} federal ${nF === 1 ? 'bill' : 'bills'}` : ''].filter(Boolean).join(' and ') + '.';   // the count alone: the owner had the hint taken out, 2026-11-18
+        bill = `<div class="leg-block"><div class="leg-label">Bills</div><p>${billsLine}</p></div>`;
+      }
+      mid = results(legOverviewResults()) + nat;
+    } else if (code === LEG_FED) {
+      // The title names the body the open section is about, as the Show menu's entry does.
+      title = all ? 'Federal (Congress, agencies and courts)' : view === 'legislation' ? 'Federal (Congress)' : ENF_FED_NAME;
+      const fedBills = bills.filter(b => legLevel(b) === 'federal');   // the link below is only for a place that has bills to show: none where there is no data yet (the owner, 2026-11-18)
+      if (withBills) bill = `<div class="leg-block"><div class="leg-label">${all ? 'Bills in Congress' : 'Bills'}</div>${legCardStats(fedBills, legEmpty(LEG_FED, waiting))}${fedBills.length ? legMoreLink(LEG_FED) : ''}</div>`;
+      mid = results('<p class="leg-muted">The results are by state. Hover or choose a state to see them.</p>') + nat;
+    } else {
+      const name = escapeHTML(legName(code)), s = res[code];
+      title = name;
+      const here = bills.filter(b => legInScope(b, code));
+      if (withBills) bill = `<div class="leg-block"><div class="leg-label">Bills</div>${legCardStats(here, legEmpty(code, waiting))}${here.length ? legMoreLink(code) : ''}</div>`;
+      mid = results(s ? legOfficeRows(s) : `<p class="leg-muted">AP lists no 2026 races for ${name}.</p>`);
     }
-    if (code === LEG_FED) {
-      const mine = bills.filter(b => legLevel(b) === 'federal');
-      el.innerHTML = `<h3 class="leg-panel-title">Federal (Congress)</h3>
-        ${onResults ? '' : `<div class="leg-block"><div class="leg-label">Bills</div>${legCardStats(mine, legEmpty(LEG_FED, waiting))}${legMoreLink(LEG_FED)}</div>`}
-        <div class="leg-block"><div class="leg-label">2026 Midterm results</div><p class="leg-muted">The results are by state. Hover or choose a state to see them.</p></div>${legNationalBlock()}`;
-      return;
-    }
-    const name = escapeHTML(legName(code)), s = res[code], mine = bills.filter(b => legInScope(b, code));
-    el.innerHTML = `<h3 class="leg-panel-title">${name}</h3>
-      ${onResults ? '' : `<div class="leg-block"><div class="leg-label">Bills</div>${legCardStats(mine, legEmpty(code, waiting))}${legMoreLink(code)}</div>`}
-      <div class="leg-block"><div class="leg-label">2026 Midterm results</div>${s ? legOfficeRows(s) : `<p class="leg-muted">AP lists no 2026 races for ${name}.</p>`}${onResults ? legMoreLink(code) : ''}</div>`;
+    // The order (the owner, 2026-11-18): the midterm results (mid, which only All has), the bills, then the key cases and the enforcement actions.
+    el.innerHTML = `<h3 class="leg-panel-title">${title}</h3>${mid}${bill}${enf || (withBills ? '' : '<p class="leg-muted">Nothing has been added to this section yet.</p>')}`;
   }
 
   function legTable(cols, rows, emptyText, cls) {
@@ -4016,28 +4324,32 @@
     const n = legPassingCount(scope);
     if (!n) return '';
     return legView.passing ? 'Bills that mention AI only in their text are included, and marked.'
-      : `${legNum(n)} more active ${n === 1 ? 'bill mentions' : 'bills mention'} AI only in ${n === 1 ? 'its' : 'their'} text; "Include bills that only mention AI", under More filters, adds ${n === 1 ? 'it' : 'them'}.`;
+      : `${legNum(n)} more active ${n === 1 ? 'bill mentions' : 'bills mention'} AI only in ${n === 1 ? 'its' : 'their'} text; "Include bills that only lightly mention AI" adds ${n === 1 ? 'it' : 'them'}.`;
   }
-  /* The sticky bar's live height (the toolbar and the filter bar together, #legSticky), for the jump to a table (--leg-bar-h on the area, read by .leg-section-title's scroll margin in legislation.css): a title
-     scrolled to the top of the window would sit under it. Read exactly, as syncBarHeight in 80-fact-bank.js does: a rect is in zoomed pixels and the margin in the element's own, hence the division by the
-     body zoom. It is the toolbar's height alone on the results layer, where the filter bar is out of view, and 0 while the tab is not shown. */
+  /* The sticky toolbar's live height, and under it the sticky topic chips' and the sticky search bar's (#legSticky, #legTopicsBar and #legFilters), for the jump to a table: --leg-toolbar-h on the area is where the chips stick,
+     --leg-topics-h is the chips' own height (the search bar sticks under both), and --leg-bar-h (the three together) is read by .leg-section-title's scroll margin in legislation.css, since a title scrolled to the top of the
+     window would sit under them. A bar that is not sticky (a phone, a short window) counts as nothing.
+     Read exactly, as syncBarHeight in 80-fact-bank.js does: a rect is in zoomed pixels and the margin in the element's own, hence the division by the body zoom. */
   function legSyncBarHeight() {
-    const area = document.getElementById('legislationArea'), bar = document.getElementById('legSticky');
+    const area = document.getElementById('legislationArea'), bar = document.getElementById('legSticky'), chips = document.getElementById('legTopicsBar'), filters = document.getElementById('legFilters');
     if (!area || !bar) return;
     const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
-    area.style.setProperty('--leg-bar-h', (bar.getBoundingClientRect().height / zoom).toFixed(2) + 'px');
+    const stuck = el => (el && getComputedStyle(el).position === 'sticky') ? el.getBoundingClientRect().height / zoom : 0;
+    const top = stuck(bar), mid = stuck(chips), under = stuck(filters);
+    area.style.setProperty('--leg-toolbar-h', top.toFixed(2) + 'px');
+    area.style.setProperty('--leg-topics-h', mid.toFixed(2) + 'px');
+    area.style.setProperty('--leg-bar-h', (top + mid + under).toFixed(2) + 'px');
   }
-  /* After a page change (or the card's link): the top of the bills table, or of the results table when `results` is set, with focus on it so a keyboard reader starts at its first row, not at
-     the pager or the link they used. */
+  /* After a page change (or the card's link): the top of the bills table, or of the results table when `results` is set, with focus on it so a keyboard reader starts at its first row, not at the pager or the link they used. */
   function legTableTop(results) {
     const title = document.getElementById(results ? 'legResultsTitle' : 'legBillsTitle'), wrap = document.getElementById(results ? 'legResultsTable' : 'legBillsTable');
     if (title && typeof title.scrollIntoView === 'function') title.scrollIntoView({ block: 'start' });
     if (wrap) wrap.focus({ preventScroll: true });
   }
-  /* The card's "See more details below": pin the jurisdiction, so the tables below are about it, and take the reader to them: the Bills title on the Bills layer, the results title on the results layer. */
+  /* The card's "See more details below" for the bills: pin the jurisdiction, so the table below is about it, and take the reader to it. */
   function legGoToDetails(code) {
     if (code && legView.pinned !== code) legSetPinned(code);
-    legTableTop(legView.layer === 'results');
+    legTableTop();
   }
 
   /* Both tables for the jurisdiction pinned (all of them when none is). The bills table shows LEG_PAGE_SIZE to a page, with the Papers pager under it,
@@ -4084,7 +4396,7 @@
     const billsScope = document.getElementById('legBillsScope'), resultsScope = document.getElementById('legResultsScope');
     // The Bills section's title is this text alone, with no word of its own ("New York · 8 bills"), so once the bills are in it always carries the count, even a count of none.
     if (billsScope) billsScope.textContent = scope + (bills.length || legView.bills === 'ready' ? ` · ${legNum(bills.length)} ${bills.length === 1 ? 'bill' : 'bills'}` : '');
-    if (resultsScope) resultsScope.textContent = scope;
+    if (resultsScope) resultsScope.textContent = `${scope} · 2026 Midterm results`;   // the place, then what the table is, like the other sections' titles (the owner, 2026-11-18)
     const stats = document.getElementById('legBillsStats');
     if (stats) { stats.innerHTML = legStatsBar(bills); stats.hidden = !stats.innerHTML; }   // the bar counts what the title counts
     const srcNote = document.getElementById('legSource');
@@ -4099,28 +4411,35 @@
     legPanel();
   }
 
+  // The Show menu is narrow (legislation.css, .leg-select), so a long choice is cut with an ellipsis; its full name is the menu's tooltip.
+  function legSyncShow() {
+    const sel = document.getElementById('legStateSelect');
+    if (sel && sel.selectedIndex >= 0) sel.title = sel.options[sel.selectedIndex].textContent;
+  }
+
   function legSetPinned(code) {
     legView.pinned = code || null;
     legView.page = 1;
     legView.resultsPage = 1;
     legRing('legRingPinned', legView.pinned);
     legMarkTiles();
-    const sel = document.getElementById('legStateSelect'), clear = document.getElementById('legClear'), live = document.getElementById('legAnnounce');
+    const sel = document.getElementById('legStateSelect'), live = document.getElementById('legAnnounce');
     if (sel) sel.value = legView.pinned || '';
-    if (clear) clear.hidden = !legView.pinned;
+    legSyncShow();
     legPanel();
     legTables();
+    legSyncReset();
     if (live) {
       const n = legGet.bills().filter(b => legInScope(b, legView.pinned)).length;
-      live.textContent = !legView.pinned ? (legView.layer === 'results' ? 'Showing all states.' : 'Showing all jurisdictions.')
-        : legView.layer === 'results' ? `${legScopeName(legView.pinned)} selected.` : `${legScopeName(legView.pinned)} selected. ${n} active ${n === 1 ? 'bill' : 'bills'}.`;
+      live.textContent = !legView.pinned ? 'Showing all jurisdictions.' : `${legScopeName(legView.pinned)} selected. ${n} active ${n === 1 ? 'bill' : 'bills'}.`;
     }
+    if (typeof enfPlaceChanged === 'function') enfPlaceChanged();   // Enforcement and Cases list the place too, and carry it in the address
   }
 
-  /* The filter bar: the Sort and Status menus, the checkbox that adds the bills that only mention AI, the topic chips (built once for each list of topics, in the
-     data's order, then "No topic"), the counts on them, the result line, the badge on More filters and Clear filters. A count is what choosing that option would
-     leave with the search and the other filters applied (the Papers bar's rule); a Status option or a chip with nothing behind it is disabled unless it is picked.
-     The badge counts what is switched on inside More filters (each topic picked, the status, the checkbox); Sort is not a filter and stays out of it. */
+  /* The filter bar: the Sort and Status menus, the checkbox that adds the bills that only lightly mention AI, the topic chips (built once for each list of topics, in the
+     data's order, then "No topic"), the counts on them and the result line. A count is what choosing that option would leave with the search and the other filters
+     applied (the Papers bar's rule); a Status option or a chip with nothing behind it is disabled unless it is picked. The Status menu and the checkbox are in the toolbar, beside the Show menu, and the chips
+     are above the search bar, always showing; Sort is not a filter and stays when everything is reset. */
   let legChipsFor = null, legStatusFor = null;
   function legFilterBar() {
     const wrap = document.getElementById('legTopicPills'), line = document.getElementById('legResultLine'), statusSel = document.getElementById('legStatus');
@@ -4163,15 +4482,34 @@
     }
     const shown = legGet.bills().length, total = all.length;
     line.textContent = legView.bills === 'idle' ? '' : legView.bills === 'loading' ? 'Loading the bills.' : legView.bills === 'failed' ? 'The bills could not be loaded.'
-      : `${legNum(shown)} of ${legNum(total)} ${total === 1 ? 'bill' : 'bills'}.`;
-    const clear = document.getElementById('legFilterClear'), more = document.getElementById('legMoreCount'), note = document.getElementById('legTopicNote');
-    const inPanel = picked.size + (legView.status ? 1 : 0) + (legView.passing ? 1 : 0);
-    if (clear) clear.hidden = !legFiltersOn();
-    if (more) { more.hidden = !inPanel; more.textContent = String(inPanel); }
-    if (note) {
-      const none = all.filter(b => !legTopicsOf(b).length).length;
-      note.textContent = total ? `Topics are our reading of each bill, not the legislatures'. A topic is assigned when one of its words is in the bill's title, or two different words of it are in its summary. A bill can have several; ${legNum(none)} of ${legNum(total)} have none.` : '';
-    }
+      : legJoin([`${legNum(shown)} of ${legNum(total)} ${total === 1 ? 'bill' : 'bills'}`].concat(activeView === 'all' ? enfAllLine() : [])) + '.';   // on All, each list's own count follows the bills'
+  }
+  /* The Reset button (#legReset, the right end of the sticky toolbar; the owner, 2026-11-18: the small Clear pill and the Clear filters link were hard to see, and she chose one Reset button; then "reset should also reset views"):
+     it puts the whole tab back as it opens: no jurisdiction, no filter in ANY section (the bills' search, status, topics and checkbox, and the lists' search and chips, including the ones another section has and this page
+     does not show), the order back to Most recent, and the All view. It says how many things differ from that: the jurisdiction, the search words, the status, each topic chosen, the checkbox, the order, and the section if it
+     is not All. It is always there: solid, with the count, while something differs, and an outline otherwise; pressing it with nothing to reset says so rather than doing nothing silently. */
+  let legSearchTimer;   // the pause before the search box narrows the bills (the Reset button cancels a pending one)
+  function legResetCount() {
+    return (legView.pinned ? 1 : 0) + (legWords(legView.q).length ? 1 : 0) + legView.topics.size + (legView.status ? 1 : 0) + (legView.passing ? 1 : 0) +
+      (legWords(enfView.q).length ? 1 : 0) + enfView.topics.size + (legView.sort !== 'recent' ? 1 : 0) + (activeView !== 'all' ? 1 : 0);
+  }
+  function legSyncReset() {
+    const btn = document.getElementById('legReset'), txt = document.getElementById('legResetText');
+    if (!btn || !txt) return;
+    const n = legResetCount();
+    btn.classList.toggle('is-on', n > 0);
+    txt.textContent = n ? `Reset all (${n})` : 'Reset all';
+  }
+  function legResetAll() {
+    const live = document.getElementById('legAnnounce'), inputs = ['legSearch', 'enfSearch'].map(id => document.getElementById(id));
+    if (!legResetCount() && !inputs.some(el => el && el.value)) { if (live) live.textContent = 'Nothing is chosen or filtered.'; return; }   // words typed but not yet applied count too
+    clearTimeout(legSearchTimer); clearTimeout(enfSearchTimer);
+    legView.q = ''; legView.topics.clear(); legView.status = ''; legView.passing = false; legView.sort = 'recent';
+    enfView.q = ''; enfView.topics.clear();
+    inputs.forEach(el => { if (el) el.value = ''; });
+    legSetPinned(null);
+    setView('all');   // redraws everything for the section it opens: the bars, the map, the card, the tables and the lists
+    if (live) live.textContent = 'Everything is reset: every jurisdiction, no filters, the All view.';
   }
   /* A chip was clicked: "All" clears the topics; "No topic" is picked alone; any other is added or taken off, and drops "No topic". */
   function legPickTopic(key) {
@@ -4194,18 +4532,29 @@
     legPanel();
     legTables();
     legSyncBarHeight();
+    legSyncReset();
+    if (activeView === 'all' && typeof enfRender === 'function') enfRender();   // on All the bills' search and chips narrow the lists too
     if (refreshMasthead && typeof applyMastheadCopy === 'function') applyMastheadCopy();
   }
 
-  /* The bills are a file of their own (data/legislation-bills.js, generated by tools/legislation.py), fetched the first time the tab opens so the
-     other tabs never wait for it (loadPayload, 05-lazy.js). It adds its rows to LEGISLATION_DATA and sets LEGISLATION_FEEDS; the view then redraws.
-     setView() in 70-render.js calls this, so it also runs for a #legislation address at page load. */
+  /* The bills are a file of their own (data/legislation-bills.js, generated by tools/legislation.py), fetched the first time one of the four sections opens (the card in all of them counts from it, and the map on
+     Legislation and All is shaded from it) so the other tabs never wait for it (loadPayload, 05-lazy.js). It adds its rows to LEGISLATION_DATA and sets LEGISLATION_FEEDS; the view then redraws.
+     setView() in 70-render.js calls this, so it also runs for a #legislation, #enforcement or #cases address at page load. */
   function legLoadBills() {
     const area = document.getElementById('legislationArea');
     if (!area || legView.bills !== 'idle' || typeof loadPayload !== 'function') return;
     const set = state => { legView.bills = state; area.setAttribute('data-bills', state); legRenderAll(true); };
     set('loading');
     loadPayload('data/legislation-bills.js').then(() => set('ready'), () => set('failed'));
+  }
+
+  /* The section changed (setView in 70-render.js calls this for All, Cases, Enforcement and Legislation): the Federal entry of the Show menu names the body the section is about, and the map, the card and the bars are
+     drawn again, because the bills' own filters apply on Legislation only. */
+  function govViewChanged() {
+    const fed = document.querySelector(`#legStateSelect option[value="${LEG_FED}"]`);
+    if (fed) fed.textContent = activeView === 'all' ? 'Federal (Congress, agencies and courts)' : legBillControls() ? 'Federal (Congress)' : ENF_FED_NAME;
+    legSyncShow();
+    if (legView.built) legRenderAll(false);
   }
 
   function buildLegislationView() {
@@ -4233,39 +4582,25 @@
     if (card) {
       card.addEventListener('mouseenter', holdCard);
       card.addEventListener('mouseleave', () => { holdCard(); legSetHover(null); });
-      card.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('.leg-more-link') : null; if (b) legGoToDetails(b.getAttribute('data-more')); });
+      card.addEventListener('click', e => { const b = e.target && e.target.closest ? e.target.closest('.leg-more-link') : null; if (b) { const kind = b.getAttribute('data-kind'); if (kind && typeof enfGoToDetails === 'function') enfGoToDetails(kind, b.getAttribute('data-more')); else legGoToDetails(b.getAttribute('data-more')); } });   // a block of cases or enforcement actions says which list its link is for
     }
     box.addEventListener('click', e => { const c = codeOf(e); if (c) legSetPinned(legView.pinned === c ? null : c); });
     box.addEventListener('focusin', e => { const c = codeOf(e); if (c) legSetHover(c); });
     box.addEventListener('focusout', () => legSetHover(null));
     sel.addEventListener('change', () => legSetPinned(sel.value || null));
-    document.getElementById('legClear').addEventListener('click', () => legSetPinned(null));
-    // The filter bar. The checkbox for the bills that only mention AI in their text: everything counted from the data (shading, legend, totals, masthead, tables)
-    // follows it. The search (after a short pause, as in Papers), the Status menu, the topic chips and the Sort menu follow; Clear filters clears the search, the
-    // status, the topics and the checkbox, leaves the order alone, and puts the keyboard back in the search box.
+    document.getElementById('legReset').addEventListener('click', legResetAll);
+    // The filter bar. The checkbox for the bills that only lightly mention AI in their text: everything counted from the data (shading, legend, totals, masthead, tables)
+    // follows it. The search (after a short pause, as in Papers), the Status menu, the topic chips and the Sort menu follow; the Reset button clears the jurisdiction, the search, the
+    // status, the topics and the checkbox, and leaves the order alone.
     const passBox = document.getElementById('legPassing');
     passBox.addEventListener('change', () => { legView.passing = passBox.checked; legFiltersChanged(true); });
     document.getElementById('legStatus').addEventListener('change', e => { legView.status = e.target.value; legFiltersChanged(); });
-    document.getElementById('legSort').addEventListener('change', e => { legView.sort = e.target.value; legView.page = 1; legTables(); });
+    document.getElementById('legSort').addEventListener('change', e => { legView.sort = e.target.value; legView.page = 1; legTables(); if (activeView === 'all' && typeof enfRender === 'function') enfRender(); });
     const search = document.getElementById('legSearch');
-    let searchTimer;
-    search.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { legView.q = search.value; legFiltersChanged(); }, 150); });
+    search.addEventListener('input', () => { clearTimeout(legSearchTimer); legSearchTimer = setTimeout(() => { legView.q = search.value; legFiltersChanged(); }, 150); });
     document.getElementById('legTopicPills').addEventListener('click', e => { const b = e.target.closest ? e.target.closest('button[data-topic]') : null; if (b && !b.disabled) legPickTopic(b.getAttribute('data-topic')); });
-    document.getElementById('legFilterClear').addEventListener('click', () => { clearTimeout(searchTimer); legView.q = ''; legView.topics.clear(); legView.status = ''; legView.passing = false; search.value = ''; legFiltersChanged(true); search.focus(); });
-    wireMoreFilters('legMoreToggle', 'legMorePanel');
-    // The bar's height changes (More filters opens, a narrow screen wraps it, the layer hides the filters): follow it, since the sticky bar is what a jump to a table has to clear.
-    const stickyBar = document.getElementById('legSticky');
-    if (stickyBar && typeof ResizeObserver !== 'undefined') new ResizeObserver(legSyncBarHeight).observe(stickyBar);
-    // The observer fires on a frame; the panel is the one thing that changes the bar's height on a click, so read it again once the panel has opened (it takes 0.28s, filterbar.css) as well.
-    const moreToggle = document.getElementById('legMoreToggle');
-    if (moreToggle) moreToggle.addEventListener('click', () => setTimeout(legSyncBarHeight, 350));
-    area.querySelectorAll('button[data-layer]').forEach(b => b.addEventListener('click', () => {
-      legView.layer = b.getAttribute('data-layer');
-      if (legView.layer === 'results' && legView.pinned && !legOnMap(legView.pinned)) legSetPinned(null);   // Congress and the territories have no results to show
-      legPaint(); legPanel(); legSyncBarHeight();
-      if (typeof applyMastheadCopy === 'function') applyMastheadCopy();   // the masthead follows the layer
-    }));
-    area.querySelectorAll('button[data-office]').forEach(b => b.addEventListener('click', () => { legView.office = b.getAttribute('data-office'); legPaint(); legPanel(); }));
+    // The bars' height changes (a narrow screen wraps the toolbar, a section has more or fewer chips): follow it, since the sticky toolbar, chips and search bar are what a jump to a table has to clear.
+    if (typeof ResizeObserver !== 'undefined') ['legSticky', 'legTopicsBar', 'legFilters'].forEach(id => { const el = document.getElementById(id); if (el) new ResizeObserver(legSyncBarHeight).observe(el); });
     // A refresh means the data changed under the page (a late load, or a test): drop the compiled topics and chips so the next draw works them out again.
     area.addEventListener('legislation:refresh', () => { legTopicMemo = null; legChipsFor = null; legStatusFor = null; legRenderAll(true); });
     legRenderAll(false);
@@ -4293,8 +4628,8 @@
       buildPolicyView();
       return;
     }
-    // About, Agenda and Enforcement are static markup, and Legislation is drawn by its own script (60-legislation.js): there is nothing to build here.
-    if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'legislation') { return; }
+    // About and Agenda are static markup, Enforcement and Cases are drawn by their own script (55-enforcement.js) and Legislation and All by theirs (60-legislation.js): there is nothing to build here.
+    if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'cases' || activeView === 'legislation' || activeView === 'all') { return; }
 
     // ── Papers (cards) view ──
     const sig = cardsSig();
@@ -4323,14 +4658,14 @@
   }
 
   /* ── Papers bar ───────────────────────────────────────────────
-     The search-and-filters bar above the list. It is the Fact Bank's bar (same markup shape, same
-     styles: src/styles/filterbar.css) with this tab's facets: search and Sort in view, Methodology,
-     Category and Region behind "More filters". The select options are built once and
+     The search-and-filters bar above the list. It is the Fact Bank's bar and the Government action tab's (the same structure, the same
+     styles: src/styles/filterbar.css) with this tab's facets: the toolbar holds Category, Methodology and Region, always showing, with the Reset button at its right end, and the search bar under it holds search, Sort and
+     the result line. The select options are built once and
      refreshPapersBar() only rewrites their labels, so a select that is in use keeps its focus. */
   const ppEl = id => document.getElementById(id);
   const ppSearch = ppEl('ppSearch'), ppSort = ppEl('ppSort'), ppMethod = ppEl('ppMethod');
   const ppCategory = ppEl('ppCategory'), ppRegion = ppEl('ppRegion');
-  const ppMoreCount = ppEl('ppMoreCount'), ppClear = ppEl('ppClear'), ppResultLine = ppEl('ppResultLine');
+  const ppReset = ppEl('ppReset'), ppResetText = ppEl('ppResetText'), ppAnnounce = ppEl('ppAnnounce'), ppResultLine = ppEl('ppResultLine');
 
   [[ppMethod, Object.entries(EVIDENCE_META).map(([k, m]) => [k, m.label])],
    [ppCategory, CATEGORIES.map(c => [c.id, c.label])],
@@ -4343,7 +4678,7 @@
   });
 
   // Put the controls back in step with the state, for the places that change the state from
-  // outside them ("Clear filters", a #entry/<id> link).
+  // outside them (Reset all, a #entry/<id> link).
   function syncPapersControls() {
     ppSearch.value = searchQuery;
     ppSort.value = sortOrder;
@@ -4351,8 +4686,8 @@
     ppCategory.value = activeCat;
     ppRegion.value = activeGeo;
   }
-  // The three filters "Clear filters" resets. Search and sort are left alone, as in the Fact Bank;
-  // a link to one paper resets them too and puts the paper's title in the search (see the router).
+  // The three filters. Reset all also puts the search and the order back (see ppReset below); the empty state's button
+  // clears the search too, and a link to one paper resets them as well and puts the paper's title in the search (see the router).
   function resetPaperFilters({ search = false } = {}) {
     activeEvidence = 'all'; activeCat = 'all'; activeGeo = 'all';
     if (search) searchQuery = '';
@@ -4372,16 +4707,22 @@
     relabel(ppMethod,   activeEvidence, tally(filteredBase({ excludeEvidence: true }), getEvidenceType));
     relabel(ppCategory, activeCat,      tally(filteredBase({ excludeCat: true }), r => r.category));
     relabel(ppRegion,   activeGeo,      tally(filteredBase({ excludeGeo: true }), r => r.geography || 'us'));
-    // The badge counts what is switched on inside "More filters" (Methodology, Category, Region).
-    // Sort stays in view and is not a filter.
-    const inPanel = (activeEvidence !== 'all' ? 1 : 0) + (activeCat !== 'all' ? 1 : 0) + (activeGeo !== 'all' ? 1 : 0);
-    ppMoreCount.hidden = inPanel === 0;
-    ppMoreCount.textContent = inPanel;
-    ppClear.hidden = inPanel === 0;
+    syncPapersReset();
+    syncBarStack(ppEl('papersArea'));   // the stacked bar's live heights, for the jump to the list
     ppResultLine.textContent = `${shown} of ${RESEARCH_DATA.length} papers.` + (range ? ` Showing ${range[0]} to ${range[1]}.` : '');
   }
 
-  wireMoreFilters('ppMoreToggle', 'ppMorePanel');
+  /* The Reset button (the owner, 2026-11-18, as on the Government action tab): one button, always there, at the right end of the toolbar. It puts the search, the order and the three filters back, and says how many
+     differ from how the tab opens: the search words, each of Methodology, Category and Region that is not All, and the order if it is not Newest first. Solid with the count while any differ, an outline otherwise. */
+  const papersResetCount = () => (searchQuery.trim() ? 1 : 0) + (activeEvidence !== 'all' ? 1 : 0) + (activeCat !== 'all' ? 1 : 0) + (activeGeo !== 'all' ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
+  function syncPapersReset() {
+    const n = papersResetCount();
+    ppReset.classList.toggle('is-on', n > 0);
+    ppResetText.textContent = n ? `Reset all (${n})` : 'Reset all';
+  }
+  // The stacked bar's heights follow the bar (the filters wrap on a narrow screen) and the window (a phone or a short window turns the stick off).
+  if (typeof ResizeObserver !== 'undefined') document.querySelectorAll('#papersArea .bar-toolbar, #papersArea .bar-search').forEach(el => new ResizeObserver(() => syncBarStack(ppEl('papersArea'))).observe(el));
+  window.addEventListener('resize', () => syncBarStack(ppEl('papersArea')));
   // Paging. Any change to what the list holds starts it again at page 1; the pager is the one thing that
   // moves between pages.
   const papersChanged = () => { papersPage = 1; render(); };
@@ -4395,7 +4736,14 @@
   ppCategory.addEventListener('change', e => { activeCat = e.target.value; papersChanged(); });
   ppRegion.addEventListener('change',   e => { activeGeo = e.target.value; papersChanged(); });
   ppSort.addEventListener('change',     e => { sortOrder = e.target.value; papersChanged(); });
-  ppClear.addEventListener('click', () => { resetPaperFilters(); papersChanged(); });
+  ppReset.addEventListener('click', () => {
+    if (!papersResetCount() && !ppSearch.value.trim()) { ppAnnounce.textContent = 'Nothing is chosen or filtered.'; return; }   // words typed but not yet applied count too
+    clearTimeout(ppSearchTimer);
+    searchQuery = ''; sortOrder = 'desc'; papersLinkQuery = '';
+    resetPaperFilters();   // the three filters, and every control back in step with the state
+    papersChanged();
+    ppAnnounce.textContent = 'Everything is reset: every paper is showing, newest first.';
+  });
   // The empty state's button also clears the search, since either can be why nothing matched.
   ppEl('emptyStateClear').addEventListener('click', () => { resetPaperFilters({ search: true }); papersChanged(); });
 
@@ -4435,22 +4783,20 @@
     // The Policy tab's masthead is the map's own; getTabDesc swaps in a notice while the map's cards are hidden.
     policyMap: {
       lede: 'What could policy do about it?',
-      // The counts come from the data the map is drawn from, not from here: this line once said "Twenty-seven" while the
-      // map listed 32. A getter, so every reader of .text gets the figures as they stand when it asks.
+      // The count of areas comes from the data the map is drawn from, not from here (this line once said "Twenty-seven" policies while the map listed 32, and the owner then had the count of policies taken out of it,
+      // 2026-11-18, so it says "Policy interventions" with no number). A getter, so every reader of .text gets the figure as it stands when it asks.
       get text() {
         const c = policyMapCounts();
-        return `${capitalizeFirst(spellNumber(c.policies))} policy interventions grouped into ${spellNumber(c.areas)} policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.`;
+        return `Policy interventions grouped into ${spellNumber(c.areas)} policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.`;
       },
     },
     about: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
     // A placeholder tab, first in the Policy group: this masthead and the one note under it (src/views/40-agenda.html) are all it says. Replace both when there is an agenda.
     agenda: { lede: 'What is our policy agenda?', text: 'Coming soon.' },
-    // A placeholder tab, first in the Government action group: this masthead and the one note under it (src/views/65-enforcement.html) are all it says. Replace both when there is something to list.
-    enforcement: { lede: 'What has been enforced, and what have the courts said?', text: 'Coming soon: enforcement actions and key cases.' },
-    // What is loaded, said from the data (legislationMasthead() in 60-legislation.js), so it cannot go stale.
-    // Getters, so the question and the standfirst follow the layer: the bills on Bills, the 2026 midterm results on 2026 Midterm results.
-    legislation: { get lede() { return legislationLede(); }, get text() { return legislationMasthead(); } },
   };
+  // The Government action tab has ONE masthead for its four sections (the owner, 2026-11-18: "There shouldn't be a different header and blurb for each view"): the tab's question and standfirst, said from everything it
+  // holds (govLede() and govMasthead() in 60-legislation.js), so it cannot go stale and does not change when the switch does.
+  TAB_DESCS.all = TAB_DESCS.legislation = TAB_DESCS.enforcement = TAB_DESCS.cases = { get lede() { return govLede(); }, get text() { return govMasthead(); } };
   /* Counts quoted in copy are computed from the data they describe, never typed. spellNumber() is the house style (small
      numbers in words; 100 and over fall back to digits). policyMapCounts() applies the rule buildPolicyView() draws the
      map by, so the masthead cannot disagree with the page: a policy is listed when its category maps to one of the
@@ -4495,12 +4841,15 @@
     if (t)  t.textContent  = desc.text;
   }
 
-  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', agenda: 'viewAgenda', policy: 'viewPolicy', legislation: 'viewLegislation', enforcement: 'viewEnforcement', about: 'homeTitleLink' };
+  // Government action is one nav tab for its four sections (GOV_VIEWS), so all four map to it; the tab opens the section that was open last (govLast), All at first.
+  const GOV_VIEWS = ['all', 'cases', 'enforcement', 'legislation'];
+  let govLast = 'all';
+  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', agenda: 'viewAgenda', policy: 'viewPolicy', all: 'viewGovernment', legislation: 'viewGovernment', enforcement: 'viewGovernment', cases: 'viewGovernment', about: 'homeTitleLink' };
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewAgenda', 'viewPolicy', 'viewLegislation', 'viewEnforcement'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewAgenda', 'viewPolicy', 'viewGovernment'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const active = id === VIEW_TAB_IDS[view];
@@ -4513,10 +4862,20 @@
     document.body.classList.toggle('about-view',    view === 'about');
     document.body.classList.toggle('agenda-view',   view === 'agenda');
     document.body.classList.toggle('enforcement-view', view === 'enforcement');
+    document.body.classList.toggle('cases-view', view === 'cases');
     document.body.classList.toggle('legislation-view', view === 'legislation');
+    document.body.classList.toggle('all-view', view === 'all');
+    if (GOV_VIEWS.includes(view)) govLast = view;   // (the body keeps exactly one -view class, which the tests read: the switch is shown by the four section classes, in policy.css)
+    document.querySelectorAll('#govSwitch [data-gov]').forEach(b => { const on = b.dataset.gov === view; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
-    if (view === 'legislation' && typeof legLoadBills === 'function') legLoadBills();   // the bills are a file of their own, fetched on first open
+    // The four sections of Government action share the toolbar, the map and the card (the map is shaded from the open section's rows, and the card holds that section's own data; the bills are a file of their own,
+    // fetched the first time any of the four opens).
+    if (GOV_VIEWS.includes(view)) {
+      if (typeof legLoadBills === 'function') legLoadBills();
+      if (typeof govViewChanged === 'function') govViewChanged();   // the Show menu's Federal entry and the map's bars follow the section
+    }
+    if ((view === 'enforcement' || view === 'cases' || view === 'all') && typeof enfRender === 'function') enfRender();   // drawn from the data each time a section is shown: the place may have changed on another one
     render();
     const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
@@ -4525,7 +4884,7 @@
     if (ann) {
       // Must match the tabs' accessible names in src/views/10-header.html (the visible label, plus an aria-label
       // where the tab needs its group to make sense): this is what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', legislation: 'Legislation', enforcement: 'Enforcement actions and key cases', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', all: 'Government action: All', legislation: 'Government action: Legislation', enforcement: 'Government action: Enforcement', cases: 'Government action: Cases', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
@@ -4535,9 +4894,13 @@
      had to be edited in lockstep with the markup; now adding a view button is
      a data-view attribute and a VIEWS row in 40-router.js. */
   document.addEventListener('click', e => {
+    // The switch under the masthead of Government action: its four buttons are views of their own.
+    const sec = e.target.closest('#govSwitch [data-gov]');
+    if (sec) { setView(sec.dataset.gov); return; }
     const btn = e.target.closest('.header-nav-btn[data-view]');
     if (!btn) return;
-    const view = btn.dataset.view;
+    // The one nav tab for the four sections opens the section that was open last.
+    const view = btn.dataset.view === 'government' ? govLast : btn.dataset.view;
     if (view === 'fact-bank') clearFactBankLink();
     if (view === 'cards') clearPapersLink();
     setView(view);
@@ -4808,8 +5171,7 @@
     const emptyState = document.getElementById('kfEmptyState');
     const pager = document.getElementById('kfPager');
     const resultLine = document.getElementById('kfResultLine');
-    const moreCount = document.getElementById('kfMoreCount');
-    const clearBtn = document.getElementById('kfClear');
+    const resetBtn = document.getElementById('kfReset'), resetText = document.getElementById('kfResetText'), announce = document.getElementById('kfAnnounce');
 
     /* ── Shared card fragments ── */
     /* One rating explained: a rail (the scale's name, a small bar, the score) beside the
@@ -5069,27 +5431,23 @@
       }
       return true;
     }
-    /* Every filter sits inside the "More filters" panel (Evidence, the two rating minimums,
-       keywords, Foundational); only search and Sort stay in view, and neither is counted. The badge
-       counts what is switched on, and "Clear filters" shows exactly when the badge does. */
-    function refreshMore() {
-      const inPanel = (evType !== 'all' ? 1 : 0) + (minPol > 1 ? 1 : 0) + (minTruth > 1 ? 1 : 0) + activeKw.size + (onlyFoundational ? 1 : 0);
-      moreCount.hidden = inPanel === 0;
-      moreCount.textContent = inPanel;
-      clearBtn.hidden = inPanel === 0;
+    /* The Reset button (the owner, 2026-11-18, as on the Government action tab): one button, always there, at the right end of the toolbar. It puts the search, the order and every filter back, and says how many differ from
+       how the tab opens: the search words, Evidence if it is not All types, each rating minimum above 1+, each keyword chosen, Foundational, and the order if it is not Most recent. Solid with the count while any differ,
+       an outline otherwise. */
+    const resetCount = () => (q.trim() ? 1 : 0) + (evType !== 'all' ? 1 : 0) + (minPol > 1 ? 1 : 0) + (minTruth > 1 ? 1 : 0) + activeKw.size + (onlyFoundational ? 1 : 0) + (sortBy !== 'date' ? 1 : 0);
+    function refreshReset() {
+      const n = resetCount();
+      resetBtn.classList.toggle('is-on', n > 0);
+      resetText.textContent = n ? `Reset all (${n})` : 'Reset all';
     }
-    /* The filter bar's live height, for the pinned source headers (--kf-bar-h, read by .g-head in policy.css). A
-       ResizeObserver follows the bar as it changes (More filters opens, a narrow screen wraps it); a render also
-       re-reads it, because the result line it fills is part of the bar and an observer can lag a frame behind.
-       The height is read exactly, not as offsetHeight: the page is zoomed (body zoom, tokens.css), so the bar is a
-       fractional height (85.76px, not 86), and the whole number left the pinned header a quarter pixel below the bar,
-       where the cards scrolling past could show through. A rect is in zoomed pixels and the sticky offset is in the
-       header's own, hence the division by the zoom. */
+    /* The stacked bar's live height, for the pinned source headers (--kf-bar-h, read by .g-head in policy.css): the toolbar, the chips and the search bar together, each as tall as it is while it sticks, and nothing for a
+       block that does not (a phone, a short window). syncBarStack (00-state.js) reads them exactly: the page is zoomed (body zoom, tokens.css), so the bar is a fractional height (85.76px, not 86), and the whole number left
+       the pinned header a quarter pixel below the bar, where the cards scrolling past could show through. A ResizeObserver follows the blocks as they change (a narrow screen wraps them), and a render re-reads it,
+       because the result line is part of the bar and an observer can lag a frame behind. */
     function syncBarHeight() {
-      const bar = document.querySelector('#factBankArea .controls');
-      if (!bar) return;
-      const zoom = parseFloat(getComputedStyle(document.body).zoom) || 1;
-      document.getElementById('factBankArea').style.setProperty('--kf-bar-h', (bar.getBoundingClientRect().height / zoom).toFixed(2) + 'px');
+      const area = document.getElementById('factBankArea');
+      if (!area) return;
+      area.style.setProperty('--kf-bar-h', syncBarStack(area).toFixed(2) + 'px');
     }
     /* Draws the current page: the facts that match, in order, cut into pages of whole blocks, and the page the
        reader is on built into the list. */
@@ -5127,7 +5485,7 @@
         (pages.length > 1 ? ` Showing ${before + 1} to ${before + onPage}.` : '');
       emptyState.hidden = shownFacts.length !== 0;
       renderPager(pager, { page, pages: pages.length, noun: 'facts', onPage: n => { page = n; renderPage(); showListTop(allFactsView); } });
-      refreshMore();
+      refreshReset();
       syncBarHeight();
     }
     // Any change to the filters, the search or the sort starts the list again at page 1.
@@ -5220,18 +5578,20 @@
       const foundationalBox = document.getElementById('kfFoundational');
       foundationalBox.closest('.ctl-check').hidden = !liveFacts.some(f => f.foundational);
 
-      // "More filters" holds Evidence, the two rating minimums, the keyword chips and (when it applies) Foundational.
-      wireMoreFilters('kfMoreToggle', 'kfMorePanel');
-
-      // "Clear filters" resets every filter. It leaves the search text and the sort alone.
-      clearBtn.addEventListener('click', () => {
-        evType = 'all'; minPol = 1; minTruth = 1; onlyFoundational = false; activeKw.clear();
+      // Reset all puts the search, the order and every filter back, and the first page.
+      resetBtn.addEventListener('click', () => {
+        const box = document.getElementById('kfSearch');
+        if (!resetCount() && !(box && box.value)) { announce.textContent = 'Nothing is chosen or filtered.'; return; }   // words typed but not yet applied count too
+        q = ''; evType = 'all'; minPol = 1; minTruth = 1; onlyFoundational = false; sortBy = 'date'; ordered = null; activeKw.clear(); factBankQuery = '';
+        box.value = '';
         evSelect.value = 'all';
         document.getElementById('kfMinPol').value = '1';
         document.getElementById('kfMinTruth').value = '1';
+        document.getElementById('kfSort').value = 'date';
         foundationalBox.checked = false;
         refreshKw();
         applyFilters();
+        announce.textContent = 'Everything is reset: every fact is showing, most recent first.';
       });
 
       document.getElementById('kfSearch').addEventListener('input', e => { q = e.target.value.toLowerCase(); applyFilters(); });
@@ -5243,10 +5603,10 @@
 
       handleCardEvents(allFactsView);
 
-      // A pinned source header sticks just under the filter bar, whose height changes (More filters opens, the bar
-      // wraps on a narrow screen), so the bar's height is read into --kf-bar-h rather than guessed.
-      const bar = document.querySelector('#factBankArea .controls');
-      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(syncBarHeight).observe(bar);
+      // A pinned source header sticks just under the stacked filter bar, whose height changes (the blocks wrap on a
+      // narrow screen, a phone turns the stick off), so the bar's height is read into --kf-bar-h rather than guessed.
+      if (typeof ResizeObserver !== 'undefined') document.querySelectorAll('#factBankArea .bar-toolbar, #factBankArea .bar-chips, #factBankArea .bar-search').forEach(el => new ResizeObserver(syncBarHeight).observe(el));
+      window.addEventListener('resize', syncBarHeight);   // a phone or a short window turns the stick off, which changes no block's size
       syncBarHeight();
 
       // A source's facts link may have arrived before this view was built. applyFilters() draws page 1.

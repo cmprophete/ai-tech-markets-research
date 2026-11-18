@@ -2,13 +2,12 @@
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
   .policy-view #policyArea           { display: block; }
-  /* Agenda and Enforcement: placeholder tabs. The shared masthead leads each (copy in TAB_DESCS.agenda and TAB_DESCS.enforcement) and one note sits under it, in the
+  /* Agenda, and Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
      Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. Each area takes the
      masthead's inset from .cards-area. */
-  #agendaArea, #enforcementArea      { display: none; }
+  #agendaArea                        { display: none; }
   .agenda-view #agendaArea           { display: block; }
-  .enforcement-view #enforcementArea { display: block; }
-  .agenda-view .cards-area, .enforcement-view .cards-area { padding-top: 0; }
+  .agenda-view .cards-area, .enforcement-view .cards-area, .cases-view .cards-area, .all-view .cards-area { padding-top: 0; }
   .placeholder-note {
     max-width: var(--lede-measure); margin: 24px 0 0; padding: 9px 14px;
     background: rgba(235,195,130,0.16); border-left: 3px solid var(--gold); border-radius: 0 var(--r-card) var(--r-card) 0;
@@ -25,10 +24,16 @@
   #aboutArea                         { display: none; }
   .about-view #aboutArea             { display: block; }
   .about-view .header-tab-desc       { display: none; }
-  /* Legislation: the map and tables (legislation.css). The area takes the masthead's inset from .cards-area. */
+  /* Government action: its four sections, All, Cases, Enforcement and Legislation, are ONE area (#legislationArea: the toolbar, the topic chips, the search, the map and the section's own list; legislation.css).
+     The area takes the masthead's inset from .cards-area. A control or a list that belongs to some of the sections is shown only there: gov-leg-only for the bills' own (Legislation and All), gov-lists-only
+     for the lists' own controls (Enforcement and Cases), gov-all-only for what only All holds (the midterm results table), and the enforcement and cases lists (#enforcementArea) everywhere but Legislation. */
   #legislationArea                   { display: none; }
-  .legislation-view #legislationArea { display: block; }
+  .all-view #legislationArea, .legislation-view #legislationArea, .enforcement-view #legislationArea, .cases-view #legislationArea { display: block; }
   .legislation-view .cards-area      { padding-top: 0; }
+  .enforcement-view .gov-leg-only, .cases-view .gov-leg-only { display: none; }
+  .legislation-view .gov-lists-only, .all-view .gov-lists-only { display: none; }
+  .legislation-view .gov-all-only, .enforcement-view .gov-all-only, .cases-view .gov-all-only { display: none; }
+  .legislation-view #enforcementArea { display: none; }
   /* ── ABOUT: the front page ───────────────────────────────────────────────────────────────────────────────────
      It sets its text in the styles the other tabs already use, bar one (the part headings, below): the shared
      masthead opener (the display serif lede and the 15px standfirst), then numbered parts that each open with a
