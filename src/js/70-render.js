@@ -20,8 +20,8 @@
       buildPolicyView();
       return;
     }
-    // About, Agenda and Enforcement are static markup, and Legislation is drawn by its own script (60-legislation.js): there is nothing to build here.
-    if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'legislation') { return; }
+    // About and Agenda are static markup, Enforcement and Cases are drawn by their own script (55-enforcement.js) and Legislation and All by theirs (60-legislation.js): there is nothing to build here.
+    if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'cases' || activeView === 'legislation' || activeView === 'all') { return; }
 
     // ── Papers (cards) view ──
     const sig = cardsSig();
@@ -50,14 +50,14 @@
   }
 
   /* ── Papers bar ───────────────────────────────────────────────
-     The search-and-filters bar above the list. It is the Fact Bank's bar (same markup shape, same
-     styles: src/styles/filterbar.css) with this tab's facets: search and Sort in view, Methodology,
-     Category and Region behind "More filters". The select options are built once and
+     The search-and-filters bar above the list. It is the Fact Bank's bar and the Government action tab's (the same structure, the same
+     styles: src/styles/filterbar.css) with this tab's facets: the toolbar holds Category, Methodology and Region, always showing, with the Reset button at its right end, and the search bar under it holds search, Sort and
+     the result line. The select options are built once and
      refreshPapersBar() only rewrites their labels, so a select that is in use keeps its focus. */
   const ppEl = id => document.getElementById(id);
   const ppSearch = ppEl('ppSearch'), ppSort = ppEl('ppSort'), ppMethod = ppEl('ppMethod');
   const ppCategory = ppEl('ppCategory'), ppRegion = ppEl('ppRegion');
-  const ppMoreCount = ppEl('ppMoreCount'), ppClear = ppEl('ppClear'), ppResultLine = ppEl('ppResultLine');
+  const ppReset = ppEl('ppReset'), ppResetText = ppEl('ppResetText'), ppAnnounce = ppEl('ppAnnounce'), ppResultLine = ppEl('ppResultLine');
 
   [[ppMethod, Object.entries(EVIDENCE_META).map(([k, m]) => [k, m.label])],
    [ppCategory, CATEGORIES.map(c => [c.id, c.label])],
@@ -70,7 +70,7 @@
   });
 
   // Put the controls back in step with the state, for the places that change the state from
-  // outside them ("Clear filters", a #entry/<id> link).
+  // outside them (Reset all, a #entry/<id> link).
   function syncPapersControls() {
     ppSearch.value = searchQuery;
     ppSort.value = sortOrder;
@@ -78,8 +78,8 @@
     ppCategory.value = activeCat;
     ppRegion.value = activeGeo;
   }
-  // The three filters "Clear filters" resets. Search and sort are left alone, as in the Fact Bank;
-  // a link to one paper resets them too and puts the paper's title in the search (see the router).
+  // The three filters. Reset all also puts the search and the order back (see ppReset below); the empty state's button
+  // clears the search too, and a link to one paper resets them as well and puts the paper's title in the search (see the router).
   function resetPaperFilters({ search = false } = {}) {
     activeEvidence = 'all'; activeCat = 'all'; activeGeo = 'all';
     if (search) searchQuery = '';
@@ -99,16 +99,22 @@
     relabel(ppMethod,   activeEvidence, tally(filteredBase({ excludeEvidence: true }), getEvidenceType));
     relabel(ppCategory, activeCat,      tally(filteredBase({ excludeCat: true }), r => r.category));
     relabel(ppRegion,   activeGeo,      tally(filteredBase({ excludeGeo: true }), r => r.geography || 'us'));
-    // The badge counts what is switched on inside "More filters" (Methodology, Category, Region).
-    // Sort stays in view and is not a filter.
-    const inPanel = (activeEvidence !== 'all' ? 1 : 0) + (activeCat !== 'all' ? 1 : 0) + (activeGeo !== 'all' ? 1 : 0);
-    ppMoreCount.hidden = inPanel === 0;
-    ppMoreCount.textContent = inPanel;
-    ppClear.hidden = inPanel === 0;
+    syncPapersReset();
+    syncBarStack(ppEl('papersArea'));   // the stacked bar's live heights, for the jump to the list
     ppResultLine.textContent = `${shown} of ${RESEARCH_DATA.length} papers.` + (range ? ` Showing ${range[0]} to ${range[1]}.` : '');
   }
 
-  wireMoreFilters('ppMoreToggle', 'ppMorePanel');
+  /* The Reset button (the owner, 2026-11-18, as on the Government action tab): one button, always there, at the right end of the toolbar. It puts the search, the order and the three filters back, and says how many
+     differ from how the tab opens: the search words, each of Methodology, Category and Region that is not All, and the order if it is not Newest first. Solid with the count while any differ, an outline otherwise. */
+  const papersResetCount = () => (searchQuery.trim() ? 1 : 0) + (activeEvidence !== 'all' ? 1 : 0) + (activeCat !== 'all' ? 1 : 0) + (activeGeo !== 'all' ? 1 : 0) + (sortOrder !== 'desc' ? 1 : 0);
+  function syncPapersReset() {
+    const n = papersResetCount();
+    ppReset.classList.toggle('is-on', n > 0);
+    ppResetText.textContent = n ? `Reset all (${n})` : 'Reset all';
+  }
+  // The stacked bar's heights follow the bar (the filters wrap on a narrow screen) and the window (a phone or a short window turns the stick off).
+  if (typeof ResizeObserver !== 'undefined') document.querySelectorAll('#papersArea .bar-toolbar, #papersArea .bar-search').forEach(el => new ResizeObserver(() => syncBarStack(ppEl('papersArea'))).observe(el));
+  window.addEventListener('resize', () => syncBarStack(ppEl('papersArea')));
   // Paging. Any change to what the list holds starts it again at page 1; the pager is the one thing that
   // moves between pages.
   const papersChanged = () => { papersPage = 1; render(); };
@@ -122,7 +128,14 @@
   ppCategory.addEventListener('change', e => { activeCat = e.target.value; papersChanged(); });
   ppRegion.addEventListener('change',   e => { activeGeo = e.target.value; papersChanged(); });
   ppSort.addEventListener('change',     e => { sortOrder = e.target.value; papersChanged(); });
-  ppClear.addEventListener('click', () => { resetPaperFilters(); papersChanged(); });
+  ppReset.addEventListener('click', () => {
+    if (!papersResetCount() && !ppSearch.value.trim()) { ppAnnounce.textContent = 'Nothing is chosen or filtered.'; return; }   // words typed but not yet applied count too
+    clearTimeout(ppSearchTimer);
+    searchQuery = ''; sortOrder = 'desc'; papersLinkQuery = '';
+    resetPaperFilters();   // the three filters, and every control back in step with the state
+    papersChanged();
+    ppAnnounce.textContent = 'Everything is reset: every paper is showing, newest first.';
+  });
   // The empty state's button also clears the search, since either can be why nothing matched.
   ppEl('emptyStateClear').addEventListener('click', () => { resetPaperFilters({ search: true }); papersChanged(); });
 
@@ -162,22 +175,20 @@
     // The Policy tab's masthead is the map's own; getTabDesc swaps in a notice while the map's cards are hidden.
     policyMap: {
       lede: 'What could policy do about it?',
-      // The counts come from the data the map is drawn from, not from here: this line once said "Twenty-seven" while the
-      // map listed 32. A getter, so every reader of .text gets the figures as they stand when it asks.
+      // The count of areas comes from the data the map is drawn from, not from here (this line once said "Twenty-seven" policies while the map listed 32, and the owner then had the count of policies taken out of it,
+      // 2026-11-18, so it says "Policy interventions" with no number). A getter, so every reader of .text gets the figure as it stands when it asks.
       get text() {
         const c = policyMapCounts();
-        return `${capitalizeFirst(spellNumber(c.policies))} policy interventions grouped into ${spellNumber(c.areas)} policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.`;
+        return `Policy interventions grouped into ${spellNumber(c.areas)} policy areas, listed alphabetically within each. Click any policy for rationale, precedents, and supporting research.`;
       },
     },
     about: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
     // A placeholder tab, first in the Policy group: this masthead and the one note under it (src/views/40-agenda.html) are all it says. Replace both when there is an agenda.
     agenda: { lede: 'What is our policy agenda?', text: 'Coming soon.' },
-    // A placeholder tab, first in the Government action group: this masthead and the one note under it (src/views/65-enforcement.html) are all it says. Replace both when there is something to list.
-    enforcement: { lede: 'What has been enforced, and what have the courts said?', text: 'Coming soon: enforcement actions and key cases.' },
-    // What is loaded, said from the data (legislationMasthead() in 60-legislation.js), so it cannot go stale.
-    // Getters, so the question and the standfirst follow the layer: the bills on Bills, the 2026 midterm results on 2026 Midterm results.
-    legislation: { get lede() { return legislationLede(); }, get text() { return legislationMasthead(); } },
   };
+  // The Government action tab has ONE masthead for its four sections (the owner, 2026-11-18: "There shouldn't be a different header and blurb for each view"): the tab's question and standfirst, said from everything it
+  // holds (govLede() and govMasthead() in 60-legislation.js), so it cannot go stale and does not change when the switch does.
+  TAB_DESCS.all = TAB_DESCS.legislation = TAB_DESCS.enforcement = TAB_DESCS.cases = { get lede() { return govLede(); }, get text() { return govMasthead(); } };
   /* Counts quoted in copy are computed from the data they describe, never typed. spellNumber() is the house style (small
      numbers in words; 100 and over fall back to digits). policyMapCounts() applies the rule buildPolicyView() draws the
      map by, so the masthead cannot disagree with the page: a policy is listed when its category maps to one of the
@@ -222,12 +233,15 @@
     if (t)  t.textContent  = desc.text;
   }
 
-  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', agenda: 'viewAgenda', policy: 'viewPolicy', legislation: 'viewLegislation', enforcement: 'viewEnforcement', about: 'homeTitleLink' };
+  // Government action is one nav tab for its four sections (GOV_VIEWS), so all four map to it; the tab opens the section that was open last (govLast), All at first.
+  const GOV_VIEWS = ['all', 'cases', 'enforcement', 'legislation'];
+  let govLast = 'all';
+  const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', agenda: 'viewAgenda', policy: 'viewPolicy', all: 'viewGovernment', legislation: 'viewGovernment', enforcement: 'viewGovernment', cases: 'viewGovernment', about: 'homeTitleLink' };
 
   function setView(view) {
     activeView = view;
     viewInitialized = true;
-    ['viewCards', 'viewFactBank', 'viewAgenda', 'viewPolicy', 'viewLegislation', 'viewEnforcement'].forEach(id => {
+    ['viewCards', 'viewFactBank', 'viewAgenda', 'viewPolicy', 'viewGovernment'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       const active = id === VIEW_TAB_IDS[view];
@@ -240,10 +254,20 @@
     document.body.classList.toggle('about-view',    view === 'about');
     document.body.classList.toggle('agenda-view',   view === 'agenda');
     document.body.classList.toggle('enforcement-view', view === 'enforcement');
+    document.body.classList.toggle('cases-view', view === 'cases');
     document.body.classList.toggle('legislation-view', view === 'legislation');
+    document.body.classList.toggle('all-view', view === 'all');
+    if (GOV_VIEWS.includes(view)) govLast = view;   // (the body keeps exactly one -view class, which the tests read: the switch is shown by the four section classes, in policy.css)
+    document.querySelectorAll('#govSwitch [data-gov]').forEach(b => { const on = b.dataset.gov === view; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
-    if (view === 'legislation' && typeof legLoadBills === 'function') legLoadBills();   // the bills are a file of their own, fetched on first open
+    // The four sections of Government action share the toolbar, the map and the card (the map is shaded from the open section's rows, and the card holds that section's own data; the bills are a file of their own,
+    // fetched the first time any of the four opens).
+    if (GOV_VIEWS.includes(view)) {
+      if (typeof legLoadBills === 'function') legLoadBills();
+      if (typeof govViewChanged === 'function') govViewChanged();   // the Show menu's Federal entry and the map's bars follow the section
+    }
+    if ((view === 'enforcement' || view === 'cases' || view === 'all') && typeof enfRender === 'function') enfRender();   // drawn from the data each time a section is shown: the place may have changed on another one
     render();
     const activeTabId = VIEW_TAB_IDS[view] || ('view' + view.charAt(0).toUpperCase() + view.slice(1));
     const panel = document.getElementById('viewPanel');
@@ -252,7 +276,7 @@
     if (ann) {
       // Must match the tabs' accessible names in src/views/10-header.html (the visible label, plus an aria-label
       // where the tab needs its group to make sense): this is what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', legislation: 'Legislation', enforcement: 'Enforcement actions and key cases', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', all: 'Government action: All', legislation: 'Government action: Legislation', enforcement: 'Government action: Enforcement', cases: 'Government action: Cases', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
@@ -262,9 +286,13 @@
      had to be edited in lockstep with the markup; now adding a view button is
      a data-view attribute and a VIEWS row in 40-router.js. */
   document.addEventListener('click', e => {
+    // The switch under the masthead of Government action: its four buttons are views of their own.
+    const sec = e.target.closest('#govSwitch [data-gov]');
+    if (sec) { setView(sec.dataset.gov); return; }
     const btn = e.target.closest('.header-nav-btn[data-view]');
     if (!btn) return;
-    const view = btn.dataset.view;
+    // The one nav tab for the four sections opens the section that was open last.
+    const view = btn.dataset.view === 'government' ? govLast : btn.dataset.view;
     if (view === 'fact-bank') clearFactBankLink();
     if (view === 'cards') clearPapersLink();
     setView(view);
