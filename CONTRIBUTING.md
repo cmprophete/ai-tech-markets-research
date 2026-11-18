@@ -12,17 +12,21 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 
 ## The things you might want to change
 
+Who updates each part of the site, and how often, is in the table in [`README.md`](README.md); this one says where.
+
 | I want to change | Edit | Then |
 |---|---|---|
 | **a research entry (add, edit, approve, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
-| **a theme / policy** | `data/tracker-data.js` (by hand) | reload; no build step |
+| **a policy card** | `POLICY_DATA` in `data/tracker-data.js` (by hand; the author's words go in verbatim, see [`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | reload; no build step |
+| **the Agenda tab** | `src/views/40-agenda.html` and `TAB_DESCS.agenda` in `src/js/70-render.js` (a placeholder for now) | `python3 build.py` |
+| **a fact (Fact Bank)** | `data/fact-bank-data.js`, through the `research-intake` and `fact-bank` skills in `skills/` (a fact belongs to one paper; the paragraph around it is in `data/fact-bank-context.js`) | reload; no build step |
 | **a midterm result or a stage (Legislation section)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
 | **an enforcement action or a key case (for the Enforcement and Cases sections of Government action)** | `data/legislation-actions.js` (by hand; the row format and the rules are at the top of the file) | reload; no build step |
 | **a topic in the Legislation filter (its name, or the words that find it)** | `LEGISLATION_TOPICS` in `data/legislation-data.js` (by hand; how a bill gets a topic is in the comment above it, and in [`docs/legislation-sources.md`](docs/legislation-sources.md)) | reload; no build step |
 | **the bills (Legislation tab)** | `python3 tools/openstates_fetch.py` and `python3 tools/congress_fetch.py`, then `python3 tools/legislation.py build`, writes `data/legislation-bills.js`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
 | **a state bill's summary where Open States has none (Illinois, New Jersey)** | `python3 tools/state_summaries.py` reads each legislature's own summary into `content/legislation-state-summaries.json` (by the tool, never by hand), then `python3 tools/legislation.py build`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
 | **the state outlines (Legislation map)** | `python3 tools/us_map.py --topojson <us-atlas states-albers-10m.json>` writes `data/us-map.js` | reload; no build step |
-| **a paper's summary (pilot)** | `data/paper-summaries.js` (by hand; rules in [`docs/paper-summaries.md`](docs/paper-summaries.md)) | reload; no build step |
+| **a paper's summary** | `data/paper-summaries.js` (drafted by Claude, reviewed by a person; rules in [`docs/paper-summaries.md`](docs/paper-summaries.md)) | reload; no build step |
 | **prose or markup** | `src/views/<view>.html` | `python3 build.py` |
 | **styling** | `src/styles/<area>.css` | `python3 build.py` |
 | **app behaviour** | `src/js/<area>.js` | `python3 build.py` |
@@ -30,8 +34,8 @@ python3 build.py --check              # verify without writing; exit 1 on drift
 `data/*.js` load at runtime, so a data change needs only a reload, not a
 rebuild. **Do not hand-edit the `RESEARCH_DATA` array** in `data/tracker-data.js`,
 or `content/research.csv`: the daily sync writes both from the Google Sheet (see
-"One writer per file" below and [`content/README.md`](content/README.md)). `POLICY_DATA`, `AGENDA_DATA`
-and `CATEGORIES` in that file are hand-maintained, and so are `data/fact-bank-data.js`,
+"One writer per file" below and [`content/README.md`](content/README.md)). `POLICY_DATA` and `CATEGORIES`
+in that file are hand-maintained, and so are `data/fact-bank-data.js`,
 `data/fact-bank-context.js`, `data/paper-summaries.js` and `data/legislation-data.js` (`data/us-map.js` and `data/legislation-bills.js`, by contrast, are generated, by `tools/us_map.py` and `tools/legislation.py`).
 
 ## One writer per file
@@ -78,11 +82,12 @@ not.
 src/head.html                meta, JSON-LD, analytics
 src/styles/tokens.css        @font-face, :root, type scale, masthead, chevron
 src/styles/shell.css         header band, tab groups
-src/styles/cards.css         app layout, the Papers list, card grid, themes
+src/styles/cards.css         app layout, the Papers list, card grid
 src/styles/filterbar.css     the search-and-filters bar (Papers and Fact Bank)
 src/styles/pager.css         the pager under the Papers and Fact Bank lists and the Legislation bills table
 src/styles/modals.css        sources modal, policy pop-out
 src/styles/policy.css        policy map, columns, and the per-view show/hide rules
+src/styles/legislation.css   the Government action tab: toolbar, map, tables, cards
 src/styles/focus.css         :focus-visible, global
 src/views/00-data-scripts    the data/*.js <script> tags
 src/views/10-header          site header nav
@@ -90,7 +95,7 @@ src/views/20-shell           <main>, tab description, #viewPanel
 src/views/30-fact-bank       ... 50-about, 60-legislation, 80-papers, 90-modals
 src/js/00-state              data wiring, helpers, state
 src/js/05-lazy               lazy payload loader (Fact Bank)
-src/js/10-policy-map         ... 20-cite-export, 40-router, 60-legislation, 70-render,
+src/js/10-policy-map         ... 20-cite-export, 40-router, 55-enforcement, 60-legislation, 70-render,
                                  80-fact-bank
 ```
 
@@ -113,7 +118,7 @@ network.
 `tests/routes.js` is a snapshot: for each route it pins the body classes, which
 nav button is current, the announce text, and the address bar. A refactor that
 changes none of that is provably safe. Adding or removing a view legitimately
-moves the snapshot — read the diff, then re-record with `--write`; do not
+moves the snapshot: read the diff, then re-record with `--write`; do not
 re-record to clear a red run.
 
 `tests/interactions.js` covers what a snapshot cannot: that buttons respond. The
