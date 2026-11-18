@@ -35,9 +35,15 @@ when you did not mean it, restore it before anyone commits (the CSV whole; in
 `data/tracker-data.js` only the `RESEARCH_DATA` array, because the rest of that file
 is hand-edited). If a merge conflicts in them, take `main`'s copy of the research
 list and keep the branch's other edits. Policy-card wording has one writer too, the
-policy author (the verbatim rule below). See [`content/README.md`](content/README.md)
-and "One writer per file" in [`CONTRIBUTING.md`](CONTRIBUTING.md). The rest of `tracker-data.js`
-(`POLICY_DATA`, `AGENDA_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
+policy author (the verbatim rule below). **The key cases and the enforcement actions work the same way:** the Sheet's `cases` and
+`enforcement` tabs are the master, and the same daily sync (the second step of `research-sync.yml`, through `tools/actions.py`) is the only
+writer of `content/cases.csv`, `content/enforcement.csv` and `data/legislation-actions.js`, so a branch never commits those three, a row
+reaches the site only when its `status` is `approved`, and `python3 tools/actions.py check` (safe anywhere) fails on a hand edit. **A policy card that has a Google Doc has one writer too, the Doc:**
+`tools/policy_docs.py` carries its text into `data/policy-text.js`, which is generated and never hand-edited (`check` is safe
+anywhere; `build` only in a scratch copy or the sync Action; [`docs/policy-doc-sync.md`](docs/policy-doc-sync.md)). Which cards the `policy map`
+tab has archived is `data/policy-map.js`, generated the same way by `tools/policy_map.py`. See
+[`content/README.md`](content/README.md) and "One writer per file" in [`CONTRIBUTING.md`](CONTRIBUTING.md). The rest of `tracker-data.js`
+(`POLICY_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
 (with `data/fact-bank-context.js`) are still hand-maintained. Two more data files are generated and never hand-edited: `data/us-map.js` by
 `tools/us_map.py`, and the Legislation tab's bills, `data/legislation-bills.js`, by `tools/legislation.py`: the federal bills from our own scan of GovInfo's
 bill-status data (`tools/congress_fetch.py`, no key), and the state bills from an Open States search of the legislatures' own records
@@ -63,8 +69,13 @@ needs only a reload, not a rebuild.
   citations, links, or emphasis) the author did not write; never change a
   number. The only changes allowed are mechanical encoding that leaves the
   displayed text identical: escaping for the JS string (`"`, `\`) and for any
-  literal `<`/`&`, and writing the author's paragraph breaks as `<br><br>`.
-  After inserting, reconstruct the text and confirm it matches the source
+  literal `<`/`&`, and writing the author's paragraph breaks as `<br><br>`. Text
+  that comes from a Google Doc through `tools/policy_docs.py` has three more: the
+  author's bullet lists as `<ul><li>` and bold as `<strong>`; the author's hyperlinks
+  as real links (`<a href="..." target="_blank" rel="noopener noreferrer">`, never
+  converted to `{{cite}}` markers); and curly quotes and dashes kept as the characters
+  they are where older cards store them as named entities (`&ldquo;`), so the check
+  compares decoded text (`>` is escaped as `&gt;` too). After inserting, reconstruct the text and confirm it matches the source
   character-for-character; report any difference instead of resolving it. If
   which field a block belongs to is unclear, ask. Full workflow: the Policy
   Card Rules, [`docs/policy-card-rules.md`](docs/policy-card-rules.md).
