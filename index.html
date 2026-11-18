@@ -583,34 +583,6 @@
     .src-row, .src-facts { transition: none; }
   }
 
-  /* ── CROSS-VIEW LINKS ───────────────────────────────────────── */
-
-  .pol-basis { margin-top: 10px; }
-  .pol-basis-label {
-    font-family: var(--sans);
-    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
-    color: var(--text); margin-bottom: 8px;
-  }
-
-  .pol-basis-refs { display: flex; flex-direction: column; gap: 8px; }
-  .pol-basis-ref {
-    display: block; font-size: 12px; line-height: 1.55; color: var(--muted);
-    text-decoration: none; word-break: break-word;
-    padding-left: 14px; text-indent: -14px;
-  }
-  .pol-basis-ref em { font-style: italic; }
-  .pol-basis-ref:hover { color: var(--accent); }
-  .pol-basis-related { margin-top: 8px; }
-  .pol-basis-toggle {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 12px; padding: 4px 0;
-    border: none; background: none; cursor: pointer;
-    color: var(--accent); font-size: 12px; font-weight: 600;
-    font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-  }
-  .pol-basis-chevron { /* see .ui-chevron */ }
-  .pol-basis-toggle[aria-expanded="true"] .pol-basis-chevron { transform: rotate(180deg); }
-
   /* ── VIEW TOGGLE ────────────────────────────────────────── */
 
   
@@ -681,12 +653,7 @@
     }
     body.pol-modal-open .pol-modal-body { overflow: visible !important; max-height: none !important; }
     body.pol-modal-open .pol-modal-close,
-    body.pol-modal-open .pol-modal-actions,
-    body.pol-modal-open .pol-basis-toggle { display: none !important; }
-    body.pol-modal-open .pol-basis-related { display: flex !important; }
-    body.pol-modal-open .pol-press-list a::after {
-      content: " (" attr(href) ")"; font-size: 9px; color: #555; word-break: break-all;
-    }
+    body.pol-modal-open .pol-modal-actions { display: none !important; }
     body.pol-modal-open .syn-cite, body.pol-modal-open .pol-xref { color: inherit; border-bottom: none; }
   }
 
@@ -1035,7 +1002,7 @@
     margin: 0; padding: 0 0 0 18px;
     display: flex; flex-direction: column; gap: 7px;
     font-family: 'Public Sans', sans-serif;
-    font-size: 13.5px; line-height: 1.55; color: var(--text);
+    font-size: 14px; line-height: 1.55; color: var(--text);   /* body text is 14px, as .pol-modal-text is */
   }
   .pol-modal-list li { padding-left: 2px; }
   .pol-modal-list li::marker { color: var(--accent); }
@@ -1047,16 +1014,6 @@
   @media (max-width: 720px) {
     .pol-modal-twocol { grid-template-columns: 1fr; gap: 18px; }
   }
-  .pol-press-list {
-    list-style: none; padding: 0; margin: 0;
-    display: flex; flex-direction: column; gap: 6px;
-    font-family: 'Public Sans', sans-serif; font-size: 13.5px; line-height: 1.5;
-  }
-  .pol-press-list a {
-    color: var(--accent); text-decoration: none;
-    border-bottom: 1px dotted color-mix(in srgb, var(--accent) 45%, transparent);
-  }
-  .pol-press-list a:hover { border-bottom-style: solid; }
   .pol-modal-lastreviewed {
     margin-top: 4px; padding: 12px 0;
     border-top: 1px solid var(--border);
@@ -1078,32 +1035,17 @@
     font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
     color: var(--text); line-height: 1.25; flex: 1; margin-right: 12px;
   }
+  /* Under the title: the policy area the Map files the card under, led by that row's colour as a dot (the size of the Links
+     legend's dot). It is a small label, so it takes the chips' text style (Haas 11px/500) rather than a Public Sans size of its own. */
   .pol-modal-meta {
     display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted);
   }
-  .pol-modal-level {
-    font-size: 11px; font-weight: 500; color: var(--muted);
-    background: none; border: none; padding: 0; border-radius: 0; letter-spacing: 0;
-    font-family: 'Public Sans', sans-serif;
-  }
-  .pol-modal-meta-sep {
-    display: inline-block; width: 1px; height: 12px;
-    background: var(--border); margin: 0 6px; vertical-align: middle;
-    opacity: 0.8;
-  }
-  .pol-modal-cat {
-    font-size: 11px; font-weight: 500; color: var(--muted);
-    font-family: 'Public Sans', sans-serif;
-  }
-  .pol-modal-phase-desc {
-    font-size: 13px; color: var(--muted); line-height: 1.55;
-    margin-top: 8px; font-family: 'Public Sans', sans-serif;
-    flex-basis: 100%;
-  }
-  .pol-modal-phase-desc:empty { display: none; }
+  .pol-modal-meta:empty { display: none; }
+  .pol-modal-area-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--cat-color, var(--muted)); }
   .pol-modal-close {
     background: none; border: none; cursor: pointer;
-    color: var(--muted); font-size: 18px; line-height: 1; padding: 4px;
+    color: var(--muted); font-size: 19px; line-height: 1; padding: 4px;   /* the size .modal-close has on the other modals */
     border-radius: var(--r-ctl); transition: color 0.15s; flex-shrink: 0;
   }
   .pol-modal-close:hover { color: var(--text); }
@@ -1116,36 +1058,14 @@
     padding-bottom: 16px; border-bottom: 1px solid var(--border);
   }
   .pol-modal-section:last-child { padding-bottom: 0; border-bottom: none; }
+  /* A section heading in the dialog: the card-title style (15.5px bold) the policy tiles and the Papers cards use. */
   .pol-modal-label {
     font-family: var(--sans);
-    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: 15.5px; font-weight: 700;
     color: var(--text);
   }
   .pol-modal-text { font-size: 14px; color: var(--text); line-height: 1.7; }
   .pol-modal-text.muted { color: var(--muted); }
-
-  /* How it interacts — pairs (green) / competes (amber), echoing the map legend */
-  :root { --rel-pair: var(--green-deep); --rel-compete: var(--gold-deep); }
-  .pol-rel-group { margin-top: 12px; }
-  .pol-rel-group:first-of-type { margin-top: 2px; }
-  .pol-rel-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 26px; }
-  .pol-rel-cols .pol-rel-group { margin-top: 0; }
-  @media (max-width: 720px) { .pol-rel-cols { grid-template-columns: 1fr; gap: 12px; } }
-  .pol-rel-head {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'Public Sans', sans-serif; font-size: 11px; font-weight: 700;
-    letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px;
-  }
-  .pol-rel-head .pol-rel-glyph { width: 20px; border-top: 2.5px solid currentColor; }
-  .pol-rel-head.pairs { color: var(--rel-pair); }
-  .pol-rel-head.competes { color: var(--rel-compete); }
-  .pol-rel-head.competes .pol-rel-glyph { border-top-style: dashed; }
-  .pol-rel-item { padding: 3px 0 3px 12px; border-left: 2px solid var(--border); margin-bottom: 9px; }
-  .g-pairs .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-pair) 55%, var(--border)); }
-  .g-competes .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-compete) 55%, var(--border)); }
-  .pol-rel-item .pol-xref { font-size: 13.5px; font-weight: 600; }
-  .pol-rel-why { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
-
   /* ── POLICY VIEW ─────────────────────────────────────── */
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
@@ -1246,6 +1166,9 @@
     font-family: var(--sans);
   }
   .about-note strong { color: var(--text); font-weight: 600; }   /* semibold, as the other tabs' 13px labels */
+  /* The same note in the gold of a caution, as the Fact Bank's pilot-release notice wears it (the gold rule and tint of a fact's "Take note").
+     Its text keeps the body colour: the muted grey of the plain note measures 4.0:1 on the gold, under the 4.5:1 that 13px text needs. */
+  .about-note.warn { border-left-color: var(--gold); background: rgba(235,195,130,0.16); color: var(--text); }
   /* Each part ends by pointing at its tabs. The pill is the Fact Bank's (.act-btn in this file), value for value. */
   .about-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
   .about-link {
@@ -1294,8 +1217,8 @@
   /* text-wrap: pretty keeps a one-word last line (a stranded "is.") off the paragraph. */
   #factBankArea .intro-text { font-size: 15px; line-height: 1.7; max-width: var(--lede-measure); text-wrap: pretty; }
   /* Last element in the masthead, so it carries the closing hairline, at the shared measure. The note
-     inside is the same caution callout as a fact's "Take note" (.fact-caveat.warn: gold rule, tinted
-     ground, small uppercase label, regular type), so the pilot caveat reads as part of this page. */
+     inside is the About page's "How this section is built" note (.about-note) in the gold of a fact's "Take note"
+     (.about-note.warn), so the pilot caveat is laid out like the other notes about how the site is made. */
   #factBankArea .intro-note { max-width: var(--lede-measure); padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 
   /* ── COLLAPSE MACHINERY ── */
@@ -1572,44 +1495,6 @@
     .tab-group-label { font-size: 9px; letter-spacing: 0.06em; }
   }
 
-  /* Disruption chips */
-
-  .pol-empty-msg {
-    display: none; padding: 36px 40px;
-    font-size: 13px; color: var(--muted); font-style: italic;
-  }
-
-  /* ── Policy Matrix ───────────────────────────────────────── */
-  /* ── Policy Overview (Column Grid) ─────────────────────────── */
-  .pol-columns { display: none; }
-  .pol-col {
-    border: 1px solid var(--border);
-    border-radius: var(--r-card); overflow: hidden;
-    border-top: 2px solid color-mix(in srgb, var(--pol-cat-color, var(--border)) 45%, var(--border));
-    background: var(--surface);
-  }
-  .pol-col-header {
-    padding: 12px 14px 10px;
-    background: transparent;
-    border-bottom: 1px solid var(--border);
-  }
-  .pol-col-title {
-    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
-    color: color-mix(in srgb, var(--pol-cat-color, var(--text)) 45%, var(--text));
-    font-family: var(--sans);
-    line-height: 1.3; margin-bottom: 4px;
-  }
-  .pol-col-desc {
-    font-size: 10.5px; color: var(--muted); line-height: 1.45;
-    font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-  }
-  .pol-col-count {
-    display: inline-block; font-size: 10px; color: var(--muted);
-    margin-top: 4px; font-variant-numeric: tabular-nums;
-  }
-  .pol-col-distbar { display: none; }
-  .pol-col-distbar-seg { display: none; }
-
   /* ── Policy category rows ─────────────────────────────────── */
   /* Four merged categories stacked as rows in curated order — the four
      pathways of Becky Chao's April 2026 brief, in her order (Economic
@@ -1635,7 +1520,8 @@
     background: color-mix(in srgb, var(--cat-color, transparent) 6%, transparent);
   }
   /* Type sizes on this tab are the site's, not its own: the area title is About's section-heading size (20px bold), the
-     count the header's group-label spec, the tile title the Papers card-header spec, the toggle one weight in both states. */
+     count the header's group-label spec, the tile title the body size in bold (14px, a step under the Papers card title, because three
+     tiles share a row and 15.5px read as slightly too large here), the toggle one weight in both states. */
   .pol-cat-row-title {
     display: flex; align-items: baseline; gap: 9px;
     font-family: var(--sans);
@@ -1683,7 +1569,7 @@
   .pol-cat-card-title {
     flex: 1;
     font-family: 'Public Sans', sans-serif;
-    font-size: 15.5px; font-weight: 700; line-height: 1.3;
+    font-size: 14px; font-weight: 700; line-height: 1.3;
     color: var(--headline);
   }
   /* Persistent, faint affordance: darkens toward the category color and
@@ -1703,50 +1589,6 @@
     .pol-cat-card-arrow { transition: opacity 0.15s, color 0.15s; }
     .pol-cat-card:hover .pol-cat-card-arrow { transform: rotate(-90deg); }
   }
-  /* View mode toggle */
-
-  .pol-item-list {
-    display: flex; flex-direction: column; gap: 8px; padding: 10px;
-  }
-  .pol-item-wrap {
-    border: 1px solid color-mix(in srgb, var(--level-color, var(--border)) 18%, var(--border));
-    border-radius: var(--r-card); overflow: hidden; position: relative;
-    background: color-mix(in srgb, var(--level-color, #ffffff) 6%, #ffffff);
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  }
-  .pol-item-wrap::before {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(135deg, var(--level-color, transparent) 0%, transparent 45%);
-    opacity: 0.06; pointer-events: none; z-index: 0;
-  }
-  .pol-item-wrap::after {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, color-mix(in srgb, var(--level-color, transparent) 60%, transparent) 0%, transparent 65%);
-    border-radius: var(--r-card) var(--r-card) 0 0;
-  }
-  .pol-item-wrap:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(44,50,84,0.1);
-    border-color: color-mix(in srgb, var(--level-color, var(--border)) 35%, var(--border));
-  }
-  .pol-item {
-    display: flex; flex-direction: row; align-items: flex-start; gap: 8px;
-    padding: 10px 12px 11px; cursor: pointer;
-    position: relative; z-index: 1;
-  }
-  .pol-item-badge {
-    display: inline-block; flex-shrink: 0; margin-top: 1px;
-    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
-    color: color-mix(in srgb, var(--level-color, var(--muted)) 65%, var(--muted));
-    background: color-mix(in srgb, var(--level-color, var(--muted)) 7%, transparent);
-    border: 1px solid color-mix(in srgb, var(--level-color, var(--muted)) 18%, var(--border));
-    border-radius: var(--r-tag); padding: 2px 7px;
-    white-space: nowrap;
-  }
-  .pol-item-title {
-    font-size: 11.5px; font-weight: 500; color: var(--text); line-height: 1.35; flex: 1;
-  }
-  .pol-item-wrap:hover .pol-item-title { color: var(--accent); }
 
   /* ── Policy Map / Links sub-view toggle ──────────────────────
      Deliberately its own class. It once shared `.lens-toggle` (the
@@ -1776,7 +1618,7 @@
   .pol-links-svg { display: block; width: 100%; height: auto; min-height: 560px; }
   .pol-links-band-label {
     font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;   /* the .lbl-grot label style */
     fill: var(--muted); opacity: 0.75;
   }
   .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
@@ -1791,19 +1633,21 @@
      long policy titles can wrap onto multiple lines instead of running off
      as one long unbroken string. */
   .pol-links-node-label-fo { overflow: visible; pointer-events: none; }
+  /* 13px is the notes size on the other tabs. It is in the graph's own units, so at the page's width the graph is drawn a little smaller (about 12px);
+     LABEL_FS in renderPolicyLinksGraph is this number, which the layout uses to keep the labels apart. */
   .pol-links-node-label {
     font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
-    font-size: 9.5px; line-height: 1.28; color: var(--text);
+    font-size: 13px; line-height: 1.28; color: var(--text);
     white-space: normal; overflow-wrap: break-word;
     transition: opacity 0.15s, font-weight 0.15s, color 0.15s;
   }
   .pol-links-node.dimmed .pol-links-node-label { opacity: 0.3; }
-  .pol-links-node.lit .pol-links-node-label { font-weight: 700; color: var(--headline); }
+  .pol-links-node.lit .pol-links-node-label { font-weight: 600; color: var(--headline); }
   .pol-links-node-hit { fill: transparent; cursor: pointer; }
   .pol-links-legend {
-    display: flex; flex-wrap: wrap; gap: 14px;
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
     padding: 12px 16px; border-top: 1px solid var(--border);
-    font-family: 'Public Sans', sans-serif; font-size: 11px; color: var(--muted);
+    font-family: var(--sans); font-size: 13px; line-height: 1.4; color: var(--text);   /* the Legislation map legend's style */
   }
   .pol-links-legend-item { display: flex; align-items: center; gap: 6px; }
   .pol-links-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -1811,8 +1655,6 @@
   @media (max-width: 700px) {
     .pol-subview-toggle { margin: 16px 16px 0; }
     .pol-links-wrap { padding: 16px 16px 40px; }
-
-    .pol-columns { padding-left: 16px; padding-right: 16px; grid-template-columns: 1fr; }
 
     /* Policy Map: tighten row padding; auto-fill collapses cards to 1-up */
     .pol-cat-rows { padding: 18px 16px 40px; gap: 18px; }
@@ -1953,17 +1795,11 @@
   .leg-office-body > * + * { margin-top: 4px; }
   .leg-office-body > .leg-muted { color: var(--muted); }
   .leg-office-toggle[hidden] { display: none; }
-  .leg-chip {
-    display: inline-flex; align-items: center; white-space: nowrap;
-    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6;
-    border-radius: var(--r-tag); padding: 2.5px 9px;
-    background: var(--beige); border: 1px solid var(--divider); color: var(--text);
-  }
-  .leg-chip--d-gain   { background: var(--leg-gain); border-color: var(--leg-gain); color: var(--light-beige); }
-  .leg-chip--d-hold   { background: var(--leg-hold); border-color: color-mix(in srgb, var(--navy) 40%, var(--divider)); color: var(--headline); }
-  .leg-chip--r-hold   { background: var(--leg-rhold); border-color: color-mix(in srgb, var(--pink) 60%, var(--divider)); color: var(--headline); }
-  .leg-chip--r-gain   { background: var(--leg-rgain); border-color: var(--leg-rgain); color: var(--headline); }
-  .leg-chip--uncalled { background: color-mix(in srgb, var(--gold) 30%, var(--light-beige)); border-color: var(--gold); color: var(--headline); }
+  /* A race's result: a square in the party's colour (the map's fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a race
+     not yet called are the news, so those are bold. They were coloured pills, one in every cell. */
+  .leg-result { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .leg-result--news { font-weight: 600; color: var(--headline); }
+  .leg-swatch--sm { width: 10px; height: 10px; border-radius: 2px; }
 
   .leg-section { margin-top: 38px; }
   /* The 2026 Midterm results layer shows only the results: the bills' filter bar and table are hidden by the script (legPaint). */
@@ -1975,8 +1811,8 @@
     display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
     font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--headline);
   }
-  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now the size and weight of a column title in the Policy
-     tab (15px bold, .pol-col-title), in navy and in the same family as the title, so it reads as part of it. */
+  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now 15px bold, in navy and in the same family
+     as the title, so it reads as part of it. */
   .leg-scope { font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--navy); font-variant-numeric: tabular-nums; }
   /* The Bills section's title has no words of its own: it is the jurisdiction and the count ("New York · 8 bills"), at the size, weight and colour of a section title
      (the owner's request, 2026-11-12), so the span takes everything from the heading around it. */
@@ -2027,9 +1863,9 @@
      House, Governor", 214px with its padding) whole at a normal desktop width, 19% (229px at a 1280px window); in a narrower window it
      wraps rather than take room from the three results columns, which carry the notes. The minimums are the widest thing that cannot
      wrap, so the columns also agree in a narrow window: the longest state name (New Hampshire, 131px with its padding) and the widest
-     result chip (127px). */
+     result (a square and "Democratic gain" in bold, 160px with its padding). */
   .leg-table--results th:nth-child(1) { width: 12%; min-width: 134px; }
-  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 130px; }
+  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 160px; }
   .leg-table--results th:nth-child(3) { width: 29%; }
   .leg-table--results th:nth-child(5) { width: 19%; }
   .leg-status-note { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
@@ -2139,7 +1975,6 @@
       </div>
     </nav>
     <div style="display:none;">
-      <button id="aboutInfoBtn" aria-label="About this site"></button>
       <button id="sourcesInfoBtn" aria-label="View sources"></button>
     </div>
   </div>
@@ -2166,7 +2001,7 @@
           <h2 class="intro-title">Which numbers can you cite?</h2>
           <p class="intro-text">Each fact is a short statement quoted <strong>verbatim</strong> from a source in the research database, rated on two independent scales: how <strong>politically noteworthy</strong> it is for progressive advocacy, and how <strong>truthful</strong> its evidence is.</p>
           <div class="intro-note">
-            <p class="fact-caveat warn"><span class="lbl-grot">Pilot release</span>Ratings are editorial judgments against a written rubric, so use the take-note wording and open a card to check the source before you publish a number.</p>
+            <p class="about-note warn"><strong>Pilot release.</strong> Ratings are editorial judgments against a written rubric, so use the take-note wording and open a card to check the source before you publish a number.</p>
           </div>
         </div>
 
@@ -2458,57 +2293,16 @@
 </footer>
 
 
-<!-- About Modal -->
-<div class="modal-backdrop" id="aboutModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
-    <div class="modal-header">
-      <h2 class="modal-title" id="aboutModalTitle">About</h2>
-      <button class="modal-close" id="aboutModalClose" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body" id="aboutModalBody">
-      <div class="modal-group">
-        <div class="modal-group-name">Purpose</div>
-        <p class="modal-sources-intro">This tracker is a curated research intelligence tool at the intersection of artificial intelligence, automation, and labor markets. It aggregates peer-reviewed studies, policy reports, and investigative journalism into a structured database — and synthesizes that research into strategic themes and policy frameworks — to support institutional positioning, workforce strategy, and policy analysis.</p>
-      </div>
-      <div class="modal-group">
-        <div class="modal-group-name">Created by</div>
-        <p class="modal-sources-intro">Christelle Prophete. This site is independently maintained and updated as new research emerges. The content does not reflect the opinions or perspectives of the creator.</p>
-      </div>
-      <div class="modal-group">
-        <div class="modal-group-name">Papers tab</div>
-        <p class="modal-sources-intro">A filterable list of individual research entries, tagged by category and geographic scope. Entries can be filtered by category and geography, or searched by title, source, or finding.</p>
-      </div>
-      <div class="modal-group">
-        <div class="modal-group-name">Themes (archived)</div>
-        <p class="modal-sources-intro">Cross-cutting syntheses of the research database. Each theme frames a key strategic question, presents an evidence consensus, identifies implications for institutional actors, and notes gaps in the current evidence base. This view has been retired from the main site and is preserved at <a href="prototypes/themes.html">prototypes/themes.html</a>.</p>
-      </div>
-      <div class="modal-group">
-        <div class="modal-group-name">Policy Map tab</div>
-        <p class="modal-sources-intro">Twenty-seven policy interventions organized by category and mapped to five stages of AI-driven labor disruption — from <em>Repair</em> (fixes needed regardless of AI's trajectory) through <em>Transform</em> (responses to large-scale displacement of the workforce). Each policy card includes a plain-language description, an account of the implementation challenge, and links to supporting research in the database. Does not constitute policy advice.</p>
-      </div>
-      <div class="modal-group">
-        <div class="modal-group-name">AI Disclaimer</div>
-        <p class="modal-sources-intro">Summaries, key findings, and takeaways are AI-generated and reviewed for accuracy on an ongoing basis. They are intended as orientation aids — not substitutes for reading the original source. Always consult the primary publication before citing or acting on any finding.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Policy pop-out modal -->
 <div class="modal-backdrop" id="polModal" role="dialog" aria-modal="true" aria-labelledby="polModalTitle">
   <div class="pol-modal">
     <div class="pol-modal-header">
       <div>
         <h2 class="pol-modal-title" id="polModalTitle"></h2>
-        <div class="pol-modal-meta">
-          <span class="pol-modal-level" id="polModalLevel"></span>
-          <span class="pol-modal-meta-sep"></span>
-          <span class="pol-modal-cat" id="polModalCat"></span>
-        </div>
+        <div class="pol-modal-meta" id="polModalArea"></div>
       </div>
       <div class="pol-modal-actions" id="polModalActions"></div>
       <button class="pol-modal-close" id="polModalClose" aria-label="Close">✕</button>
-      <div class="pol-modal-phase-desc" id="polModalPhaseDesc"></div>
     </div>
     <div class="pol-modal-body" id="polModalBody"></div>
   </div>
@@ -2869,48 +2663,6 @@
   let polLevelFilter = 'all';
   let polViewMode    = 'grid';
 
-  // R3: curated evidence first. A policy's hand-picked `paperIds` (order preserved)
-  // are the visible research basis; the category-derived list is demoted to a
-  // deduplicated "related" set behind the toggle. Policies without paperIds keep
-  // the old behavior (top few category matches visible, rest behind the toggle).
-  function getResearchBasis(pol) {
-    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
-    const curated = (pol.paperIds || []).map(id => paperMap[id]).filter(Boolean);
-    const curatedIds = new Set(curated.map(r => r.id));
-    // A paper can be a curated POLICY_SOURCES entry (copied out of the tracker, so that a Sheet archive cannot strip a
-    // card's citation) and still be a live tracker entry, until the sync archives it. Match on its link as well as its
-    // id, or it is listed a second time under "related".
-    const curatedUrls = new Set(curated.map(r => r.sourceUrl).filter(Boolean));
-    const cats = POL_TO_RESEARCH_CATS[pol.category] || [];
-    const related = cats.length
-      ? RESEARCH_DATA
-          .filter(r => cats.includes(r.category) && !curatedIds.has(r.id) && !curatedUrls.has(r.sourceUrl))
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 16)
-      : [];
-    return { curated, related };
-  }
-
-  // Build the policy "Research basis" reference list.
-  function buildPolicyBasis(basis) {
-    const curated = (basis && basis.curated) || [];
-    const related = (basis && basis.related) || [];
-    if (!curated.length && !related.length) return '';
-    const renderRef = r => {
-      const href = r.sourceUrl ? ` href="${r.sourceUrl}" target="_blank" rel="noopener"` : '';
-      return `<a class="pol-basis-ref"${href} onclick="event.stopPropagation()">${formatAPACitation(r)}</a>`;
-    };
-    const SHOWN = 4;
-    const shown = curated.length ? curated : related.slice(0, SHOWN);
-    const rest  = curated.length ? related : related.slice(SHOWN);
-    const restLabel = curated.length ? 'related' : 'more related';
-    return `<div class="pol-basis"><div class="pol-basis-label">Research basis</div>`
-      + `<div class="pol-basis-refs">${shown.map(renderRef).join('')}</div>`
-      + (rest.length ? `<button class="pol-basis-toggle" type="button" aria-expanded="false"><span class="ui-chevron pol-basis-chevron" aria-hidden="true"></span><span class="pol-basis-toggle-text">Show ${rest.length} ${restLabel} ${rest.length === 1 ? 'study' : 'studies'}</span></button>`
-        + `<div class="pol-basis-refs pol-basis-related" style="display:none">${rest.map(renderRef).join('')}</div>` : '')
-      + `</div>`;
-  }
-
   // APA-style citation: Author. (Year). Title. Organization.
   // The `source` field stores "Author — Organization"; a bare organization stands alone.
   function formatAPACitation(p) {
@@ -2966,10 +2718,7 @@
   function openPolModalById(id) {
     const p = POLICY_DATA.find(x => x.id === id);
     if (!p) return;
-    const lvl = DISRUPTION_LEVELS.find(l => l.id === p.level) || {};
-    const catLabel = POLICY_CATEGORIES[p.category] || '';
-    const basisHTML = buildPolicyBasis(getResearchBasis(p));
-    openPolModal(p, lvl, catLabel, basisHTML);
+    openPolModal(p);
   }
 
   /* ── R1/R2: export, citation & deep-link helpers ─────────────── */
@@ -3028,17 +2777,29 @@
     return p.sourceUrl ? `${apa} ${p.sourceUrl}` : apa;
   }
 
-  // R1: assemble a policy card as a Markdown primer draft, with citations
-  // resolved to (Author, Year) text and a References section of cited papers.
-  function policyToMarkdown(p, lvl, catLabel) {
+  // The policy area a card sits under on the Map: its category's merged row, one of the four MERGED_POLICY_CATEGORIES
+  // (Economic Security, Labor & Worker Rights, AI Governance, Mitigating Harms). The dialog header and "Copy as draft"
+  // both name it and both ask here, so neither can disagree with the Map. Null when the category maps to no row
+  // (validateData reports that).
+  function policyAreaOf(p) {
+    const id = CATEGORY_MERGE_MAP[p.category];
+    return (id && MERGED_POLICY_CATEGORIES[id]) ? { id, label: MERGED_POLICY_CATEGORIES[id] } : null;
+  }
+
+  // R1: assemble a policy card as a Markdown primer draft, with inline citations
+  // resolved to (Year) or (Author, Year) text. There is no References list (removed
+  // 2026-11-17): a card's sources are the links and citations in its own text.
+  function policyToMarkdown(p) {
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     const plain = s => tokensToPlain(s, paperMap);
     const fmtD = s => { if (!s) return ''; const d = new Date(s + 'T00:00:00'); return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
     const md = [];
+    const area = policyAreaOf(p);
     md.push(`# ${p.title}`);
     md.push('');
-    md.push(`**Phase:** ${lvl.label || p.level}${catLabel ? ` · **Domain:** ${catLabel}` : ''}`);
-    md.push('');
+    // The Map's area, not the phase and fine category the draft used to open with (dropped 2026-11-17, with the same two
+    // labels under the dialog's title).
+    if (area) md.push(`**Area:** ${area.label}`, '');
     md.push(`*Draft prepared from AI Tracker: Research and Policy (${appURL('policy/' + p.id)})${p.lastReviewed ? `. Last reviewed ${fmtD(p.lastReviewed)}` : ''}.*`);
     const section = (label, body) => { if (body) { md.push('', `## ${label}`, '', plain(body)); } };
     const listSection = (label, arr) => {
@@ -3047,49 +2808,19 @@
         arr.forEach(item => md.push(`- ${plain(item)}`));
       }
     };
-    const polTitleMD = id => { const t = POLICY_DATA.find(x => x.id === id); return t ? t.title : id; };
-    const relListSection = (label, arr) => {
-      if (Array.isArray(arr) && arr.length) {
-        md.push('', `## ${label}`, '');
-        arr.forEach(r => md.push(`- ${polTitleMD(r.id)}: ${plain(r.why)}`));
-      }
-    };
     section('What it is', p.summary);
     section('The challenge', p.rationale);
     listSection('Strengths', p.strengths);
     listSection('Risks', p.risks);
-    relListSection('Pairs with', p.pairsWith);
-    relListSection('Competes with', p.competesWith);
     section('Precedents & landscape', p.landscape);
-    if (Array.isArray(p.press) && p.press.length) {
-      md.push('', '## Press & resources', '');
-      p.press.forEach(it => md.push(`- ${it.label}: ${it.url}`));
-    }
-    const fieldText = [p.summary, p.rationale, p.feasibility, p.landscape,
-      ...(p.strengths || []), ...(p.risks || [])].join(' ');
-    // paperIds are numbers (or slugs) and {{cite}} tokens are always strings, so read them all as strings, or a paper that is
-    // both is listed twice; then list a paper once even when it has two ids (a slug and its tracker number), by its link.
-    const citedIds = [...new Set([
-      ...(p.paperIds || []).map(String),
-      ...[...fieldText.matchAll(/\{\{citep?:([\w-]+)\}\}/g)].map(m => m[1]),
-    ])];
-    const seenLinks = new Set();
-    const cited = citedIds.map(id => paperMap[id]).filter(Boolean)
-      .filter(r => { const k = r.sourceUrl || r.id; if (seenLinks.has(k)) return false; seenLinks.add(k); return true; })
-      .sort((a, b) => (a.source || '').localeCompare(b.source || ''));
-    if (cited.length) {
-      md.push('', '## References', '');
-      cited.forEach(r => md.push(`- ${formatAPAPlain(r)}`));
-    }
     md.push('');
     return md.join('\n');
   }
 
-  // Hoisted out of buildPolicyView() so renderPolicyLinksGraph() (the Links
-  // sub-view) can share the exact same category→color mapping as the Map
-  // sub-view — a policy should be the same color in both views.
-  // Policy category identity colors. Every value is an ESP token or a
-  // documented light/dark sibling of one (see :root) — no invented hues.
+  // Policy category identity colors, used by the Links graph (its node dots and
+  // its legend). The Map's rows use the four area colors, CAT_COLOR_VARS below.
+  // Every value is an ESP token or a documented light/dark sibling of one
+  // (see :root) — no invented hues.
   const POL_CAT_COLORS = {
     'safety-net':    '#2C3254',  // Warm Navy
     'labor-rights':  '#70AD8F',  // Soft Green
@@ -3139,89 +2870,6 @@
         <button class="pol-subview-btn active" id="polSubviewMap" type="button">Map</button>
         <button class="pol-subview-btn" id="polSubviewLinks" type="button">Links</button>`;
       area.appendChild(subToggle);
-
-      const levelMap = Object.fromEntries(DISRUPTION_LEVELS.map(l => [l.id, l]));
-
-      // Empty state msg
-      const emptyMsg = document.createElement('div');
-      emptyMsg.className = 'pol-empty-msg';
-      emptyMsg.id = 'polEmptyMsg';
-      emptyMsg.textContent = 'No policies match the current filters.';
-      area.appendChild(emptyMsg);
-
-      // Short descriptions per policy category
-      const POL_CAT_DESCS = {
-        'safety-net':    'Income floors and social insurance programs',
-        'labor-rights':  'Worker protections and employment standards',
-        'tax-wealth':    'Redistribution through progressive taxation',
-        'healthcare':    'Health coverage decoupled from employment',
-        'work-structure':'Flexible work arrangements and job design',
-        'education':     'Skills training and lifelong learning systems',
-        'antitrust':     'Market competition and platform regulation',
-        'housing':       'Affordable housing and place-based support',
-        'jobs':          'Direct job creation and sectoral investment',
-        'international': 'Cross-border coordination and trade policy',
-        'civil-rights':  'Discrimination testing and algorithmic accountability',
-      };
-
-
-      const columns = document.createElement('div');
-      columns.className = 'pol-columns';
-
-      Object.entries(POLICY_CATEGORIES).forEach(([catId, catLabel]) => {
-        const policies = POLICY_DATA.filter(p => p.category === catId);
-        if (!policies.length) return;
-
-        const col = document.createElement('div');
-        col.className = 'pol-col';
-        col.dataset.cat = catId;
-        const catColor = POL_CAT_COLORS[catId] || '#6d7091';
-        col.style.setProperty('--pol-cat-color', catColor);
-
-        // Header — with level distribution bar
-        const desc = POL_CAT_DESCS[catId] || '';
-        const distSegs = DISRUPTION_LEVELS.map(l => {
-          const count = policies.filter(p => p.level === l.id).length;
-          if (!count) return '';
-          const pct = (count / policies.length * 100).toFixed(1);
-          return `<span class="pol-col-distbar-seg" style="background:${l.color};width:${pct}%" title="${l.label}: ${count}"></span>`;
-        }).join('');
-        col.innerHTML = `
-          <div class="pol-col-header">
-            <div class="pol-col-title">${catLabel}</div>
-            <div class="pol-col-desc">${desc}</div>
-            <span class="pol-col-count">${policies.length} polic${policies.length===1?'y':'ies'}</span>
-            <div class="pol-col-distbar">${distSegs}</div>
-          </div>
-          <div class="pol-item-list"></div>`;
-
-        const itemList = col.querySelector('.pol-item-list');
-
-        policies.forEach(p => {
-          const lvl = levelMap[p.level] || {};
-          const basisHTML = buildPolicyBasis(getResearchBasis(p));
-
-          const wrap = document.createElement('div');
-          wrap.className = 'pol-item-wrap';
-          wrap.dataset.level = p.level;
-          wrap.dataset.id = p.id;
-          if (lvl.color) wrap.style.setProperty('--level-color', lvl.color);
-
-          wrap.innerHTML = `
-            <div class="pol-item">
-              <div class="pol-item-title">${p.title}</div>
-              <span class="pol-item-badge">${lvl.label || p.level}</span>
-            </div>`;
-
-          wrap.querySelector('.pol-item').addEventListener('click', () => {
-            openPolModal(p, lvl, catLabel, basisHTML);
-          });
-          itemList.appendChild(wrap);
-        });
-
-        columns.appendChild(col);
-      });
-      area.appendChild(columns);
 
       // ── Category rows ────────────────────────────────────────
       // Phase (Repair→Transform) is no longer an axis of the map: the four
@@ -3274,14 +2922,10 @@
         cards.className = 'pol-cat-row-cards';
 
         catPolicies.forEach(p => {
-          const lvl = levelMap[p.level] || {};
-          const origCatLabel = POLICY_CATEGORIES[p.category] || p.category;
-          const basisHTML = buildPolicyBasis(getResearchBasis(p));
-
           const card = document.createElement('div');
           card.className = 'pol-cat-card';
           card.innerHTML = `<div class="pol-cat-card-title">${p.title}</div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
-          card.addEventListener('click', () => openPolModal(p, lvl, origCatLabel, basisHTML));
+          card.addEventListener('click', () => openPolModal(p));
           cards.appendChild(card);
         });
 
@@ -3335,6 +2979,19 @@
     const mergedOrder = Object.keys(MERGED_POLICY_CATEGORIES); // curated top→bottom order
     const bandH = H / mergedOrder.length;
 
+    // A node's label is HTML in a foreignObject, in the graph's own units. LABEL_FS is the font size .pol-links-node-label sets (13px, the notes size on the
+    // other tabs); LABEL_W is how wide a label may get before it wraps. Both only size the boxes the layout keeps apart: the browser does the real wrapping.
+    const LABEL_FS = 13, LABEL_W = 150, LABEL_LH = 1.28;
+    // How tall a title's label is: its lines, estimated word by word (Public Sans averages about 0.57em a character), kept a little generous.
+    const labelHeight = title => {
+      const em = LABEL_FS * 0.57; let lines = 1, w = 0;
+      title.split(/\s+/).forEach(word => {
+        const ww = word.length * em;
+        if (w && w + em + ww > LABEL_W) { lines++; w = ww; } else w += (w ? em : 0) + ww;
+      });
+      return Math.max(20, lines * LABEL_FS * LABEL_LH + 2);
+    };
+
     // ── Build nodes, seeded with a golden-angle spread so the pre-settle
     // starting layout is already roughly non-overlapping. ──
     const nodes = POLICY_DATA.map((p, i) => {
@@ -3344,7 +3001,7 @@
       const seed = (i * 137.5) % 360;
       const x = W / 2 + Math.cos(seed * Math.PI / 180) * (W / 2 - 100);
       const y = bandCenter + Math.sin(seed * Math.PI / 180) * (bandH / 2 - 30);
-      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0 };
+      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0, h: labelHeight(p.title) };
     });
     const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
 
@@ -3400,6 +3057,32 @@
       alpha *= 0.985;
     }
     for (let i = 0; i < 400 && alpha > 0.01; i++) tick();
+
+    // The physics treats a node as a point, but each one carries a label to its right, so labels sat on top of each other. Once it has settled, push any
+    // two nodes whose dot-and-label boxes touch apart along the shorter way out, a pass at a time, with a light pull back toward the node's band, until
+    // none touch. The band names at the top left of each band are boxes that do not move. Deterministic, like the rest of the layout.
+    const boxOf = n => ({ l: n.x - 10, r: n.x + 11 + LABEL_W, t: n.y - 10, b: n.y - 10 + n.h });
+    const bandNames = mergedOrder.map((mcId, i) => ({ l: 8, r: 20 + MERGED_POLICY_CATEGORIES[mcId].length * 9, t: i * bandH + 4, b: i * bandH + 26 }));
+    for (let pass = 0; pass < 240; pass++) {
+      let touching = 0;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j], A = boxOf(a), B = boxOf(b);
+          const ox = Math.min(A.r, B.r) - Math.max(A.l, B.l) + 6, oy = Math.min(A.b, B.b) - Math.max(A.t, B.t) + 4;
+          if (ox <= 0 || oy <= 0) continue;
+          touching++;
+          if (oy <= ox) { const d = (oy / 2) * (a.y <= b.y ? -1 : 1); a.y += d; b.y -= d; }
+          else { const d = (ox / 2) * (a.x <= b.x ? -1 : 1); a.x += d; b.x -= d; }
+        }
+      }
+      nodes.forEach(n => {
+        n.y += (n.bandCenter - n.y) * 0.01;
+        bandNames.forEach(L => { const B = boxOf(n); if (B.r > L.l && B.l < L.r && B.b > L.t && B.t < L.b) n.y += L.b - B.t + 2; });
+        n.x = Math.max(24, Math.min(W - 190, n.x));
+        n.y = Math.max(16, Math.min(H - 6 - n.h, n.y));
+      });
+      if (!touching) break;
+    }
 
     // ── Render as SVG (real DOM nodes — see ADR 0002 for why not canvas) ──
     const svgNS = 'http://www.w3.org/2000/svg';
@@ -3460,7 +3143,7 @@
       const labelFo = document.createElementNS(svgNS, 'foreignObject');
       labelFo.setAttribute('class', 'pol-links-node-label-fo');
       labelFo.setAttribute('x', n.x + 11); labelFo.setAttribute('y', n.y - 10);
-      labelFo.setAttribute('width', 116); labelFo.setAttribute('height', 48);
+      labelFo.setAttribute('width', LABEL_W); labelFo.setAttribute('height', n.h);
       const labelDiv = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
       labelDiv.setAttribute('class', 'pol-links-node-label');
       labelDiv.textContent = n.title;
@@ -3519,16 +3202,26 @@
     container.appendChild(outer);
   }
 
-  function openPolModal(p, lvl, catLabel, basisHTML) {
+  function openPolModal(p) {
     const backdrop = document.getElementById('polModal');
     const modal    = backdrop.querySelector('.pol-modal');
     const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
     // Preserve the original trigger when navigating policy → policy via cross-links.
     if (!backdrop.classList.contains('open')) backdrop._lastFocus = document.activeElement;
-    document.getElementById('polModalTitle').textContent     = p.title;
-    document.getElementById('polModalLevel').textContent     = lvl.label || p.level;
-    document.getElementById('polModalCat').textContent       = catLabel;
-    document.getElementById('polModalPhaseDesc').textContent = lvl.blurb || lvl.sublabel || '';
+    document.getElementById('polModalTitle').textContent = p.title;
+    // Under the title: the policy area the Map files the card under, led by that row's colour as a dot. The card's level
+    // and fine category are not shown (dropped 2026-11-17: the area is what the Map is organized by). Rebuilt on every
+    // open because a cross-link swaps one policy for another without closing the dialog.
+    const area = policyAreaOf(p), areaEl = document.getElementById('polModalArea');
+    areaEl.textContent = '';
+    if (area) {
+      const dot = document.createElement('span');
+      dot.className = 'pol-modal-area-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      dot.style.setProperty('--cat-color', CAT_COLOR_VARS[area.id] || 'var(--muted)');
+      areaEl.appendChild(dot);
+      areaEl.appendChild(document.createTextNode(area.label));
+    }
     const li = (arr) => (arr || []).map(item => `<li>${injectPolicyLinks(item, paperMap)}</li>`).join('');
     const fmtDate = s => {
       if (!s) return '';
@@ -3548,46 +3241,20 @@
           <ul class="pol-modal-list">${li(p.risks)}</ul>
         </div>` : '<div></div>'}
       </div>` : '';
-    // How it interacts — replaces the former Feasibility section. Relationships
-    // are cross-links (.pol-xref) wired to openPolModalById below.
-    const polTitle = id => { const t = POLICY_DATA.find(x => x.id === id); return t ? t.title : id; };
-    const relRow = r => `<div class="pol-rel-item"><a class="pol-xref" data-pol-id="${r.id}" role="link" tabindex="0">${polTitle(r.id)}</a><span class="pol-rel-why">${r.why}</span></div>`;
-    const hasPairs = Array.isArray(p.pairsWith) && p.pairsWith.length;
-    const hasCompetes = Array.isArray(p.competesWith) && p.competesWith.length;
-    const pairsBlock = hasPairs ? `<div class="pol-rel-group g-pairs">
-          <div class="pol-rel-head pairs"><span class="pol-rel-glyph"></span>Pairs with</div>
-          ${p.pairsWith.map(relRow).join('')}
-        </div>` : '';
-    const competesBlock = hasCompetes ? `<div class="pol-rel-group g-competes">
-          <div class="pol-rel-head competes"><span class="pol-rel-glyph"></span>Competes with</div>
-          ${p.competesWith.map(relRow).join('')}
-        </div>` : '';
-    // Two columns (Pairs | Competes) when both exist, mirroring Strengths/Risks;
-    // a single group spans full width rather than leaving a half-empty row.
-    const relInner = (hasPairs && hasCompetes)
-      ? `<div class="pol-rel-cols">${pairsBlock}${competesBlock}</div>`
-      : pairsBlock + competesBlock;
-    const relHTML = (hasPairs || hasCompetes) ? `
-      <div class="pol-modal-section">
-        <div class="pol-modal-label">How it interacts</div>
-        ${relInner}
-      </div>` : '';
     // Where it stands and Precedents and examples were merged into one
     // section (single `landscape` field) so the modal doesn't split
     // precedent and current politics across two labels that readers had to
-    // cross-reference themselves. basisHTML (the citation reference list)
-    // still hangs off this section, same as it did under the old
-    // "Precedents and examples" label.
-    const landscapeHTML = (p.landscape || basisHTML) ? `
+    // cross-reference themselves. The "Research basis" list that used to hang
+    // off this section (the card's paperIds, plus related studies by category)
+    // was removed on 2026-11-17 as no longer relevant: a card's sources are the
+    // links in its own text. A "How it interacts" section (the card's pairsWith and
+    // competesWith as lists of cross-links, with their why text) sat between
+    // Strengths/Risks and this one until the same day; the two fields stay in the
+    // data, because pairsWith draws the Links graph's lines.
+    const landscapeHTML = p.landscape ? `
       <div class="pol-modal-section">
         <div class="pol-modal-label">Precedents & landscape</div>
-        ${p.landscape ? `<div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>` : ''}
-        ${basisHTML ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px">${basisHTML}</div>` : ''}
-      </div>` : '';
-    const pressHTML = (Array.isArray(p.press) && p.press.length) ? `
-      <div class="pol-modal-section">
-        <div class="pol-modal-label">Press & resources</div>
-        <ul class="pol-press-list">${p.press.map(it => `<li><a href="${it.url}" target="_blank" rel="noopener noreferrer">${it.label}</a></li>`).join('')}</ul>
+        <div class="pol-modal-text">${injectPolicyLinks(p.landscape, paperMap)}</div>
       </div>` : '';
     const lastReviewedHTML = p.lastReviewed ? `<div class="pol-modal-lastreviewed">Last reviewed: ${fmtDate(p.lastReviewed)}</div>` : '';
     document.getElementById('polModalBody').innerHTML = `
@@ -3600,22 +3267,8 @@
         <div class="pol-modal-text">${injectPolicyLinks(p.rationale, paperMap)}</div>
       </div>
       ${prosConsHTML}
-      ${relHTML}
       ${landscapeHTML}
-      ${pressHTML}
       ${lastReviewedHTML}`;
-    const rbToggle = document.getElementById('polModalBody').querySelector('.pol-basis-toggle');
-    if (rbToggle) {
-      const rel = document.getElementById('polModalBody').querySelector('.pol-basis-related');
-      const tEl = rbToggle.querySelector('.pol-basis-toggle-text');
-      const n = rel ? rel.querySelectorAll('.pol-basis-ref').length : 0;
-      rbToggle.addEventListener('click', () => {
-        const open = rbToggle.getAttribute('aria-expanded') === 'true';
-        rbToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-        if (rel) rel.style.display = open ? 'none' : 'flex';
-        if (tEl) tEl.textContent = open ? `Show ${n} more related ${n === 1 ? 'study' : 'studies'}` : 'Hide related studies';
-      });
-    }
     // Wire policy cross-reference links to open their target policy's modal.
     document.getElementById('polModalBody').querySelectorAll('.pol-xref').forEach(a => {
       const go = e => { e.stopPropagation(); openPolModalById(a.dataset.polId); };
@@ -3629,7 +3282,7 @@
         <button class="pol-action-btn" id="polCopyDraft" title="Copy this policy as a Markdown primer draft">Copy as draft</button>
         <button class="pol-action-btn" id="polCopyLink" title="Copy a shareable link to this policy">Copy link</button>
         <button class="pol-action-btn" id="polPrint" title="Print or save as a PDF">Print</button>`;
-      document.getElementById('polCopyDraft').addEventListener('click', e => copyText(policyToMarkdown(p, lvl, catLabel), e.currentTarget));
+      document.getElementById('polCopyDraft').addEventListener('click', e => copyText(policyToMarkdown(p), e.currentTarget));
       document.getElementById('polCopyLink').addEventListener('click', e => copyText(appURL('policy/' + p.id), e.currentTarget));
       document.getElementById('polPrint').addEventListener('click', () => window.print());
     }
@@ -3865,9 +3518,11 @@
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
     return m ? `${LEG_MONTHS[+m[2] - 1]} ${+m[3]}, ${m[1]}` : '';
   }
-  function legStageChip(b) {
+  /* A bill's status is its stage in words, as plain text. It was a grey pill until 2026-11-17: a pill looks like a button, and this is a label to read. (A row of dots under the words, for
+     where the stage sits on the path, was tried the same day and not kept: the owner preferred the words alone.) */
+  function legStage(b) {
     const st = legGet.stages()[b.stage];
-    return st ? `<span class="leg-chip">${escapeHTML(st.label)}</span>` : '';
+    return st ? escapeHTML(st.label) : '';
   }
   /* ── Search and topics ───────────────────────────────────────────────────────────────────────────────────────
      The filter bar narrows every bill the page counts: the map's shading, the legend, the panel and the table all follow it, as they follow the
@@ -4008,7 +3663,12 @@
     if (c.runoff) parts.push(`${c.runoff} in ${c.runoff === 1 ? 'a runoff' : 'runoffs'}`);
     return parts.length ? `Not yet called: ${parts.join(', ')}.` : '';
   }
-  const legResultChip = r => `<span class="leg-chip leg-chip--${escapeHTML(r.result)}">${escapeHTML(LEG_RESULT[r.result] || r.result)}</span>`;
+  /* A race's result: a square in the party's colour (the map's own fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a
+     race not yet called are the news, so those are bold. It was a coloured pill in every cell until 2026-11-17. */
+  const legResult = r => {
+    const news = r.result === 'd-gain' || r.result === 'r-gain' || r.result === 'uncalled';
+    return `<span class="leg-result${news ? ' leg-result--news' : ''}"><span class="leg-swatch leg-swatch--sm fill-${escapeHTML(r.result)}" aria-hidden="true"></span>${escapeHTML(LEG_RESULT[r.result] || r.result)}</span>`;
+  };
 
   /* The organisations the results come from: "The Associated Press". */
   function legSourceNames() {
@@ -4260,7 +3920,7 @@
   /* The panel's midterm block for a state: its three offices. */
   function legOfficeRows(s) {
     const row = (office, body) => `<div class="leg-office"><div class="leg-office-name">${LEG_OFFICES[office]}</div><div class="leg-office-body">${body}</div></div>`;
-    const race = office => { const r = s[office]; return r ? `<div>${legResultChip(r)}</div>${r.detail ? `<div class="leg-muted">${escapeHTML(r.detail)}</div>` : ''}` : `<div class="leg-muted">No 2026 ${LEG_RACE[office]} race.</div>`; };
+    const race = office => { const r = s[office]; return r ? `<div>${legResult(r)}</div>${r.detail ? `<div class="leg-muted">${escapeHTML(r.detail)}</div>` : ''}` : `<div class="leg-muted">No 2026 ${LEG_RACE[office]} race.</div>`; };
     const open = legHouseOpen(s.house);
     return row('senate', race('senate')) +
            row('house', s.house ? `<div>${escapeHTML(legHouseText(s.house))}</div>${open ? `<div class="leg-muted">${escapeHTML(open)}</div>` : ''}` : '<div class="leg-muted">No 2026 House race.</div>') +
@@ -4339,7 +3999,7 @@
       return s.house ? `${escapeHTML(legHouseText(s.house))}${open ? `<div class="leg-status-note">${escapeHTML(open)}</div>` : ''}` : LEG_DASH;
     }
     const r = s[office];
-    return r ? `${legResultChip(r)}${r.detail ? `<div class="leg-status-note">${escapeHTML(r.detail)}</div>` : ''}` : LEG_DASH;
+    return r ? `${legResult(r)}${r.detail ? `<div class="leg-status-note">${escapeHTML(r.detail)}</div>` : ''}` : LEG_DASH;
   }
 
   /* What each source found beyond the bills shown (a feed's `omitted`: bills that failed, or only mention AI in passing), which tools/legislation.py leaves out of the data,
@@ -4396,7 +4056,7 @@
       { head: 'Jurisdiction', cell: b => escapeHTML(legJur(b)) },
       { head: 'Bill', cls: 'leg-col-bill', cell: b => `<span class="leg-num">${legCell(b.bill)}</span>${sessionOf(b) ? `<div class="leg-status-note">${escapeHTML(sessionOf(b))}</div>` : ''}` },
       { head: 'Title', cls: 'leg-col-title', cell: b => `${legCell(b.title)}${legTopicLine(b)}${b.subjects && b.subjects.length ? `<div class="leg-status-note">Subjects: ${b.subjects.map(escapeHTML).join(', ')}</div>` : ''}${b.passing ? '<div class="leg-status-note">Mentions AI only in its text</div>' : ''}` },
-      { head: 'Status', cls: shown.some(b => b.status) ? 'leg-col-status' : '', cell: b => { const st = legGet.stages()[b.stage]; return legStageChip(b) + ((b.status && st && b.status !== st.label) ? `<div class="leg-status-note">${escapeHTML(b.status)}</div>` : ''); } },
+      { head: 'Status', cls: shown.some(b => b.status) ? 'leg-col-status' : '', cell: b => { const st = legGet.stages()[b.stage]; return legStage(b) + ((b.status && st && b.status !== st.label) ? `<div class="leg-status-note">${escapeHTML(b.status)}</div>` : ''); } },
       { head: 'Last action', cls: 'leg-col-last', show: bills.some(b => b.lastAction), cell: b => { const la = b.lastAction; return la ? ([la.date ? legDateLong(la.date) : '', la.text || ''].filter(Boolean).map(escapeHTML).join(': ') || LEG_DASH) : LEG_DASH; } },
       { head: 'Summary', cls: 'leg-col-summary', show: bills.some(b => b.summary), cell: b => legCell(b.summary) },
       { head: 'Source', cell: b => { const src = b.source, url = src ? legSafeUrl(src.url) : ''; return src ? (url ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener">${escapeHTML(src.label || url)}</a>` : legCell(src.label)) : LEG_DASH; } },
@@ -4929,34 +4589,11 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   })();
 
-  // ── about modal ──────────────────────────────────────────────
-  (function() {
-    const modal    = document.getElementById('aboutModal');
-    const openBtn  = document.getElementById('aboutInfoBtn');
-    const closeBtn = document.getElementById('aboutModalClose');
-    function openModal()  {
-      modal._lastFocus = document.activeElement;
-      modal.classList.add('open');
-      requestAnimationFrame(() => { closeBtn.focus(); });
-    }
-    function closeModal() {
-      modal.classList.remove('open');
-      if (modal._lastFocus) { modal._lastFocus.focus(); modal._lastFocus = null; }
-    }
-    openBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-  })();
-
   // ── Home: the site title is the About page ───────────────────
   document.getElementById('homeTitleLink')?.addEventListener('click', e => {
     e.preventDefault();
     setView('about');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  document.getElementById('aboutInfoBtnTopbar')?.addEventListener('click', () => {
-    document.getElementById('aboutInfoBtn').click();
   });
   document.getElementById('sourcesInfoBtnTopbar')?.addEventListener('click', () => {
     document.getElementById('sourcesInfoBtn').click();
@@ -5004,9 +4641,7 @@
     (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
-      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) note(pid, `policy ${p.id}: paperId ${pid}`); });
       if (!POLICY_CATEGORIES[p.category]) problems.push(`policy ${p.id}: unknown category "${p.category}"`);
-      if (!DISRUPTION_LEVELS.some(l => l.id === p.level)) problems.push(`policy ${p.id}: unknown level "${p.level}"`);
       // A base category with no CATEGORY_MERGE_MAP entry drops its policies
       // out of the Policy Map rows entirely — the rows filter by merged
       // category, so the card renders nowhere and nothing errors.

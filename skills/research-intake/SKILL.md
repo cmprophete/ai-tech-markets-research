@@ -36,7 +36,7 @@ Rules (from `RECOMMENDATIONS.md`, intake conventions):
 - **`geography`** is `us` or `intl`.
 - Match the voice and length of existing `keyFinding` / `takeaways`. No em-dashes in prose fields (repo style). Do not editorialize beyond what the source supports.
 - Pick an explicit integer `id` above every id already in use.
-- If the entry belongs to a theme's or a policy's curated basis, that is a separate editorial decision — flag it, do not wire it silently (theme `papers` / policy `paperIds` links change synthesis meaning).
+- If the entry should be cited in a policy card, that is a separate editorial decision: flag it, do not wire it silently (a citation in a card's text changes what the card says).
 
 The paper reaches `RESEARCH_DATA` at the next sync (about 13:00 UTC daily, or when the workflow is run by hand from the Actions tab) once its `status` is `approved`. An under-review row may be a bare link or a draft; the sync only counts it.
 

@@ -54,14 +54,20 @@ That is the entire list. If a change is not on it, Claude does not make it.
 | `pairsWith` / `competesWith` | array of `{id, why}` | the `why` is prose, so verbatim |
 | `id` | kebab-case string | structure; agree with the author |
 | `category` | category id | structure |
-| `level` | string | structure |
-| `paperIds` | array of research ids | structure; never invented |
-| `press` | array | structure |
 | `lastReviewed` | `YYYY-MM-DD` | structure |
 
 Prose fields are inserted verbatim. Structured fields are not prose: Claude asks
-the author for them rather than guessing, and never invents a `paperId` or any
-number.
+the author for them rather than guessing, and never invents a number.
+
+A card no longer carries `paperIds`, `press` or `level` (retired 2026-11-17): it shows no research basis, no
+press list and no level, and its sources are the links and citations in its own text.
+
+Under its title a card's dialog names only its policy area (the Map row its `category` rolls up to), and "Copy as
+draft" opens with the same Area line (changed 2026-11-17, from the level and the fine category).
+
+Neither the dialog nor the draft lists `pairsWith` or `competesWith` either (the "How it interacts" section was
+removed 2026-11-17). Both stay in the data: `pairsWith` draws the Links graph's lines, and `competesWith` is stored
+and shown nowhere. Their `why` is still the author's prose, so it stays verbatim.
 
 ## Workflow (paste into chat)
 
@@ -71,8 +77,8 @@ number.
 2. **Place.** Claude puts each block into its field, applying only the
    mechanical encoding above. Claude does not add `{{cite:ID}}`, `{{citep:ID}}`,
    or `{{pol:id|text}}` tokens; those appear only if the author typed them.
-3. **Fill structure.** Claude asks the author for `id`, `category`, `level`,
-   `paperIds`, and any `pairsWith` / `competesWith`, rather than inventing them.
+3. **Fill structure.** Claude asks the author for `id`, `category`,
+   and any `pairsWith` / `competesWith`, rather than inventing them.
 4. **Verify.** Claude reconstructs the plain text from each field (undo the JS
    escaping, turn `<br><br>` back into paragraph breaks, decode entities) and
    confirms it matches the pasted source character-for-character. Claude reports

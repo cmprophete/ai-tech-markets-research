@@ -316,34 +316,11 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   })();
 
-  // ── about modal ──────────────────────────────────────────────
-  (function() {
-    const modal    = document.getElementById('aboutModal');
-    const openBtn  = document.getElementById('aboutInfoBtn');
-    const closeBtn = document.getElementById('aboutModalClose');
-    function openModal()  {
-      modal._lastFocus = document.activeElement;
-      modal.classList.add('open');
-      requestAnimationFrame(() => { closeBtn.focus(); });
-    }
-    function closeModal() {
-      modal.classList.remove('open');
-      if (modal._lastFocus) { modal._lastFocus.focus(); modal._lastFocus = null; }
-    }
-    openBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-  })();
-
   // ── Home: the site title is the About page ───────────────────
   document.getElementById('homeTitleLink')?.addEventListener('click', e => {
     e.preventDefault();
     setView('about');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-  document.getElementById('aboutInfoBtnTopbar')?.addEventListener('click', () => {
-    document.getElementById('aboutInfoBtn').click();
   });
   document.getElementById('sourcesInfoBtnTopbar')?.addEventListener('click', () => {
     document.getElementById('sourcesInfoBtn').click();
@@ -391,9 +368,7 @@
     (typeof POLICY_SOURCES !== 'undefined' ? POLICY_SOURCES : []).forEach(s => ids.add(String(s.id)));
     const polIds = new Set(POLICY_DATA.map(p => p.id));
     POLICY_DATA.forEach(p => {
-      (p.paperIds || []).forEach(pid => { if (!ids.has(String(pid))) note(pid, `policy ${p.id}: paperId ${pid}`); });
       if (!POLICY_CATEGORIES[p.category]) problems.push(`policy ${p.id}: unknown category "${p.category}"`);
-      if (!DISRUPTION_LEVELS.some(l => l.id === p.level)) problems.push(`policy ${p.id}: unknown level "${p.level}"`);
       // A base category with no CATEGORY_MERGE_MAP entry drops its policies
       // out of the Policy Map rows entirely — the rows filter by merged
       // category, so the card renders nowhere and nothing errors.

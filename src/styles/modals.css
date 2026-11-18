@@ -66,7 +66,7 @@
     margin: 0; padding: 0 0 0 18px;
     display: flex; flex-direction: column; gap: 7px;
     font-family: 'Public Sans', sans-serif;
-    font-size: 13.5px; line-height: 1.55; color: var(--text);
+    font-size: 14px; line-height: 1.55; color: var(--text);   /* body text is 14px, as .pol-modal-text is */
   }
   .pol-modal-list li { padding-left: 2px; }
   .pol-modal-list li::marker { color: var(--accent); }
@@ -78,16 +78,6 @@
   @media (max-width: 720px) {
     .pol-modal-twocol { grid-template-columns: 1fr; gap: 18px; }
   }
-  .pol-press-list {
-    list-style: none; padding: 0; margin: 0;
-    display: flex; flex-direction: column; gap: 6px;
-    font-family: 'Public Sans', sans-serif; font-size: 13.5px; line-height: 1.5;
-  }
-  .pol-press-list a {
-    color: var(--accent); text-decoration: none;
-    border-bottom: 1px dotted color-mix(in srgb, var(--accent) 45%, transparent);
-  }
-  .pol-press-list a:hover { border-bottom-style: solid; }
   .pol-modal-lastreviewed {
     margin-top: 4px; padding: 12px 0;
     border-top: 1px solid var(--border);
@@ -109,32 +99,17 @@
     font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
     color: var(--text); line-height: 1.25; flex: 1; margin-right: 12px;
   }
+  /* Under the title: the policy area the Map files the card under, led by that row's colour as a dot (the size of the Links
+     legend's dot). It is a small label, so it takes the chips' text style (Haas 11px/500) rather than a Public Sans size of its own. */
   .pol-modal-meta {
     display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted);
   }
-  .pol-modal-level {
-    font-size: 11px; font-weight: 500; color: var(--muted);
-    background: none; border: none; padding: 0; border-radius: 0; letter-spacing: 0;
-    font-family: 'Public Sans', sans-serif;
-  }
-  .pol-modal-meta-sep {
-    display: inline-block; width: 1px; height: 12px;
-    background: var(--border); margin: 0 6px; vertical-align: middle;
-    opacity: 0.8;
-  }
-  .pol-modal-cat {
-    font-size: 11px; font-weight: 500; color: var(--muted);
-    font-family: 'Public Sans', sans-serif;
-  }
-  .pol-modal-phase-desc {
-    font-size: 13px; color: var(--muted); line-height: 1.55;
-    margin-top: 8px; font-family: 'Public Sans', sans-serif;
-    flex-basis: 100%;
-  }
-  .pol-modal-phase-desc:empty { display: none; }
+  .pol-modal-meta:empty { display: none; }
+  .pol-modal-area-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--cat-color, var(--muted)); }
   .pol-modal-close {
     background: none; border: none; cursor: pointer;
-    color: var(--muted); font-size: 18px; line-height: 1; padding: 4px;
+    color: var(--muted); font-size: 19px; line-height: 1; padding: 4px;   /* the size .modal-close has on the other modals */
     border-radius: var(--r-ctl); transition: color 0.15s; flex-shrink: 0;
   }
   .pol-modal-close:hover { color: var(--text); }
@@ -147,33 +122,11 @@
     padding-bottom: 16px; border-bottom: 1px solid var(--border);
   }
   .pol-modal-section:last-child { padding-bottom: 0; border-bottom: none; }
+  /* A section heading in the dialog: the card-title style (15.5px bold) the policy tiles and the Papers cards use. */
   .pol-modal-label {
     font-family: var(--sans);
-    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: 15.5px; font-weight: 700;
     color: var(--text);
   }
   .pol-modal-text { font-size: 14px; color: var(--text); line-height: 1.7; }
   .pol-modal-text.muted { color: var(--muted); }
-
-  /* How it interacts — pairs (green) / competes (amber), echoing the map legend */
-  :root { --rel-pair: var(--green-deep); --rel-compete: var(--gold-deep); }
-  .pol-rel-group { margin-top: 12px; }
-  .pol-rel-group:first-of-type { margin-top: 2px; }
-  .pol-rel-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 26px; }
-  .pol-rel-cols .pol-rel-group { margin-top: 0; }
-  @media (max-width: 720px) { .pol-rel-cols { grid-template-columns: 1fr; gap: 12px; } }
-  .pol-rel-head {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'Public Sans', sans-serif; font-size: 11px; font-weight: 700;
-    letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px;
-  }
-  .pol-rel-head .pol-rel-glyph { width: 20px; border-top: 2.5px solid currentColor; }
-  .pol-rel-head.pairs { color: var(--rel-pair); }
-  .pol-rel-head.competes { color: var(--rel-compete); }
-  .pol-rel-head.competes .pol-rel-glyph { border-top-style: dashed; }
-  .pol-rel-item { padding: 3px 0 3px 12px; border-left: 2px solid var(--border); margin-bottom: 9px; }
-  .g-pairs .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-pair) 55%, var(--border)); }
-  .g-competes .pol-rel-item { border-left-color: color-mix(in srgb, var(--rel-compete) 55%, var(--border)); }
-  .pol-rel-item .pol-xref { font-size: 13.5px; font-weight: 600; }
-  .pol-rel-why { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
-

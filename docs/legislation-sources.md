@@ -178,6 +178,11 @@ leaves the order alone. The bar is sticky, as on Papers and the Fact Bank, and t
 - **Not built:** clickable topic labels in the table, and topics stored in the data (they are worked out in the page, so the generator and the
   cache do not change when the words do).
 
+**How a status and a result read.** Neither is a pill (they were, until 2026-11-17, at the owner's request: a pill looks like a button, and these are labels to read). In the bills table a
+bill's status is its stage in words, as plain text (`legStage()`). In the results table, and in a state's card, a race's result is a square in the party's colour (the map's own fills)
+and the words (`legResult()`): a hold is plain, and a gain and a race not yet called are bold, because those are the news. The topics stay pills, the Papers chips: a list of
+rows with count bars, and a row of dots under the status, were tried on 2026-11-17 and not kept.
+
 The table lists ten bills to a page (`LEG_PAGE_SIZE` in `src/js/60-legislation.js`, the owner's limit as of 2026-11-12, when it went from fifty to twenty to ten; the Papers list and the Fact Bank
 keep fifty), with the pager the Papers list uses under it. Search, Status, the chips, Sort and the Show menu all start it again at page 1.
 

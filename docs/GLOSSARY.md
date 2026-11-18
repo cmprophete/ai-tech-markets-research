@@ -68,23 +68,23 @@ The tab/view (`#fact-bank`) listing short, citable, number-bearing facts extract
 _Avoid_: Killer Facts, Killer Facts page/tab
 
 **Policy** (or **Policy Intervention**):
-One entry in `POLICY_DATA` — a specific proposed government or institutional response to AI's economic effects (e.g. Unemployment Insurance Reform, AI Dividend). Has a `category` (one of 10 granular areas) and a `level` (disruption stage it addresses).
+One entry in `POLICY_DATA` — a specific proposed government or institutional response to AI's economic effects (e.g. Unemployment Insurance Reform, AI Dividend). Has a `category` (one of the granular groupings in `POLICY_CATEGORIES`). It once also carried a `level` (one of five stages of AI disruption, Repair to Transform); that field and its table were retired on 2026-11-17, after the card stopped showing it.
 _Avoid_: Policy area, category (when you mean the policy itself, not its grouping)
 
 **Category**:
-One of 10 granular policy groupings on a policy (`safety-net`, `labor-rights`, `tax-wealth`, `healthcare`, `work-structure`, `education`, `antitrust`, `housing`, `jobs`, `international`), defined in `POLICY_CATEGORIES`. Used for column coloring (`POL_CAT_COLORS`) and description text (`POL_CAT_DESCS`) in the Map view.
+One of 11 granular policy groupings on a policy (`safety-net`, `labor-rights`, `tax-wealth`, `healthcare`, `work-structure`, `education`, `antitrust`, `housing`, `jobs`, `international`, `civil-rights`), defined in `POLICY_CATEGORIES`. Used for the node colours and the legend of the Links graph (`POL_CAT_COLORS`).
 _Avoid_: Policy area, merged category
 
 **Merged Category** (or **Policy Area**):
-One of 4 top-level groupings — Economic Security, Labor & Worker Rights, AI Governance, Mitigating Harms — that the 10 raw categories roll up into via `CATEGORY_MERGE_MAP`, defined in `MERGED_POLICY_CATEGORIES`. These are the four pathways of `becky_brief.md`, in Becky's order, and that key order is the render order: the Policy Map's four rows top→bottom, and the Links graph's vertical bands (Economic Security top → Mitigating Harms bottom). Two departures from the brief are deliberate and documented at the definition: tax and ownership policy sits in AI Governance rather than Economic Security, and surveillance splits by setting (workplace → Labor & Worker Rights, consumer/public + civil rights → Mitigating Harms). Mitigating Harms is thin pending new policy cards; an empty merged category is skipped at render, not drawn blank.
+One of 4 top-level groupings — Economic Security, Labor & Worker Rights, AI Governance, Mitigating Harms — that the 11 raw categories roll up into via `CATEGORY_MERGE_MAP`, defined in `MERGED_POLICY_CATEGORIES`. These are the four pathways of `becky_brief.md`, in Becky's order, and that key order is the render order: the Policy Map's four rows top→bottom, and the Links graph's vertical bands (Economic Security top → Mitigating Harms bottom). Two departures from the brief are deliberate and documented at the definition: tax and ownership policy sits in AI Governance rather than Economic Security, and surveillance splits by setting (workplace → Labor & Worker Rights, consumer/public + civil rights → Mitigating Harms). Mitigating Harms is thin pending new policy cards; an empty merged category is skipped at render, not drawn blank.
 _Avoid_: Category, policy group
 
 **Policy Link**:
-A `pairsWith` entry on a policy — `{id, why}` — meaning the referenced policy reinforces or amplifies this one. Currently authored topically/administratively (not yet aligned to ESP's theory of the case from `becky_brief.md`). Rendered today both as a text cross-link (`.pol-xref`) inside the policy detail modal, and as an edge in the Links graph.
+A `pairsWith` entry on a policy — `{id, why}` — meaning the referenced policy reinforces or amplifies this one. Currently authored topically/administratively (not yet aligned to ESP's theory of the case from `becky_brief.md`). Rendered today as an edge in the Links graph. The policy detail modal listed it, with its `why`, under a "How it interacts" section until that section was removed on 2026-11-17; the `.pol-xref` links that remain are the `{{pol:id|text}}` ones written inside a card's own prose.
 _Avoid_: Connection, relationship, edge (edge is fine in code/rendering context, but "Policy Link" is the domain term)
 
 **Rival Policy**:
-A `competesWith` entry on a policy — a substitute or alternative approach, not a reinforcing one (e.g. UBI vs. Guaranteed Income). Currently stored in the data but not visualized anywhere.
+A `competesWith` entry on a policy — a substitute or alternative approach, not a reinforcing one (e.g. UBI vs. Guaranteed Income). Stored in the data and shown nowhere on the page now (the policy detail modal listed it under "How it interacts" until 2026-11-17).
 _Avoid_: Competing policy, opposite policy
 
 **Map view**:
