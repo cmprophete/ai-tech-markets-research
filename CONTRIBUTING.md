@@ -19,8 +19,10 @@ Who updates each part of the site, and how often, is in the table in [`README.md
 | **a research entry (add, edit, approve, archive)** | the **Google Sheet**, never the repo: the daily sync copies it into `content/research.csv` and `RESEARCH_DATA` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync, about 13:00 UTC (or "Run workflow" in the Actions tab), publishes it |
 | **the words of a policy card that has a Google Doc** | the **Doc**, never the repo: `tools/policy_docs.py` carries it into `data/policy-text.js` (generated; see [`docs/policy-doc-sync.md`](docs/policy-doc-sync.md)), for the cards the Sheet's `policy map` tab marks `approved` | the next sync: for now ask Claude to run it (the Docs are not fetched automatically yet), then reload |
 | **hiding a policy card, or bringing it back** | the **Sheet**'s `policy map` tab, never the repo: set the policy's `general status` to `archived` (or back). `tools/policy_map.py` carries it into `data/policy-map.js` (generated), and the page leaves an archived card out | the next sync run: ask Claude (the tab is not published, so nothing reads it by itself), then reload |
+| **featuring a policy** | the **Sheet**'s `policy map` tab, never the repo: write `featured` in the policy's `featured` column (blank to stop). `tools/policy_map.py` carries it into `data/policy-map.js` (generated), and the All view puts a Featured label on the policy's tile | the next sync run: ask Claude (the tab is not published, so nothing reads it by itself), then reload |
 | **any other field of a policy card, or a card with no Doc** | `POLICY_DATA` in `data/tracker-data.js` (by hand; the author's words go in verbatim, see [`docs/policy-card-rules.md`](docs/policy-card-rules.md)) | reload; no build step |
-| **the Agenda tab** | `src/views/40-agenda.html` and `TAB_DESCS.agenda` in `src/js/70-render.js` (a placeholder for now) | `python3 build.py` |
+| **the Brief tab (called Agenda until 2026-11-19; its files still say agenda): the brief's words, the link to the paper, or the cards each idea points to** | `data/agenda-data.js` (by hand, but the brief's words exactly as published and never reworded: a test pins their fingerprint; the `related` lists are ours; rules in [`docs/agenda.md`](docs/agenda.md)) | reload; no build step |
+| **how the Brief tab looks or behaves** | `src/js/35-agenda.js`, `src/styles/agenda.css`, `src/views/40-agenda.html`, and `TAB_DESCS.agenda` in `src/js/70-render.js` | `python3 build.py` |
 | **a fact (Fact Bank)** | `data/fact-bank-data.js`, through the `research-intake` and `fact-bank` skills in `skills/` (a fact belongs to one paper; the paragraph around it is in `data/fact-bank-context.js`) | reload; no build step |
 | **a midterm result or a stage (Legislation section)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
 | **an enforcement action or a key case (for the Enforcement and Cases sections of Government action)** | the **Google Sheet**'s `enforcement` or `cases` tab, never the repo: the daily sync copies them into `content/enforcement.csv`, `content/cases.csv` and `data/legislation-actions.js` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync publishes it (or "Run workflow" in the Actions tab) |
@@ -91,6 +93,7 @@ src/styles/pager.css         the pager under the Papers and Fact Bank lists and 
 src/styles/modals.css        sources modal, policy pop-out
 src/styles/policy.css        policy map, columns, and the per-view show/hide rules
 src/styles/legislation.css   the Government action tab: toolbar, map, tables, cards
+src/styles/agenda.css        the Brief tab (view key agenda): idea rows, source drawers
 src/styles/focus.css         :focus-visible, global
 src/views/00-data-scripts    the data/*.js <script> tags
 src/views/10-header          site header nav
@@ -98,8 +101,8 @@ src/views/20-shell           <main>, tab description, #viewPanel
 src/views/30-fact-bank       ... 50-about, 60-legislation, 80-papers, 90-modals
 src/js/00-state              data wiring, helpers, state
 src/js/05-lazy               lazy payload loader (Fact Bank)
-src/js/10-policy-map         ... 20-cite-export, 40-router, 55-enforcement, 60-legislation, 70-render,
-                                 80-fact-bank
+src/js/10-policy-map         ... 20-cite-export, 30-policy-compare, 35-agenda, 40-router, 55-enforcement,
+                                 60-legislation, 70-render, 80-fact-bank
 ```
 
 The router is split: `src/js/40-router.js` owns hash mapping and the `VIEWS`
@@ -134,7 +137,7 @@ The Python tools have checks of their own, standard library only, no `npm`:
 python3 tools/research.py selftest                             # the research rules
 python3 tools/actions.py selftest                              # the cases and enforcement rules
 python3 tools/policy_docs.py selftest                          # the policy Doc tool: nasty fixtures, every refusal, deliberate breakages
-python3 tools/policy_map.py selftest                           # the archived-cards tool
+python3 tools/policy_map.py selftest                           # the archived and featured cards tool
 python3 -m unittest discover -s tests -p "test_*.py" -v       # the policy Doc tool's unit tests: the pilot Doc, the CLI, the gate, random text round-trips
 python3 tests/test_policy_docs.py --write-fixtures             # only when a test says the page fixtures are stale
 ```
