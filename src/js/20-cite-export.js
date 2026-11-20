@@ -67,6 +67,13 @@
     return (id && MERGED_POLICY_CATEGORIES[id]) ? { id, label: MERGED_POLICY_CATEGORIES[id] } : null;
   }
 
+  // Whether the Google Sheet's policy map tab has marked the policy featured: its id is in the `featured` list of data/policy-map.js, which
+  // tools/policy_map.py generates from the tab's `featured` column (2026-11-19, the owner: "whatever's labeled on the google sheet"). That list is
+  // the only thing that features a policy: a card carries no flag of its own, and a file with no list, or no file, features none.
+  function polIsFeatured(p) {
+    return typeof POLICY_MAP !== 'undefined' && !!POLICY_MAP && Array.isArray(POLICY_MAP.featured) && POLICY_MAP.featured.indexOf(p.id) >= 0;
+  }
+
   // R1: assemble a policy card as a Markdown primer draft, with inline citations
   // resolved to (Year) or (Author, Year) text. There is no References list (removed
   // 2026-11-17): a card's sources are the links and citations in its own text.
@@ -136,8 +143,8 @@
     const area = document.getElementById('policyArea');
 
     // Policy cards temporarily hidden (see policyCardsHidden in 00-state.js).
-    // Show a short notice instead of the Map/Links content; flip the flag to
-    // restore. Placed at the single render entry so both sub-views are covered.
+    // Show a short notice instead of the All/Links/Compare content; flip the flag to
+    // restore. Placed at the single render entry so all three views are covered.
     if (policyCardsHidden) {
       if (area) area.innerHTML = '<p class="pol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The policy cards are being updated and are temporarily unavailable.</p>';
       return;
@@ -147,14 +154,19 @@
     // .header-tab-desc, fed from TAB_DESCS.policy.
     if (!area.hasChildNodes()) {
 
-      // Map / Links sub-view toggle
+      // All / Links / Compare view switch. All is the four area rows with every policy, a policy the team features carrying a "Featured" label on its tile
+      // (marked in the `featured` column of the Sheet's policy map tab, which reaches the page as data/policy-map.js); Links is the graph of how the policies relate to one
+      // another; Compare sets two policies side by side with a fight graphic and samples of what works well with each and what competes with it
+      // (30-policy-compare.js). The first view was called Map until 2026-11-19. There was a Featured view of its own for part of that day (the featured policies
+      // alone, in the same rows); the owner replaced it the same day with the label, so a featured policy is seen where it sits among the others.
       const subToggle = document.createElement('div');
       subToggle.className = 'pol-subview-toggle';
       subToggle.setAttribute('role', 'group');
-      subToggle.setAttribute('aria-label', 'Policy Map display');
+      subToggle.setAttribute('aria-label', 'Landscape view');
       subToggle.innerHTML = `
-        <button class="pol-subview-btn active" id="polSubviewMap" type="button">Map</button>
-        <button class="pol-subview-btn" id="polSubviewLinks" type="button">Links</button>`;
+        <button class="pol-subview-btn active" id="polSubviewAll" type="button" aria-pressed="true">All</button>
+        <button class="pol-subview-btn" id="polSubviewLinks" type="button" aria-pressed="false">Links</button>
+        <button class="pol-subview-btn" id="polSubviewCompare" type="button" aria-pressed="false">Compare</button>`;
       area.appendChild(subToggle);
 
       // ── Category rows ────────────────────────────────────────
@@ -183,41 +195,50 @@
       catRows.className = 'pol-cat-rows';
       catRows.id = 'polCatRows';
 
-      Object.entries(MERGED_POLICY_CATEGORIES).forEach(([mcId, mcLabel]) => {
-        const origCats = mergedToOriginal[mcId] || [];
-        // Alphabetical by title within the category.
-        const catPolicies = POLICY_DATA
-          .filter(p => origCats.includes(p.category))
-          .sort((a, b) => a.title.localeCompare(b.title));
-        if (!catPolicies.length) return;
+      // Draws the rows: every policy, under its area.
+      const drawRows = () => {
+        catRows.textContent = '';
 
-        const row = document.createElement('div');
-        row.className = 'pol-cat-row';
-        row.dataset.cat = mcId;
-        row.style.setProperty('--cat-color', CAT_COLOR_VARS[mcId] || 'var(--muted)');
+        Object.entries(MERGED_POLICY_CATEGORIES).forEach(([mcId, mcLabel]) => {
+          const origCats = mergedToOriginal[mcId] || [];
+          // Alphabetical by title within the category.
+          const catPolicies = POLICY_DATA
+            .filter(p => origCats.includes(p.category))
+            .sort((a, b) => a.title.localeCompare(b.title));
+          if (!catPolicies.length) return;
 
-        const head = document.createElement('div');
-        head.className = 'pol-cat-row-head';
-        head.innerHTML = `
-          <div class="pol-cat-row-title">${mcLabel}</div>
-          <div class="pol-cat-row-desc">${MERGED_CAT_DESCS[mcId] || ''}</div>
-          <div class="pol-cat-row-count">${catPolicies.length} polic${catPolicies.length===1?'y':'ies'}</div>`;
-        row.appendChild(head);
+          const row = document.createElement('div');
+          row.className = 'pol-cat-row';
+          row.dataset.cat = mcId;
+          row.style.setProperty('--cat-color', CAT_COLOR_VARS[mcId] || 'var(--muted)');
 
-        const cards = document.createElement('div');
-        cards.className = 'pol-cat-row-cards';
+          const head = document.createElement('div');
+          head.className = 'pol-cat-row-head';
+          head.innerHTML = `
+            <div class="pol-cat-row-title">${mcLabel}</div>
+            <div class="pol-cat-row-desc">${MERGED_CAT_DESCS[mcId] || ''}</div>
+            <div class="pol-cat-row-count">${catPolicies.length} polic${catPolicies.length===1?'y':'ies'}</div>`;
+          row.appendChild(head);
 
-        catPolicies.forEach(p => {
-          const card = document.createElement('div');
-          card.className = 'pol-cat-card';
-          card.innerHTML = `<div class="pol-cat-card-title">${p.title}</div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
-          card.addEventListener('click', () => openPolModal(p));
-          cards.appendChild(card);
+          const cards = document.createElement('div');
+          cards.className = 'pol-cat-row-cards';
+
+          catPolicies.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'pol-cat-card';
+            // A policy the team features says so above its title: the Sheet's policy map tab marks it in its `featured` column (data/policy-map.js, see polIsFeatured).
+            // The label is text in the tile, ahead of the title, so it is read with it.
+            const flag = polIsFeatured(p) ? '<span class="pol-cat-card-flag">Featured</span>' : '';
+            card.innerHTML = `<div class="pol-cat-card-main">${flag}<div class="pol-cat-card-title">${p.title}</div></div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
+            card.addEventListener('click', () => openPolModal(p));
+            cards.appendChild(card);
+          });
+
+          row.appendChild(cards);
+          catRows.appendChild(row);
         });
-
-        row.appendChild(cards);
-        catRows.appendChild(row);
-      });
+      };
+      drawRows();
 
       area.appendChild(catRows);
 
@@ -228,23 +249,40 @@
       linksArea.style.display = 'none';
       area.appendChild(linksArea);
 
-      // Map / Links toggle wiring.
-      const mapBtn = document.getElementById('polSubviewMap');
-      const linksBtn = document.getElementById('polSubviewLinks');
-      mapBtn.addEventListener('click', () => {
-        if (mapBtn.classList.contains('active')) return;
-        mapBtn.classList.add('active'); linksBtn.classList.remove('active');
-        catRows.style.display = ''; linksArea.style.display = 'none';
-      });
-      linksBtn.addEventListener('click', () => {
-        if (linksBtn.classList.contains('active')) return;
-        linksBtn.classList.add('active'); mapBtn.classList.remove('active');
-        catRows.style.display = 'none'; linksArea.style.display = '';
-        if (!linksArea.dataset.built) {
+      // Compare view — built lazily on first activation too (renderPolicyCompare, 30-policy-compare.js).
+      const compareArea = document.createElement('div');
+      compareArea.className = 'pol-cmp';
+      compareArea.id = 'polCompareArea';
+      compareArea.style.display = 'none';
+      area.appendChild(compareArea);
+
+      // The view switch. polViewMode (10-policy-map.js) is the view showing: 'all', 'links' or 'compare'. The rows are drawn once and shown or hidden; Links
+      // and Compare build their own content the first time they are opened.
+      const viewButtons = {
+        all: document.getElementById('polSubviewAll'),
+        links: document.getElementById('polSubviewLinks'),
+        compare: document.getElementById('polSubviewCompare'),
+      };
+      const showView = mode => {
+        if (polViewMode === mode) return;
+        polViewMode = mode;
+        Object.entries(viewButtons).forEach(([m, btn]) => {
+          btn.classList.toggle('active', m === mode);
+          btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+        });
+        catRows.style.display = mode === 'all' ? '' : 'none';
+        linksArea.style.display = mode === 'links' ? '' : 'none';
+        compareArea.style.display = mode === 'compare' ? '' : 'none';
+        if (mode === 'links' && !linksArea.dataset.built) {
           linksArea.dataset.built = '1';
           renderPolicyLinksGraph(linksArea);
         }
-      });
+        if (mode === 'compare' && !compareArea.dataset.built) {
+          compareArea.dataset.built = '1';
+          renderPolicyCompare(compareArea);
+        }
+      };
+      Object.entries(viewButtons).forEach(([mode, btn]) => btn.addEventListener('click', () => showView(mode)));
 
     }
   }
@@ -260,6 +298,8 @@
   // already defined in), but the repel/spring physics can nudge a node off that
   // line, which is deliberate: it lets cross-category edges read as a
   // short, clear line rather than a rigid line punching across the canvas.
+  // Rival policies (each card's `competesWith`) are drawn as dashed lines over
+  // the finished layout, and do not move anything: see `rivals` below.
   function renderPolicyLinksGraph(container) {
     const W = 1040, H = 960;
     const mergedOrder = Object.keys(MERGED_POLICY_CATEGORIES); // curated top→bottom order
@@ -303,6 +343,22 @@
       });
     });
     const edges = [...edgeMap.values()];
+
+    // Rival policies: each policy's `competesWith`, drawn as dashed lines (since 2026-11-19, at the owner's request; the field was stored and shown nowhere
+    // before). They are laid over the finished layout and do not pull on it: two rivals are not meant to sit together, and the layout below, and the test
+    // that keeps its labels apart, stay as they were. A pair authored on both sides is one line, an id that is no policy draws nothing, and a pair that
+    // also pairs with each other keeps only its solid line, because the two would lie on top of each other.
+    const rivalMap = new Map();
+    POLICY_DATA.forEach(p => {
+      (p.competesWith || []).forEach(l => {
+        if (!nodeById[l.id] || l.id === p.id) return; // guard against a stale id
+        const key = [p.id, l.id].sort().join('|');
+        if (edgeMap.has(key)) return;
+        if (!rivalMap.has(key)) rivalMap.set(key, { a: p.id, b: l.id, whys: [] });
+        if (l.why) rivalMap.get(key).whys.push(l.why);
+      });
+    });
+    const rivals = [...rivalMap.values()];
 
     // ── Physics: repel + spring + soft per-band gravity, cooled over a
     // fixed number of ticks and settled before first paint. ──
@@ -376,7 +432,8 @@
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.setAttribute('class', 'pol-links-svg');
     svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', 'Force-directed graph of policies connected by amplification links, ordered top to bottom from Economic Security to Global');
+    // The first and last area come from the data (this label once ended "to Global", an area that no longer exists).
+    svg.setAttribute('aria-label', `Graph of the policies by policy area, from ${MERGED_POLICY_CATEGORIES[mergedOrder[0]]} at the top to ${MERGED_POLICY_CATEGORIES[mergedOrder[mergedOrder.length - 1]]} at the bottom, with a line between policies that pair with each other${rivals.length ? ' and a dashed line between policies that compete' : ''}.`);
 
     mergedOrder.forEach((mcId, i) => {
       const y = i * bandH;
@@ -408,6 +465,20 @@
       edgeGroup.appendChild(line);
       return { el: line, a: e.a, b: e.b };
     });
+    // The rivals' dashed lines go in the same group, so pointing at a policy lights both kinds. Each carries its authors' reasons as its tooltip, like a solid one.
+    const rivalEls = rivals.map(e => {
+      const a = nodeById[e.a], b = nodeById[e.b];
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('class', 'pol-links-rival');
+      line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+      line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+      const title = document.createElementNS(svgNS, 'title');
+      title.textContent = e.whys.join(' ');
+      line.appendChild(title);
+      edgeGroup.appendChild(line);
+      return { el: line, a: e.a, b: e.b };
+    });
+    const lineEls = edgeEls.concat(rivalEls);
     svg.appendChild(edgeGroup);
 
     const nodeGroup = document.createElementNS(svgNS, 'g');
@@ -450,10 +521,10 @@
 
       const highlight = on => {
         Object.values(nodeEls).forEach(el => el.classList.remove('lit', 'dimmed'));
-        edgeEls.forEach(e => e.el.classList.remove('lit', 'dimmed'));
+        lineEls.forEach(e => e.el.classList.remove('lit', 'dimmed'));
         if (!on) return;
         const connected = new Set([n.id]);
-        edgeEls.forEach(e => {
+        lineEls.forEach(e => {
           const touches = e.a === n.id || e.b === n.id;
           e.el.classList.add(touches ? 'lit' : 'dimmed');
           if (touches) { connected.add(e.a); connected.add(e.b); }
@@ -477,11 +548,14 @@
     // categories are allowed to sit empty while cards are being written for
     // them (antitrust does today), and an unfilterable legend dot pointing at
     // nothing reads as a rendering bug.
-    legend.innerHTML = Object.entries(POLICY_CATEGORIES)
+    const dotItems = Object.entries(POLICY_CATEGORIES)
       .filter(([catId]) => POLICY_DATA.some(p => p.category === catId))
       .map(([catId, catLabel]) =>
       `<span class="pol-links-legend-item"><span class="pol-links-legend-dot" style="background:${POL_CAT_COLORS[catId]}"></span>${catLabel}</span>`
     ).join('');
+    // The two kinds of line, each drawn as a sample of itself. The dashed one is listed only when the graph draws one.
+    const lineKey = (cls, label) => `<span class="pol-links-legend-item"><svg class="pol-links-key-line ${cls}" width="26" height="8" viewBox="0 0 26 8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4"/></svg>${label}</span>`;
+    legend.innerHTML = dotItems + lineKey('', 'Pairs with') + (rivals.length ? lineKey('pol-links-key-line--rival', 'Competes with') : '');
     outer.appendChild(legend);
 
     container.innerHTML = '';
