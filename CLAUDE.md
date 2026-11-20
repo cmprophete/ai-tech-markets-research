@@ -41,7 +41,7 @@ writer of `content/cases.csv`, `content/enforcement.csv` and `data/legislation-a
 reaches the site only when its `status` is `approved`, and `python3 tools/actions.py check` (safe anywhere) fails on a hand edit. **A policy card that has a Google Doc has one writer too, the Doc:**
 `tools/policy_docs.py` carries its text into `data/policy-text.js`, which is generated and never hand-edited (`check` is safe
 anywhere; `build` only in a scratch copy or the sync Action; [`docs/policy-doc-sync.md`](docs/policy-doc-sync.md)). Which cards the `policy map`
-tab has archived is `data/policy-map.js`, generated the same way by `tools/policy_map.py`. See
+tab has archived or featured is `data/policy-map.js`, generated the same way by `tools/policy_map.py`. See
 [`content/README.md`](content/README.md) and "One writer per file" in [`CONTRIBUTING.md`](CONTRIBUTING.md). The rest of `tracker-data.js`
 (`POLICY_DATA`, `CATEGORIES`) and `data/fact-bank-data.js`
 (with `data/fact-bank-context.js`) are still hand-maintained. Two more data files are generated and never hand-edited: `data/us-map.js` by
@@ -79,6 +79,13 @@ needs only a reload, not a rebuild.
   character-for-character; report any difference instead of resolving it. If
   which field a block belongs to is unclear, ask. Full workflow: the Policy
   Card Rules, [`docs/policy-card-rules.md`](docs/policy-card-rules.md).
+- **The Brief tab's words (it was called Agenda until 2026-11-19) are Becky Chao's brief, verbatim. Never edit them.** `data/agenda-data.js` holds the brief's paragraphs,
+  headings, list items and notes exactly as published: do not reword, shorten, copyedit, fix spelling, grammar or
+  spacing (the one thing that reads like a typo, "families.The" in the first idea, is kept: tell the author), re-curl a quote, or
+  add a link, a number or an emphasis she did not write. The pathway labels, ids, opening lines and `related` pointers are ours and
+  may change. A revision is read in from the new version, and the fingerprint in `tests/interactions.js` is updated with it
+  ([`docs/agenda.md`](docs/agenda.md)); that test failing is the signal that someone changed her words. The owner had the whole
+  introduction, the conclusion and the notes only they cited (1 to 13) left out on 2026-11-19, so the page is the ideas alone (the notes start at 14, not renumbered): do not put them back unasked.
 - **No CDN, no modules, no bundler.** Classic `<script>` tags, `file://` has to
   keep working, and the deploy artifact is one self-contained document because
   it is embedded in an iframe.
@@ -113,8 +120,9 @@ browser against a local server) over reasoning about whether it would work.
   share one area, toolbar, chips, search and map (`60-legislation.html`, `60-legislation.js`,
   `legislation.css`; a control or a list that belongs to some of the sections carries
   `gov-leg-only`, `gov-lists-only` or `gov-all-only`, shown by `policy.css`), Enforcement and Cases share
-  one list and script (`55-enforcement.js`), and the Agenda placeholder (`40-agenda.html`)
-  is the smallest example.
+  one list and script (`55-enforcement.js`), and the Brief tab (view key `agenda`: `40-agenda.html`, `35-agenda.js`, `agenda.css`) is the
+  example of a page drawn once, on first open, from a hand-maintained data file (`data/agenda-data.js`), with an address of its own for each
+  section (`#brief/<id>`, a parameterised route in `40-router.js`, with `#agenda` kept as an alias).
 - Ordering is significant and lives in `src/index.template.html`: CSS cascade
   order and JS execution order inside the app IIFE are just the order the
   `@@include@@` directives appear.
