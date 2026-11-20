@@ -1,6 +1,6 @@
   /* ── Policy Map ─────────────────────────────────────────────── */
   let polLevelFilter = 'all';
-  let polViewMode    = 'grid';
+  let polViewMode    = 'all';   // the Landscape's view: 'all', 'links' or 'compare' (buildPolicyView in 20-cite-export.js)
 
   // APA-style citation: Author. (Year). Title. Organization.
   // The `source` field stores "Author — Organization"; a bare organization stands alone.
