@@ -366,14 +366,19 @@ The Research basis, the press list and `paperIds` are other branches' business: 
 neither needs them nor brings them back, and a card's only source list on the page is the
 links in its own text plus the Doc's References.
 
-## Archived cards: `data/policy-map.js`
+## Archived and featured cards: `data/policy-map.js`
 
 A policy the team has retired is set to `archived` in the `general status` column of the `policy map` tab, and its card
-leaves the Landscape. `tools/policy_map.py` reads the tab's `card id` and `general status` columns (nothing else: not the
+leaves the Landscape. `tools/policy_map.py` reads the tab's `card id`, `general status` and `featured` columns (nothing else: not the
 agenda columns, not the drafting columns, not the notes) and writes `data/policy-map.js`, a generated file holding the ids of
-the archived cards; the page takes those cards out of `POLICY_DATA` before anything reads it (`src/js/00-state.js`), so the map,
+the archived cards and the ids of the featured ones; the page takes those cards out of `POLICY_DATA` before anything reads it (`src/js/00-state.js`), so the map,
 its counts, the Links graph and the dialogs leave them out. A card that pairs with an archived one just has no line to it, and
 a `{{pol:}}` token that names one reads as plain text. Setting the status back brings the card back at the next run.
+
+A policy the team features has the word `featured` in the tab's `featured` column (the owner, 2026-11-19: "whatever's labeled on the google sheet"),
+and the Landscape's All view puts a Featured label on its tile (`src/js/20-cite-export.js`). The column is independent of the status: a policy
+under review can be featured. The `featured` list in the file is the only thing that features a policy; a card has no flag of its own. A tab
+with no `featured` column features nobody.
 
 ```sh
 python3 tools/policy_map.py check                      # the committed file against the cards on the site; writes nothing
@@ -382,13 +387,14 @@ python3 tools/policy_map.py build --tab tab.csv        # write data/policy-map.j
 python3 tools/policy_map.py selftest
 ```
 
-It stops, naming the row, on a status word that is not `under review`, `approved` or `archived`, a card id that is not a
-card on the site (a typo would hide nothing and say nothing) and a card id that is in two rows. A row with no card id is a
-policy with no card yet and is ignored.
+It stops, naming the row, on a status word that is not `under review`, `approved` or `archived`, a word in the `featured` column
+that is not `featured`, a row marked featured that has no card id, a card id that is not a card on the site (a typo would hide or
+feature nothing and say nothing) and a card id that is in two rows. A row with no card id and no `featured` is a policy with no card
+yet and is ignored.
 
 The tab is read from a CSV file or link, but it should not be published to the web as it is: a published tab is readable by
 anyone with its link, and this one holds the team's agenda columns and notes. So for now the run is made on request (the tab
-read through the Sheets connector); the daily Action would need a tab that holds only `card id` and `general status`.
+read through the Sheets connector); the daily Action would need a tab that holds only `card id`, `general status` and `featured`.
 
 ## Open decisions
 
