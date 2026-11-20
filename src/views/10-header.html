@@ -10,7 +10,7 @@
       <div class="header-tabs" role="tablist" aria-label="Select view">
         <!-- Three labelled groups, each tab above its group's label. Alphabetical within a group. The label is for the eye
              (aria-hidden), so a tab that would not make sense without its group says it in its accessible name, which still
-             contains the visible text (Agenda says "Policy agenda" and Landscape "Policy landscape"; the others are clear alone).
+             contains the visible text (Brief says "Policy brief" and Landscape "Policy landscape"; the others are clear alone).
              Government action is ONE tab (since 2026-11-17, at the owner's request; it was two, Enforcement and Legislation), labelled "Enforcement and Legislation" in the owner's words, above the
              group label Government action. It holds three sections, Cases, Enforcement and Legislation, switched in the toolbar of the area (src/views/60-legislation.html); each keeps an address of its own
              (#cases, #enforcement, #legislation), and this button opens the one that was open last. -->
@@ -23,7 +23,7 @@
         </div>
         <div class="tab-group" data-group="policy" role="presentation">
           <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewAgenda" data-view="agenda" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Policy agenda">Agenda</button>
+            <button class="header-nav-btn" id="viewAgenda" data-view="agenda" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Policy brief">Brief</button>
             <button class="header-nav-btn" id="viewPolicy" data-view="policy" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Policy landscape">Landscape</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Policy</div>
