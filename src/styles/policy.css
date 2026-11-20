@@ -2,9 +2,9 @@
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
   .policy-view #policyArea           { display: block; }
-  /* Agenda, and Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
-     Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. Each area takes the
-     masthead's inset from .cards-area. */
+  /* Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
+     Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. The Brief tab (view key agenda) is a page of its own
+     (agenda.css) and keeps this note only for the case its data did not load. Each area takes the masthead's inset from .cards-area. */
   #agendaArea                        { display: none; }
   .agenda-view #agendaArea           { display: block; }
   .agenda-view .cards-area, .enforcement-view .cards-area, .cases-view .cards-area, .all-view .cards-area { padding-top: 0; }
@@ -517,6 +517,19 @@
     font-size: 14px; font-weight: 700; line-height: 1.3;
     color: var(--headline);
   }
+  /* The tile's text: its title, and above it the Featured label when the Sheet's policy map tab marks the policy featured (its `featured` column, via data/policy-map.js). */
+  .pol-cat-card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  /* The label is a small gold square and the word, set in the row-count label's type: it is read, not clicked, so it is not a pill. The word carries the
+     meaning; the square is only a marker (gold on the card is too light to be the meaning, so the text is the headline colour). */
+  .pol-cat-card-flag {
+    display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--headline); line-height: 1;
+  }
+  .pol-cat-card-flag::before {
+    content: ''; flex-shrink: 0; width: 8px; height: 8px;
+    background: var(--gold); border: 1px solid var(--gold-deep); border-radius: 2px;
+  }
   /* Persistent, faint affordance: darkens toward the category color and
      slides right on hover. Always present — hovering never resizes the card.
      Hover color is mixed toward --headline so it stays legible for the
@@ -553,7 +566,6 @@
   }
   .pol-subview-btn.active { background: var(--navy); color: #fff; }
   .pol-subview-btn:hover:not(.active) { color: var(--text); background: color-mix(in srgb, var(--navy) 7%, transparent); }
-
   /* ── Policy Links graph (test-run, hand-rolled SVG force layout) ── */
   .pol-links-wrap { padding: 20px 28px 50px; }
   .pol-links-graph-outer {
@@ -566,9 +578,12 @@
     font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;   /* the .lbl-grot label style */
     fill: var(--muted); opacity: 0.75;
   }
-  .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
-  .pol-links-edge.dimmed { stroke-opacity: 0.08; }
-  .pol-links-edge.lit { stroke: var(--accent); stroke-opacity: 0.85; }
+  .pol-links-edge, .pol-links-rival { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
+  /* Rival policies (each card's competesWith) are dashed, so the two kinds of line differ by shape and not by colour alone. A touch darker at rest,
+     because a dashed line shows less ink than a solid one. */
+  .pol-links-rival { stroke-dasharray: 6 5; stroke-opacity: 0.55; }
+  .pol-links-edge.dimmed, .pol-links-rival.dimmed { stroke-opacity: 0.08; }
+  .pol-links-edge.lit, .pol-links-rival.lit { stroke: var(--accent); stroke-opacity: 0.85; }
   .pol-links-node-dot {
     stroke: var(--surface); stroke-width: 1.5px; cursor: pointer;
     transition: opacity 0.15s, r 0.15s;
@@ -596,6 +611,97 @@
   }
   .pol-links-legend-item { display: flex; align-items: center; gap: 6px; }
   .pol-links-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  /* The legend's samples of the two kinds of line. Their own classes, not .pol-links-edge, so nothing that counts the graph's lines counts these. */
+  .pol-links-key-line { flex-shrink: 0; overflow: visible; }
+  .pol-links-key-line line { stroke: var(--muted); stroke-opacity: 0.7; stroke-width: 1.5; }
+  .pol-links-key-line--rival line { stroke-dasharray: 6 5; }
+
+  /* ── Landscape: the Compare view (src/js/30-policy-compare.js) ──────────────────────────────────────────────────────────────
+     Two policies set side by side under a ring with a fight graphic. Type is the site's: the card-title style (15.5px bold) for the names in
+     the ring, the area-title style (20px bold) over each card, the dialog's own label, text and list classes for the card text, the notes size
+     (13px) for the authors' reasons. The two menus are the shared filter bar's (filterbar.css), which sticks under the switch; the pills under
+     it are the same bar's pills but do not stick, because the cards below are long and the menus are what has to stay in reach. */
+  .pol-cmp { padding: 12px 28px 50px; display: flex; flex-direction: column; gap: 14px; }
+  .pol-cmp .controls.pol-cmp-starts { position: static; border-bottom: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  /* A fight's pill carries two full titles, which can run past a phone's width: it wraps instead of being clipped (the shared pill never wraps). */
+  .pol-cmp .controls .kw-pill { white-space: normal; text-align: left; line-height: 1.35; max-width: 100%; }
+  .pol-cmp-empty { padding: 48px 0; text-align: center; color: var(--text); font-size: 14px; }
+  .pol-cmp-ring {
+    display: grid; grid-template-columns: 1fr 200px 1fr; align-items: stretch; gap: 6px;   /* the two corners are the same height whatever their titles run to */
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+    padding: 14px; scroll-margin-top: 76px;   /* a sample's click brings the ring to the top, under the sticky menus */
+  }
+  .pol-cmp-ring:focus { outline: none; }
+  .pol-cmp-ring:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .pol-cmp-corner {
+    display: flex; flex-direction: column; gap: 3px; min-height: 96px; padding: 9px 12px;
+    background: var(--surface2); border-top: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-ctl);
+  }
+  .pol-cmp-corner-b { text-align: right; }
+  .pol-cmp-announce { font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted); }
+  .pol-cmp-name-sm { font-family: var(--sans); font-size: 15.5px; font-weight: 700; color: var(--headline); line-height: 1.25; }
+  .pol-cmp-areaname { font-size: 12px; color: var(--muted); }
+  /* The picture: two gloves and a burst, drawn in the site's palette (JS: polCmpClash). It is decoration (aria-hidden); the corners and the reason line say it in words. */
+  .pol-cmp-clash { display: block; width: 200px; height: 110px; margin: 0 auto; align-self: center; }
+  .pol-cmp-cuff { fill: var(--light-beige); stroke: var(--navy); stroke-width: 2; }
+  .pol-cmp-glove-a, .pol-cmp-glove-b { stroke: var(--navy); stroke-width: 2; }
+  .pol-cmp-glove-a { fill: var(--pink); }
+  .pol-cmp-glove-b { fill: var(--gold); }
+  .pol-cmp-knuckle { fill: none; stroke: var(--navy); stroke-width: 2; stroke-linecap: round; }
+  .pol-cmp-burst-shape { fill: var(--gold-deep); }
+  .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }
+  .pol-cmp-idle .pol-cmp-burst-shape, .pol-cmp-same .pol-cmp-burst-shape { fill: var(--muted); }
+  .pol-cmp-burst-text { font-family: var(--sans); font-size: 17px; font-weight: 700; fill: #fff; }
+  /* With no recorded link, or the same policy twice, the gloves are held apart: they only meet for a fight or a tag team. */
+  .pol-cmp-idle .pol-cmp-gl, .pol-cmp-idle .pol-cmp-gr, .pol-cmp-same .pol-cmp-gl, .pol-cmp-same .pol-cmp-gr { transform: translateX(-14px); }
+  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the gloves still, touching, with the burst. */
+  @media (prefers-reduced-motion: no-preference) {
+    .pol-cmp-fight .pol-cmp-gl, .pol-cmp-fight .pol-cmp-gr, .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation: pol-cmp-bump 1s ease-in-out infinite; }
+    .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation-duration: 2.2s; }
+    .pol-cmp-fight .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  }
+  @keyframes pol-cmp-bump { 0%, 100% { transform: translateX(-9px); } 50% { transform: translateX(7px); } }
+  @keyframes pol-cmp-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+  .pol-cmp-reason {
+    margin: 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-deep); border-radius: var(--r-card);
+  }
+  .pol-cmp-reason-team { border-left-color: var(--navy); }
+  .pol-cmp-reason-idle, .pol-cmp-reason-same { border-left-color: var(--divider); color: var(--muted); }
+  .pol-cmp-lead { font-weight: 700; color: var(--headline); }
+  .pol-cmp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .pol-cmp-col {
+    display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; min-width: 0;
+    background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-card);
+  }
+  .pol-cmp-name { font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--headline); line-height: 1.2; }
+  .pol-cmp-area { display: flex; align-items: center; gap: 8px; margin-top: -8px; font-size: 12px; color: var(--muted); }
+  .pol-cmp-area::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); flex-shrink: 0; }
+  .pol-cmp-col .pol-action-btn { align-self: flex-start; }
+  .pol-cmp-samples { display: flex; flex-direction: column; gap: 8px; }
+  /* A sample is a policy tile (the Map's: a stripe in its area's colour, a bold title) with the author's reason under it. */
+  .pol-cmp-sample {
+    display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; cursor: pointer;
+    font-family: var(--sans); color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid color-mix(in srgb, var(--cat-color, var(--border)) 45%, var(--border));
+    border-radius: var(--r-card); padding: 9px 12px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pol-cmp-sample:hover { background: color-mix(in srgb, var(--cat-color, transparent) 8%, var(--surface)); border-left-color: var(--cat-color, var(--accent)); }
+  .pol-cmp-sample:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .pol-cmp-sample-title { font-size: 14px; font-weight: 700; color: var(--headline); line-height: 1.3; }
+  .pol-cmp-sample-why { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .pol-cmp-sample-go { align-self: flex-end; display: inline-flex; align-items: center; gap: 5px; font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--accent); }
+  .pol-cmp-more, .pol-cmp-none { font-size: 12px; color: var(--muted); }
+  @media (max-width: 700px) {
+    .pol-cmp { padding: 12px 16px 40px; }
+    .pol-cmp-ring { grid-template-columns: 1fr; }
+    .pol-cmp-corner-b { text-align: left; }
+    .pol-cmp-cols { grid-template-columns: 1fr; }
+    .pol-cmp-col { padding: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pol-cmp-sample { transition: none; } }
 
   @media (max-width: 700px) {
     .pol-subview-toggle { margin: 16px 16px 0; }
