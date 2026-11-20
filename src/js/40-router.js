@@ -7,8 +7,9 @@
                                                    (#all, #legislation, #enforcement and #cases are the four sections of the one Government action tab)
                                                    (#sources, #research and #changelog are retired
                                                    aliases of #papers, and #solutions of #policy)
-       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id> #enforcement/<place> #cases/<place>
-                                               ... parameterised (a place is federal or a state's name: #enforcement/texas)
+       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id> #enforcement/<place> #cases/<place> #brief/<section>
+                                               ... parameterised (a place is federal or a state's name: #enforcement/texas; a section of the Brief is a pathway, an idea
+                                                   or sources: #brief/workers; the tab was called Agenda until 2026-11-19, and #agenda and #agenda/<section> still land on it)
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
      routes (Data Tracker + Job Displacement removed 2026-08).
@@ -42,8 +43,10 @@
     changelog:          { view: 'cards',     alias: true },
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled, enter: clearFactBankLink },
     policy:             { view: 'policy' },
-    // A placeholder tab, first in the Policy group of the nav; nothing is behind it yet.
-    agenda:             { view: 'agenda' },
+    // First in the Policy group of the nav: Becky Chao's brief, the Brief tab (35-agenda.js; the view key and every internal name still say agenda, as the Landscape's still say policy). It was called Agenda until 2026-11-19, so
+    // #agenda still works: it lands here and the address bar is rewritten to #brief. `brief` must come first, since the first key of a view is its canonical route (ROUTE_FOR_VIEW). #brief/<section> is the parameterised route below.
+    brief:              { view: 'agenda' },
+    agenda:             { view: 'agenda', alias: true },
     // Retired tab, merged into Policy. Kept so old links land on a real view;
     // `alias` has applyHashRoute rewrite the address bar to the canonical route.
     solutions:          { view: 'policy', alias: true },
@@ -104,6 +107,14 @@
         enfOpenPlace(tail);
         setView(head);
         history.replaceState(null, '', '#' + enfRoute());
+        return true;
+      }
+      // The Brief on one of its sections (a link from one of its source drawers, or one that was shared; #agenda/<section> was the address before 2026-11-19 and is still read): the view opens and the section is scrolled to,
+      // an idea opened. A section it does not have is a stale or mistyped link: the Brief still opens, and the address bar goes back to #brief (setHash is off while a route is applied, so it is written here).
+      if ((head === 'brief' || head === 'agenda') && tail) {
+        setView('agenda');
+        const hit = agendaGo(tail, { quiet: true });
+        history.replaceState(null, '', '#' + (hit ? 'brief/' + hit : 'brief'));
         return true;
       }
       if (head === 'policy' && tail && POLICY_DATA.some(pl => pl.id === tail)) {
