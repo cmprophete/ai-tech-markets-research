@@ -32,7 +32,8 @@ const ROUTES = [
   '#research',    // the older retired name of #papers (rewritten too)
   '#changelog',   // retired: the What's New feed was removed (the address bar is rewritten to #papers)
   '#fact-bank', '#policy',
-  '#agenda',       // Agenda, a placeholder tab, first in the Policy group
+  '#brief',        // Brief (an excerpt of Becky Chao's brief), first in the Policy group (called Agenda until 2026-11-19)
+  '#agenda',       // the Brief's old name: lands on it, and the address bar is rewritten to #brief
   '#all',          // All, the first of the four sections of the Government action tab: everything at once, and where the tab opens
   '#legislation',  // Legislation, the bills alone
   '#enforcement',  // Enforcement, one of the three sections of the Government action tab (a placeholder until the data file has a row of its kind)
