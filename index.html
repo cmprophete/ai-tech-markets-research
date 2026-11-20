@@ -375,6 +375,9 @@
     font-family: var(--sans);
     padding-bottom: 8px; border-bottom: 1px solid var(--border);
   }
+  /* A link in the standfirst (the Brief's, to the full paper): the site's navy, underlined, as in the About page's prose. */
+  .header-tab-desc-text a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .header-tab-desc-text a:hover { text-decoration-thickness: 2px; }
   .header-nav-btn {
     background: none; border: none; cursor: pointer;
     font-family: var(--grot);
@@ -1080,9 +1083,9 @@
   .policy-view .cards-area           { padding: 0; }
   #policyArea                        { display: none; }
   .policy-view #policyArea           { display: block; }
-  /* Agenda, and Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
-     Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. Each area takes the
-     masthead's inset from .cards-area. */
+  /* Enforcement and Cases while the data file has no row of their kind: placeholders. The shared masthead leads each (copy in TAB_DESCS) and one note sits under it, in the
+     Fact Bank's caution-callout language (gold rule, tinted ground, small uppercase label), so a page with nothing on it still looks deliberate. The Brief tab (view key agenda) is a page of its own
+     (agenda.css) and keeps this note only for the case its data did not load. Each area takes the masthead's inset from .cards-area. */
   #agendaArea                        { display: none; }
   .agenda-view #agendaArea           { display: block; }
   .agenda-view .cards-area, .enforcement-view .cards-area, .cases-view .cards-area, .all-view .cards-area { padding-top: 0; }
@@ -1595,6 +1598,19 @@
     font-size: 14px; font-weight: 700; line-height: 1.3;
     color: var(--headline);
   }
+  /* The tile's text: its title, and above it the Featured label when the Sheet's policy map tab marks the policy featured (its `featured` column, via data/policy-map.js). */
+  .pol-cat-card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  /* The label is a small gold square and the word, set in the row-count label's type: it is read, not clicked, so it is not a pill. The word carries the
+     meaning; the square is only a marker (gold on the card is too light to be the meaning, so the text is the headline colour). */
+  .pol-cat-card-flag {
+    display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--headline); line-height: 1;
+  }
+  .pol-cat-card-flag::before {
+    content: ''; flex-shrink: 0; width: 8px; height: 8px;
+    background: var(--gold); border: 1px solid var(--gold-deep); border-radius: 2px;
+  }
   /* Persistent, faint affordance: darkens toward the category color and
      slides right on hover. Always present — hovering never resizes the card.
      Hover color is mixed toward --headline so it stays legible for the
@@ -1631,7 +1647,6 @@
   }
   .pol-subview-btn.active { background: var(--navy); color: #fff; }
   .pol-subview-btn:hover:not(.active) { color: var(--text); background: color-mix(in srgb, var(--navy) 7%, transparent); }
-
   /* ── Policy Links graph (test-run, hand-rolled SVG force layout) ── */
   .pol-links-wrap { padding: 20px 28px 50px; }
   .pol-links-graph-outer {
@@ -1644,9 +1659,12 @@
     font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;   /* the .lbl-grot label style */
     fill: var(--muted); opacity: 0.75;
   }
-  .pol-links-edge { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
-  .pol-links-edge.dimmed { stroke-opacity: 0.08; }
-  .pol-links-edge.lit { stroke: var(--accent); stroke-opacity: 0.85; }
+  .pol-links-edge, .pol-links-rival { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
+  /* Rival policies (each card's competesWith) are dashed, so the two kinds of line differ by shape and not by colour alone. A touch darker at rest,
+     because a dashed line shows less ink than a solid one. */
+  .pol-links-rival { stroke-dasharray: 6 5; stroke-opacity: 0.55; }
+  .pol-links-edge.dimmed, .pol-links-rival.dimmed { stroke-opacity: 0.08; }
+  .pol-links-edge.lit, .pol-links-rival.lit { stroke: var(--accent); stroke-opacity: 0.85; }
   .pol-links-node-dot {
     stroke: var(--surface); stroke-width: 1.5px; cursor: pointer;
     transition: opacity 0.15s, r 0.15s;
@@ -1674,6 +1692,97 @@
   }
   .pol-links-legend-item { display: flex; align-items: center; gap: 6px; }
   .pol-links-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  /* The legend's samples of the two kinds of line. Their own classes, not .pol-links-edge, so nothing that counts the graph's lines counts these. */
+  .pol-links-key-line { flex-shrink: 0; overflow: visible; }
+  .pol-links-key-line line { stroke: var(--muted); stroke-opacity: 0.7; stroke-width: 1.5; }
+  .pol-links-key-line--rival line { stroke-dasharray: 6 5; }
+
+  /* ── Landscape: the Compare view (src/js/30-policy-compare.js) ──────────────────────────────────────────────────────────────
+     Two policies set side by side under a ring with a fight graphic. Type is the site's: the card-title style (15.5px bold) for the names in
+     the ring, the area-title style (20px bold) over each card, the dialog's own label, text and list classes for the card text, the notes size
+     (13px) for the authors' reasons. The two menus are the shared filter bar's (filterbar.css), which sticks under the switch; the pills under
+     it are the same bar's pills but do not stick, because the cards below are long and the menus are what has to stay in reach. */
+  .pol-cmp { padding: 12px 28px 50px; display: flex; flex-direction: column; gap: 14px; }
+  .pol-cmp .controls.pol-cmp-starts { position: static; border-bottom: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  /* A fight's pill carries two full titles, which can run past a phone's width: it wraps instead of being clipped (the shared pill never wraps). */
+  .pol-cmp .controls .kw-pill { white-space: normal; text-align: left; line-height: 1.35; max-width: 100%; }
+  .pol-cmp-empty { padding: 48px 0; text-align: center; color: var(--text); font-size: 14px; }
+  .pol-cmp-ring {
+    display: grid; grid-template-columns: 1fr 200px 1fr; align-items: stretch; gap: 6px;   /* the two corners are the same height whatever their titles run to */
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+    padding: 14px; scroll-margin-top: 76px;   /* a sample's click brings the ring to the top, under the sticky menus */
+  }
+  .pol-cmp-ring:focus { outline: none; }
+  .pol-cmp-ring:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .pol-cmp-corner {
+    display: flex; flex-direction: column; gap: 3px; min-height: 96px; padding: 9px 12px;
+    background: var(--surface2); border-top: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-ctl);
+  }
+  .pol-cmp-corner-b { text-align: right; }
+  .pol-cmp-announce { font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted); }
+  .pol-cmp-name-sm { font-family: var(--sans); font-size: 15.5px; font-weight: 700; color: var(--headline); line-height: 1.25; }
+  .pol-cmp-areaname { font-size: 12px; color: var(--muted); }
+  /* The picture: two gloves and a burst, drawn in the site's palette (JS: polCmpClash). It is decoration (aria-hidden); the corners and the reason line say it in words. */
+  .pol-cmp-clash { display: block; width: 200px; height: 110px; margin: 0 auto; align-self: center; }
+  .pol-cmp-cuff { fill: var(--light-beige); stroke: var(--navy); stroke-width: 2; }
+  .pol-cmp-glove-a, .pol-cmp-glove-b { stroke: var(--navy); stroke-width: 2; }
+  .pol-cmp-glove-a { fill: var(--pink); }
+  .pol-cmp-glove-b { fill: var(--gold); }
+  .pol-cmp-knuckle { fill: none; stroke: var(--navy); stroke-width: 2; stroke-linecap: round; }
+  .pol-cmp-burst-shape { fill: var(--gold-deep); }
+  .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }
+  .pol-cmp-idle .pol-cmp-burst-shape, .pol-cmp-same .pol-cmp-burst-shape { fill: var(--muted); }
+  .pol-cmp-burst-text { font-family: var(--sans); font-size: 17px; font-weight: 700; fill: #fff; }
+  /* With no recorded link, or the same policy twice, the gloves are held apart: they only meet for a fight or a tag team. */
+  .pol-cmp-idle .pol-cmp-gl, .pol-cmp-idle .pol-cmp-gr, .pol-cmp-same .pol-cmp-gl, .pol-cmp-same .pol-cmp-gr { transform: translateX(-14px); }
+  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the gloves still, touching, with the burst. */
+  @media (prefers-reduced-motion: no-preference) {
+    .pol-cmp-fight .pol-cmp-gl, .pol-cmp-fight .pol-cmp-gr, .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation: pol-cmp-bump 1s ease-in-out infinite; }
+    .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation-duration: 2.2s; }
+    .pol-cmp-fight .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  }
+  @keyframes pol-cmp-bump { 0%, 100% { transform: translateX(-9px); } 50% { transform: translateX(7px); } }
+  @keyframes pol-cmp-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+  .pol-cmp-reason {
+    margin: 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-deep); border-radius: var(--r-card);
+  }
+  .pol-cmp-reason-team { border-left-color: var(--navy); }
+  .pol-cmp-reason-idle, .pol-cmp-reason-same { border-left-color: var(--divider); color: var(--muted); }
+  .pol-cmp-lead { font-weight: 700; color: var(--headline); }
+  .pol-cmp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .pol-cmp-col {
+    display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; min-width: 0;
+    background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-card);
+  }
+  .pol-cmp-name { font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--headline); line-height: 1.2; }
+  .pol-cmp-area { display: flex; align-items: center; gap: 8px; margin-top: -8px; font-size: 12px; color: var(--muted); }
+  .pol-cmp-area::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); flex-shrink: 0; }
+  .pol-cmp-col .pol-action-btn { align-self: flex-start; }
+  .pol-cmp-samples { display: flex; flex-direction: column; gap: 8px; }
+  /* A sample is a policy tile (the Map's: a stripe in its area's colour, a bold title) with the author's reason under it. */
+  .pol-cmp-sample {
+    display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; cursor: pointer;
+    font-family: var(--sans); color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid color-mix(in srgb, var(--cat-color, var(--border)) 45%, var(--border));
+    border-radius: var(--r-card); padding: 9px 12px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pol-cmp-sample:hover { background: color-mix(in srgb, var(--cat-color, transparent) 8%, var(--surface)); border-left-color: var(--cat-color, var(--accent)); }
+  .pol-cmp-sample:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .pol-cmp-sample-title { font-size: 14px; font-weight: 700; color: var(--headline); line-height: 1.3; }
+  .pol-cmp-sample-why { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .pol-cmp-sample-go { align-self: flex-end; display: inline-flex; align-items: center; gap: 5px; font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--accent); }
+  .pol-cmp-more, .pol-cmp-none { font-size: 12px; color: var(--muted); }
+  @media (max-width: 700px) {
+    .pol-cmp { padding: 12px 16px 40px; }
+    .pol-cmp-ring { grid-template-columns: 1fr; }
+    .pol-cmp-corner-b { text-align: left; }
+    .pol-cmp-cols { grid-template-columns: 1fr; }
+    .pol-cmp-col { padding: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pol-cmp-sample { transition: none; } }
 
   @media (max-width: 700px) {
     .pol-subview-toggle { margin: 16px 16px 0; }
@@ -1949,6 +2058,127 @@
     #legislationArea .leg-reset { flex: 1 1 100%; justify-content: center; margin-left: 0; }
   }
   @media (prefers-reduced-motion: reduce) { .leg-state, .leg-tile { transition: none; } }
+  /* ── AGENDA: Becky Chao's brief ──────────────────────────────────────────────────────────────────────────────────
+     Drawn by src/js/35-agenda.js. The tab shows/hides itself in policy.css (#agendaArea); everything here is scoped to it.
+     Type is the site's, not its own: the section heading is About's (20px bold Public Sans, the largest bold the app sets in it),
+     the body is About's 15px, the closed idea's title is the body size in bold and its opening line and the sources are the 13px of
+     a note, labels are the 11px uppercase grotesk of a row count. The serif belongs to the masthead's lede alone. Each pathway
+     wears the colour of the Landscape area it is (--cat-color, set inline from CAT_COLOR_VARS), as a rule, a dot and a left stripe,
+     never as text: the lighter hues fail contrast as small text on Beige. */
+  #agendaRoot { max-width: var(--content-max); }
+  .ag-kicker {
+    font-family: var(--grot); font-weight: 600; font-size: 11px; line-height: 1.3;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--headline);
+  }
+  .ag-dot { flex: none; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); }
+  .ag-num {
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--navy); color: var(--light-beige);
+    font-family: var(--grot); font-size: 12px; font-weight: 600; letter-spacing: 0;
+  }
+
+  #agendaArea .ag-body { padding: 24px 0 60px; }
+  .ag-body > .ag-section:first-child { margin-top: 0; }   /* the first pathway sits right under the masthead, whose hairline closes it */
+
+  /* Sections: the pathways carry their colour as a rule above (About's part rule); the others a plain hairline. */
+  .ag-section { max-width: 760px; margin-top: 40px; padding: 18px 0 0; border-top: 1px solid var(--border); scroll-margin-top: 14px; }
+  .ag-pathway { border-top: 3px solid var(--cat-color, var(--navy)); }
+  .ag-h {
+    display: flex; align-items: center; gap: 11px; margin: 0 0 14px;
+    font-family: var(--sans); font-size: 20px; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; color: var(--headline);
+  }
+  .ag-p { font-family: var(--sans); font-size: 15px; line-height: 1.7; color: var(--text); text-wrap: pretty; }
+  .ag-p + .ag-p { margin-top: 12px; }
+  .ag-p strong, .ag-li-text strong { font-weight: 700; color: var(--headline); }
+
+  /* An idea: the Landscape tile's look as an accordion row. Closed it shows the title and the brief's own first sentence. */
+  .ag-ideas { display: flex; flex-direction: column; gap: 10px; }
+  .ag-idea {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid color-mix(in srgb, var(--cat-color, var(--border)) 45%, var(--border));
+    border-radius: var(--r-card); scroll-margin-top: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ag-idea:hover { box-shadow: 0 2px 10px rgba(44,50,84,0.07); }
+  .ag-idea.is-open { border-left-color: var(--cat-color, var(--accent)); }
+  .ag-sources-card { --cat-color: var(--navy); }
+  .ag-idea-h { margin: 0; font: inherit; }
+  .ag-idea-btn {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; width: 100%;
+    padding: 12px 14px 12px 13px; background: none; border: 0; border-radius: var(--r-card);
+    color: inherit; font: inherit; text-align: left; cursor: pointer;
+  }
+  .ag-idea-btn:hover { background: color-mix(in srgb, var(--cat-color, transparent) 7%, transparent); }
+  .ag-idea-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ag-idea-title { font-family: var(--sans); font-size: 15px; font-weight: 700; line-height: 1.35; color: var(--headline); }
+  .ag-idea-lede { font-family: var(--sans); font-size: 13px; line-height: 1.55; color: var(--muted); }
+  .ag-idea.is-open .ag-idea-lede { display: none; }          /* open, the same sentence opens the text below */
+  .ag-chev { margin-top: 5px; color: var(--muted); }
+  .ag-idea.is-open .ag-chev { transform: rotate(180deg); }
+  .ag-idea-body { padding: 14px 16px 16px; border-top: 1px solid var(--border); }
+
+  /* The four emerging ideas under the first idea: items of a list, each a stripe of the pathway's colour. */
+  .ag-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 14px 0 4px; padding: 0; }
+  .ag-li { padding: 11px 14px 12px; background: color-mix(in srgb, var(--cat-color, transparent) 5%, var(--surface)); border-left: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-ctl); }
+  .ag-li-text { font-family: var(--sans); font-size: 15px; line-height: 1.7; color: var(--text); }
+
+  /* A footnote number: small, raised, and a real button. It is as large as a number in running text can be; the drawer below does the reading. */
+  .ag-ref {
+    font-family: var(--grot); font-size: 0.72em; font-weight: 600; line-height: 1.25; vertical-align: super;
+    color: var(--accent); background: none; border: 0; border-radius: 3px; padding: 0 3px; margin: 0 0 0 1px; cursor: pointer;
+  }
+  .ag-ref:hover { background: color-mix(in srgb, var(--navy) 12%, transparent); }
+  .ag-ref[aria-expanded="true"] { background: var(--navy); color: var(--light-beige); }
+  .ag-source {
+    margin: 10px 0 14px; padding: 10px 14px 12px;
+    background: var(--source-band); border-left: 3px solid var(--navy); border-radius: 0 var(--r-card) var(--r-card) 0;
+    font-family: var(--sans); font-size: 13px; line-height: 1.6; color: var(--text);
+  }
+  .ag-source-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .ag-source a, .ag-note-text a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; overflow-wrap: anywhere; }
+  .ag-source a:hover, .ag-note-text a:hover { text-decoration-thickness: 2px; }
+  .ag-source-text { overflow-wrap: anywhere; }
+  .ag-source-all { display: inline-block; margin-top: 8px; font-family: var(--grot); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+  #agendaArea button.about-link { cursor: pointer; }          /* the About page's small button, on a <button> */
+
+  /* On the Landscape: ours, not the brief's. The Landscape tile's colour dot and the About page's small button. */
+  .ag-related { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .ag-li .ag-related { margin-top: 10px; padding-top: 10px; }
+  .ag-pols { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ag-pol {
+    display: inline-flex; align-items: center; gap: 6px; text-align: left;
+    background: var(--light-beige); border: 1px solid var(--navy); border-radius: var(--r-ctl); color: var(--navy);
+    padding: 3px 10px; font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .ag-pol:hover { background: var(--navy); color: var(--beige); }
+
+  /* The sources list, inside its accordion row. */
+  .ag-notes { list-style: none; margin: 0; padding: 0; }
+  .ag-note { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .ag-note:first-child { border-top: 0; padding-top: 0; }
+  .ag-note-n { flex: none; width: 22px; padding-top: 1px; text-align: right; font-family: var(--grot); font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ag-note-main { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+  .ag-note-text { font-family: var(--sans); font-size: 13px; line-height: 1.6; color: var(--text); overflow-wrap: anywhere; }
+  /* "See in the text" is a link, not a button box: fifty-seven outlined buttons in a list would out-shout the sources themselves. */
+  .ag-back {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font-family: var(--grot); font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--accent);
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
+  }
+  .ag-back:hover { text-decoration-thickness: 2px; }
+
+  /* A passage the reader was sent to is marked for a moment (the script removes the class). */
+  .ag-flash { background: color-mix(in srgb, var(--cat-color, var(--gold)) 20%, transparent); border-radius: 4px; }
+  @media (prefers-reduced-motion: no-preference) { .ag-p, .ag-li-text { transition: background 0.6s ease; } }
+  @media (prefers-reduced-motion: reduce) { .ag-idea, .ag-pol { transition: none; } }
+
+  /* Phone: an open idea and its list items take tighter padding. */
+  @media (max-width: 700px) {
+    .ag-idea-body { padding: 12px 13px 14px; }
+    .ag-li { padding: 10px 12px 11px; }
+  }
   /* ── FOCUS STYLES (Fix 1) ────────────────────────────────── */
   :focus-visible {
     outline: 2px solid var(--accent);
@@ -1976,6 +2206,8 @@
 <script src="data/policy-map.js"></script>
 <!-- Paper summaries (a pilot, hand-maintained, not synced from the Sheet): see docs/paper-summaries.md -->
 <script src="data/paper-summaries.js"></script>
+<!-- The policy agenda, Becky Chao's April 2026 brief (hand-maintained, not synced; its header says what is the brief's and what is ours): drawn into the Brief tab (view key agenda) by src/js/35-agenda.js. See docs/agenda.md -->
+<script src="data/agenda-data.js"></script>
 <!-- Legislation section (Government action tab): the state outlines (generated by tools/us_map.py) and the stages and midterm results (hand-maintained): see data/legislation-data.js -->
 <script src="data/us-map.js"></script>
 <script src="data/legislation-data.js"></script>
@@ -2001,7 +2233,7 @@
       <div class="header-tabs" role="tablist" aria-label="Select view">
         <!-- Three labelled groups, each tab above its group's label. Alphabetical within a group. The label is for the eye
              (aria-hidden), so a tab that would not make sense without its group says it in its accessible name, which still
-             contains the visible text (Agenda says "Policy agenda" and Landscape "Policy landscape"; the others are clear alone).
+             contains the visible text (Brief says "Policy brief" and Landscape "Policy landscape"; the others are clear alone).
              Government action is ONE tab (since 2026-11-17, at the owner's request; it was two, Enforcement and Legislation), labelled "Enforcement and Legislation" in the owner's words, above the
              group label Government action. It holds three sections, Cases, Enforcement and Legislation, switched in the toolbar of the area (src/views/60-legislation.html); each keeps an address of its own
              (#cases, #enforcement, #legislation), and this button opens the one that was open last. -->
@@ -2014,7 +2246,7 @@
         </div>
         <div class="tab-group" data-group="policy" role="presentation">
           <div class="tab-group-btns" role="presentation">
-            <button class="header-nav-btn" id="viewAgenda" data-view="agenda" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Policy agenda">Agenda</button>
+            <button class="header-nav-btn" id="viewAgenda" data-view="agenda" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Policy brief">Brief</button>
             <button class="header-nav-btn" id="viewPolicy" data-view="policy" role="tab" aria-selected="false" aria-controls="viewPanel" aria-label="Policy landscape">Landscape</button>
           </div>
           <div class="tab-group-label" aria-hidden="true">Policy</div>
@@ -2115,10 +2347,13 @@
         </div>
       </div>
 
-      <!-- ── AGENDA ── A placeholder tab, first in the Policy group of the nav (alphabetical: Agenda, Landscape). The masthead above carries its copy
-           (TAB_DESCS.agenda in src/js/70-render.js); this is the one note under it. Replace the note, and that copy, with the agenda when there is one. -->
+      <!-- ── AGENDA ── Becky Chao's April 2026 brief, "Ideas for Shared Economic Prosperity in the AI Transition": first tab of the Policy group of the nav (alphabetical: Agenda, Landscape).
+           The masthead above carries its copy (TAB_DESCS.agenda in src/js/70-render.js; the counts in it come from the data). The page itself is drawn once, on first open, by buildAgenda()
+           in src/js/35-agenda.js from data/agenda-data.js into #agendaRoot, so none of the brief's text lives in this file. The note inside #agendaRoot is what shows only if that data did not load. -->
       <div id="agendaArea">
-        <p class="placeholder-note"><span class="placeholder-note-label">Placeholder</span>Nothing is here yet. For now, the policies themselves are in <a href="#policy">Landscape</a>.</p>
+        <div id="agendaRoot" class="ag">
+          <p class="placeholder-note"><span class="placeholder-note-label">Not available</span>The brief did not load. Reload the page, or see the policies themselves in <a href="#policy">Landscape</a>.</p>
+        </div>
       </div>
       <div id="aboutArea">
         <div class="about-content">
@@ -2142,9 +2377,9 @@
             <p class="about-section-text about-question"><span class="q-lead">And even then, it&rsquo;s hard to know how to react.</span> <span class="q-ask">What policies safeguard against the downsides, amplify what&rsquo;s good, and make sure this broadly helps people?</span> <span class="q-ask">Should we work through the policies we already have, or does a genuinely new era demand bigger and different ideas?</span> <span class="q-ask">How much can we steer the technology, and how much should we just plan on absorbing its effects?</span></p>
             <p class="about-section-text">Our policy map includes nearly every idea people have raised for making AI safe and broadly beneficial. Click through any of them and you&rsquo;ll find the major bills and initiatives from that policy&rsquo;s advocates.</p>
             <p class="about-section-text">This is also where we build on our theory of provoking and legitimizing policy solutions. In a world where AI is fundamentally disruptive, the work is provocation: ideas that go well beyond shoring up what we already have. In a world where AI mostly accelerates the prosperity and the inequality of the last several decades, the work is legitimation, and that&rsquo;s the harder job. We already know what those solutions look like. They have been contested for thirty years.</p>
-            <p class="about-section-text">Our own policy agenda is coming soon.</p>
             <p class="about-note"><strong>How this section is built.</strong> Every policy card is written by someone from our team, and we aim to review the policies every quarter.</p>
             <div class="about-links">
+              <a class="about-link" href="#brief">Brief &rarr;</a>
               <a class="about-link" href="#policy">Landscape &rarr;</a>
             </div>
           </div>
@@ -2747,7 +2982,7 @@
 
   /* ── Policy Map ─────────────────────────────────────────────── */
   let polLevelFilter = 'all';
-  let polViewMode    = 'grid';
+  let polViewMode    = 'all';   // the Landscape's view: 'all', 'links' or 'compare' (buildPolicyView in 20-cite-export.js)
 
   // APA-style citation: Author. (Year). Title. Organization.
   // The `source` field stores "Author — Organization"; a bare organization stands alone.
@@ -2876,6 +3111,13 @@
     return (id && MERGED_POLICY_CATEGORIES[id]) ? { id, label: MERGED_POLICY_CATEGORIES[id] } : null;
   }
 
+  // Whether the Google Sheet's policy map tab has marked the policy featured: its id is in the `featured` list of data/policy-map.js, which
+  // tools/policy_map.py generates from the tab's `featured` column (2026-11-19, the owner: "whatever's labeled on the google sheet"). That list is
+  // the only thing that features a policy: a card carries no flag of its own, and a file with no list, or no file, features none.
+  function polIsFeatured(p) {
+    return typeof POLICY_MAP !== 'undefined' && !!POLICY_MAP && Array.isArray(POLICY_MAP.featured) && POLICY_MAP.featured.indexOf(p.id) >= 0;
+  }
+
   // R1: assemble a policy card as a Markdown primer draft, with inline citations
   // resolved to (Year) or (Author, Year) text. There is no References list (removed
   // 2026-11-17): a card's sources are the links and citations in its own text.
@@ -2945,8 +3187,8 @@
     const area = document.getElementById('policyArea');
 
     // Policy cards temporarily hidden (see policyCardsHidden in 00-state.js).
-    // Show a short notice instead of the Map/Links content; flip the flag to
-    // restore. Placed at the single render entry so both sub-views are covered.
+    // Show a short notice instead of the All/Links/Compare content; flip the flag to
+    // restore. Placed at the single render entry so all three views are covered.
     if (policyCardsHidden) {
       if (area) area.innerHTML = '<p class="pol-hidden-note" style="padding:2.5rem 0;opacity:.75;">The policy cards are being updated and are temporarily unavailable.</p>';
       return;
@@ -2956,14 +3198,19 @@
     // .header-tab-desc, fed from TAB_DESCS.policy.
     if (!area.hasChildNodes()) {
 
-      // Map / Links sub-view toggle
+      // All / Links / Compare view switch. All is the four area rows with every policy, a policy the team features carrying a "Featured" label on its tile
+      // (marked in the `featured` column of the Sheet's policy map tab, which reaches the page as data/policy-map.js); Links is the graph of how the policies relate to one
+      // another; Compare sets two policies side by side with a fight graphic and samples of what works well with each and what competes with it
+      // (30-policy-compare.js). The first view was called Map until 2026-11-19. There was a Featured view of its own for part of that day (the featured policies
+      // alone, in the same rows); the owner replaced it the same day with the label, so a featured policy is seen where it sits among the others.
       const subToggle = document.createElement('div');
       subToggle.className = 'pol-subview-toggle';
       subToggle.setAttribute('role', 'group');
-      subToggle.setAttribute('aria-label', 'Policy Map display');
+      subToggle.setAttribute('aria-label', 'Landscape view');
       subToggle.innerHTML = `
-        <button class="pol-subview-btn active" id="polSubviewMap" type="button">Map</button>
-        <button class="pol-subview-btn" id="polSubviewLinks" type="button">Links</button>`;
+        <button class="pol-subview-btn active" id="polSubviewAll" type="button" aria-pressed="true">All</button>
+        <button class="pol-subview-btn" id="polSubviewLinks" type="button" aria-pressed="false">Links</button>
+        <button class="pol-subview-btn" id="polSubviewCompare" type="button" aria-pressed="false">Compare</button>`;
       area.appendChild(subToggle);
 
       // ── Category rows ────────────────────────────────────────
@@ -2992,41 +3239,50 @@
       catRows.className = 'pol-cat-rows';
       catRows.id = 'polCatRows';
 
-      Object.entries(MERGED_POLICY_CATEGORIES).forEach(([mcId, mcLabel]) => {
-        const origCats = mergedToOriginal[mcId] || [];
-        // Alphabetical by title within the category.
-        const catPolicies = POLICY_DATA
-          .filter(p => origCats.includes(p.category))
-          .sort((a, b) => a.title.localeCompare(b.title));
-        if (!catPolicies.length) return;
+      // Draws the rows: every policy, under its area.
+      const drawRows = () => {
+        catRows.textContent = '';
 
-        const row = document.createElement('div');
-        row.className = 'pol-cat-row';
-        row.dataset.cat = mcId;
-        row.style.setProperty('--cat-color', CAT_COLOR_VARS[mcId] || 'var(--muted)');
+        Object.entries(MERGED_POLICY_CATEGORIES).forEach(([mcId, mcLabel]) => {
+          const origCats = mergedToOriginal[mcId] || [];
+          // Alphabetical by title within the category.
+          const catPolicies = POLICY_DATA
+            .filter(p => origCats.includes(p.category))
+            .sort((a, b) => a.title.localeCompare(b.title));
+          if (!catPolicies.length) return;
 
-        const head = document.createElement('div');
-        head.className = 'pol-cat-row-head';
-        head.innerHTML = `
-          <div class="pol-cat-row-title">${mcLabel}</div>
-          <div class="pol-cat-row-desc">${MERGED_CAT_DESCS[mcId] || ''}</div>
-          <div class="pol-cat-row-count">${catPolicies.length} polic${catPolicies.length===1?'y':'ies'}</div>`;
-        row.appendChild(head);
+          const row = document.createElement('div');
+          row.className = 'pol-cat-row';
+          row.dataset.cat = mcId;
+          row.style.setProperty('--cat-color', CAT_COLOR_VARS[mcId] || 'var(--muted)');
 
-        const cards = document.createElement('div');
-        cards.className = 'pol-cat-row-cards';
+          const head = document.createElement('div');
+          head.className = 'pol-cat-row-head';
+          head.innerHTML = `
+            <div class="pol-cat-row-title">${mcLabel}</div>
+            <div class="pol-cat-row-desc">${MERGED_CAT_DESCS[mcId] || ''}</div>
+            <div class="pol-cat-row-count">${catPolicies.length} polic${catPolicies.length===1?'y':'ies'}</div>`;
+          row.appendChild(head);
 
-        catPolicies.forEach(p => {
-          const card = document.createElement('div');
-          card.className = 'pol-cat-card';
-          card.innerHTML = `<div class="pol-cat-card-title">${p.title}</div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
-          card.addEventListener('click', () => openPolModal(p));
-          cards.appendChild(card);
+          const cards = document.createElement('div');
+          cards.className = 'pol-cat-row-cards';
+
+          catPolicies.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'pol-cat-card';
+            // A policy the team features says so above its title: the Sheet's policy map tab marks it in its `featured` column (data/policy-map.js, see polIsFeatured).
+            // The label is text in the tile, ahead of the title, so it is read with it.
+            const flag = polIsFeatured(p) ? '<span class="pol-cat-card-flag">Featured</span>' : '';
+            card.innerHTML = `<div class="pol-cat-card-main">${flag}<div class="pol-cat-card-title">${p.title}</div></div><span class="ui-chevron sm right pol-cat-card-arrow" aria-hidden="true"></span>`;
+            card.addEventListener('click', () => openPolModal(p));
+            cards.appendChild(card);
+          });
+
+          row.appendChild(cards);
+          catRows.appendChild(row);
         });
-
-        row.appendChild(cards);
-        catRows.appendChild(row);
-      });
+      };
+      drawRows();
 
       area.appendChild(catRows);
 
@@ -3037,23 +3293,40 @@
       linksArea.style.display = 'none';
       area.appendChild(linksArea);
 
-      // Map / Links toggle wiring.
-      const mapBtn = document.getElementById('polSubviewMap');
-      const linksBtn = document.getElementById('polSubviewLinks');
-      mapBtn.addEventListener('click', () => {
-        if (mapBtn.classList.contains('active')) return;
-        mapBtn.classList.add('active'); linksBtn.classList.remove('active');
-        catRows.style.display = ''; linksArea.style.display = 'none';
-      });
-      linksBtn.addEventListener('click', () => {
-        if (linksBtn.classList.contains('active')) return;
-        linksBtn.classList.add('active'); mapBtn.classList.remove('active');
-        catRows.style.display = 'none'; linksArea.style.display = '';
-        if (!linksArea.dataset.built) {
+      // Compare view — built lazily on first activation too (renderPolicyCompare, 30-policy-compare.js).
+      const compareArea = document.createElement('div');
+      compareArea.className = 'pol-cmp';
+      compareArea.id = 'polCompareArea';
+      compareArea.style.display = 'none';
+      area.appendChild(compareArea);
+
+      // The view switch. polViewMode (10-policy-map.js) is the view showing: 'all', 'links' or 'compare'. The rows are drawn once and shown or hidden; Links
+      // and Compare build their own content the first time they are opened.
+      const viewButtons = {
+        all: document.getElementById('polSubviewAll'),
+        links: document.getElementById('polSubviewLinks'),
+        compare: document.getElementById('polSubviewCompare'),
+      };
+      const showView = mode => {
+        if (polViewMode === mode) return;
+        polViewMode = mode;
+        Object.entries(viewButtons).forEach(([m, btn]) => {
+          btn.classList.toggle('active', m === mode);
+          btn.setAttribute('aria-pressed', m === mode ? 'true' : 'false');
+        });
+        catRows.style.display = mode === 'all' ? '' : 'none';
+        linksArea.style.display = mode === 'links' ? '' : 'none';
+        compareArea.style.display = mode === 'compare' ? '' : 'none';
+        if (mode === 'links' && !linksArea.dataset.built) {
           linksArea.dataset.built = '1';
           renderPolicyLinksGraph(linksArea);
         }
-      });
+        if (mode === 'compare' && !compareArea.dataset.built) {
+          compareArea.dataset.built = '1';
+          renderPolicyCompare(compareArea);
+        }
+      };
+      Object.entries(viewButtons).forEach(([mode, btn]) => btn.addEventListener('click', () => showView(mode)));
 
     }
   }
@@ -3069,6 +3342,8 @@
   // already defined in), but the repel/spring physics can nudge a node off that
   // line, which is deliberate: it lets cross-category edges read as a
   // short, clear line rather than a rigid line punching across the canvas.
+  // Rival policies (each card's `competesWith`) are drawn as dashed lines over
+  // the finished layout, and do not move anything: see `rivals` below.
   function renderPolicyLinksGraph(container) {
     const W = 1040, H = 960;
     const mergedOrder = Object.keys(MERGED_POLICY_CATEGORIES); // curated top→bottom order
@@ -3112,6 +3387,22 @@
       });
     });
     const edges = [...edgeMap.values()];
+
+    // Rival policies: each policy's `competesWith`, drawn as dashed lines (since 2026-11-19, at the owner's request; the field was stored and shown nowhere
+    // before). They are laid over the finished layout and do not pull on it: two rivals are not meant to sit together, and the layout below, and the test
+    // that keeps its labels apart, stay as they were. A pair authored on both sides is one line, an id that is no policy draws nothing, and a pair that
+    // also pairs with each other keeps only its solid line, because the two would lie on top of each other.
+    const rivalMap = new Map();
+    POLICY_DATA.forEach(p => {
+      (p.competesWith || []).forEach(l => {
+        if (!nodeById[l.id] || l.id === p.id) return; // guard against a stale id
+        const key = [p.id, l.id].sort().join('|');
+        if (edgeMap.has(key)) return;
+        if (!rivalMap.has(key)) rivalMap.set(key, { a: p.id, b: l.id, whys: [] });
+        if (l.why) rivalMap.get(key).whys.push(l.why);
+      });
+    });
+    const rivals = [...rivalMap.values()];
 
     // ── Physics: repel + spring + soft per-band gravity, cooled over a
     // fixed number of ticks and settled before first paint. ──
@@ -3185,7 +3476,8 @@
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.setAttribute('class', 'pol-links-svg');
     svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', 'Force-directed graph of policies connected by amplification links, ordered top to bottom from Economic Security to Global');
+    // The first and last area come from the data (this label once ended "to Global", an area that no longer exists).
+    svg.setAttribute('aria-label', `Graph of the policies by policy area, from ${MERGED_POLICY_CATEGORIES[mergedOrder[0]]} at the top to ${MERGED_POLICY_CATEGORIES[mergedOrder[mergedOrder.length - 1]]} at the bottom, with a line between policies that pair with each other${rivals.length ? ' and a dashed line between policies that compete' : ''}.`);
 
     mergedOrder.forEach((mcId, i) => {
       const y = i * bandH;
@@ -3217,6 +3509,20 @@
       edgeGroup.appendChild(line);
       return { el: line, a: e.a, b: e.b };
     });
+    // The rivals' dashed lines go in the same group, so pointing at a policy lights both kinds. Each carries its authors' reasons as its tooltip, like a solid one.
+    const rivalEls = rivals.map(e => {
+      const a = nodeById[e.a], b = nodeById[e.b];
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('class', 'pol-links-rival');
+      line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+      line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+      const title = document.createElementNS(svgNS, 'title');
+      title.textContent = e.whys.join(' ');
+      line.appendChild(title);
+      edgeGroup.appendChild(line);
+      return { el: line, a: e.a, b: e.b };
+    });
+    const lineEls = edgeEls.concat(rivalEls);
     svg.appendChild(edgeGroup);
 
     const nodeGroup = document.createElementNS(svgNS, 'g');
@@ -3259,10 +3565,10 @@
 
       const highlight = on => {
         Object.values(nodeEls).forEach(el => el.classList.remove('lit', 'dimmed'));
-        edgeEls.forEach(e => e.el.classList.remove('lit', 'dimmed'));
+        lineEls.forEach(e => e.el.classList.remove('lit', 'dimmed'));
         if (!on) return;
         const connected = new Set([n.id]);
-        edgeEls.forEach(e => {
+        lineEls.forEach(e => {
           const touches = e.a === n.id || e.b === n.id;
           e.el.classList.add(touches ? 'lit' : 'dimmed');
           if (touches) { connected.add(e.a); connected.add(e.b); }
@@ -3286,11 +3592,14 @@
     // categories are allowed to sit empty while cards are being written for
     // them (antitrust does today), and an unfilterable legend dot pointing at
     // nothing reads as a rendering bug.
-    legend.innerHTML = Object.entries(POLICY_CATEGORIES)
+    const dotItems = Object.entries(POLICY_CATEGORIES)
       .filter(([catId]) => POLICY_DATA.some(p => p.category === catId))
       .map(([catId, catLabel]) =>
       `<span class="pol-links-legend-item"><span class="pol-links-legend-dot" style="background:${POL_CAT_COLORS[catId]}"></span>${catLabel}</span>`
     ).join('');
+    // The two kinds of line, each drawn as a sample of itself. The dashed one is listed only when the graph draws one.
+    const lineKey = (cls, label) => `<span class="pol-links-legend-item"><svg class="pol-links-key-line ${cls}" width="26" height="8" viewBox="0 0 26 8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4"/></svg>${label}</span>`;
+    legend.innerHTML = dotItems + lineKey('', 'Pairs with') + (rivals.length ? lineKey('pol-links-key-line--rival', 'Competes with') : '');
     outer.appendChild(legend);
 
     container.innerHTML = '';
@@ -3414,6 +3723,469 @@
     }
   })();
 
+  /* ── Landscape: the Compare view ──────────────────────────────────────────────────────────────────────────────────
+     The Landscape's third view, after All and Links (2026-11-19, the owner: "a main view comparing policies with sample
+     complementary policies and sample conflicting policies" and "a fun graphic of the two policies fighting each other"). Two policies are
+     set side by side: chosen in two menus, from the fights and the tag teams the cards record, or by clicking a sample under either one.
+     A ring above them says whether the two are recorded rivals (a fight), recorded partners (a tag team) or neither, and each side is set out
+     under it in the dialog's own words, with up to three of the policies it works well with and up to three that compete with it.
+
+     Nothing here is made up. Complementary is each card's pairsWith, conflicting its competesWith, and every reason shown is the author's own
+     `why`, as written. A link written on one card only is read as a link between the two (the Links graph does the same), so a policy's samples
+     are its own entries first, in the order they were written, then the policies that name it. There are no scores and no winner: the gloves
+     picture "these two compete", they do not rank. Most pairs of policies have no recorded link at all (6 of the 435 pairs of 30 are rivals,
+     29 are partners, on 2026-11-19), and the view says so rather than staging a fight.
+
+     The card text under each side is the dialog's, drawn the same way (injectPolicyLinks, the same label, text and list styles), so a card
+     reads the same here and there. The motion is CSS only, and only for a reader who has not asked their device for less of it (policy.css). */
+  let polCmpA = null, polCmpB = null, polCmpTeam = -1, polCmpIdx = null;
+
+  // The links between live policies, both ways round. Built the first time the view opens, from POLICY_DATA as it stands then (after the overlays
+  // and the archived cards have been taken out, so an archived policy is nowhere in it and a card that pointed at one has no link to it).
+  function polCmpIndex() {
+    if (polCmpIdx) return polCmpIdx;
+    const live = new Set(POLICY_DATA.map(p => p.id));
+    const field = { pair: 'pairsWith', riv: 'competesWith' };
+    const own = { pair: new Map(), riv: new Map() };        // 'a>b' -> what a's author wrote about b
+    const partners = { pair: new Map(), riv: new Map() };   // id -> the policies it is linked to, its own entries first
+    POLICY_DATA.forEach(p => { partners.pair.set(p.id, []); partners.riv.set(p.id, []); });
+    ['pair', 'riv'].forEach(kind => {
+      POLICY_DATA.forEach(p => (p[field[kind]] || []).forEach(l => {
+        if (!live.has(l.id) || l.id === p.id) return;       // an id that is no policy (or an archived one), or a card pointing at itself
+        own[kind].set(p.id + '>' + l.id, l.why || '');
+        const list = partners[kind].get(p.id);
+        if (!list.includes(l.id)) list.push(l.id);
+      }));
+      // The policies that name it but that it does not name back come after its own, in the order of the cards.
+      const authored = new Map([...partners[kind]].map(([id, list]) => [id, list.slice()]));
+      POLICY_DATA.forEach(p => authored.get(p.id).forEach(q => {
+        const back = partners[kind].get(q);
+        if (!back.includes(p.id)) back.push(p.id);
+      }));
+    });
+    const pairsOf = kind => {
+      const seen = new Set(), out = [];
+      own[kind].forEach((why, key) => {
+        const [a, b] = key.split('>'), k = [a, b].sort().join('|');
+        if (!seen.has(k)) { seen.add(k); out.push([a, b]); }
+      });
+      return out;
+    };
+    polCmpIdx = {
+      partners: (id, kind) => partners[kind].get(id) || [],
+      linked: (a, b, kind) => own[kind].has(a + '>' + b) || own[kind].has(b + '>' + a),
+      // Each author's reason for the pair, as written, the same sentence once when both wrote it.
+      whys: (a, b, kind) => [own[kind].get(a + '>' + b), own[kind].get(b + '>' + a)].filter((w, i, all) => w && all.indexOf(w) === i),
+      whyFor: (a, b, kind) => own[kind].get(a + '>' + b) || own[kind].get(b + '>' + a) || '',
+      pairs: { pair: pairsOf('pair'), riv: pairsOf('riv') },
+    };
+    return polCmpIdx;
+  }
+
+  function polCmpPolicy(id) { return POLICY_DATA.find(p => p.id === id) || POLICY_DATA[0]; }
+  const polCmpAreaColor = p => { const area = policyAreaOf(p); return area ? CAT_COLOR_VARS[area.id] : 'var(--muted)'; };
+
+  // Every policy in the menus, under its area, in the order the All view lists them.
+  function polCmpOptions() {
+    return Object.entries(MERGED_POLICY_CATEGORIES).map(([areaId, label]) => {
+      const items = POLICY_DATA.filter(p => (policyAreaOf(p) || {}).id === areaId).sort((x, y) => x.title.localeCompare(y.title));
+      return items.length ? `<optgroup label="${escapeHTML(label)}">${items.map(p => `<option value="${escapeHTML(p.id)}">${escapeHTML(p.title)}</option>`).join('')}</optgroup>` : '';
+    }).join('');
+  }
+
+  // The picture in the ring: two gloves and a burst. The state decides the burst and how the gloves sit; the colours and the motion are CSS (policy.css).
+  function polCmpGlove(cls) {
+    return `<rect class="pol-cmp-cuff" x="2" y="32" width="22" height="30" rx="4"/><ellipse class="${cls}" cx="50" cy="46" rx="29" ry="25"/><ellipse class="${cls}" cx="45" cy="26" rx="15" ry="10"/><path class="pol-cmp-knuckle" d="M68 36q8 10 0 20"/>`;
+  }
+  function polCmpStar(cx, cy, outer, inner, points) {
+    const pts = [];
+    for (let i = 0; i < points * 2; i++) {
+      const r = i % 2 ? inner : outer, a = Math.PI * i / points - Math.PI / 2;
+      pts.push((cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1));
+    }
+    return pts.join(' ');
+  }
+  function polCmpClash(state) {
+    const label = state === 'team' ? '+' : state === 'same' ? '?' : 'VS';
+    return '<svg class="pol-cmp-clash" viewBox="0 0 200 110" aria-hidden="true" focusable="false">'
+      + `<g class="pol-cmp-gl">${polCmpGlove('pol-cmp-glove-a')}</g>`
+      + `<g transform="translate(200,0) scale(-1,1)"><g class="pol-cmp-gr">${polCmpGlove('pol-cmp-glove-b')}</g></g>`
+      + `<g class="pol-cmp-burst"><polygon class="pol-cmp-burst-shape" points="${polCmpStar(100, 48, 30, 19, 10)}"/><text class="pol-cmp-burst-text" x="100" y="54" text-anchor="middle">${label}</text></g></svg>`;
+  }
+
+  // One side: the card in the dialog's words, then up to three samples each of what works well with it and what competes with it.
+  function polCmpColumn(p, side) {
+    const idx = polCmpIndex(), area = policyAreaOf(p);
+    const paperMap = Object.fromEntries([...RESEARCH_DATA, ...POLICY_SOURCES].map(r => [r.id, r]));
+    const li = arr => (arr || []).map(item => `<li>${injectPolicyLinks(item, paperMap)}</li>`).join('');
+    const samples = (kind, none) => {
+      const list = idx.partners(p.id, kind);
+      if (!list.length) return `<div class="pol-cmp-none">${none}</div>`;
+      const shown = list.slice(0, 3).map(id => {
+        const q = polCmpPolicy(id);
+        return `<button type="button" class="pol-cmp-sample" data-side="${side}" data-id="${escapeHTML(id)}" style="--cat-color:${polCmpAreaColor(q)}"><span class="pol-cmp-sample-title">${escapeHTML(q.title)}</span>`
+          + (idx.whyFor(p.id, id, kind) ? `<span class="pol-cmp-sample-why">${escapeHTML(idx.whyFor(p.id, id, kind))}</span>` : '')
+          + '<span class="pol-cmp-sample-go">Compare <span class="ui-chevron sm right" aria-hidden="true"></span></span></button>';
+      }).join('');
+      return `<div class="pol-cmp-samples">${shown}${list.length > 3 ? `<div class="pol-cmp-more">and ${list.length - 3} more</div>` : ''}</div>`;
+    };
+    const section = (label, inner) => `<div class="pol-modal-section"><div class="pol-modal-label">${label}</div>${inner}</div>`;
+    const lists = [['Strengths', p.strengths], ['Risks', p.risks]].filter(([, arr]) => Array.isArray(arr) && arr.length)
+      .map(([label, arr]) => section(label, `<ul class="pol-modal-list">${li(arr)}</ul>`)).join('');
+    return `<div class="pol-cmp-col" style="--cat-color:${polCmpAreaColor(p)}">`
+      + `<h3 class="pol-cmp-name">${escapeHTML(p.title)}</h3>`
+      + `<div class="pol-cmp-area">${area ? escapeHTML(area.label) : ''}</div>`
+      + `<div><button type="button" class="pol-action-btn pol-cmp-open" data-id="${escapeHTML(p.id)}">Read the full policy</button></div>`
+      + section('What it is', `<div class="pol-modal-text">${injectPolicyLinks(p.summary, paperMap)}</div>`)
+      + section('Works well with', samples('pair', 'No recorded partners.'))
+      + section('Competes with', samples('riv', 'No recorded rivals.'))
+      + lists
+      + '</div>';
+  }
+
+  // Draws everything that depends on the two chosen policies; the menus and the pills are built once, in renderPolicyCompare.
+  function polCmpDraw() {
+    const idx = polCmpIndex(), a = polCmpPolicy(polCmpA), b = polCmpPolicy(polCmpB);
+    polCmpA = a.id; polCmpB = b.id;
+    const rival = idx.linked(a.id, b.id, 'riv'), partner = idx.linked(a.id, b.id, 'pair');
+    const state = a.id === b.id ? 'same' : rival ? 'fight' : partner ? 'team' : 'idle';
+    document.getElementById('polCmpA').value = a.id;
+    document.getElementById('polCmpB').value = b.id;
+    document.querySelectorAll('#polCmpFightRow button[data-a]').forEach(btn => {
+      const on = (btn.dataset.a === a.id && btn.dataset.b === b.id) || (btn.dataset.a === b.id && btn.dataset.b === a.id);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    const announce = state === 'fight' ? ['In this corner', 'And in this corner'] : state === 'team' ? ['Teammate', 'Teammate'] : ['Policy A', 'Policy B'];
+    const corner = (p, role, cls) => `<div class="pol-cmp-corner${cls}" style="--cat-color:${polCmpAreaColor(p)}"><div class="pol-cmp-announce">${role}</div><div class="pol-cmp-name-sm">${escapeHTML(p.title)}</div><div class="pol-cmp-areaname">${escapeHTML((policyAreaOf(p) || {}).label || '')}</div></div>`;
+    const ring = document.getElementById('polCmpRing');
+    ring.className = 'pol-cmp-ring pol-cmp-' + state;
+    ring.innerHTML = corner(a, announce[0], '') + polCmpClash(state) + corner(b, announce[1], ' pol-cmp-corner-b');
+    const reason = document.getElementById('polCmpReason');
+    reason.className = 'pol-cmp-reason pol-cmp-reason-' + state;
+    if (state === 'fight' || state === 'team') {
+      const kind = state === 'fight' ? 'riv' : 'pair', whys = idx.whys(a.id, b.id, kind);
+      reason.innerHTML = `<span class="pol-cmp-lead">${state === 'fight' ? 'What they are fighting over:' : 'Why they team up:'}</span> `
+        + (whys.length ? whys.map(escapeHTML).join('<br>') : `These two are recorded as ${state === 'fight' ? 'rivals' : 'partners'}, with no reason given.`);
+    } else {
+      reason.textContent = state === 'same' ? 'Pick two different policies.' : 'No recorded link between these two, so there is no fight and no team-up.';
+    }
+    document.getElementById('polCmpCols').innerHTML = polCmpColumn(a, 'a') + polCmpColumn(b, 'b');
+  }
+
+  function renderPolicyCompare(container) {
+    container.innerHTML = '';
+    if (!POLICY_DATA.length) { container.innerHTML = '<p class="pol-cmp-empty">There are no policies to compare.</p>'; return; }
+    const idx = polCmpIndex(), title = id => polCmpPolicy(id).title;
+    // It opens on the first recorded fight, in the order of the cards; with none recorded, on the first two policies.
+    if (!polCmpA || !polCmpB) {
+      const first = idx.pairs.riv[0];
+      polCmpA = first ? first[0] : POLICY_DATA[0].id;
+      polCmpB = first ? first[1] : (POLICY_DATA[1] || POLICY_DATA[0]).id;
+    }
+    const opts = polCmpOptions();
+    // The two menus are the shared filter bar's (filterbar.css), which sticks under the switch while the cards below are read; the pills under it are the same bar's pills.
+    container.innerHTML = `
+      <div class="controls pol-cmp-bar" role="region" aria-label="Choose two policies to compare">
+        <div class="controls-row">
+          <span class="ctl-pair"><label class="ctl-label" for="polCmpA">Policy A</label><select id="polCmpA">${opts}</select></span>
+          <span class="ctl-pair"><label class="ctl-label" for="polCmpB">Policy B</label><select id="polCmpB">${opts}</select></span>
+        </div>
+      </div>
+      <div class="controls pol-cmp-starts">
+        <div class="pill-row" id="polCmpFightRow" role="group" aria-label="Recorded fights"${idx.pairs.riv.length ? '' : ' hidden'}><span class="ctl-label kw-label">Fights</span>${idx.pairs.riv.map(([x, y]) => `<button class="kw-pill" type="button" data-a="${escapeHTML(x)}" data-b="${escapeHTML(y)}" aria-pressed="false">${escapeHTML(title(x))} vs ${escapeHTML(title(y))}</button>`).join('')}</div>
+        <div class="pill-row" id="polCmpTeamRow" role="group" aria-label="Recorded tag teams"${idx.pairs.pair.length ? '' : ' hidden'}><span class="ctl-label kw-label">Tag teams</span><button class="kw-pill" type="button" id="polCmpTeam">Show a tag team</button></div>
+      </div>
+      <div class="pol-cmp-ring" id="polCmpRing" tabindex="-1"></div>
+      <p class="pol-cmp-reason" id="polCmpReason" aria-live="polite"></p>
+      <div class="pol-cmp-cols" id="polCmpCols"></div>`;
+    document.getElementById('polCmpA').addEventListener('change', e => { polCmpA = e.target.value; polCmpDraw(); });
+    document.getElementById('polCmpB').addEventListener('change', e => { polCmpB = e.target.value; polCmpDraw(); });
+    document.getElementById('polCmpFightRow').addEventListener('click', e => {
+      const btn = e.target.closest ? e.target.closest('button[data-a]') : null;
+      if (!btn) return;
+      polCmpA = btn.dataset.a; polCmpB = btn.dataset.b; polCmpDraw();
+    });
+    // The tag teams are many (every recorded pair of partners), so one button walks through them in the order of the cards instead of listing them all.
+    document.getElementById('polCmpTeam').addEventListener('click', () => {
+      const teams = idx.pairs.pair;
+      if (!teams.length) return;
+      polCmpTeam = (polCmpTeam + 1) % teams.length;
+      polCmpA = teams[polCmpTeam][0]; polCmpB = teams[polCmpTeam][1];
+      polCmpDraw();
+    });
+    const cols = document.getElementById('polCmpCols');
+    const go = e => {
+      const open = e.target.closest ? e.target.closest('.pol-cmp-open') : null;
+      if (open) { openPolModalById(open.dataset.id); return true; }
+      const xref = e.target.closest ? e.target.closest('.pol-xref') : null;
+      if (xref) { e.stopPropagation(); openPolModalById(xref.dataset.polId); return true; }
+      return false;
+    };
+    cols.addEventListener('click', e => {
+      if (go(e)) return;
+      const sample = e.target.closest ? e.target.closest('.pol-cmp-sample') : null;
+      if (!sample) return;
+      // A sample under one side becomes the other side.
+      if (sample.dataset.side === 'a') polCmpB = sample.dataset.id; else polCmpA = sample.dataset.id;
+      polCmpDraw();
+      // The sample that was clicked is gone and the new fight is at the top: bring the ring into view, and the focus with it.
+      const ring = document.getElementById('polCmpRing');
+      ring.focus({ preventScroll: true });
+      if (ring.scrollIntoView) ring.scrollIntoView({ block: 'start', behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+    cols.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('pol-xref')) { e.preventDefault(); go(e); }
+    });
+    polCmpDraw();
+  }
+  /* ── AGENDA: Becky Chao's brief ───────────────────────────────────────────────────────────────────────────────────
+     The Brief tab (its view key and every internal name still say agenda; it was called Agenda until 2026-11-19) is an excerpt of "Ideas for Shared Economic Prosperity in the AI Transition" (Becky Chao, April 2026), drawn from
+     data/agenda-data.js. That file's header says what in it is the brief's (the text and the sources, character for character,
+     less the cut it names) and what is ours (the short pathway names, the opening line an idea shows while closed, the "On the Landscape"
+     pointers). This script changes no word of it: text goes through escapeHTML and the three marks of the data's tiny markup
+     (**bold**, *italic*, [^n] for footnote mark n) and nothing else, and the tests compare what the page shows with the data.
+
+     What a reader can do here, and why each is on the page:
+       - Open an idea. The brief is long, so each idea is an accordion row that shows its title and its own first sentence
+         while closed. There is no expand-all control (the owner had it taken out, 2026-11-19), so, as in any accordion, closed
+         text is out of reach of the browser's find-in-page until it is opened.
+       - Be sent to a part of it: every section has an address (#brief/<id>: a pathway, an idea or
+         sources), so one can be linked to or opened in a new tab; the router opens the idea if it is one and scrolls there, and a
+         plain click on an in-page link (a source drawer's "All sources") scrolls and rewrites the address bar in place
+         (replaceState), as the rest of the app does, instead of piling up history. There is no nav of them: with the ideas
+         closed the page is short, and the other reading page (About) has none. A bar of jump pills was built here on 2026-11-19
+         and taken out the same day, when the owner asked whether a nav was needed at all.
+       - See a source without leaving the sentence: a footnote number is a button that opens that note in a drawer right under
+         its paragraph (not a floating tooltip, which cannot be reached by keyboard or tapped reliably on a phone). One drawer is
+         open at a time; Escape closes it. The Sources list at the end holds all of them, each with a link back to its passage.
+       - Open a policy card from the Landscape that covers the same ground (the dialog opens over this page).
+
+     Drawn once, on first open (setView calls buildAgenda); every name here starts ag or agenda because the whole app shares one
+     scope. The router's #brief/<id> route calls agendaGo; the masthead's standfirst is agendaMasthead (TAB_DESCS.agenda). */
+  let agBuilt = false;
+  let agFlashTimer = 0;
+
+  function agData() {
+    return (typeof AGENDA_DATA !== 'undefined' && AGENDA_DATA && Array.isArray(AGENDA_DATA.pathways) && AGENDA_DATA.notes) ? AGENDA_DATA : null;
+  }
+  function agCounts(a) {
+    return { pathways: a.pathways.length, ideas: a.pathways.reduce((n, p) => n + p.ideas.length, 0), sources: Object.keys(a.notes).length };
+  }
+  // The masthead's standfirst, under the question (TAB_DESCS.agenda.lede in 70-render.js). It is the owner's own sentence (2026-11-19: "Pulled from Becky Chao's April 2026 brief, <title> (link: <url>), below are four
+  // pathways, from modernizing the social contract to mitigating AI's role in exacerbating the affordability crisis. Open an idea to read it, and any footnote number to see its source."): the brief's title is the link to
+  // the whole paper (the data's `url`; without one it is plain text). The count of pathways is computed from the data, never typed (the rule every masthead here follows). There is no count of ideas or sources: the owner has
+  // kept counts out of mastheads before (the Landscape's, 2026-11-18), and the page shows them where they are used (the Sources row). The two ends of the range are the brief's own words for its first and last pathway.
+  // It comes in two forms that say the same thing: the text, and the html that holds the link (applyMastheadCopy writes the html).
+  const agWhen = a => a.date ? a.date.charAt(0) + a.date.slice(1).toLowerCase() : '';   // "APRIL 2026" in the data, "April 2026" in a sentence
+  function agendaMasthead() {
+    const a = agData();
+    if (!a) return 'Coming soon.';
+    const when = agWhen(a);
+    return `Pulled from ${a.author}\u2019s${when ? ' ' + when : ''} brief, ${a.title}, below are ${spellNumber(a.pathways.length)} pathways, from modernizing the social contract to mitigating AI\u2019s role in exacerbating the affordability crisis. `
+      + 'Open an idea to read it, and any footnote number to see its source.';
+  }
+  function agendaMastheadHTML() {
+    const a = agData();
+    if (!a) return 'Coming soon.';
+    const when = agWhen(a);
+    const title = a.url ? `<a href="${escapeHTML(a.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(a.title)}</a>` : escapeHTML(a.title);
+    return `Pulled from ${escapeHTML(a.author)}&rsquo;s${when ? ' ' + escapeHTML(when) : ''} brief, ${title}, below are ${spellNumber(a.pathways.length)} pathways, from modernizing the social contract to mitigating AI&rsquo;s role in exacerbating the affordability crisis. `
+      + 'Open an idea to read it, and any footnote number to see its source.';
+  }
+
+  // ── the data's markup → HTML ───────────────────────────────────────────────
+  // Escape first, then turn the marks into tags: the text holds "&" and quotes but never an asterisk or a "[^" of its own (the data file's tests check that).
+  function agInline(text) {
+    return escapeHTML(text)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/\[\^(\d+)\]/g, (m, n) => `<button type="button" class="ag-ref" data-note="${n}" aria-expanded="false" aria-label="Source ${n}">${n}</button>`);
+  }
+  // A note: plain text with *italics*, and every URL in it a link, as in the PDF. A URL ends before the full stop, comma or semicolon that follows it.
+  function agNote(text) {
+    return escapeHTML(text)
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/https?:\/\/[^\s<]+/g, u => {
+        const m = /^(.*?)([.,;]*)$/.exec(u);
+        return `<a href="${m[1]}" target="_blank" rel="noopener noreferrer">${m[1]}</a>${m[2]}`;
+      });
+  }
+  // Each pathway wears the colour of the Landscape area it is: the Landscape's four rows are these four pathways, in this order (see the note on .pol-cat-rows).
+  const agColor = areaId => (typeof CAT_COLOR_VARS !== 'undefined' && CAT_COLOR_VARS[areaId]) || 'var(--muted)';
+
+  // "On the Landscape": the policy cards that cover the same ground, as buttons that open the card. A card that is gone (archived, renamed) is left out, and a row with none is not drawn.
+  function agRelatedHTML(ids) {
+    const cards = (ids || []).map(id => POLICY_DATA.find(p => p.id === id)).filter(Boolean);
+    if (!cards.length) return '';
+    return '<div class="ag-related"><span class="ag-kicker">On the Landscape</span><span class="ag-pols">'
+      + cards.map(p => {
+        const area = policyAreaOf(p);
+        return `<button type="button" class="ag-pol" data-pol="${escapeHTML(p.id)}" style="--cat-color:${area ? agColor(area.id) : 'var(--muted)'}"><span class="ag-dot" aria-hidden="true"></span>${escapeHTML(p.title)}</button>`;
+      }).join('')
+      + '</span></div>';
+  }
+  function agBlocksHTML(blocks) {
+    return blocks.map(b => {
+      if (b.p) return `<p class="ag-p">${agInline(b.p)}</p>`;
+      if (b.list) {
+        return '<ul class="ag-list">' + b.list.map(it =>
+          `<li class="ag-li"><p class="ag-li-text"><strong class="ag-lead">${escapeHTML(it.lead)}</strong> ${agInline(it.text)}</p>${agRelatedHTML(it.related)}</li>`).join('') + '</ul>';
+      }
+      return '';
+    }).join('');
+  }
+  function agIdeaHTML(idea) {
+    const id = escapeHTML(idea.id);
+    return `<article class="ag-idea" id="ag-${id}" data-ag="${id}" data-ag-kind="idea">`
+      + `<h3 class="ag-idea-h"><button type="button" class="ag-idea-btn" aria-expanded="false" aria-controls="ag-${id}-body">`
+      + `<span class="ag-idea-text"><span class="ag-idea-title">${escapeHTML(idea.title)}</span><span class="ag-idea-lede">${escapeHTML(idea.lede)}</span></span>`
+      + '<span class="ui-chevron ag-chev" aria-hidden="true"></span></button></h3>'
+      + `<div class="ag-idea-body" id="ag-${id}-body" hidden>${agBlocksHTML(idea.blocks)}${agRelatedHTML(idea.related)}</div></article>`;
+  }
+  function agPathwayHTML(p, k) {
+    const id = escapeHTML(p.id);
+    return `<section class="ag-section ag-pathway" id="ag-${id}" data-ag="${id}" style="--cat-color:${agColor(p.area)}" aria-labelledby="ag-${id}-h">`
+      + `<h2 class="ag-h" id="ag-${id}-h"><span class="ag-num" aria-hidden="true">${k + 1}</span><span>${escapeHTML(p.title)}</span></h2>`
+      + `<div class="ag-ideas">${p.ideas.map(agIdeaHTML).join('')}</div></section>`;
+  }
+  // The Sources list is one more accordion row, so the end of a long page does not open on 57 paragraphs of citations.
+  function agSourcesHTML(a) {
+    const nums = Object.keys(a.notes).map(Number).sort((x, y) => x - y);
+    const items = nums.map(n => `<li class="ag-note" id="ag-note-${n}"><span class="ag-note-n" aria-hidden="true">${n}</span><div class="ag-note-main">`
+      + `<div class="ag-note-text">${agNote(a.notes[n])}</div><button type="button" class="ag-back" data-note="${n}" aria-label="See source ${n} in the text">See in the text</button></div></li>`).join('');
+    return '<section class="ag-section" id="ag-sources" data-ag="sources" aria-labelledby="ag-sources-h"><h2 class="ag-h" id="ag-sources-h">Sources</h2>'
+      + '<article class="ag-idea ag-sources-card" id="ag-sources-card" data-ag-kind="sources">'
+      + '<h3 class="ag-idea-h"><button type="button" class="ag-idea-btn" aria-expanded="false" aria-controls="ag-sources-body">'
+      + `<span class="ag-idea-text"><span class="ag-idea-title">All ${nums.length} sources</span><span class="ag-idea-lede">Every footnote in the brief, in order. Each one links back to the passage that cites it.</span></span>`
+      + '<span class="ui-chevron ag-chev" aria-hidden="true"></span></button></h3>'
+      + `<div class="ag-idea-body" id="ag-sources-body" hidden><ol class="ag-notes" role="list">${items}</ol></div></article></section>`;
+  }
+  function buildAgenda() {
+    const root = document.getElementById('agendaRoot');
+    if (!root) return;
+    if (agBuilt) return;
+    const a = agData();
+    if (!a) return;                       // the note in the markup stays
+    agBuilt = true;
+    root.innerHTML = '<div class="ag-body">' + a.pathways.map(agPathwayHTML).join('') + agSourcesHTML(a) + '</div>';
+    root.addEventListener('click', agClick);
+    root.addEventListener('keydown', agKey);
+  }
+
+  // ── doing things ───────────────────────────────────────────────────────────
+  function agScrollTo(el, block) {
+    if (!el || typeof el.scrollIntoView !== 'function') return;
+    const reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: block || 'start' });
+  }
+  function agFlash(el) {
+    const root = document.getElementById('agendaRoot');
+    if (!root || !el) return;
+    clearTimeout(agFlashTimer);
+    root.querySelectorAll('.ag-flash').forEach(x => x.classList.remove('ag-flash'));
+    el.classList.add('ag-flash');
+    agFlashTimer = setTimeout(() => el.classList.remove('ag-flash'), 1800);
+  }
+  function agSetOpen(art, open) {
+    if (!art) return;
+    const btn = art.querySelector('.ag-idea-btn'), body = art.querySelector('.ag-idea-body');
+    if (!btn || !body) return;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    body.hidden = !open;
+    art.classList.toggle('is-open', open);
+    if (!open) agCloseSources(art);       // a source cannot stay open under a paragraph that is no longer there
+  }
+
+  // Sources: one drawer open at a time, created the first time its number is pressed, under the paragraph (or list item) that cites it.
+  function agCloseSources(within) {
+    const root = document.getElementById('agendaRoot');
+    if (!root) return;
+    (within || root).querySelectorAll('.ag-source').forEach(box => { box.hidden = true; });
+    (within || root).querySelectorAll('.ag-ref[aria-expanded="true"]').forEach(r => r.setAttribute('aria-expanded', 'false'));
+  }
+  function agToggleSource(ref) {
+    const a = agData();
+    if (!a) return;
+    const n = ref.dataset.note, wasOpen = ref.getAttribute('aria-expanded') === 'true';
+    agCloseSources();
+    if (wasOpen || !a.notes[n]) return;
+    let box = document.getElementById('ag-src-' + n);
+    if (!box) {
+      box = document.createElement('div');
+      box.className = 'ag-source';
+      box.id = 'ag-src-' + n;
+      box.setAttribute('role', 'note');
+      box.innerHTML = `<div class="ag-source-head"><span class="ag-kicker">Source ${n}</span><button type="button" class="about-link ag-source-close">Close</button></div>`
+        + `<div class="ag-source-text">${agNote(a.notes[n])}</div><a class="ag-source-all ag-go" href="#brief/sources" data-go="sources">All sources</a>`;
+      (ref.closest('.ag-p, .ag-li-text') || ref).insertAdjacentElement('afterend', box);
+    }
+    box.hidden = false;
+    ref.setAttribute('aria-expanded', 'true');
+    ref.setAttribute('aria-controls', box.id);
+  }
+  // From the Sources list back to the passage: open its idea, open the source, bring the paragraph into view and mark it for a moment.
+  function agShowRef(n) {
+    const ref = document.querySelector('#agendaRoot .ag-ref[data-note="' + n + '"]');
+    if (!ref) return;
+    const art = ref.closest('.ag-idea');
+    if (art) agSetOpen(art, true);
+    agCloseSources();
+    agToggleSource(ref);
+    const block = ref.closest('.ag-p, .ag-li-text') || ref;
+    agScrollTo(block, 'center');
+    agFlash(block);
+    ref.focus({ preventScroll: true });
+  }
+
+  // The router's #brief/<id>, and the one in-page link (a source drawer's "All sources"). An id is a pathway, an idea or "sources"; anything else returns '' (a stale link),
+  // and the caller decides what the address bar says. { quiet: true } leaves the address bar to the router, which is already rewriting it.
+  function agendaGo(id, opts) {
+    if (!/^[a-z0-9-]+$/.test(id || '')) return '';
+    buildAgenda();
+    const root = document.getElementById('agendaRoot');
+    const el = agBuilt && root.querySelector('[data-ag="' + id + '"]');
+    if (!el) return '';
+    if (el.dataset.agKind === 'idea') agSetOpen(el, true);
+    if (id === 'sources') agSetOpen(root.querySelector('#ag-sources-card'), true);
+    agScrollTo(el, 'start');
+    if (!(opts && opts.quiet)) history.replaceState(null, '', '#brief/' + id);
+    return id;
+  }
+
+  function agClick(e) {
+    const t = e.target;
+    const go = t.closest('.ag-go');
+    if (go) {
+      // A modified click (a new tab, a new window) keeps the anchor's own address.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+      e.preventDefault();
+      agendaGo(go.dataset.go);
+      return;
+    }
+    const ref = t.closest('.ag-ref');
+    if (ref) { agToggleSource(ref); return; }
+    const shut = t.closest('.ag-source-close');
+    if (shut) {
+      const box = shut.closest('.ag-source'), ref2 = box && document.querySelector('#agendaRoot .ag-ref[aria-controls="' + box.id + '"]');
+      agCloseSources();
+      if (ref2) ref2.focus();
+      return;
+    }
+    const head = t.closest('.ag-idea-btn');
+    if (head) { const art = head.closest('.ag-idea'); agSetOpen(art, !art.classList.contains('is-open')); return; }
+    const pol = t.closest('.ag-pol');
+    if (pol) { openPolModalById(pol.dataset.pol); return; }
+    const back = t.closest('.ag-back');
+    if (back) agShowRef(+back.dataset.note);
+  }
+  function agKey(e) {
+    if (e.key !== 'Escape') return;
+    const box = document.querySelector('#agendaRoot .ag-source:not([hidden])');
+    if (!box) return;
+    const ref = document.querySelector('#agendaRoot .ag-ref[aria-controls="' + box.id + '"]');
+    agCloseSources();
+    if (ref) ref.focus();
+  }
   /* ── ROUTER ──────────────────────────────────────────────────────────────
      One place that knows how location.hash and app state map onto each other.
 
@@ -3423,8 +4195,9 @@
                                                    (#all, #legislation, #enforcement and #cases are the four sections of the one Government action tab)
                                                    (#sources, #research and #changelog are retired
                                                    aliases of #papers, and #solutions of #policy)
-       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id> #enforcement/<place> #cases/<place>
-                                               ... parameterised (a place is federal or a state's name: #enforcement/texas)
+       #policy/<policy-id> #entry/<entry-id> #fact-bank/<paper-id> #enforcement/<place> #cases/<place> #brief/<section>
+                                               ... parameterised (a place is federal or a state's name: #enforcement/texas; a section of the Brief is a pathway, an idea
+                                                   or sources: #brief/workers; the tab was called Agenda until 2026-11-19, and #agenda and #agenda/<section> still land on it)
      Anything else falls through to About, including the retired #tracker,
      #tracker/<tab>, #job-displacement, #adoption, #themes and #theme/<id>
      routes (Data Tracker + Job Displacement removed 2026-08).
@@ -3458,8 +4231,10 @@
     changelog:          { view: 'cards',     alias: true },
     'fact-bank':        { view: 'fact-bank', guard: () => factBankEnabled, enter: clearFactBankLink },
     policy:             { view: 'policy' },
-    // A placeholder tab, first in the Policy group of the nav; nothing is behind it yet.
-    agenda:             { view: 'agenda' },
+    // First in the Policy group of the nav: Becky Chao's brief, the Brief tab (35-agenda.js; the view key and every internal name still say agenda, as the Landscape's still say policy). It was called Agenda until 2026-11-19, so
+    // #agenda still works: it lands here and the address bar is rewritten to #brief. `brief` must come first, since the first key of a view is its canonical route (ROUTE_FOR_VIEW). #brief/<section> is the parameterised route below.
+    brief:              { view: 'agenda' },
+    agenda:             { view: 'agenda', alias: true },
     // Retired tab, merged into Policy. Kept so old links land on a real view;
     // `alias` has applyHashRoute rewrite the address bar to the canonical route.
     solutions:          { view: 'policy', alias: true },
@@ -3520,6 +4295,14 @@
         enfOpenPlace(tail);
         setView(head);
         history.replaceState(null, '', '#' + enfRoute());
+        return true;
+      }
+      // The Brief on one of its sections (a link from one of its source drawers, or one that was shared; #agenda/<section> was the address before 2026-11-19 and is still read): the view opens and the section is scrolled to,
+      // an idea opened. A section it does not have is a stale or mistyped link: the Brief still opens, and the address bar goes back to #brief (setHash is off while a route is applied, so it is written here).
+      if ((head === 'brief' || head === 'agenda') && tail) {
+        setView('agenda');
+        const hit = agendaGo(tail, { quiet: true });
+        history.replaceState(null, '', '#' + (hit ? 'brief/' + hit : 'brief'));
         return true;
       }
       if (head === 'policy' && tail && POLICY_DATA.some(pl => pl.id === tail)) {
@@ -4695,7 +5478,7 @@
       buildPolicyView();
       return;
     }
-    // About and Agenda are static markup, Enforcement and Cases are drawn by their own script (55-enforcement.js) and Legislation and All by theirs (60-legislation.js): there is nothing to build here.
+    // About is static markup, the Brief (view key agenda) is drawn once by its own script (35-agenda.js; setView calls buildAgenda), Enforcement and Cases are drawn by theirs (55-enforcement.js) and Legislation and All by theirs (60-legislation.js): there is nothing to build here.
     if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'cases' || activeView === 'legislation' || activeView === 'all') { return; }
 
     // ── Papers (cards) view ──
@@ -4858,8 +5641,10 @@
       },
     },
     about: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
-    // A placeholder tab, first in the Policy group: this masthead and the one note under it (src/views/40-agenda.html) are all it says. Replace both when there is an agenda.
-    agenda: { lede: 'What is our policy agenda?', text: 'Coming soon.' },
+    // The Brief tab (the key is still agenda; the tab was called Agenda until 2026-11-19), first in the Policy group: Becky Chao's April 2026 brief (data/agenda-data.js, drawn by 35-agenda.js). The question is the brief's own aim (its words: AI "built to benefit all Americans, not just a select few"); it
+    // was "What is our policy agenda?" until 2026-11-19, when the owner asked for a question and a blurb that suit the content. The standfirst names the brief and counts its pathways from the data (agendaMasthead), so it
+    // cannot go stale; it says "Coming soon." only if that file did not load.
+    agenda: { lede: 'How do we make sure AI benefits everyone?', get text() { return agendaMasthead(); }, get html() { return agendaMastheadHTML(); } },
   };
   // The Government action tab has ONE masthead for its four sections (the owner, 2026-11-18: "There shouldn't be a different header and blurb for each view"): the tab's question and standfirst, said from everything it
   // holds (govLede() and govMasthead() in 60-legislation.js), so it cannot go stale and does not change when the switch does.
@@ -4905,7 +5690,8 @@
     const ld = document.getElementById('headerTabDescLede');
     const t  = document.getElementById('headerTabDescText');
     if (ld) ld.textContent = desc.lede || '';
-    if (t)  t.textContent  = desc.text;
+    // Every tab's standfirst is plain text, except one that gives `html` as well (the Brief's, which links to the full paper): that is written as markup, and `text` stays its plain version.
+    if (t) { if (typeof desc.html === 'string') t.innerHTML = desc.html; else t.textContent = desc.text; }
   }
 
   // Government action is one nav tab for its four sections (GOV_VIEWS), so all four map to it; the tab opens the section that was open last (govLast), All at first.
@@ -4936,6 +5722,7 @@
     document.querySelectorAll('#govSwitch [data-gov]').forEach(b => { const on = b.dataset.gov === view; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
+    if (view === 'agenda' && typeof buildAgenda === 'function') buildAgenda();   // Becky Chao's brief: drawn once, on first open (35-agenda.js)
     // The four sections of Government action share the toolbar, the map and the card (the map is shaded from the open section's rows, and the card holds that section's own data; the bills are a file of their own,
     // fetched the first time any of the four opens).
     if (GOV_VIEWS.includes(view)) {
@@ -4951,7 +5738,7 @@
     if (ann) {
       // Must match the tabs' accessible names in src/views/10-header.html (the visible label, plus an aria-label
       // where the tab needs its group to make sense): this is what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', all: 'Government action: All', legislation: 'Government action: Legislation', enforcement: 'Government action: Enforcement', cases: 'Government action: Cases', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy brief', policy: 'Policy landscape', all: 'Government action: All', legislation: 'Government action: Legislation', enforcement: 'Government action: Enforcement', cases: 'Government action: Cases', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
