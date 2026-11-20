@@ -42,7 +42,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const cases = [
     ['viewCards', 'cards', '#papers'],
     ['viewFactBank', 'fact-bank', '#fact-bank'],
-    ['viewAgenda', 'agenda', '#agenda'],
+    ['viewAgenda', 'agenda', '#brief'],
     ['viewPolicy', 'policy', '#policy'],
     ['viewGovernment', 'all', '#all'],   // one tab for All, Cases, Enforcement and Legislation: from another tab it opens the section that was open last, All at first
   ];
@@ -87,7 +87,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
 }
 
 /* ── the grouped nav and the front page ───────────────────────────────────
-   The header nav is three labelled groups: Research (Fact Bank, Papers: alphabetical), Policy (Agenda, a placeholder, then Landscape) and
+   The header nav is three labelled groups: Research (Fact Bank, Papers: alphabetical), Policy (Brief, then Landscape) and
    Government action (ONE tab, labelled Enforcement and Legislation in the owner's words above the group label; it holds Cases, Enforcement and Legislation, which were two tabs, Enforcement and Legislation,
    until 2026-11-17, and Legislation was the group of its own from 2026-11-12, when it left Policy). About has no door
    cards: it sets out the three names as sections, each opening with the question it answers and then what the dashboard offers for it. The Research and Policy copy is the owner's own and is
@@ -97,22 +97,22 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const groups = [...d.querySelectorAll('.header-tabs > .tab-group')].map(g =>
     `${g.dataset.group}:${g.querySelector('.tab-group-label').textContent.trim()}:` +
     [...g.querySelectorAll('.tab-group-btns > .header-nav-btn')].map(b => b.id).join('+'));
-  ok('the nav is three labelled groups: Research (Fact Bank, Papers), Policy (Agenda, Landscape) and Government action, whose one tab reads Enforcement and Legislation',
+  ok('the nav is three labelled groups: Research (Fact Bank, Papers), Policy (Brief, Landscape) and Government action, whose one tab reads Enforcement and Legislation',
      groups.join() === 'research:Research:viewFactBank+viewCards,policy:Policy:viewAgenda+viewPolicy,government:Government action:viewGovernment', groups.join());
-  ok('the tabs read Fact Bank, Papers, Agenda, Landscape, Enforcement and Legislation (Cases, Enforcement and Legislation are the last one\'s sections, not tabs)',
-     [...d.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim()).join() === 'Fact Bank,Papers,Agenda,Landscape,Enforcement and Legislation' && !d.getElementById('viewEnforcement') && !d.getElementById('viewLegislation'));
+  ok('the tabs read Fact Bank, Papers, Brief, Landscape, Enforcement and Legislation (Cases, Enforcement and Legislation are the last one\'s sections, not tabs)',
+     [...d.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim()).join() === 'Fact Bank,Papers,Brief,Landscape,Enforcement and Legislation' && !d.getElementById('viewEnforcement') && !d.getElementById('viewLegislation'));
   ok('the tabs of each group are in alphabetical order',
      [...d.querySelectorAll('.tab-group')].every(g => {
        const names = [...g.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim());
        return names.join() === [...names].sort().join();
      }));
-  ok('the group labels are for the eye (aria-hidden), and the tabs that would not make sense on their own (Agenda, Landscape) carry a fuller accessible name that still contains the visible text, and the Enforcement and Legislation tab is clear alone (it has none)',
+  ok('the group labels are for the eye (aria-hidden), and the tabs that would not make sense on their own (Brief, Landscape) carry a fuller accessible name that still contains the visible text, and the Enforcement and Legislation tab is clear alone (it has none)',
      [...d.querySelectorAll('.tab-group-label')].every(l => l.getAttribute('aria-hidden') === 'true') &&
      ['viewAgenda', 'viewPolicy'].every(id => {
        const b = d.getElementById(id);
        return b.getAttribute('aria-label').toLowerCase().includes(b.textContent.trim().toLowerCase());
      }) &&
-     ['viewAgenda', 'viewPolicy'].map(id => d.getElementById(id).getAttribute('aria-label')).join() === 'Policy agenda,Policy landscape' &&
+     ['viewAgenda', 'viewPolicy'].map(id => d.getElementById(id).getAttribute('aria-label')).join() === 'Policy brief,Policy landscape' &&
      !d.getElementById('viewGovernment').hasAttribute('aria-label'));
   // Each group's accent is a line of its own in the stylesheet; a group without one quietly takes the green default of
   // the first rule, so a new group would look like Research until someone noticed.
@@ -145,9 +145,9 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
        const t = [...aboutSecs[0].querySelectorAll('.about-section-text')];
        return t.length === 2 && t[1].textContent.startsWith('Each question calls for a different kind of answer');
      })() && aboutSecs[aboutSecs.length - 1].lastElementChild.matches('.about-credit'));
-  ok('each section ends with links to the tabs and sections it describes: Research to the Fact Bank and Papers, Policy to Landscape, Government action to Cases, Enforcement and Legislation (Agenda is a placeholder with nothing to say yet, so it is not linked)',
+  ok('each section ends with links to the tabs and sections it describes: Research to the Fact Bank and Papers, Policy to the Brief and Landscape, Government action to Cases, Enforcement and Legislation',
      labelled.length === 3 && labelled.every(sec => sec.lastElementChild.matches('.about-links')) &&
-     labelled.map(sec => [...sec.querySelectorAll('.about-links a')].map(a => a.getAttribute('href')).join()).join('|') === '#fact-bank,#papers|#policy|#all,#cases,#enforcement,#legislation');
+     labelled.map(sec => [...sec.querySelectorAll('.about-links a')].map(a => a.getAttribute('href')).join()).join('|') === '#fact-bank,#papers|#brief,#policy|#all,#cases,#enforcement,#legislation');
   ok('each question is one paragraph: a lead statement run on into its questions, marked up without changing a word',
      labelled.length === 3 && labelled.every(sec => {
        const q = sec.querySelector('.about-question'), kids = [...q.children];
@@ -184,25 +184,253 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the About page\'s own notes lead the same way (a bold run-in, then the text)', notes.length >= 2 && notes.every(n => n.firstElementChild.matches('strong')));
 }
 
-/* ── Agenda: a placeholder tab, first in the Policy group ───────────────────────────────────────────────────
-   It opens, asks its question, says it is coming, and shows one note: nothing is here yet, with a link to Landscape (#policy). Nothing is behind
-   it, and none of the Policy tab's list is built on it. */
+/* ── Brief (view key agenda): Becky Chao's brief ─────────────────────────────────────────────────────────────────────────────────────
+   The tab, called Agenda until 2026-11-19 (its view key and internal names still say agenda), is an excerpt of "Ideas for Shared Economic Prosperity in the AI Transition" (April 2026), drawn by src/js/35-agenda.js from data/agenda-data.js. What is pinned:
+   the page says what the data says, character for character (the words are the author's, so every check compares the page with the data file and never with a sentence typed here); the data is whole (four pathways
+   in the Landscape's four areas, eight ideas, every note cited once, in order, every opening line a real prefix, every "On the Landscape" pointer a real card); the page does what it offers (ideas open and
+   close, a footnote number opens its source under its paragraph, the Sources list leads back, a pointer opens the policy dialog, each section has an address); and with no data file the tab says so instead of throwing. */
 {
-  const { w, d } = load('index.html', '#agenda');
-  ok('#agenda opens the agenda view', bodyView(d) === 'agenda', `body view was ${bodyView(d)}`);
-  ok('#agenda keeps its address bar', w.location.hash === '#agenda', `hash was ${w.location.hash}`);
+  const fs = require('fs'), path = require('path');
+  const { w, d, errors } = load('index.html', '#brief');
+  const A = w.eval('AGENDA_DATA'), POL = w.eval('POLICY_DATA'), AREAS = w.eval('Object.keys(MERGED_POLICY_CATEGORIES)');
+  const ideas = A.pathways.flatMap(p => p.ideas);
+  const plain = s => s.replace(/\*/g, '').replace(/\[\^(\d+)\]/g, '$1');          // the data's markup as the page shows it: the marks gone, a footnote mark as its number
+  const noMarks = s => s.replace(/\*/g, '').replace(/\[\^\d+\]/g, '');
+  const spell = n => { const o = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'], t = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']; return n < 20 ? o[n] : t[Math.floor(n / 10)] + (n % 10 ? '-' + o[n % 10] : ''); };
+  const urlsOf = s => (s.replace(/\*/g, '').match(/https?:\/\/\S+/g) || []).map(u => u.replace(/[.,;]+$/, ''));
+  const idea = id => d.getElementById('ag-' + id);
+  const isOpen = id => idea(id).classList.contains('is-open') && idea(id).querySelector('.ag-idea-btn').getAttribute('aria-expanded') === 'true' && !idea(id).querySelector('.ag-idea-body').hidden;
+  const fire = (el, type = 'click', init = {}) => { const ev = new w.MouseEvent(type, Object.assign({ bubbles: true, cancelable: true }, init)); el.dispatchEvent(ev); return ev; };
+  const ref = n => d.querySelector('#agendaRoot .ag-ref[data-note="' + n + '"]');
+  const drawer = n => d.getElementById('ag-src-' + n);
+  const openDrawers = () => [...d.querySelectorAll('#agendaRoot .ag-source:not([hidden])')];
+
+  /* ── the data is whole ── */
+  ok('the data is four pathways and eight ideas', A.pathways.length === 4 && ideas.length === 8);
+  ok('the four pathways are the Landscape\'s four areas, in the Landscape\'s order (the pathways of the brief, in its order)', A.pathways.map(p => p.area).join() === AREAS.join(), A.pathways.map(p => p.area).join() + ' vs ' + AREAS.join());
+  const ids = [...A.pathways.map(p => p.id), ...ideas.map(i => i.id), 'sources'];
+  ok('every section id is unique and plain (lower-case letters, digits and hyphens), so each can be an address', new Set(ids).size === ids.length && ids.every(i => /^[a-z0-9-]+$/.test(i)), ids.join());
+  ok('each idea\'s opening line, shown while it is closed, is the start of its first paragraph, word for word', ideas.every(i => noMarks(i.blocks[0].p).startsWith(i.lede)), ideas.filter(i => !noMarks(i.blocks[0].p).startsWith(i.lede)).map(i => i.id).join());
+  const strings = [];
+  A.pathways.forEach(p => p.ideas.forEach(i => i.blocks.forEach(b => b.p ? strings.push(b.p) : b.list.forEach(it => strings.push(it.text)))));
+  const marks = [];
+  strings.forEach(s => { for (const m of s.matchAll(/\[\^(\d+)\]/g)) marks.push(+m[1]); });
+  const noteNums = Object.keys(A.notes).map(Number).sort((a, b) => a - b);
+  ok('every note is cited once by the text, in order, and every citation has its note', marks.join() === noteNums.join() && marks.every((m, k) => k === 0 || m > marks[k - 1]), marks.join());
+  /* Left out at the owner's request (2026-11-19; the data file's header says so): the conclusion and the whole introduction, so the page is the ideas alone, and with them the notes only that text cited (1 to 13). The brief's
+     footnote numbers are kept, nothing renumbered, so the notes run from 14 to 57 and the page's first footnote is 14. This pins the cuts, so a merge or a "restore it from the PDF" cannot quietly bring any of it back. */
+  const wholeData = JSON.stringify(A);
+  ok('the introduction and the conclusion are left out, as the owner asked, and with them notes 1 to 13: the data has no intro and no conclusion, none of their paragraphs, the notes run 14 to 57 in the brief\'s own numbers, and nothing cites a number below 14',
+     A.intro === undefined && A.conclusion === undefined &&
+     ['Artificial Intelligence (AI) is transforming our economy', 'At the same time, the rush to build AI tools', 'People are rightfully nervous about AI', 'While it remains uncertain how many workers', 'Ultimately, how society builds AI', 'Given the universal uncertainty',
+      'These ideas require additional analysis', 'This brief lays out policy ideas', 'AI is rapidly developing and becoming increasingly integrated into our society'].every(t => !wholeData.includes(t)) &&
+     noteNums.join() === Array.from({ length: 44 }, (_, k) => k + 14).join() && marks.every(m => m >= 14), noteNums.join());
+  /* The brief's words are the author's and must not drift: not by a copyedit, a "fixed" typo, a smart-quote pass or a merge that took the wrong side. Every other check here compares the page with the data file, so a changed word
+     in the file would pass them all; this one pins the file. It is a fingerprint of the brief's own words only (title, date, author, every idea's heading, paragraph and list item, and every note, in order) and nothing of ours (labels, ids,
+     areas, opening lines, pointers). When the author publishes a revision, replace the text in data/agenda-data.js from the new version (docs/agenda.md) and put the new value here: that is the one deliberate edit. (It was recomputed on 2026-11-19, when the owner had the introduction, the conclusion and the notes only they cited left out: see the data file's header.) */
+  const BRIEF_FINGERPRINT = '2fb9820714b7e6aee24b2c036da5ee17a932479bdffd5d098578628cda713c46';
+  const briefWords = { title: A.title, date: A.date, author: A.author,
+    pathways: A.pathways.map(p => ({ title: p.title, ideas: p.ideas.map(i => ({ title: i.title, blocks: i.blocks.map(b => b.p ? { p: b.p } : { list: b.list.map(it => ({ lead: it.lead, text: it.text })) }) })) })),
+    notes: A.notes };
+  const fingerprint = require('crypto').createHash('sha256').update(JSON.stringify(briefWords)).digest('hex');
+  ok('the brief\'s words, less the cuts above, are exactly as published: their fingerprint is the one recorded when the data was read from the PDF and cut (a deliberate revision updates both)', fingerprint === BRIEF_FINGERPRINT, fingerprint);
+  const first = ideas[0], list0 = first.blocks.find(b => b.list).list;
+  ok('the first idea has the brief\'s four emerging ideas as a list, each led by a bold run-in that ends in a colon', list0.length === 4 && list0.every(it => /:$/.test(it.lead)), list0.map(it => it.lead).join(' | '));
+  const rel = ideas.flatMap(i => [...i.related, ...i.blocks.filter(b => b.list).flatMap(b => b.list.flatMap(it => it.related))]);
+  ok('every "On the Landscape" pointer names a policy card that exists', rel.length > 0 && rel.every(id => POL.some(p => p.id === id)), rel.filter(id => !POL.some(p => p.id === id)).join());
+
+  /* ── the tab ── */
   const btn = d.getElementById('viewAgenda');
-  ok('#agenda marks the Agenda button active, and not Landscape, and the panel is labelled by it',
+  ok('#brief opens the brief view (its key is still agenda) and keeps its address bar', bodyView(d) === 'agenda' && w.location.hash === '#brief', `view ${bodyView(d)}, hash ${w.location.hash}`);
+  ok('#brief marks the Brief button active, and not Landscape, and the panel is labelled by it',
      btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active') &&
      d.getElementById('viewPanel').getAttribute('aria-labelledby') === 'viewAgenda');
-  ok('the masthead asks a question and says it is coming soon',
-     d.getElementById('headerTabDescLede').textContent.trim().endsWith('?') && /coming soon/i.test(d.getElementById('headerTabDescText').textContent));
-  const note = d.querySelector('#agendaArea .placeholder-note');
-  ok('the placeholder says nothing is here yet and links to Landscape (#policy)',
-     !!note && /nothing is here yet/i.test(note.textContent) && note.querySelector('a').getAttribute('href') === '#policy');
-  ok('it is a view of its own, with no policy list: the policy view class is off and the Landscape area is empty',
-     !d.body.classList.contains('policy-view') && d.getElementById('policyArea').children.length === 0, d.body.className);
-  ok('the screen reader announcement names the view', d.getElementById('viewAnnounce').textContent === 'Policy agenda view');
+  const mast = d.getElementById('headerTabDescText').textContent, lede = d.getElementById('headerTabDescLede').textContent.trim();
+  ok('the masthead asks a question about what the brief is for, not the tab\'s name ("How do we make sure AI benefits everyone?", written 2026-11-19; it was "What is our policy agenda?")', lede === 'How do we make sure AI benefits everyone?' && lede.endsWith('?'), lede);
+  const mastLink = d.querySelector('#headerTabDescText a');
+  ok('the standfirst is the owner\'s own sentence, "Pulled from <author>\'s April 2026 brief, <title>, below are <n> pathways, from modernizing the social contract to mitigating AI\'s role in exacerbating the affordability crisis. Open an idea to read it, and any footnote number to see its source.", with the brief\'s title linked to the full paper in a new tab and the count of pathways computed from the data',
+     mast === 'Pulled from ' + A.author + '\u2019s April 2026 brief, ' + A.title + ', below are ' + spell(A.pathways.length) + ' pathways, from modernizing the social contract to mitigating AI\u2019s role in exacerbating the affordability crisis. Open an idea to read it, and any footnote number to see its source.' &&
+     A.url === 'https://economicsecurityproject.org/resource/ai-transition/' && d.querySelectorAll('#headerTabDescText a').length === 1 && !!mastLink && mastLink.getAttribute('href') === A.url && mastLink.textContent === A.title && mastLink.target === '_blank' && /noopener/.test(mastLink.rel), mast);
+  const agendaJs = fs.readFileSync(path.join(__dirname, '..', 'src', 'js', '35-agenda.js'), 'utf8'), mastFn = agendaJs.slice(agendaJs.indexOf('function agendaMasthead'), agendaJs.indexOf('// ── the data\'s markup'));
+  ok('the standfirst quotes no count of ideas or sources (the owner keeps counts out of mastheads; the Sources row shows that one), and the count of pathways is computed, not typed',
+     !/\b(eight|forty|fifty|sixty)\b|\d+ (ideas|sources)/i.test(mast) && mastFn.length > 100 && !/\bfour\b/.test(mastFn), mast);
+  ok('the masthead no longer says coming soon, and the placeholder note is gone', !/coming soon/i.test(mast) && !d.querySelector('#agendaArea .placeholder-note'));
+  ok('it is a view of its own, with no policy list: the policy view class is off and the Landscape area is empty', !d.body.classList.contains('policy-view') && d.getElementById('policyArea').children.length === 0, d.body.className);
+  ok('the screen reader announcement names the view', d.getElementById('viewAnnounce').textContent === 'Policy brief view');
+  ok('no console errors on load', errors.length === 0, errors[0]);
+  const before = d.getElementById('headerTabDescText').innerHTML;
+  click(w, d, 'viewPolicy');
+  ok('another tab\'s standfirst is plain text again: the link is the Brief\'s alone', !d.querySelector('#headerTabDescText a') && /^Policy interventions grouped into /.test(d.getElementById('headerTabDescText').textContent));
+  click(w, d, 'viewAgenda');
+  ok('and coming back to the Brief writes its standfirst, link and all, again', d.getElementById('headerTabDescText').innerHTML === before && !!d.querySelector('#headerTabDescText a'));
+
+  /* ── what the page shows is what the data says ── */
+  ok('the page has no jump bar, no overview of the four pathways, no "How this page is built" note, no note box under the masthead, no introduction, no conclusion and no Expand all ideas button: the owner had each taken out (2026-11-19), so the page is the ideas alone: the first thing under the masthead is the first pathway',
+     !d.querySelector('#agBar, .ag-bar, #agendaArea .controls, .ag-overview, .ag-paths, .ag-path, .ag-excerpt, #agendaArea .about-note, #ag-conclusion, #ag-introduction, #ag-introduction-h, #agToggleAll, .ag-tools') &&
+     !/How this page is built|Four pathways|Jump to|\bIntroduction\b|\bConclusion\b|An excerpt\.|Expand all|Collapse all/.test(d.getElementById('agendaRoot').textContent) &&
+     d.querySelector('#agendaArea .ag-body').firstElementChild.id === 'ag-' + A.pathways[0].id && d.querySelector('#agendaArea .ag-body').lastElementChild.id === 'ag-sources');
+  const land = load('index.html', '#policy');
+  const rowColor = {}, tileColor = {};
+  land.d.querySelectorAll('.pol-cat-row').forEach(r => { rowColor[r.dataset.cat] = r.style.getPropertyValue('--cat-color'); r.querySelectorAll('.pol-cat-card-title').forEach(t => { tileColor[t.textContent.trim()] = rowColor[r.dataset.cat]; }); });
+  ok('each pathway wears the colour of the Landscape row it is',
+     A.pathways.every(p => d.getElementById('ag-' + p.id).style.getPropertyValue('--cat-color') === rowColor[p.area] && !!rowColor[p.area]),
+     A.pathways.map(p => d.getElementById('ag-' + p.id).style.getPropertyValue('--cat-color') + '/' + rowColor[p.area]).join());
+  ok('every pathway heading, idea title and opening line is the data\'s, word for word',
+     A.pathways.every(p => d.querySelector('#ag-' + p.id + '-h > span:not(.ag-num)').textContent === p.title && p.ideas.every(i => idea(i.id).querySelector('.ag-idea-title').textContent === i.title && idea(i.id).querySelector('.ag-idea-lede').textContent === i.lede)));
+  ok('every idea\'s paragraphs are the data\'s, word for word, with each footnote mark reading as its number',
+     ideas.every(i => [...idea(i.id).querySelectorAll('.ag-idea-body > .ag-p')].map(p => p.textContent).join('\n') === i.blocks.filter(b => b.p).map(b => plain(b.p)).join('\n')));
+  ok('the four emerging ideas are the brief\'s list items: the bold run-in, a space, then the text, word for word',
+     [...idea(first.id).querySelectorAll('.ag-li-text')].map(p => p.textContent).join('\n') === list0.map(it => it.lead + ' ' + plain(it.text)).join('\n') &&
+     [...idea(first.id).querySelectorAll('.ag-li-text > strong.ag-lead')].map(s => s.textContent).join('|') === list0.map(it => it.lead).join('|'));
+  const ours = [...A.pathways.map(p => p.label), lede, mast, d.getElementById('ag-sources-card').querySelector('.ag-idea-lede').textContent];
+  ok('nothing we wrote on the page has an em-dash', !ours.some(s => s.includes('—')), ours.filter(s => s.includes('—')).join(' | '));
+
+  /* ── ideas open and close ── */
+  ok('every idea starts closed, its button saying so and its text hidden, and so does the Sources list',
+     ideas.every(i => !isOpen(i.id)) && !d.getElementById('ag-sources-card').classList.contains('is-open'));
+  fire(idea(first.id).querySelector('.ag-idea-btn'));
+  ok('pressing an idea\'s title opens it, and only it', isOpen(first.id) && ideas.slice(1).every(i => !isOpen(i.id)));
+  fire(idea(first.id).querySelector('.ag-idea-btn'));
+  ok('pressing it again closes it', !isOpen(first.id));
+
+  /* ── footnotes: a number opens its source under its paragraph ── */
+  const refs = [...d.querySelectorAll('#agendaRoot .ag-ref')];
+  ok('the brief\'s footnote numbers that are left in are buttons in the text, in order, each named "Source n" and closed',
+     refs.map(r => +r.dataset.note).join() === noteNums.join() && refs.every(r => r.tagName === 'BUTTON' && r.getAttribute('aria-label') === 'Source ' + r.dataset.note && r.getAttribute('aria-expanded') === 'false'), refs.length + ' refs');
+  fire(idea('resiliency').querySelector('.ag-idea-btn'));
+  fire(ref(14));
+  ok('a footnote number opens its source in a drawer right under the paragraph that cites it, and says so (aria-expanded, aria-controls)',
+     !!drawer(14) && !drawer(14).hidden && drawer(14).previousElementSibling === ref(14).closest('.ag-p') && ref(14).getAttribute('aria-expanded') === 'true' && ref(14).getAttribute('aria-controls') === 'ag-src-14');
+  ok('the drawer shows the note as the brief gives it, labelled with its number, and nothing else besides its two controls',
+     drawer(14).querySelector('.ag-source-text').textContent === A.notes[14].replace(/\*/g, '') && drawer(14).querySelector('.ag-kicker').textContent === 'Source 14' &&
+     [...drawer(14).querySelectorAll('button, a')].map(e => e.textContent.trim()).filter(t => t === 'Close' || t === 'All sources').length === 2);
+  const a14 = [...drawer(14).querySelectorAll('.ag-source-text a')];
+  ok('a web address in the note is a link to itself, opening in a new tab without handing the page over',
+     a14.length === urlsOf(A.notes[14]).length && a14.every((a, k) => a.getAttribute('href') === urlsOf(A.notes[14])[k] && a.textContent === a.getAttribute('href') && a.target === '_blank' && /noopener/.test(a.rel)), a14.map(a => a.href).join());
+  fire(ref(15));
+  ok('opening another number closes the first: one drawer at a time', openDrawers().length === 1 && openDrawers()[0].id === 'ag-src-15' && ref(14).getAttribute('aria-expanded') === 'false' && ref(15).getAttribute('aria-expanded') === 'true');
+  fire(ref(15));
+  ok('pressing the open number closes its drawer', openDrawers().length === 0 && ref(15).getAttribute('aria-expanded') === 'false');
+  fire(ref(14));
+  drawer(14).dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  ok('Escape closes the open source and puts focus back on its number', openDrawers().length === 0 && d.activeElement === ref(14) && ref(14).getAttribute('aria-expanded') === 'false');
+  fire(ref(14));
+  fire(drawer(14).querySelector('.ag-source-close'));
+  ok('the drawer\'s Close button closes it and returns focus to the number', openDrawers().length === 0 && d.activeElement === ref(14));
+  fire(ref(14));
+  fire(idea('resiliency').querySelector('.ag-idea-btn'));
+  ok('closing an idea closes a source open under it', !isOpen('resiliency') && openDrawers().length === 0 && ref(14).getAttribute('aria-expanded') === 'false');
+  const emerging = ref(16);
+  fire(idea('resiliency').querySelector('.ag-idea-btn'));
+  fire(emerging);
+  ok('a number inside one of the four emerging ideas opens its source under that item', !drawer(16).hidden && drawer(16).previousElementSibling === emerging.closest('.ag-li-text') && drawer(16).parentElement.matches('li.ag-li'));
+  fire(emerging);
+
+  /* ── the Sources list ── */
+  const card = d.getElementById('ag-sources-card');
+  const noteEls = [...d.querySelectorAll('#ag-sources .ag-note')];
+  ok('the Sources list holds every note that is cited, numbered as the brief numbers them and in order, each the note word for word, and it is closed until asked for',
+     noteEls.length === noteNums.length && noteEls.every((li, k) => li.querySelector('.ag-note-n').textContent === String(noteNums[k]) && li.querySelector('.ag-note-text').textContent === A.notes[noteNums[k]].replace(/\*/g, '')) && !card.classList.contains('is-open'));
+  const anchors = [...d.querySelectorAll('#ag-sources .ag-note-text a')], wanted = Object.keys(A.notes).sort((a, b) => a - b).flatMap(n => urlsOf(A.notes[n]));
+  ok('every web address in every note is a link, as in the PDF: the links are exactly the addresses the notes contain, each linking to what it shows',
+     anchors.map(a => a.getAttribute('href')).join('\n') === wanted.join('\n') && anchors.every(a => a.textContent === a.getAttribute('href') && a.target === '_blank' && /noopener/.test(a.rel)), `${anchors.length} links, ${wanted.length} addresses`);
+  const italicNote = noteNums.find(n => /\*/.test(A.notes[n]));
+  ok('an italic in a note is an <em> (when this was written, notes 22 and 23 set a title in italics), and no note shows an asterisk', italicNote !== undefined && !!noteEls[noteNums.indexOf(italicNote)].querySelector('.ag-note-text em') && !/\*/.test(d.getElementById('ag-sources').textContent), 'first italic note: ' + italicNote);
+  fire(card.querySelector('.ag-idea-btn'));
+  ok('the Sources row opens like an idea', card.classList.contains('is-open') && !card.querySelector('.ag-idea-body').hidden);
+  fire(card.querySelector('.ag-idea-btn'));
+  const back = d.querySelector('.ag-back[data-note="30"]');
+  fire(back);
+  const p30 = ref(30).closest('.ag-p');
+  ok('"See in the text" on a source opens the idea that cites it, opens the source under its paragraph, and marks the paragraph for a moment',
+     isOpen('public-ai') && !!drawer(30) && !drawer(30).hidden && p30.classList.contains('ag-flash') && back.getAttribute('aria-label') === 'See source 30 in the text');
+
+  /* ── "On the Landscape" ── */
+  ideas.forEach(i => { if (!isOpen(i.id)) fire(idea(i.id).querySelector('.ag-idea-btn')); });   // every idea open for the next checks ('public-ai' already is)
+  const got = i => [...idea(i.id).querySelectorAll('.ag-idea-body > .ag-related .ag-pol')].map(b => b.dataset.pol);
+  ok('each idea\'s "On the Landscape" row has the data\'s pointers, in the data\'s order, and an idea with none has no row', ideas.every(i => got(i).join() === i.related.join()) && !idea('energy-costs').querySelector('.ag-related'),
+     ideas.map(i => got(i).join('+') + '/' + i.related.join('+')).join(' ; '));
+  ok('each of the four emerging ideas has its own pointers: unemployment insurance and its reskilling, health coverage, an income floor, the shorter workweek',
+     [...idea('resiliency').querySelectorAll('.ag-li')].map(li => [...li.querySelectorAll('.ag-pol')].map(b => b.dataset.pol).join('+')).join('|') === list0.map(it => it.related.join('+')).join('|'));
+  const pols = [...d.querySelectorAll('#agendaRoot .ag-pol')];
+  ok('a pointer is labelled with the card\'s own title and carries the colour of the Landscape row that card is in',
+     pols.length === rel.length && pols.every(b => b.textContent === POL.find(p => p.id === b.dataset.pol).title && b.style.getPropertyValue('--cat-color') === tileColor[b.textContent]),
+     pols.filter(b => b.style.getPropertyValue('--cat-color') !== tileColor[b.textContent]).map(b => b.textContent + ' ' + b.style.getPropertyValue('--cat-color') + '/' + tileColor[b.textContent]).join(' ; '));
+  fire(idea('public-ai').querySelector('.ag-pol'));
+  ok('pressing a pointer opens that policy\'s dialog over the page, and the page stays on the Brief',
+     d.getElementById('polModal').classList.contains('open') && d.getElementById('polModalTitle').textContent === POL.find(p => p.id === 'public-ai-compute').title && bodyView(d) === 'agenda');
+  fire(d.getElementById('polModalClose'));
+  ok('closing the dialog leaves the Brief as it was', !d.getElementById('polModal').classList.contains('open') && isOpen('public-ai'));
+
+  /* ── jumping: a source drawer's link to the Sources, and motion ── */
+  const hist = w.history.length, calls = [];
+  w.Element.prototype.scrollIntoView = function (o) { calls.push([this.id, o && o.behavior, o && o.block]); };
+  const toSources = () => d.querySelector('#ag-src-30 .ag-source-all');
+  const ev = fire(toSources());
+  ok('"All sources" in a drawer jumps to the Sources list without following the link: it opens the list, scrolls it into view smoothly to the top, and rewrites the address in place (no history entry)',
+     ev.defaultPrevented && card.classList.contains('is-open') && w.location.hash === '#brief/sources' && w.history.length === hist && calls.length === 1 && calls[0].join() === 'ag-sources,smooth,start', `${w.location.hash} ${JSON.stringify(calls)}`);
+  w.matchMedia = q => ({ matches: /reduce/.test(q), media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} });
+  fire(toSources());
+  ok('for a reader whose device asks for less motion the jump is instant', calls.length === 2 && calls[1][0] === 'ag-sources' && calls[1][1] === 'auto', JSON.stringify(calls));
+  w.matchMedia = () => ({ matches: false, media: '', addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} });
+  const mod = fire(toSources(), 'click', { ctrlKey: true });
+  ok('a modified click (a new tab) is left to the browser, with nothing scrolled', !mod.defaultPrevented && calls.length === 2);
+  click(w, d, 'viewPolicy'); click(w, d, 'viewAgenda');
+  ok('leaving the tab and coming back keeps what was built: it is drawn once, with its ideas as the reader left them', d.querySelectorAll('.ag-idea').length === 9 && d.querySelectorAll('#agendaRoot .ag-body').length === 1 && isOpen('public-ai') && w.location.hash === '#brief');
+
+  /* ── addresses of its own ── */
+  {
+    const r = load('index.html', '#brief/workers');
+    ok('#brief/workers (a pathway) opens the Agenda, keeps its address, and opens no idea', bodyView(r.d) === 'agenda' && r.w.location.hash === '#brief/workers' && r.d.querySelectorAll('.ag-idea.is-open').length === 0 && r.errors.length === 0, `${bodyView(r.d)} ${r.w.location.hash}`);
+    const q = load('index.html', '#brief/wage-setting');
+    ok('#brief/<an idea> opens that idea, and only it', bodyView(q.d) === 'agenda' && q.w.location.hash === '#brief/wage-setting' && [...q.d.querySelectorAll('.ag-idea.is-open')].map(e => e.dataset.ag).join() === 'wage-setting');
+    const s = load('index.html', '#brief/sources');
+    ok('#brief/sources opens the Sources list', s.d.getElementById('ag-sources-card').classList.contains('is-open') && s.w.location.hash === '#brief/sources');
+    const x = load('index.html', '#brief/not-a-section');
+    ok('a section the Brief does not have is a stale link: the Brief opens anyway, and the address goes back to #brief', bodyView(x.d) === 'agenda' && x.w.location.hash === '#brief' && x.errors.length === 0 && x.d.querySelectorAll('.ag-idea.is-open').length === 0, x.w.location.hash);
+    const old1 = load('index.html', '#agenda'), old2 = load('index.html', '#agenda/workers'), old3 = load('index.html', '#agenda/wage-setting'), old4 = load('index.html', '#agenda/not-a-section');
+    ok('the old address still works: #agenda lands on the Brief and the address bar is rewritten to #brief', bodyView(old1.d) === 'agenda' && old1.w.location.hash === '#brief' && old1.errors.length === 0 && old1.d.getElementById('viewAgenda').classList.contains('active'), old1.w.location.hash);
+    ok('and so do the old section addresses: #agenda/<section> opens that section and is rewritten to #brief/<section> (a section it does not have goes back to #brief)',
+       old2.w.location.hash === '#brief/workers' && [...old3.d.querySelectorAll('.ag-idea.is-open')].map(e => e.dataset.ag).join() === 'wage-setting' && old3.w.location.hash === '#brief/wage-setting' && old4.w.location.hash === '#brief' &&
+       [old2, old3, old4].every(r => bodyView(r.d) === 'agenda' && r.errors.length === 0), [old2, old3, old4].map(r => r.w.location.hash).join(' '));
+    const y = load('index.html', '#brief/INTRODUCTION');
+    ok('an address in capitals does not match a section either (ids are lower-case)', y.w.location.hash === '#brief' && bodyView(y.d) === 'agenda');
+    const z = load('index.html', '#brief/x%22%5D%5Bdata-ag');
+    ok('an address with quotes and brackets in it never reaches a selector: the tab opens, nothing throws, and the address goes back to #brief', bodyView(z.d) === 'agenda' && z.w.location.hash === '#brief' && z.errors.length === 0, z.errors[0] || z.w.location.hash);
+  }
+
+  /* ── the data is missing, or a card has gone ── */
+  {
+    const noData = html => html.replace('const AGENDA_DATA = {', 'const AGENDA_DATA_SET_ASIDE = {');
+    const n = load('index.html', '#brief', { transform: noData });
+    const root = n.d.getElementById('agendaRoot');
+    ok('with no agenda data the tab says so, with a link to Landscape, the masthead falls back to Coming soon, and nothing throws',
+       n.errors.length === 0 && /did not load/.test(root.textContent) && root.querySelector('a').getAttribute('href') === '#policy' && /coming soon/i.test(n.d.getElementById('headerTabDescText').textContent) && !n.d.querySelector('.ag-idea'));
+    const more = load('index.html', '#brief', { transform: html => html.replace('notes: {\n', 'notes: {\n    58: "An extra note.",\n') });
+    const total = noteNums.length + 1;
+    ok('the counts are computed from the data: with one more note in the file the Sources row says one more, and the list has it',
+       more.errors.length === 0 && new RegExp('All ' + total + ' sources').test(more.d.getElementById('ag-sources-card').textContent) && more.d.querySelectorAll('#ag-sources .ag-note').length === total);
+    const noUrl = load('index.html', '#brief', { transform: html => html.replace('url: "https://economicsecurityproject.org/resource/ai-transition/",', '') });
+    const nuMast = noUrl.d.getElementById('headerTabDescText');
+    ok('with no url in the data the standfirst is the same sentence with the title as plain text, and nothing throws', noUrl.errors.length === 0 && !nuMast.querySelector('a') && /^Pulled from /.test(nuMast.textContent) && nuMast.textContent.includes(', ' + noUrl.w.eval('AGENDA_DATA.title') + ', below are '));
+    const n2 = load('index.html', '#brief/workers', { transform: noData });
+    ok('and an address on a section opens the tab all the same, back at #brief', n2.errors.length === 0 && bodyView(n2.d) === 'agenda' && n2.w.location.hash === '#brief');
+    const gone = load('index.html', '#brief', { transform: html => html.replace('related: ["ui-reform", "reskilling-accounts"]', 'related: ["zz-gone", "reskilling-accounts"]').replace('related: ["public-ai-compute"]', 'related: ["zz-gone"]') });
+    const items = [...gone.d.querySelectorAll('#ag-resiliency .ag-li')];
+    ok('a pointer to a card that is gone is left out of its row, and a row with none left is not drawn (the page does not throw)',
+       gone.errors.length === 0 && [...items[0].querySelectorAll('.ag-pol')].map(b => b.dataset.pol).join() === 'reskilling-accounts' && !gone.d.querySelector('#ag-public-ai .ag-related'));
+  }
+
+  /* ── the styles ── */
+  {
+    const css = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'agenda.css'), 'utf8');
+    ok('nothing on the page animates: the styles hold transitions (and a reduced-motion rule), no keyframes and no animation property', !/@keyframes|\banimation\s*:|\banimation-[a-z-]+\s*:/.test(css));
+    ok('a passage the reader was sent to fades its mark in only for a reader who has not asked for less motion', /@media \(prefers-reduced-motion: no-preference\)\s*\{[^}]*\.ag-flash|@media \(prefers-reduced-motion: no-preference\)\s*\{[^}]*transition: background/.test(css));
+    const phone = css.indexOf('@media (max-width: 700px)') < 0 ? '' : css.slice(css.indexOf('@media (max-width: 700px)'));
+    ok('a phone gets tighter padding in an open idea and in the first idea\'s list items', /\.ag-idea-body \{ padding: 12px 13px 14px; \}/.test(phone) && /\.ag-li \{ padding: 10px 12px 11px; \}/.test(phone));
+    ok('the Brief\'s type is the site\'s: no font-size outside the sizes the other tabs use (11, 12, 13, 14, 15 and 20px, and the footnote mark\'s 0.72em)',
+       [...css.matchAll(/font-size:\s*([^;]+);/g)].every(m => ['11px', '12px', '13px', '14px', '15px', '20px', '0.72em'].includes(m[1].trim())), [...css.matchAll(/font-size:\s*([^;]+);/g)].map(m => m[1].trim()).join(' '));
+  }
 }
 
 /* ── Enforcement and Cases: the placeholders, while data/legislation-actions.js has no row of their kind ─────────────────────
@@ -743,7 +971,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const every = idsOf(none);
   const real = load('index.html', '#policy');
   const archived = JSON.parse(real.w.eval('JSON.stringify(POLICY_MAP.archived)'));
-  ok('the shipped data/policy-map.js is { archived: [ids] } and every id in it is a card the page would otherwise show',
+  ok('the shipped data/policy-map.js has an archived list, and every id in it is a card the page would otherwise show',
      Array.isArray(archived) && archived.every(id => typeof id === 'string' && every.includes(id)) && new Set(archived).size === archived.length, JSON.stringify(archived));
   ok('the page shows every card except the archived ones, in their order, with no console errors', sameList(idsOf(real), every.filter(id => !archived.includes(id))) && real.errors.length === 0, `${idsOf(real).length} of ${every.length}`);
   ok('the Landscape has one card fewer for each archived one', shown(real) === shown(none) - archived.length && shown(none) === every.length, `${shown(real)} shown, ${shown(none)} with none archived`);
@@ -768,6 +996,305 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the Links graph draws one line for each pair of policies that pair with each other', want > 0 && got === want, `${got} lines for ${want} pairs`);
 }
 
+/* ── Landscape: the All / Links / Compare switch, and the Featured label ───────────────────────────────────────────────────
+   The Landscape has three views (the owner, 2026-11-19: all policies, how the policies are related to one another, and a Compare view). A policy the owner has featured is not a
+   view of its own (there was a Featured view for part of that day, and the owner replaced it with this): it carries a "Featured" label on its tile in the All view, and the only
+   thing that makes one is the `featured` list in data/policy-map.js, which tools/policy_map.py writes from the `featured` column of the Sheet's policy map tab (the owner, 2026-11-19:
+   "whatever's labeled on the google sheet"). These checks set that list themselves, by laying a statement over the shipped file before the page reads it, so they hold whichever
+   policies the tab features; the last one reads the shipped file. */
+{
+  const fs = require('fs'), path = require('path');
+  const inl = f => f.replace(/<\/script/gi, '<\\/script');
+  const shippedMap = inl(fs.readFileSync(path.join(__dirname, '..', 'data', 'policy-map.js'), 'utf8'));
+  const afterMap = js => html => {
+    if (!html.includes(shippedMap)) throw new Error('data/policy-map.js is not inlined as the test expects');
+    return html.replace(shippedMap, () => shippedMap + '\n' + inl(js));
+  };
+  const features = ids => afterMap(`POLICY_MAP.featured = ${JSON.stringify(ids)};`);
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const byTitle = (a, b) => a.localeCompare(b);
+  const labels = pg => [...pg.d.querySelectorAll('#policyArea .pol-subview-btn')].map(b => b.textContent.trim());
+  const pressed = pg => ['polSubviewAll', 'polSubviewLinks', 'polSubviewCompare'].map(id => pg.d.getElementById(id).getAttribute('aria-pressed'));
+  const tiles = pg => [...pg.d.querySelectorAll('#policyArea .pol-cat-card-title')].map(t => t.textContent);
+  const flagged = pg => [...pg.d.querySelectorAll('#policyArea .pol-cat-card')].filter(c => c.querySelector('.pol-cat-card-flag')).map(c => c.querySelector('.pol-cat-card-title').textContent);
+  const counts = pg => [...pg.d.querySelectorAll('#policyArea .pol-cat-row-count')].map(c => c.textContent.trim());
+  const hidden = (pg, id) => pg.d.getElementById(id).style.display === 'none';
+
+  const none = load('index.html', '#policy', { transform: features([]) });
+  const all = JSON.parse(none.w.eval('JSON.stringify(POLICY_DATA.map(p => ({ id: p.id, title: p.title, area: CATEGORY_MERGE_MAP[p.category] })))'));
+  const areas = JSON.parse(none.w.eval('JSON.stringify(Object.keys(MERGED_POLICY_CATEGORIES))'));
+  const inArea = a => all.filter(p => p.area === a);
+  const picks = [inArea(areas[0])[0], inArea(areas[0])[1], inArea(areas[2])[0]];   // two in the first area and one in the third
+  if (!picks.every(Boolean)) throw new Error('the Featured label test needs two policies in the first area and one in the third');
+
+  ok('the Landscape has three views, All, Links and Compare in that order, and opens on All with every policy; there is no Featured view',
+     sameList(labels(none), ['All', 'Links', 'Compare']) && sameList(pressed(none), ['true', 'false', 'false']) && tiles(none).length === all.length && !none.d.getElementById('polSubviewFeatured') && none.errors.length === 0,
+     `${labels(none)} | pressed ${pressed(none)} | ${tiles(none).length} of ${all.length} policies`);
+  ok('with no policy featured, no tile carries a label and the page says nothing about it', flagged(none).length === 0 && !/Featured/i.test(none.d.getElementById('policyArea').textContent), flagged(none).join());
+
+  const stale = load('index.html', '#policy', { transform: afterMap('POLICY_MAP.featured = ["no-such-card"];') });
+  const older = load('index.html', '#policy', { transform: afterMap('delete POLICY_MAP.featured;') });
+  const ownFlag = load('index.html', '#policy', { transform: afterMap('POLICY_DATA[0].featured = true; POLICY_MAP.featured = [];') });
+  ok('only the Sheet\'s list features a policy: an id in it that is no policy, a file with no list, and a flag on a card itself all feature nobody, and nothing logs an error',
+     [stale, older, ownFlag].every(x => flagged(x).length === 0 && x.errors.length === 0), [stale, older, ownFlag].map(x => `${flagged(x).length} labelled, ${x.errors.length} errors`).join(' | '));
+  // (a policy whose text comes from a Google Doc is not the one to archive here: the validator reports synced text for a card that is gone, which is a different check)
+  const syncedIds = JSON.parse(none.w.eval('JSON.stringify(Object.keys(POLICY_TEXT))'));
+  const victim = all.find(p => !syncedIds.includes(p.id));
+  const both = load('index.html', '#policy', { transform: afterMap(`POLICY_MAP.archived.push(${JSON.stringify(victim.id)}); POLICY_MAP.featured = [${JSON.stringify(victim.id)}];`) });
+  ok('a policy that is both archived and featured is not shown at all, and nothing logs an error',
+     !tiles(both).includes(victim.title) && flagged(both).length === 0 && tiles(both).length === all.length - 1 && both.errors.length === 0, `${tiles(both).length} of ${all.length}, ${both.errors.join(' | ')}`);
+
+  const pg = load('index.html', '#policy', { transform: features(picks.map(p => p.id)) });
+  ok('a policy the owner has featured carries a Featured label on its tile in the All view, no other tile does, and every policy is still listed',
+     sameList(flagged(pg).slice().sort(byTitle), picks.map(p => p.title).sort(byTitle)) && sameList(tiles(pg).slice().sort(byTitle), all.map(p => p.title).sort(byTitle)) && pg.errors.length === 0, `${flagged(pg)} | ${tiles(pg).length} of ${all.length}`);
+  const main = [...pg.d.querySelectorAll('#policyArea .pol-cat-card')].find(c => c.querySelector('.pol-cat-card-flag')).querySelector('.pol-cat-card-main');
+  ok('the label is the word Featured, text in the tile ahead of the title (so it is read with it), and the title and each row\'s count are what they were without it',
+     main.firstElementChild.className === 'pol-cat-card-flag' && main.firstElementChild.textContent === 'Featured' && main.lastElementChild.className === 'pol-cat-card-title' && sameList(counts(pg), counts(none)) && sameList(tiles(pg), tiles(none)),
+     `${main.firstElementChild.className} / ${main.lastElementChild.className} | ${counts(pg)} vs ${counts(none)}`);
+  const featuredTile = [...pg.d.querySelectorAll('#policyArea .pol-cat-card')].find(c => c.querySelector('.pol-cat-card-flag'));
+  featuredTile.dispatchEvent(new pg.w.MouseEvent('click', { bubbles: true }));
+  ok('clicking a featured tile opens its policy, titled as the policy and not as the label', picks.map(p => p.title).includes(pg.d.getElementById('polModalTitle').textContent) && pg.d.getElementById('polModalTitle').textContent === featuredTile.querySelector('.pol-cat-card-title').textContent, pg.d.getElementById('polModalTitle').textContent);
+
+  click(pg.w, pg.d, 'polSubviewLinks');
+  ok('Links hides the rows and draws the graph', hidden(pg, 'polCatRows') && !hidden(pg, 'polLinksArea') && pg.d.querySelectorAll('.pol-links-node').length === all.length && sameList(pressed(pg), ['false', 'true', 'false']),
+     `${pg.d.querySelectorAll('.pol-links-node').length} nodes, pressed ${pressed(pg)}`);
+  click(pg.w, pg.d, 'polSubviewAll');
+  ok('coming back to All shows the rows again with the same labels, and hides the graph', !hidden(pg, 'polCatRows') && hidden(pg, 'polLinksArea') && sameList(flagged(pg).slice().sort(byTitle), picks.map(p => p.title).sort(byTitle)) && sameList(pressed(pg), ['true', 'false', 'false']), flagged(pg).join());
+
+  const real = load('index.html', '#policy');
+  const listed = JSON.parse(real.w.eval('JSON.stringify(POLICY_MAP.featured)'));
+  const titleOf = JSON.parse(real.w.eval('JSON.stringify(Object.fromEntries(POLICY_DATA.map(p => [p.id, p.title])))'));
+  const archivedIds = JSON.parse(real.w.eval('JSON.stringify(POLICY_MAP.archived)'));
+  const ownFlags = real.w.eval('POLICY_DATA.some(p => "featured" in p)');
+  ok('in the shipped data/policy-map.js the featured list is the tab\'s: ids of cards on the site, each once; the tiles labelled Featured are exactly those of them that are shown, and no card carries a flag of its own',
+     Array.isArray(listed) && new Set(listed).size === listed.length && listed.every(id => typeof id === 'string' && (id in titleOf || archivedIds.includes(id))) && !ownFlags &&
+     sameList(flagged(real).slice().sort(byTitle), listed.filter(id => id in titleOf).map(id => titleOf[id]).sort(byTitle)) && real.errors.length === 0, `${listed.length} listed, ${flagged(real).length} labelled, own flags: ${ownFlags}`);
+}
+
+/* ── Landscape: the Links graph also draws rival policies, as dashed lines ───────────────────────────────────────────────────
+   Each card's competesWith (a substitute or alternative approach: a job guarantee against a shorter workweek) was stored and shown nowhere; the owner asked on 2026-11-19
+   for the graph to show it. A pair authored on both sides is one dashed line carrying both authors' reasons as its tooltip, an id that is no policy (or an archived one)
+   draws nothing, and the lines lie over the finished layout without moving it (the label-overlap check above still holds). */
+{
+  const fs = require('fs'), path = require('path');
+  const inl = f => f.replace(/<\/script/gi, '<\\/script');
+  const shippedMap = inl(fs.readFileSync(path.join(__dirname, '..', 'data', 'policy-map.js'), 'utf8'));
+  const afterMap = js => html => {
+    if (!html.includes(shippedMap)) throw new Error('data/policy-map.js is not inlined as the test expects');
+    return html.replace(shippedMap, () => shippedMap + '\n' + inl(js));
+  };
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const open = pg => { click(pg.w, pg.d, 'polSubviewLinks'); return pg; };
+  const dotOf = pg => {
+    const m = {};
+    pg.d.querySelectorAll('.pol-links-node').forEach(g => { const dot = g.querySelector('.pol-links-node-dot'); m[g.getAttribute('aria-label').replace(/\. Open this policy\.$/, '')] = dot.getAttribute('cx') + ',' + dot.getAttribute('cy'); });
+    return m;
+  };
+  const lineEnds = l => [l.getAttribute('x1') + ',' + l.getAttribute('y1'), l.getAttribute('x2') + ',' + l.getAttribute('y2')].sort().join(' / ');
+
+  const real = open(load('index.html', '#policy'));
+  const facts = JSON.parse(real.w.eval(`JSON.stringify({
+    title: Object.fromEntries(POLICY_DATA.map(p => [p.id, p.title])),
+    rival: POLICY_DATA.flatMap(p => (p.competesWith || []).filter(l => l.id !== p.id && POLICY_DATA.some(x => x.id === l.id)).map(l => ({ key: [p.id, l.id].sort().join('|'), why: l.why || '' }))),
+    pair: [...new Set(POLICY_DATA.flatMap(p => (p.pairsWith || []).filter(l => POLICY_DATA.some(x => x.id === l.id)).map(l => [p.id, l.id].sort().join('|'))))],
+  })`));
+  const whys = {};
+  facts.rival.forEach(r => { (whys[r.key] = whys[r.key] || []).push(r.why); });
+  const rivalKeys = Object.keys(whys);
+  const both = rivalKeys.filter(k => facts.pair.includes(k));
+  ok('no two policies are authored as both pairing with and competing with each other (the graph has one line for a pair)', both.length === 0, both.join(', '));
+
+  const drawn = rivalKeys.filter(k => !both.includes(k));
+  const dots = dotOf(real);
+  const ends = k => k.split('|').map(id => dots[facts.title[id]]).sort().join(' / ');
+  const lines = [...real.d.querySelectorAll('.pol-links-rival')];
+  ok('the Links graph draws one dashed line for each pair of policies that compete with each other, from one policy to the other',
+     drawn.length > 0 && lines.length === drawn.length && sameList(lines.map(lineEnds).sort(), drawn.map(ends).sort()), `${lines.length} lines for ${drawn.length} pairs`);
+  const keyOf = Object.fromEntries(drawn.map(k => [ends(k), k]));
+  ok('each dashed line carries its authors\' reasons as its tooltip', lines.every(l => (l.querySelector('title') || {}).textContent === whys[keyOf[lineEnds(l)]].filter(Boolean).join(' ')), `${lines.length} lines`);
+
+  const [ka, kb] = drawn[0].split('|');
+  const nodeOf = id => [...real.d.querySelectorAll('.pol-links-node')].find(g => g.getAttribute('aria-label').startsWith(facts.title[id] + '.'));
+  nodeOf(ka).dispatchEvent(new real.w.MouseEvent('mouseenter'));
+  const mine = lines.filter(l => [l.getAttribute('x1') + ',' + l.getAttribute('y1'), l.getAttribute('x2') + ',' + l.getAttribute('y2')].includes(dots[facts.title[ka]]));
+  ok('pointing at a policy lights its dashed lines and the policy at the other end, and dims the rest',
+     mine.length > 0 && mine.every(l => l.classList.contains('lit')) && lines.filter(l => !mine.includes(l)).every(l => l.classList.contains('dimmed')) && nodeOf(kb).classList.contains('lit'),
+     `${mine.length} lit of ${lines.length}`);
+  nodeOf(ka).dispatchEvent(new real.w.MouseEvent('mouseleave'));
+  ok('moving away puts every line back', lines.every(l => !l.classList.contains('lit') && !l.classList.contains('dimmed')), '');
+
+  const legend = real.d.querySelector('.pol-links-legend').textContent;
+  ok('the legend names the two kinds of line, each drawn as a sample, and the graph\'s label mentions the dashed one',
+     /Pairs with/.test(legend) && /Competes with/.test(legend) && real.d.querySelectorAll('.pol-links-key-line').length === 2 && real.d.querySelectorAll('.pol-links-key-line--rival').length === 1 && /dashed/.test(real.d.querySelector('.pol-links-svg').getAttribute('aria-label')), legend.trim().slice(-80));
+
+  const gone = kb;
+  const arch = open(load('index.html', '#policy', { transform: afterMap(`POLICY_MAP.archived.push(${JSON.stringify(gone)});`) }));
+  const left = drawn.filter(k => !k.split('|').includes(gone)).length;
+  ok('a rival that is archived has no line, and nothing logs an error', arch.d.querySelectorAll('.pol-links-rival').length === left && arch.errors.length === 0, `${arch.d.querySelectorAll('.pol-links-rival').length} lines, ${left} expected`);
+
+  const bare = open(load('index.html', '#policy', { transform: afterMap('POLICY_DATA.forEach(p => { p.competesWith = []; });') }));
+  ok('with no rival policies the graph draws no dashed line, lists none in its legend, and puts every policy exactly where it was',
+     bare.d.querySelectorAll('.pol-links-rival').length === 0 && !/Competes with/.test(bare.d.querySelector('.pol-links-legend').textContent) && !/dashed/.test(bare.d.querySelector('.pol-links-svg').getAttribute('aria-label')) &&
+     sameList(Object.entries(dotOf(bare)).sort(), Object.entries(dots).sort()) && bare.errors.length === 0, `${bare.d.querySelectorAll('.pol-links-rival').length} dashed lines`);
+}
+
+/* ── Landscape: the Compare view ───────────────────────────────────────────────────────────────────────────────────────────
+   The third view (the owner, 2026-11-19: "a main view comparing policies with sample complementary policies and sample conflicting policies" and "a fun graphic of the two
+   policies fighting each other"). Two policies sit side by side under a ring: a fight when the cards record them as rivals (competesWith), a tag team when they record them as
+   partners (pairsWith), gloves held apart when they record nothing. Under each is the card in the dialog's own words and up to three samples of what works well with it and what
+   competes with it, with the authors' reasons. What to expect is derived here from the cards themselves (a link written on either card is a link between the two), so these
+   checks hold whatever the authors record. */
+{
+  const fs = require('fs'), path = require('path');
+  const inl = f => f.replace(/<\/script/gi, '<\\/script');
+  const shippedMap = inl(fs.readFileSync(path.join(__dirname, '..', 'data', 'policy-map.js'), 'utf8'));
+  const afterMap = js => html => {
+    if (!html.includes(shippedMap)) throw new Error('data/policy-map.js is not inlined as the test expects');
+    return html.replace(shippedMap, () => shippedMap + '\n' + inl(js));
+  };
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const openCmp = opts => { const pg = load('index.html', '#policy', opts); click(pg.w, pg.d, 'polSubviewCompare'); return pg; };
+  const pick = (pg, id, which) => { const s = pg.d.getElementById('polCmp' + which); s.value = id; s.dispatchEvent(new pg.w.Event('change', { bubbles: true })); };
+  const menu = (pg, which) => pg.d.getElementById('polCmp' + which).value;
+  const ring = pg => pg.d.getElementById('polCmpRing').className.replace('pol-cmp-ring ', '');
+  const reason = pg => pg.d.getElementById('polCmpReason').textContent;
+  const cols = pg => [...pg.d.querySelectorAll('.pol-cmp-col')];
+  const hidden = (pg, id) => pg.d.getElementById(id).style.display === 'none';
+  const samplesOf = (col, label) => {
+    const sec = [...col.querySelectorAll('.pol-modal-section')].find(s => s.querySelector('.pol-modal-label').textContent === label);
+    return sec ? { n: sec.querySelectorAll('.pol-cmp-sample').length, titles: [...sec.querySelectorAll('.pol-cmp-sample-title')].map(t => t.textContent), whys: [...sec.querySelectorAll('.pol-cmp-sample-why')].map(t => t.textContent),
+                   more: (sec.querySelector('.pol-cmp-more') || {}).textContent || '', text: sec.textContent } : null;
+  };
+
+  const pg = openCmp();
+  const facts = JSON.parse(pg.w.eval(`JSON.stringify((() => {
+    const ids = POLICY_DATA.map(p => p.id), has = id => ids.includes(id);
+    const one = kind => { const m = {}; POLICY_DATA.forEach(p => (p[kind] || []).forEach(l => { if (has(l.id) && l.id !== p.id) m[p.id + '>' + l.id] = l.why || ''; })); return m; };
+    return { title: Object.fromEntries(POLICY_DATA.map(p => [p.id, p.title])), order: ids, pair: one('pairsWith'), riv: one('competesWith') };
+  })())`));
+  const keys = m => Object.keys(m).map(k => k.split('>'));
+  const linkedIn = (m, a, b) => (a + '>' + b) in m || (b + '>' + a) in m;
+  const whyIn = (m, a, b) => m[a + '>' + b] || m[b + '>' + a] || '';
+  const whysIn = (m, a, b) => [m[a + '>' + b], m[b + '>' + a]].filter((w, i, all) => w && all.indexOf(w) === i);
+  const partnersIn = (m, id) => {
+    const own = [...new Set(keys(m).filter(([a]) => a === id).map(([, b]) => b))];
+    return own.concat(facts.order.filter(q => (q + '>' + id) in m && !own.includes(q)));
+  };
+  const distinctPairs = m => { const seen = new Set(), out = []; keys(m).forEach(([a, b]) => { const k = [a, b].sort().join('|'); if (!seen.has(k)) { seen.add(k); out.push([a, b]); } }); return out; };
+  const rivals = distinctPairs(facts.riv), teams = distinctPairs(facts.pair);
+  const most = m => facts.order.slice().sort((x, y) => partnersIn(m, y).length - partnersIn(m, x).length)[0];
+
+  ok('Compare is the third view: opening it hides the rows and the graph, builds the view, and nothing logs an error',
+     pg.d.getElementById('polSubviewCompare').getAttribute('aria-pressed') === 'true' && hidden(pg, 'polCatRows') && hidden(pg, 'polLinksArea') && !hidden(pg, 'polCompareArea') && cols(pg).length === 2 && pg.errors.length === 0, `${cols(pg).length} columns`);
+  ok('it opens on the first fight the cards record, in the order of the cards, both menus showing it',
+     rivals.length > 0 && menu(pg, 'A') === rivals[0][0] && menu(pg, 'B') === rivals[0][1] && ring(pg) === 'pol-cmp-fight' && sameList(cols(pg).map(c => c.querySelector('.pol-cmp-name').textContent), [facts.title[rivals[0][0]], facts.title[rivals[0][1]]]),
+     `${menu(pg, 'A')} / ${menu(pg, 'B')} / ${ring(pg)}`);
+  ok('every policy is in both menus, under its area, and the menus hold nothing else', ['A', 'B'].every(w => pg.d.querySelectorAll(`#polCmp${w} option`).length === facts.order.length && pg.d.querySelectorAll(`#polCmp${w} optgroup`).length > 0), `${pg.d.querySelectorAll('#polCmpA option').length} of ${facts.order.length}`);
+
+  const pills = () => [...pg.d.querySelectorAll('#polCmpFightRow button[data-a]')];
+  ok('each fight the cards record is a pill labelled with the two titles, and only the pair showing is pressed',
+     pills().length === rivals.length && sameList(pills().map(b => b.textContent), rivals.map(([a, b]) => `${facts.title[a]} vs ${facts.title[b]}`)) && sameList(pills().map(b => b.getAttribute('aria-pressed')), rivals.map((_, i) => i === 0 ? 'true' : 'false')),
+     pills().map(b => b.getAttribute('aria-pressed')).join());
+  const fightsOk = rivals.every(([a, b]) => {
+    pills().find(x => x.dataset.a === a && x.dataset.b === b).click();
+    return menu(pg, 'A') === a && menu(pg, 'B') === b && ring(pg) === 'pol-cmp-fight' && /^What they are fighting over:/.test(reason(pg)) && whysIn(facts.riv, a, b).every(w => reason(pg).includes(w));
+  });
+  ok('choosing a fight sets both menus, draws the fight, and gives the authors\' own reason, as written', fightsOk && rivals.length > 0, reason(pg));
+
+  pills().find(x => x.dataset.a === rivals[0][0]).click();
+  const teamBtn = pg.d.getElementById('polCmpTeam');
+  const teamRuns = teams.map((t, i) => { teamBtn.click(); return menu(pg, 'A') === t[0] && menu(pg, 'B') === t[1] && ring(pg) === 'pol-cmp-team' && /^Why they team up:/.test(reason(pg)) && whysIn(facts.pair, t[0], t[1]).every(w => reason(pg).includes(w)); });
+  teamBtn.click();
+  ok('the tag team button walks through the partners the cards record, in order, each as a tag team with the authors\' reason, and starts over after the last',
+     teams.length > 0 && teamRuns.every(Boolean) && menu(pg, 'A') === teams[0][0] && menu(pg, 'B') === teams[0][1], `${teams.length} teams`);
+
+  const idle = (() => { for (let i = 0; i < facts.order.length; i++) for (let j = i + 1; j < facts.order.length; j++) { const a = facts.order[i], b = facts.order[j]; if (!linkedIn(facts.riv, a, b) && !linkedIn(facts.pair, a, b)) return [a, b]; } return null; })();
+  pick(pg, idle[0], 'A'); pick(pg, idle[1], 'B');
+  ok('two policies the cards record nothing between are not staged as a fight or a team: the gloves are held apart and the view says so',
+     ring(pg) === 'pol-cmp-idle' && /No recorded link between these two/.test(reason(pg)) && pg.d.querySelectorAll('#polCmpRing .pol-cmp-gl, #polCmpRing .pol-cmp-gr').length === 2, `${ring(pg)} | ${reason(pg)}`);
+  pick(pg, idle[0], 'B');
+  ok('the same policy twice asks for two different ones', ring(pg) === 'pol-cmp-same' && /Pick two different policies\./.test(reason(pg)), ring(pg));
+
+  const topPair = most(facts.pair), topRiv = most(facts.riv);
+  pick(pg, topPair, 'A'); pick(pg, topRiv === topPair ? facts.order.find(i => i !== topPair) : topRiv, 'B');
+  const wantPartners = partnersIn(facts.pair, topPair), a1 = samplesOf(cols(pg)[0], 'Works well with');
+  ok('under a policy, up to three of the policies that work well with it are shown, its own entries first, each with its author\'s reason, and the rest are counted',
+     wantPartners.length > 0 && a1.n === Math.min(3, wantPartners.length) && sameList(a1.titles, wantPartners.slice(0, 3).map(i => facts.title[i])) &&
+     sameList(a1.whys, wantPartners.slice(0, 3).map(i => whyIn(facts.pair, topPair, i)).filter(Boolean)) && a1.more === (wantPartners.length > 3 ? `and ${wantPartners.length - 3} more` : ''),
+     `${JSON.stringify(a1)} vs ${wantPartners.map(i => facts.title[i])}`);
+  const wantRivals = partnersIn(facts.riv, topRiv), b1 = samplesOf(cols(pg)[1], 'Competes with');
+  ok('and the same for the policies that compete with it', wantRivals.length > 0 && b1.n === Math.min(3, wantRivals.length) && sameList(b1.titles, wantRivals.slice(0, 3).map(i => facts.title[i])) && b1.more === (wantRivals.length > 3 ? `and ${wantRivals.length - 3} more` : ''), JSON.stringify(b1));
+  const loner = facts.order.find(i => !partnersIn(facts.pair, i).length);
+  if (loner) { pick(pg, loner, 'A'); ok('a policy with no recorded partners says so, with no sample and no count', samplesOf(cols(pg)[0], 'Works well with').n === 0 && /No recorded partners\./.test(samplesOf(cols(pg)[0], 'Works well with').text)); }
+
+  pick(pg, topPair, 'A'); pick(pg, facts.order.find(i => i !== topPair), 'B');
+  const sampleA = cols(pg)[0].querySelector('.pol-cmp-sample[data-side="a"]');
+  const idA = sampleA.dataset.id;
+  sampleA.click();
+  ok('clicking a sample under the left policy makes it the right one, and the left one stays', menu(pg, 'B') === idA && menu(pg, 'A') === topPair && cols(pg)[1].querySelector('.pol-cmp-name').textContent === facts.title[idA], `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
+  const sampleB = cols(pg)[1].querySelector('.pol-cmp-sample[data-side="b"]');
+  const idB = sampleB.dataset.id;
+  sampleB.click();
+  ok('and a sample under the right policy makes it the left one', menu(pg, 'A') === idB && menu(pg, 'B') === idA, `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
+
+  const synced = JSON.parse(pg.w.eval('JSON.stringify(typeof POLICY_TEXT === "object" ? Object.keys(POLICY_TEXT) : [])'));
+  const two = synced.length >= 2 ? synced.slice(0, 2) : facts.order.slice(0, 2);
+  pick(pg, two[0], 'A'); pick(pg, two[1], 'B');
+  const same = [0, 1].map(i => {
+    const col = cols(pg)[i], mine = { summary: col.querySelector('.pol-modal-text').innerHTML, lists: [...col.querySelectorAll('.pol-modal-list')].map(u => u.innerHTML) };
+    col.querySelector('.pol-cmp-open').click();
+    const body = pg.d.getElementById('polModalBody'), theirs = { summary: body.querySelector('.pol-modal-text').innerHTML, lists: [...body.querySelectorAll('.pol-modal-twocol .pol-modal-list')].map(u => u.innerHTML) };
+    return pg.d.getElementById('polModalTitle').textContent === facts.title[two[i]] && mine.summary === theirs.summary && mine.lists.length > 0 && sameList(mine.lists, theirs.lists);
+  });
+  ok('each side carries the card word for word: what it is, the strengths and the risks are exactly what the dialog shows, and "Read the full policy" opens that dialog', same.every(Boolean), same.join());
+  ok('a column\'s sections are the dialog\'s in kind and in the order: what it is, what works well with it, what competes with it, strengths, risks',
+     sameList([...cols(pg)[0].querySelectorAll('.pol-modal-label')].map(l => l.textContent), ['What it is', 'Works well with', 'Competes with', 'Strengths', 'Risks']), [...cols(pg)[0].querySelectorAll('.pol-modal-label')].map(l => l.textContent).join());
+
+  const lone = idle;
+  const oneSided = openCmp({ transform: afterMap(`(() => { const p = POLICY_DATA.find(x => x.id === ${JSON.stringify(lone[0])}); p.competesWith = (p.competesWith || []).concat([{ id: ${JSON.stringify(lone[1])}, why: 'A one-sided reason, for the test.' }]); })();`) });
+  pick(oneSided, lone[0], 'A'); pick(oneSided, lone[1], 'B');
+  const fromWriter = ring(oneSided) === 'pol-cmp-fight' && /A one-sided reason, for the test\./.test(reason(oneSided));
+  pick(oneSided, lone[1], 'A'); pick(oneSided, lone[0], 'B');
+  const back = samplesOf(cols(oneSided)[0], 'Competes with');
+  ok('a link written on one card only counts for both: the fight shows from either side, and the policy that was named lists the one that named it, with that reason',
+     fromWriter && ring(oneSided) === 'pol-cmp-fight' && back.titles.includes(facts.title[lone[0]]) && back.whys.includes('A one-sided reason, for the test.'), JSON.stringify(back));
+
+  const gone = rivals[0][1];
+  const arch = openCmp({ transform: afterMap(`POLICY_MAP.archived.push(${JSON.stringify(gone)});`) });
+  const archAll = [...arch.d.querySelectorAll('#polCmpA option')].map(o => o.value);
+  const archPills = [...arch.d.querySelectorAll('#polCmpFightRow button[data-a]')].map(b => b.textContent);
+  pick(arch, rivals[0][0], 'A');
+  ok('an archived policy is in no menu, no pill and no sample, and nothing logs an error',
+     !archAll.includes(gone) && archAll.length === facts.order.length - 1 && archPills.length === rivals.filter(([a, b]) => a !== gone && b !== gone).length && !cols(arch).some(c => c.textContent.includes(facts.title[gone])) && arch.errors.length === 0, `${archAll.length} in the menu, ${arch.errors.length} errors`);
+
+  // A card whose text comes from its Google Doc has its summary replaced by the Doc's as the page loads, so the cross-link is written into one that is not.
+  const [xs, ys] = facts.order.filter(i => !synced.includes(i));
+  const linked = openCmp({ transform: afterMap(`(() => { const p = POLICY_DATA.find(x => x.id === ${JSON.stringify(xs)}); p.summary = (p.summary || '') + ' See {{pol:${ys}|the other policy}}.'; })();`) });
+  pick(linked, xs, 'A');
+  const xref = cols(linked)[0].querySelector('.pol-xref');
+  if (xref) xref.click();
+  ok('a cross-link written inside a card\'s text still opens the policy it names, from the Compare view as in the dialog', !!xref && xref.textContent === 'the other policy' && linked.d.getElementById('polModalTitle').textContent === facts.title[ys], xref ? linked.d.getElementById('polModalTitle').textContent : 'no cross-link');
+
+  click(pg.w, pg.d, 'polSubviewAll');
+  const kept = [menu(pg, 'A'), menu(pg, 'B'), ring(pg)];
+  ok('leaving Compare shows the rows again and hides it, and coming back finds the same two policies', !hidden(pg, 'polCatRows') && hidden(pg, 'polCompareArea') && pg.d.getElementById('polSubviewAll').getAttribute('aria-pressed') === 'true', '');
+  click(pg.w, pg.d, 'polSubviewCompare');
+  ok('and it is still those two, in the same state', sameList([menu(pg, 'A'), menu(pg, 'B'), ring(pg)], kept) && pg.errors.length === 0, kept.join());
+
+  const everyWhy = Object.values(facts.pair).concat(Object.values(facts.riv));
+  const rich = everyWhy.filter(w => /[<>]|\{\{|&[a-z#0-9]+;/i.test(w));
+  ok('every reason the cards give for a link is plain text, which is how the view shows it (no markup, no tokens, no entities)', rich.length === 0, rich.join(' | ').slice(0, 200));
+  const both = rivals.filter(([a, b]) => linkedIn(facts.pair, a, b));
+  ok('no two policies are recorded as both rivals and partners (the view stages one or the other)', both.length === 0, both.map(p => p.join('+')).join(', '));
+
+  const css = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'policy.css'), 'utf8');
+  const sect = css.slice(css.indexOf('Landscape: the Compare view'));
+  const motion = /@media \(prefers-reduced-motion: no-preference\) \{([\s\S]*?)\n  \}/.exec(sect);
+  const outside = motion ? sect.replace(motion[0], '') : sect;
+  ok('the fight graphic moves only for a reader who has not asked their device for less motion: every animation in the Compare styles sits inside a no-preference media query',
+     !!motion && /animation:/.test(motion[1]) && !/animation\s*:|animation-[a-z]+\s*:/.test(outside), motion ? 'an animation sits outside the media query' : 'no no-preference media query');
+}
+
 /* ── policy cards: no Research basis, no Press & resources, no References list in "Copy as draft" ─────
    The dialog used to end its Precedents section with a "Research basis" list (the card's paperIds, then a "Show N related
    studies" list picked by category), then a "Press & resources" list, and "Copy as draft" ended with a "## References" list
@@ -781,8 +1308,8 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
    Phase and Domain. The `level` and `category` fields stay in the data: the area is derived from the category.
 
    And the "How it interacts" section (a card's pairsWith and competesWith as Pairs with / Competes with lists of cross-links) was removed from
-   the dialog and from "Copy as draft" at the owner's request. The two fields stay in the data: pairsWith draws the Links graph's lines (checked
-   above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block).
+   the dialog and from "Copy as draft" at the owner's request. The two fields stay in the data: pairsWith draws the Links graph's solid lines and
+   competesWith its dashed ones (checked above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block).
 
    Last, the `level` field (which of five stages of AI disruption a card addressed: Repair, Expand, Build, Restructure, Transform) and its
    DISRUPTION_LEVELS table were retired once nothing showed them. The one thing that still read them was a per-category column view that
