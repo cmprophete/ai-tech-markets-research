@@ -1,30 +1,39 @@
 #!/usr/bin/env python3
 """
-policy_map.py -- which policy cards the Google Sheet's `policy map` tab has archived.
+policy_map.py -- which policy cards the Google Sheet's `policy map` tab has archived, and which it has featured.
 
     python3 tools/policy_map.py check                     validate data/policy-map.js against the cards on the site; writes nothing
     python3 tools/policy_map.py check --tab CSV_OR_URL    validate the tab, and say what a build would change
     python3 tools/policy_map.py build --tab CSV_OR_URL    write data/policy-map.js from the tab (a scratch copy of the repo only)
     python3 tools/policy_map.py selftest                  prove the rules and the round trip on in-memory tabs
 
-WHAT THIS OWNS. data/policy-map.js, one small generated file: the ids of the policy cards the tab marks archived. The page
-leaves those cards out of the Landscape (src/js/00-state.js). Nobody edits the file by hand, and a local `build` is a
-second writer: run it in a scratch copy of the repo (`rsync -a --exclude .git ./ /tmp/policy-scratch/`) and copy the file
-over, as for the other generated data. `check` writes nothing and is safe anywhere; CI runs it.
+WHAT THIS OWNS. data/policy-map.js, one small generated file: the ids of the policy cards the tab marks archived and the ids it
+marks featured. The page leaves the archived cards out of the Landscape (src/js/00-state.js) and puts a Featured label on the
+featured ones' tiles in the All view (src/js/20-cite-export.js). Nobody edits the file by hand, and a local `build` is a second
+writer: run it in a scratch copy of the repo (`rsync -a --exclude .git ./ /tmp/policy-scratch/`) and copy the file over, as for
+the other generated data. `check` writes nothing and is safe anywhere; CI runs it.
 
-THE TAB. The Sheet's `policy map` tab holds the team's workplan, one row per policy. Two of its columns are read, by header
+THE TAB. The Sheet's `policy map` tab holds the team's workplan, one row per policy. Three of its columns are read, by header
 name (the header row is found by its names, so a block of notes above it is fine):
     card id         the id of the policy's card on the site (`ui-reform`), the same column the policy Doc sync reads
                     (tools/policy_docs.py). A row with no card id is a planning row, a policy that has no card yet: ignored.
     general status  `under review` (blank counts as this), `approved` or `archived`. Also accepted: `site status`, `status`.
-Only `archived` changes anything here: it hides the card. `approved` and `under review` leave the card on the page (the Doc
-sync, tools/policy_docs.py, is what `approved` means to). Any other word stops the run and names the row, and so does a card
-id that is not a card on the site (a typo would hide nothing and say nothing) and a card id that appears twice.
+    featured        blank, or the word `featured` (any capitals): the tab's own label for a policy the team features. A tab with
+                    no such column features nobody.
+`archived` hides the card; `approved` and `under review` leave it on the page (the Doc sync, tools/policy_docs.py, is what
+`approved` means to). `featured` is independent of the status: the label follows the tab, not the Doc sync, so a policy under
+review can be featured. A card that is both archived and featured is not shown (a note says so). Any other word in the status or
+the featured column stops the run and names the row, and so does a card id that is not a card on the site (a typo would hide or
+feature nothing and say nothing), a card id that appears twice, and a row marked featured that has no card id.
+
+A card does not carry the flag itself: the list in this file is the only thing that features a policy, so `check` also fails when
+a card in data/tracker-data.js has a `featured` field of its own (a second writer).
 
 NOT READ, on purpose: the tab's agenda columns (`included in ESP's agenda?`, `priority`), its drafting columns and its
 notes. They stay in the Sheet. For the same reason this tool keeps no snapshot of the tab in the repo, and a tab published
 to the web as CSV would be readable, those columns included, by anyone with its link: read the tab through the Sheets
-connector (or download it as CSV) for a run, or publish only a tab that holds nothing but `card id` and `general status`.
+connector (or download it as CSV) for a run, or publish only a tab that holds nothing but `card id`, `general status` and
+`featured`.
 
 No dependencies beyond the Python standard library.
 """
@@ -45,17 +54,21 @@ OUT = os.path.join(ROOT, "data", "policy-map.js")
 
 COLUMNS = {"card id": ("card id", "id", "policy card id"),
            "status": ("general status", "site status", "status")}
+OPTIONAL = {"featured": ("featured",)}                # read when the tab has it
 UNDER_REVIEW, APPROVED, ARCHIVED = "under review", "approved", "archived"
 STATUSES = (UNDER_REVIEW, APPROVED, ARCHIVED)
+FEATURED = "featured"
 
 HEADER = """\
 /* data/policy-map.js: what the Google Sheet's `policy map` tab says about the policy cards.
 
-   GENERATED by tools/policy_map.py. NEVER EDIT BY HAND, and do not commit a local build: change a policy's `general status`
-   in the Sheet, then have the file rebuilt (docs/policy-doc-sync.md).
+   GENERATED by tools/policy_map.py. NEVER EDIT BY HAND, and do not commit a local build: change a policy's `general status` or its
+   `featured` column in the Sheet, then have the file rebuilt (docs/policy-doc-sync.md).
 
    archived  the ids of the cards whose `general status` in the tab is archived. The page leaves them out of the Landscape, the
-             links between policies and the counts (src/js/00-state.js); a card that points at one simply has no line to it. */
+             links between policies and the counts (src/js/00-state.js); a card that points at one simply has no line to it.
+   featured  the ids of the cards whose `featured` column in the tab says featured. The page puts a Featured label on their tiles in
+             the All view (src/js/20-cite-export.js). This list is the only thing that features a policy. */
 """
 
 
@@ -63,21 +76,30 @@ def _hdr(s):
     return re.sub(r"[^a-z0-9]+", " ", (s or "").lower()).strip()
 
 
-def site_ids():
-    """The ids of the cards on the site, in their order, from POLICY_DATA in data/tracker-data.js."""
+def site_cards():
+    """The cards on the site, in their order, from POLICY_DATA in data/tracker-data.js."""
     with open(DATA, encoding="utf-8") as fh:
         _, _, cards = research.find_array_span(fh.read(), "POLICY_DATA")
-    return [c["id"] for c in cards if c.get("id")]
+    return cards
+
+
+def site_ids():
+    return [c["id"] for c in site_cards() if c.get("id")]
+
+
+def hand_featured(cards):
+    """The ids of cards that carry a `featured` field of their own: the list in data/policy-map.js is the one writer, so there should be none."""
+    return [c.get("id", "?") for c in cards if "featured" in c]
 
 
 def read_tab(text, ids):
-    """The tab as CSV -> (archived ids in the site's order, [problems], [notes]). The header row is found by its column names."""
+    """The tab as CSV -> (archived ids, featured ids, both in the site's order, [problems], [notes]). The header row is found by its column names."""
     rows = list(csv.reader(io.StringIO(text)))
     head, idx = None, {}
     for n, row in enumerate(rows):
         cols = [_hdr(c) for c in row]
         found, ambiguous = {}, []
-        for field, names in COLUMNS.items():
+        for field, names in list(COLUMNS.items()) + list(OPTIONAL.items()):
             hit = [i for i, c in enumerate(cols) if c in names]
             if len(hit) > 1:
                 ambiguous.append(field)
@@ -85,46 +107,62 @@ def read_tab(text, ids):
                 found[field] = hit[0]
         if all(f in found for f in COLUMNS):
             if ambiguous:
-                return [], ["row %d has more than one column that could be the %s" % (n + 1, " or ".join(ambiguous))], []
+                return [], [], ["row %d has more than one column that could be the %s" % (n + 1, " or ".join(ambiguous))], []
             head, idx = n, found
             break
     if head is None:
-        return [], ["the tab has no header row with the columns `card id` and `general status` (accepted names: %s)"
-                    % "; ".join("%s: %s" % (k, ", ".join(v)) for k, v in COLUMNS.items())], []
+        return [], [], ["the tab has no header row with the columns `card id` and `general status` (accepted names: %s)"
+                        % "; ".join("%s: %s" % (k, ", ".join(v)) for k, v in COLUMNS.items())], []
     on_site = set(ids)
-    problems, notes, seen, archived = [], [], {}, set()
+    problems, notes, seen, archived, featured = [], [], {}, set(), set()
     for n in range(head + 1, len(rows)):
         row = rows[n] + [""] * 20
         cid, raw = row[idx["card id"]].strip(), row[idx["status"]]
         status = _hdr(raw) or UNDER_REVIEW
+        mark_raw = row[idx["featured"]] if "featured" in idx else ""
+        mark = _hdr(mark_raw)
         where = "row %d" % (n + 1)
         if status not in STATUSES:
             problems.append("%s (%s): status %r is not one of: under review, approved, archived (leave it blank for under review)"
                             % (where, cid or "no card id", raw.strip()))
             continue
+        if mark not in ("", FEATURED):
+            problems.append("%s (%s): the featured column says %r; leave it blank, or write featured"
+                            % (where, cid or "no card id", mark_raw.strip()))
+            continue
         if not cid:
             if status == ARCHIVED:
                 notes.append("%s is archived but has no card id, so there is no card to hide" % where)
+            if mark:
+                problems.append("%s is marked featured but has no card id, so there is no card to feature" % where)
             continue
         if cid in seen:
             problems.append("%s: the card id %r is already in row %d" % (where, cid, seen[cid]))
             continue
         seen[cid] = n + 1
         if cid not in on_site:
-            problems.append("%s: %r is not a card on the site (check the id; a typo would hide nothing)" % (where, cid))
+            problems.append("%s: %r is not a card on the site (check the id; a typo would hide or feature nothing)" % (where, cid))
             continue
         if status == ARCHIVED:
             archived.add(cid)
-    return [i for i in ids if i in archived], problems, notes
+        if mark:
+            featured.add(cid)
+            if status == ARCHIVED:
+                notes.append("%s (%s) is featured but archived, so it is not shown" % (where, cid))
+    return [i for i in ids if i in archived], [i for i in ids if i in featured], problems, notes
 
 
-def render(archived):
-    inner = "".join("    %s,\n" % research.js_string(i) for i in archived)
-    return HEADER + "const POLICY_MAP = {\n  archived: [" + ("\n" + inner + "  " if archived else "") + "],\n};\n"
+def _list(name, items):
+    inner = "".join("    %s,\n" % research.js_string(i) for i in items)
+    return "  %s: [%s],\n" % (name, ("\n" + inner + "  ") if items else "")
+
+
+def render(archived, featured):
+    return HEADER + "const POLICY_MAP = {\n" + _list("archived", archived) + _list("featured", featured) + "};\n"
 
 
 def parse(text):
-    """data/policy-map.js -> the list of archived ids, by the strict reader the research sync trusts."""
+    """data/policy-map.js -> (archived ids, featured ids), by the strict reader the research sync trusts."""
     anchor = "const POLICY_MAP = "
     at = text.find(anchor)
     if at < 0:
@@ -134,9 +172,10 @@ def parse(text):
     p.ws()
     if text[p.i] != ";" or text[p.i + 1:].strip():
         raise ValueError("unexpected text after the POLICY_MAP object")
-    if set(value) != {"archived"} or not isinstance(value["archived"], list) or not all(isinstance(x, str) for x in value["archived"]):
-        raise ValueError("POLICY_MAP must be exactly { archived: [ids] }")
-    return value["archived"]
+    if (not isinstance(value, dict) or set(value) != {"archived", "featured"}
+            or not all(isinstance(value[k], list) and all(isinstance(x, str) for x in value[k]) for k in value)):
+        raise ValueError("POLICY_MAP must be exactly { archived: [ids], featured: [ids] }")
+    return value["archived"], value["featured"]
 
 
 def fetch_text(location):
@@ -158,10 +197,20 @@ def current():
         return None
 
 
+def _which(label, ids):
+    return "%d %s card(s)%s" % (len(ids), label, (" (" + ", ".join(ids) + ")") if ids else "")
+
+
 def cmd_check(tab):
-    ids = site_ids()
+    cards = site_cards()
+    ids = [c["id"] for c in cards if c.get("id")]
+    stray = hand_featured(cards)
+    if stray:
+        print("check: %s carry%s a `featured` field in data/tracker-data.js. The Featured label has one writer, the Sheet's policy map tab,\n"
+              "  through data/policy-map.js; remove the field from the card." % (", ".join(stray), "" if len(stray) > 1 else "s"), file=sys.stderr)
+        return 1
     if tab:
-        archived, problems, notes = read_tab(fetch_text(tab), ids)
+        archived, featured, problems, notes = read_tab(fetch_text(tab), ids)
         for n in notes:
             print("  note: " + n)
         if problems:
@@ -170,29 +219,35 @@ def cmd_check(tab):
                 print("  - " + p, file=sys.stderr)
             return 1
         text = current()
-        was = parse(text) if text is not None else []
-        if archived != was:
-            print("  note: a build would change the archived cards: now %s, then %s" % (", ".join(was) or "none", ", ".join(archived) or "none"))
-        print("  ok  the tab is valid: %d archived card(s)%s" % (len(archived), (" (" + ", ".join(archived) + ")") if archived else ""))
+        try:
+            was_a, was_f = parse(text) if text is not None else ([], [])
+        except (ValueError, IndexError):
+            was_a, was_f = [], []
+        if archived != was_a:
+            print("  note: a build would change the archived cards: now %s, then %s" % (", ".join(was_a) or "none", ", ".join(archived) or "none"))
+        if featured != was_f:
+            print("  note: a build would change the featured cards: now %s, then %s" % (", ".join(was_f) or "none", ", ".join(featured) or "none"))
+        print("  ok  the tab is valid: %s; %s" % (_which("archived", archived), _which("featured", featured)))
         return 0
     text = current()
     if text is None:
         print("check: data/policy-map.js does not exist; run `build --tab ...` in a scratch copy", file=sys.stderr)
         return 1
     try:
-        archived = parse(text)
+        archived, featured = parse(text)
     except (ValueError, IndexError) as e:
         print("check: data/policy-map.js does not parse: %s" % e, file=sys.stderr)
         return 1
-    unknown = [i for i in archived if i not in set(ids)]
-    if unknown or len(set(archived)) != len(archived):
-        print("check: data/policy-map.js lists %s, not a card on the site (or twice)" % (", ".join(unknown) or "a repeated id"), file=sys.stderr)
-        return 1
-    if text != render(archived):
+    for name, lst in (("archived", archived), ("featured", featured)):
+        unknown = [i for i in lst if i not in set(ids)]
+        if unknown or len(set(lst)) != len(lst):
+            print("check: data/policy-map.js lists %s under %s, not a card on the site (or twice)" % (", ".join(unknown) or "a repeated id", name), file=sys.stderr)
+            return 1
+    if text != render(archived, featured):
         print("check: data/policy-map.js is not what the tool writes: it was edited by hand.\n"
               "  It has one writer; take main's copy, or rebuild it in a scratch copy from the tab.", file=sys.stderr)
         return 1
-    print("  ok  data/policy-map.js: %d archived card(s)%s" % (len(archived), (" (" + ", ".join(archived) + ")") if archived else ""))
+    print("  ok  data/policy-map.js: %s; %s" % (_which("archived", archived), _which("featured", featured)))
     return 0
 
 
@@ -200,7 +255,12 @@ def cmd_build(tab):
     if not tab:
         print("policy_map: build needs --tab <the tab as CSV: a file, or a published link>", file=sys.stderr)
         return 2
-    archived, problems, notes = read_tab(fetch_text(tab), site_ids())
+    cards = site_cards()
+    stray = hand_featured(cards)
+    archived, featured, problems, notes = read_tab(fetch_text(tab), [c["id"] for c in cards if c.get("id")])
+    if stray:
+        problems.append("%s carry%s a `featured` field in data/tracker-data.js: remove it (the Sheet's featured column is the one writer)"
+                        % (", ".join(stray), "" if len(stray) > 1 else "s"))
     for n in notes:
         print("  note: " + n)
     if problems:
@@ -208,13 +268,13 @@ def cmd_build(tab):
         for p in problems:
             print("  - " + p, file=sys.stderr)
         return 1
-    text = render(archived)
+    text = render(archived, featured)
     if current() == text:
-        print("  no change; data/policy-map.js is already up to date (%d archived card(s))" % len(archived))
+        print("  no change; data/policy-map.js is already up to date (%s; %s)" % (_which("archived", archived), _which("featured", featured)))
         return 0
     with open(OUT, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(text)
-    print("  wrote  data/policy-map.js  (%d archived card(s)%s)" % (len(archived), (": " + ", ".join(archived)) if archived else ""))
+    print("  wrote  data/policy-map.js  (%s; %s)" % (_which("archived", archived), _which("featured", featured)))
     return 0
 
 
@@ -232,43 +292,69 @@ def _selftest():
     def tab(*rows, header=head):
         return header + "".join(",".join(r) + "\n" for r in rows)
 
-    arch, probs, notes = read_tab(tab(("A", "x", "archived", "gamma", ""), ("B", "x", "approved", "alpha", "link"), ("C", "x", "", "beta", ""),
-                                      ("D", "x", "archived", "alpha", "")), ids)
+    arch, feat, probs, notes = read_tab(tab(("A", "x", "archived", "gamma", ""), ("B", "x", "approved", "alpha", "link"), ("C", "x", "", "beta", ""),
+                                            ("D", "x", "archived", "alpha", "")), ids)
     expect(arch == ["gamma"] and any("already in row" in p for p in probs), "a card id twice stops the run, even when the first row decides: %s %s" % (arch, probs))
-    arch, probs, notes = read_tab(tab(("A", "x", "archived", "gamma", ""), ("B", "x", "approved", "alpha", "link"), ("C", "x", "", "beta", ""),
-                                      ("D", "x", "Archived ", "delta", "")), ids)
+    arch, feat, probs, notes = read_tab(tab(("A", "x", "archived", "gamma", ""), ("B", "x", "approved", "alpha", "link"), ("C", "x", "", "beta", ""),
+                                            ("D", "x", "Archived ", "delta", "")), ids)
     expect(not probs and arch == ["gamma", "delta"], "archived is read, capitals and spaces ignored, and the ids come out in the site's order: %s %s" % (arch, probs))
-    arch, probs, notes = read_tab(tab(("A", "x", "approved", "alpha", ""), ("B", "x", "", "beta", "")), ids)
-    expect(not probs and arch == [], "approved and a blank status hide nothing")
-    arch, probs, notes = read_tab(tab(("New idea", "x", "archived", "", ""), ("Other idea", "x", "", "", "")), ids)
+    arch, feat, probs, notes = read_tab(tab(("A", "x", "approved", "alpha", ""), ("B", "x", "", "beta", "")), ids)
+    expect(not probs and arch == [] and feat == [], "approved and a blank status hide nothing, and a tab without a featured column features nothing")
+    arch, feat, probs, notes = read_tab(tab(("New idea", "x", "archived", "", ""), ("Other idea", "x", "", "", "")), ids)
     expect(not probs and arch == [] and any("no card to hide" in n for n in notes), "a planning row without a card id is ignored; an archived one is noted")
-    arch, probs, notes = read_tab(tab(("A", "x", "aproved", "alpha", "")), ids)
+    arch, feat, probs, notes = read_tab(tab(("A", "x", "aproved", "alpha", "")), ids)
     expect(any("not one of" in p and "aproved" in p for p in probs), "an unknown status word stops the run and names the row")
-    arch, probs, notes = read_tab(tab(("A", "x", "archived", "ganma", "")), ids)
+    arch, feat, probs, notes = read_tab(tab(("A", "x", "archived", "ganma", "")), ids)
     expect(any("not a card on the site" in p and "ganma" in p for p in probs), "a card id that is not on the site stops the run")
-    arch, probs, notes = read_tab("a,b\n1,2\n", ids)
+    arch, feat, probs, notes = read_tab("a,b\n1,2\n", ids)
     expect(any("no header row" in p for p in probs), "a tab without the columns is refused")
-    arch, probs, notes = read_tab("roles,,,\nBecky leads,,,\n" + head + "A,x,archived,gamma,\n", ids)
+    arch, feat, probs, notes = read_tab("roles,,,\nBecky leads,,,\n" + head + "A,x,archived,gamma,\n", ids)
     expect(not probs and arch == ["gamma"], "the header row is found under a block of notes")
-    arch, probs, notes = read_tab("Card ID,Status\ngamma,archived\n", ids)
+    arch, feat, probs, notes = read_tab("Card ID,Status\ngamma,archived\n", ids)
     expect(not probs and arch == ["gamma"], "the columns are found by name whatever their capitals, and `status` is accepted")
     # the agenda columns and the notes are never read: the same answer whatever they hold
     wide = "policy map status,included in ESP's agenda?,category,priority,what it is,examples,general status,card id,doc link,notes\n"
-    one, _, _ = read_tab(wide + "A,yes,x,high,draft complete,draft complete,archived,gamma,link,secret\n", ids)
-    two, _, _ = read_tab(wide + "A,no,x,low,not started,not started,archived,gamma,,other\n", ids)
-    expect(one == two == ["gamma"], "the agenda, drafting and notes columns change nothing")
+    one = read_tab(wide + "A,yes,x,high,draft complete,draft complete,archived,gamma,link,secret\n", ids)
+    two = read_tab(wide + "A,no,x,low,not started,not started,archived,gamma,,other\n", ids)
+    expect(one == two and one[0] == ["gamma"], "the agenda, drafting and notes columns change nothing")
+
+    # the featured column
+    fhead = "policy map status,category,included in ESP's agenda?,priority,featured,general status,card id,doc link,notes\n"
+    arch, feat, probs, notes = read_tab(fhead + "A,x,yes,high,featured,approved,gamma,link,n\nB,x,no,low,,,alpha,,\nC,x,yes,,Featured ,,delta,,\nD,x,,,,,beta,,\n", ids)
+    expect(not probs and arch == [] and feat == ["gamma", "delta"], "featured is read from its column, capitals and spaces ignored, and the ids come out in the site's order: %s %s %s" % (arch, feat, probs))
+    arch, feat, probs, notes = read_tab(fhead + "A,x,,,featured,under review,gamma,,\nB,x,,,featured,approved,alpha,,\n", ids)
+    expect(not probs and feat == ["alpha", "gamma"], "a policy is featured whatever its status: the label follows the tab, not the Doc sync")
+    arch, feat, probs, notes = read_tab(fhead + "A,x,,,star,,gamma,,\n", ids)
+    expect(any("featured column says 'star'" in p and "row 2" in p for p in probs) and feat == [], "any other word in the featured column stops the run and names the row")
+    arch, feat, probs, notes = read_tab(fhead + "New idea,x,,,featured,,,,\n", ids)
+    expect(any("no card id" in p and "featured" in p for p in probs), "a row marked featured that has no card id stops the run")
+    arch, feat, probs, notes = read_tab(fhead + "A,x,,,featured,,ganma,,\n", ids)
+    expect(any("not a card on the site" in p and "ganma" in p for p in probs), "a featured row whose card id is not on the site stops the run")
+    arch, feat, probs, notes = read_tab(fhead + "A,x,,,featured,archived,gamma,,\n", ids)
+    expect(not probs and arch == ["gamma"] and feat == ["gamma"] and any("featured but archived" in n for n in notes), "a card that is featured and archived is noted: it is not shown")
+    arch, feat, probs, notes = read_tab("card id,featured,featured,general status\ngamma,featured,featured,\n", ids)
+    expect(any("more than one column" in p for p in probs), "two columns that could be the featured one are refused")
+    arch, feat, probs, notes = read_tab(fhead + "A,yes,x,high,,,gamma,,secret\n", ids)
+    expect(not probs and feat == [], "the agenda columns are not the featured column: yes in `included in ESP's agenda?` features nothing")
+
     # the file
-    text = render(["gamma", "delta"])
-    expect(parse(text) == ["gamma", "delta"] and text.count("const POLICY_MAP = ") == 1 and "NEVER EDIT BY HAND" in text, "the file reads back as the ids it was made from")
-    expect(parse(render([])) == [] and "archived: []" in render([]), "an empty list is written and read back")
-    for bad in (text.replace("archived", "hidden"), text + "x", text.replace("};", "}")):
+    text = render(["gamma", "delta"], ["alpha", "delta"])
+    expect(parse(text) == (["gamma", "delta"], ["alpha", "delta"]) and text.count("const POLICY_MAP = ") == 1 and "NEVER EDIT BY HAND" in text,
+           "the file reads back as the ids it was made from, both lists")
+    empty = render([], [])
+    expect(parse(empty) == ([], []) and "archived: []" in empty and "featured: []" in empty, "empty lists are written and read back")
+    for bad in (text.replace("archived", "hidden"), text.replace("featured: [", "starred: ["), text.replace("};", "  extra: [],\n};"), text + "x", text.replace("};", "}"),
+                text.replace("featured: [", 'featured: "x", more: [')):
         try:
             parse(bad)
             expect(False, "parse must refuse a changed file")
         except (ValueError, IndexError):
             expect(True, "")
-    # the cards of the real site, and the real file
+    # a card with a featured field of its own is a second writer
+    expect(hand_featured([{"id": "a"}, {"id": "b", "featured": True}]) == ["b"] and hand_featured([{"id": "a"}]) == [], "a card carrying a featured field is found")
+    # the cards of the real site
     expect(len(site_ids()) >= 20 and "ui-reform" in site_ids(), "the cards on the site are read from data/tracker-data.js")
+    expect(hand_featured(site_cards()) == [], "no card in data/tracker-data.js carries a featured field of its own")
     return done[0], problems
 
 
