@@ -20,7 +20,7 @@
       buildPolicyView();
       return;
     }
-    // About and Agenda are static markup, Enforcement and Cases are drawn by their own script (55-enforcement.js) and Legislation and All by theirs (60-legislation.js): there is nothing to build here.
+    // About is static markup, the Brief (view key agenda) is drawn once by its own script (35-agenda.js; setView calls buildAgenda), Enforcement and Cases are drawn by theirs (55-enforcement.js) and Legislation and All by theirs (60-legislation.js): there is nothing to build here.
     if (activeView === 'about' || activeView === 'agenda' || activeView === 'enforcement' || activeView === 'cases' || activeView === 'legislation' || activeView === 'all') { return; }
 
     // ── Papers (cards) view ──
@@ -183,8 +183,10 @@
       },
     },
     about: { lede: 'Welcome to our AI dashboard.', text: 'How this tracker is structured and how to use it.' },
-    // A placeholder tab, first in the Policy group: this masthead and the one note under it (src/views/40-agenda.html) are all it says. Replace both when there is an agenda.
-    agenda: { lede: 'What is our policy agenda?', text: 'Coming soon.' },
+    // The Brief tab (the key is still agenda; the tab was called Agenda until 2026-11-19), first in the Policy group: Becky Chao's April 2026 brief (data/agenda-data.js, drawn by 35-agenda.js). The question is the brief's own aim (its words: AI "built to benefit all Americans, not just a select few"); it
+    // was "What is our policy agenda?" until 2026-11-19, when the owner asked for a question and a blurb that suit the content. The standfirst names the brief and counts its pathways from the data (agendaMasthead), so it
+    // cannot go stale; it says "Coming soon." only if that file did not load.
+    agenda: { lede: 'How do we make sure AI benefits everyone?', get text() { return agendaMasthead(); }, get html() { return agendaMastheadHTML(); } },
   };
   // The Government action tab has ONE masthead for its four sections (the owner, 2026-11-18: "There shouldn't be a different header and blurb for each view"): the tab's question and standfirst, said from everything it
   // holds (govLede() and govMasthead() in 60-legislation.js), so it cannot go stale and does not change when the switch does.
@@ -230,7 +232,8 @@
     const ld = document.getElementById('headerTabDescLede');
     const t  = document.getElementById('headerTabDescText');
     if (ld) ld.textContent = desc.lede || '';
-    if (t)  t.textContent  = desc.text;
+    // Every tab's standfirst is plain text, except one that gives `html` as well (the Brief's, which links to the full paper): that is written as markup, and `text` stays its plain version.
+    if (t) { if (typeof desc.html === 'string') t.innerHTML = desc.html; else t.textContent = desc.text; }
   }
 
   // Government action is one nav tab for its four sections (GOV_VIEWS), so all four map to it; the tab opens the section that was open last (govLast), All at first.
@@ -261,6 +264,7 @@
     document.querySelectorAll('#govSwitch [data-gov]').forEach(b => { const on = b.dataset.gov === view; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     document.body.classList.toggle('fact-bank-view',   view === 'fact-bank');
     if (view === 'fact-bank' && typeof initFactBank === 'function') initFactBank();
+    if (view === 'agenda' && typeof buildAgenda === 'function') buildAgenda();   // Becky Chao's brief: drawn once, on first open (35-agenda.js)
     // The four sections of Government action share the toolbar, the map and the card (the map is shaded from the open section's rows, and the card holds that section's own data; the bills are a file of their own,
     // fetched the first time any of the four opens).
     if (GOV_VIEWS.includes(view)) {
@@ -276,7 +280,7 @@
     if (ann) {
       // Must match the tabs' accessible names in src/views/10-header.html (the visible label, plus an aria-label
       // where the tab needs its group to make sense): this is what a screen reader announces on a view change.
-      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy agenda', policy: 'Policy landscape', all: 'Government action: All', legislation: 'Government action: Legislation', enforcement: 'Government action: Enforcement', cases: 'Government action: Cases', about: 'About' };
+      const names = { cards: 'Papers', 'fact-bank': 'Fact Bank', agenda: 'Policy brief', policy: 'Policy landscape', all: 'Government action: All', legislation: 'Government action: Legislation', enforcement: 'Government action: Enforcement', cases: 'Government action: Cases', about: 'About' };
       ann.textContent = (names[view] || view) + ' view';
     }
     setHash(currentRoute());
