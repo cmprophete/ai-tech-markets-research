@@ -133,6 +133,9 @@
     font-family: var(--sans);
     padding-bottom: 8px; border-bottom: 1px solid var(--border);
   }
+  /* A link in the standfirst (the Brief's, to the full paper): the site's navy, underlined, as in the About page's prose. */
+  .header-tab-desc-text a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .header-tab-desc-text a:hover { text-decoration-thickness: 2px; }
   .header-nav-btn {
     background: none; border: none; cursor: pointer;
     font-family: var(--grot);
