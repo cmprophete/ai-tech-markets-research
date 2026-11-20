@@ -91,8 +91,13 @@ Under its title a card's dialog names only its policy area (the Map row its `cat
 draft" opens with the same Area line (changed 2026-11-17, from the level and the fine category).
 
 Neither the dialog nor the draft lists `pairsWith` or `competesWith` either (the "How it interacts" section was
-removed 2026-11-17). Both stay in the data: `pairsWith` draws the Links graph's lines, and `competesWith` is stored
-and shown nowhere. Their `why` is still the author's prose, so it stays verbatim.
+removed 2026-11-17). Both stay in the data: `pairsWith` draws the Links graph's solid lines and `competesWith` its dashed
+ones (since 2026-11-19), and the Landscape's Compare view lists the policies each one links to, with the `why` as the reason it gives for a fight or a tag team. Their `why` is still the author's prose, so it stays verbatim, and it is
+plain text: no markup, no `{{...}}` tokens, no entities (a test fails if one has them).
+
+Which policies are featured is not a card field. It is the `featured` column of the Sheet's `policy map` tab, carried into `data/policy-map.js` by
+`tools/policy_map.py` (docs/policy-doc-sync.md), and the Landscape's All view puts a Featured label on those policies' tiles. A card that carries a
+`featured` field of its own is a second writer, and `tools/policy_map.py check` fails on it.
 
 ## Workflow (paste into chat)
 
