@@ -1,5 +1,8 @@
-      <!-- ── AGENDA ── A placeholder tab, first in the Policy group of the nav (alphabetical: Agenda, Landscape). The masthead above carries its copy
-           (TAB_DESCS.agenda in src/js/70-render.js); this is the one note under it. Replace the note, and that copy, with the agenda when there is one. -->
+      <!-- ── AGENDA ── Becky Chao's April 2026 brief, "Ideas for Shared Economic Prosperity in the AI Transition": first tab of the Policy group of the nav (alphabetical: Agenda, Landscape).
+           The masthead above carries its copy (TAB_DESCS.agenda in src/js/70-render.js; the counts in it come from the data). The page itself is drawn once, on first open, by buildAgenda()
+           in src/js/35-agenda.js from data/agenda-data.js into #agendaRoot, so none of the brief's text lives in this file. The note inside #agendaRoot is what shows only if that data did not load. -->
       <div id="agendaArea">
-        <p class="placeholder-note"><span class="placeholder-note-label">Placeholder</span>Nothing is here yet. For now, the policies themselves are in <a href="#policy">Landscape</a>.</p>
+        <div id="agendaRoot" class="ag">
+          <p class="placeholder-note"><span class="placeholder-note-label">Not available</span>The brief did not load. Reload the page, or see the policies themselves in <a href="#policy">Landscape</a>.</p>
+        </div>
       </div>
