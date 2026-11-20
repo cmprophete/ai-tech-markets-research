@@ -111,6 +111,21 @@
     "announce": "Policy landscape view",
     "hash": "#policy"
   },
+  "#brief": {
+    "errors": [],
+    "bodyClasses": [
+      "agenda-view"
+    ],
+    "nav": [
+      "viewAgenda"
+    ],
+    "navSelected": [
+      "viewAgenda"
+    ],
+    "panelLabelledBy": "viewAgenda",
+    "announce": "Policy brief view",
+    "hash": "#brief"
+  },
   "#agenda": {
     "errors": [],
     "bodyClasses": [
@@ -123,8 +138,8 @@
       "viewAgenda"
     ],
     "panelLabelledBy": "viewAgenda",
-    "announce": "Policy agenda view",
-    "hash": "#agenda"
+    "announce": "Policy brief view",
+    "hash": "#brief"
   },
   "#all": {
     "errors": [],
