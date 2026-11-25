@@ -372,7 +372,7 @@ A policy the team has retired is set to `archived` in the `general status` colum
 leaves the Landscape. `tools/policy_map.py` reads the tab's `card id`, `general status` and `featured` columns (nothing else: not the
 agenda columns, not the drafting columns, not the notes) and writes `data/policy-map.js`, a generated file holding the ids of
 the archived cards and the ids of the featured ones; the page takes those cards out of `POLICY_DATA` before anything reads it (`src/js/00-state.js`), so the map,
-its counts, the Links graph and the dialogs leave them out. A card that pairs with an archived one just has no line to it, and
+its counts, the Links view and the dialogs leave them out. A card that pairs with an archived one just has no link to it, and
 a `{{pol:}}` token that names one reads as plain text. Setting the status back brings the card back at the next run.
 
 A policy the team features has the word `featured` in the tab's `featured` column (the owner, 2026-11-19: "whatever's labeled on the google sheet"),
