@@ -236,9 +236,10 @@
     if (t) { if (typeof desc.html === 'string') t.innerHTML = desc.html; else t.textContent = desc.text; }
   }
 
-  // Government action is one nav tab for its four sections (GOV_VIEWS), so all four map to it; the tab opens the section that was open last (govLast), All at first.
-  const GOV_VIEWS = ['all', 'cases', 'enforcement', 'legislation'];
-  let govLast = 'all';
+  // Government action is one nav tab for its four sections (GOV_VIEWS), so all four map to it; the tab opens the section that was open last (govLast), Legislation at first (the owner, 2026-11-24: "Have legislation be the default view for the government action page"; it was All from 2026-11-18).
+  // GOV_DEFAULT is that first section (60-legislation.js, which runs first and also uses it: the Reset button puts the tab back to it, since Reset is "how the tab opens").
+  const GOV_VIEWS = ['legislation', 'enforcement', 'cases', 'all'];   // the switch's order (the owner, 2026-11-23: Legislation, Enforcement, Cases, then All; the tab opens on Legislation, govLast below)
+  let govLast = GOV_DEFAULT;
   const VIEW_TAB_IDS = { cards: 'viewCards', 'fact-bank': 'viewFactBank', agenda: 'viewAgenda', policy: 'viewPolicy', all: 'viewGovernment', legislation: 'viewGovernment', enforcement: 'viewGovernment', cases: 'viewGovernment', about: 'homeTitleLink' };
 
   function setView(view) {
