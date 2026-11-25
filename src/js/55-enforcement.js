@@ -5,11 +5,11 @@
      file has no row of the kind the section is the placeholder it was (the note in src/views/60-legislation.html, under the tab's one masthead); the first row of the kind turns its list on, so nothing about
      a section changes on the live site until a row has been approved in the Sheet.
 
-     One tab, four sections, one PLACE. The nav has one tab, Government action; a switch in the toolbar (src/views/60-legislation.html) moves between All, Cases, Enforcement and Legislation, and each section
+     One tab, four sections, one PLACE. The nav has one tab, Government action; a switch in the toolbar (src/views/60-legislation.html) moves between Legislation, Enforcement, Cases and All, and each section
      has an address of its own (#cases, #enforcement, #legislation). A jurisdiction is a filter here, not a home, so the place chosen in the Show menu or on the map is SHARED by the three (legView.pinned in
      60-legislation.js): pick Texas on one and it is still Texas on the others. "Federal" is two different bodies, Congress on Legislation and the federal agencies and courts here, and the two menus say so. A
      federal row has no state; a state attorney general's action or a state court's case carries its state's USPS code, and that is where it is listed. The address carries the place (#enforcement/texas,
-     #cases/federal), so a link opens the section on it, and the map's card on Legislation (legPanel) counts the rows of the place it shows and links to each section that has some (enfCardBlock): the card is
+     #cases/federal, #cases/states for every state at once: the States button, 2026-11-24), so a link opens the section on it, and the map's card on Legislation (legPanel) counts the rows of the place it shows and links to each section that has some (enfCardBlock): the card is
      the one-screen summary of a place, and the sections are where its detail is.
 
      Actions and cases are never counted with the bills, nor with each other: a settlement or a ruling is not a bill, and a total that mixed them would mean nothing. Adding a kind is a row in ENF_KINDS, a
@@ -17,7 +17,7 @@
      like a button, and these are labels to read; the owner's preference, 2026-11-17); the topic filter is the Papers chips, as on Legislation.
 
      ALL, the fourth section (the owner, 2026-11-18: "There should be an All view that's separate from the Legislation view. Currently it looks like legislation holds all the data"), holds everything, in this order in its
-     card and on its page: the midterm results, the bills, then both of these lists, the key cases and the enforcement actions (enfRenderAll; ENF_KINDS_ALL says the order). It shows the bills' controls (Status, the checkbox, the chips, the search, Sort), and those narrow the lists here as well: a
+     card and on its page: the bills, then both of these lists, the key cases and the enforcement actions (enfRenderAll; ENF_KINDS_ALL says the order). It shows the bills' controls (Status, the checkbox, the chips, the search, Sort), and those narrow the lists here as well: a
      row's words and topics are the same vocabulary as a bill's, so what the chips and the search mean is the same on every list (enfFilt says whose state they are). Legislation, Enforcement and Cases show their own data alone.
 
      THE MAP follows the open section. It is the same map in all four, and legPaint (60-legislation.js) shades its states by how many of that section's rows each has: the bills on Legislation, the enforcement
@@ -29,7 +29,7 @@
 
      SORT. The Sort menu is on every section, in the same place (the search bar's first row, after the search), and its three choices mean the same thing on each: Most recent (the default), Oldest and
      Jurisdiction (the federal side first, then the states A to Z, each place's rows newest first). The bills' menu is #legSort and the lists' is #enfSort, two menus because the two sections' own
-     controls are separate throughout, but one setting for the tab, legView.sort: choose Oldest on one section and the others open oldest first. Sort is not a filter, so "Clear filters" leaves it alone.
+     controls are separate throughout, but one setting for the tab, legView.sort: choose Oldest on one section and the others open oldest first. Sort is not a filter, so "Clear filters" leaves it alone. (The bills' menu also has two Status orders, by progress; a list has no stage to order by, so under one of them it lists most recent first and its menu says Most recent.)
 
      ORDER. This file runs BEFORE 60-legislation.js, because the first card is drawn when that file finishes (buildLegislationView) and the card calls enfCardBlock: what the card uses here is a
      function declaration or a const at the top of this file. What this file takes from the Legislation script (legView, legName, legSlug, ...) is read when it runs, never when it loads. */
@@ -37,7 +37,7 @@
     { kind: 'enforcement', view: 'enforcement', one: 'enforcement action', many: 'enforcement actions', tag: 'action', tags: 'actions' },   // tag and tags: the short names the map's legend counts in
     { kind: 'case',        view: 'cases',       one: 'key case',           many: 'key cases',           tag: 'case',   tags: 'cases' },
   ];
-  // The order All holds them in, in its card and on its page (the owner, 2026-11-18: the midterm results, the bills, "and then cases and enforcement"): the key cases, then the enforcement actions.
+  // The order All holds them in, in its card and on its page (the owner, 2026-11-18: the bills, "and then cases and enforcement"; the midterm results that came before the bills were removed on 2026-11-23): the key cases, then the enforcement actions.
   const ENF_KINDS_ALL = [ENF_KINDS[1], ENF_KINDS[0]];
   const ENF_FED_NAME = 'Federal (agencies and courts)';   // the Legislation menu says "Federal (Congress)": two different bodies, so two names
   // pages: the page each list is on, by kind (a list shows LEG_PAGE_SIZE rows, ten, like the bills' table: the owner, 2026-11-18, "There should be a max of 10 bills per page").
@@ -74,8 +74,10 @@
   // Where a row is listed in the Show menu: a federal row under Federal, a state attorney general's action or a state court's case under its state; a row with neither is listed only while all
   // jurisdictions are showing.
   function enfPlaceOf(a) { return a.state ? String(a.state) : (a.level === 'federal' ? LEG_FED : ''); }
-  const enfPlaceName = place => place === LEG_FED ? ENF_FED_NAME : legName(place);
-  const enfSlug = place => place === LEG_FED ? LEG_FED : legSlug(place);
+  const enfPlaceName = place => place === LEG_FED ? ENF_FED_NAME : place === LEG_STATES ? legScopeName(LEG_STATES) : legName(place);
+  // What a place is called inside a sentence ("None listed for the states yet."): the States place (every state at once, 60-legislation.js) reads as a plural there, not as the menu's "All states".
+  const enfPlaceWords = place => place === LEG_STATES ? legScopeWords(LEG_STATES) : enfPlaceName(place);
+  const enfSlug = place => place === LEG_FED ? LEG_FED : place === LEG_STATES ? LEG_STATES : legSlug(place);
 
   /* The rows of the open section in view: the place, the search and the topics. skipTopics leaves the topics out, which is what the topic pills are counted against. */
   const enfHayMemo = new WeakMap();
@@ -90,9 +92,9 @@
   const enfTopicsOk = (a, picked) => { let ok = true; picked.forEach(id => { if ((a.uses || []).indexOf(id) < 0) ok = false; }); return ok; };
   // The search and the topics that narrow the rows: the lists' own (enfView) on Enforcement and Cases, and the bills' (legView) on All, which shows the bills' controls and lets them apply to everything it holds.
   const enfFilt = () => activeView === 'all' ? legView : enfView;
-  function enfList(skipTopics, anyPlace, kind) {   // anyPlace leaves the place out: what the map counts, since a pinned state is outlined on it, not the only one coloured; kind says which rows (the open section's by default)
+  function enfList(skipTopics, anyPlace, kind) {   // anyPlace leaves the place out: what the map counts (its steps are every state's; legPaint then shades only the pinned state, when one is); kind says which rows (the open section's by default)
     const f = enfFilt(), words = legWords(f.q), place = anyPlace ? null : legView.pinned;
-    return enfRowsOf(kind || enfCurrent()).filter(a => (!place || enfPlaceOf(a) === place) && words.every(w => enfHay(a).indexOf(w) >= 0) && (skipTopics || enfTopicsOk(a, f.topics)));
+    return enfRowsOf(kind || enfCurrent()).filter(a => legPlaceIn(enfPlaceOf(a), place) && words.every(w => enfHay(a).indexOf(w) >= 0) && (skipTopics || enfTopicsOk(a, f.topics)));
   }
   // The topics some row of the open section bears on, in the order of LEGISLATION_TOPICS (the same list as the bills' topics, so a topic means the same thing on every section).
   function enfTopicIds() {
@@ -102,13 +104,14 @@
   }
 
   /* The map's data on Enforcement and Cases (legPaint in 60-legislation.js shades and counts from it): the open section's rows by state, with the lists' own search and chips applied, as the bills' filters apply to the
-     map on Legislation, and the place left out. A federal row (an agency's action, a federal court's case) is on no state, and a row under a place with no shape (a territory) has none to colour: the legend counts
+     map on Legislation, and the place left out (but not its level: Federal counts only the federal rows, which are on no state, and All states only the states', so `level`, from legPaint; a single pinned state is left out here too, and legPaint shades only it). A federal row (an agency's action, a federal court's case) is on no state, and a row under a place with no shape (a territory) has none to colour: the legend counts
      both apart. */
-  function enfMapData(kinds) {   // kinds: the open section's by default; All passes both
+  function enfMapData(kinds, level) {   // kinds: the open section's by default; All passes both. level: what the place pinned limits the map to (legPaint): 'federal' counts only the federal rows, 'state' only the states' and territories', else all
     const ks = kinds || [enfCurrent()], counts = {};
     let fed = 0, terr = 0;
     ks.forEach(k => enfList(false, true, k).forEach(a => {
       const p = enfPlaceOf(a);
+      if (level === 'federal' ? p !== LEG_FED : level === 'state' && p === LEG_FED) return;
       if (p === LEG_FED) fed++; else if (p && legOnMap(p)) counts[p] = (counts[p] || 0) + 1; else if (p) terr++;
     }));
     return { k: ks[0], counts, fed, terr };
@@ -121,6 +124,7 @@
   function enfPlaceFromSlug(slug) {
     const s = String(slug || '').toLowerCase();
     if (s === LEG_FED) return LEG_FED;
+    if (s === LEG_STATES) return LEG_STATES;
     const sel = document.getElementById('legStateSelect');
     const codes = sel ? [...sel.options].map(o => o.value).filter(v => v && v !== LEG_FED) : [];
     return codes.find(c => legSlug(c) === s) || null;
@@ -137,8 +141,8 @@
     return (kinds || ENF_KINDS_ALL).map(k => {
       const all = enfRowsOf(k);
       if (!all.length) return '';
-      const here = code ? all.filter(a => enfPlaceOf(a) === code) : all, label = capitalizeFirst(k.many);
-      if (!here.length) return `<div class="leg-block"><div class="leg-label">${label}</div><p class="leg-muted">None listed${code ? ` for ${escapeHTML(enfPlaceName(code))}` : ''} yet.</p></div>`;
+      const here = code ? all.filter(a => legPlaceIn(enfPlaceOf(a), code)) : all, label = capitalizeFirst(k.many);
+      if (!here.length) return `<div class="leg-block"><div class="leg-label">${label}</div><p class="leg-muted">None listed${code ? ` for ${escapeHTML(enfPlaceWords(code))}` : ''} yet.</p></div>`;
       return `<div class="leg-block"><div class="leg-label">${label}</div><p>${legNum(here.length)} ${here.length === 1 ? k.one : k.many}${code ? '' : ', federal and in the states'}.</p>` +
         (code ? `<p class="leg-more"><button type="button" class="leg-more-link" data-more="${escapeHTML(code)}" data-kind="${k.kind}">See more details below</button></p>` : '') + '</div>';
     }).join('');
@@ -189,11 +193,11 @@
   }
 
   // How many rows of a kind are listed in the place chosen, before the search and the topics: what an empty list needs to know to say "match the search" rather than "none listed".
-  const enfInPlace = k => enfRowsOf(k).filter(a => !legView.pinned || enfPlaceOf(a) === legView.pinned).length;
+  const enfInPlace = k => enfRowsOf(k).filter(a => legPlaceIn(enfPlaceOf(a), legView.pinned)).length;
   function enfEmpty(k, inPlace) {
-    const place = legView.pinned, where = place ? ` in ${escapeHTML(enfPlaceName(place))}` : '', f = enfFilt();
+    const place = legView.pinned, where = place ? ` in ${escapeHTML(enfPlaceWords(place))}` : '', f = enfFilt();
     if ((legWords(f.q).length || f.topics.size) && inPlace > 0) return `No ${k.many}${where} match the search and filters chosen.`;
-    return place ? `None listed for ${escapeHTML(enfPlaceName(place))} yet.` : 'None listed yet.';
+    return place ? `None listed for ${escapeHTML(enfPlaceWords(place))} yet.` : 'None listed yet.';
   }
 
   /* All: both kinds' lists, one after the other, each with its own count, narrowed by the place and by the search and the topics in the bar above (on All those are the bills' own, legView). A kind with no row is left out, All has no
@@ -229,15 +233,18 @@
     const place = legView.pinned;   // the Show menu is the shared one (its Federal entry is renamed for these sections by govViewChanged in 60-legislation.js)
     const search = document.getElementById('enfSearch');
     if (search) { search.placeholder = `Search the ${k.many}…`; search.setAttribute('aria-label', `Search the ${k.many}`); }
-    const sort = document.getElementById('enfSort');   // the order is the tab's one setting (legView.sort), so the menu says what the bills' menu says
-    if (sort) { sort.value = legView.sort; sort.setAttribute('aria-label', `Sort the ${k.many}`); }
-    // The topic pills: the topics some row of this section bears on, built once for that list; each count is what choosing the topic would leave with the place and the search applied. A topic picked
+    // the order is the tab's one setting (legView.sort), so the menu says what the bills' menu says; the bills' Status orders are not ones a list has (a row has no stage), so a list under one is ordered most recent
+    // first and its menu says so, rather than show a choice it does not offer
+    const sort = document.getElementById('enfSort');
+    if (sort) { sort.value = enfSorters[legView.sort] ? legView.sort : 'recent'; sort.setAttribute('aria-label', `Sort the ${k.many}`); }
+    // The topic pills: the topics some row of this section bears on, built once for that list. They carry no counts (the owner, 2026-11-24: "Remove counts from topics in the Government Action tab"); a topic that would leave nothing
+    // with the place and the search applied is disabled, as it was when its count said 0. A topic picked
     // on the other section that this one has no row for is dropped, so the filter never hides everything for a reason the reader cannot see.
     const ids = enfTopicIds(), wrap = document.getElementById('enfTopicPills'), key = k.kind + ':' + ids.join('|');
     enfView.topics.forEach(id => { if (ids.indexOf(id) < 0) enfView.topics.delete(id); });
     if (wrap && enfPillsFor !== key) {
       enfPillsFor = key;
-      const chip = (id, label) => `<button class="kw-pill" type="button" data-topic="${escapeHTML(id)}" aria-pressed="false">${escapeHTML(label)} <span class="kw-count"></span></button>`;
+      const chip = (id, label) => `<button class="kw-pill" type="button" data-topic="${escapeHTML(id)}" aria-pressed="false">${escapeHTML(label)}</button>`;
       wrap.innerHTML = ids.length ? '<span class="ctl-label kw-label">Topics</span>' + chip('all', 'All') + ids.map(id => chip(id, legTopicLabel(id))).join('') : '';
     }
     const base = enfList(true);
@@ -246,7 +253,6 @@
       const n = id === 'all' ? base.length : base.filter(a => enfTopicsOk(a, new Set([...enfView.topics, id]))).length;
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       btn.disabled = n === 0 && !on;
-      btn.querySelector('.kw-count').textContent = legNum(n);
     });
     const shown = enfList();
     const line = document.getElementById('enfResultLine');
