@@ -22,6 +22,10 @@
      passing     true when the bill only mentions AI in its text, not its title or summary: hidden until the checkbox "Include bills that only lightly mention AI" (beside the Status menu) is on  (optional)
      summary     what it would do: the legislature's own summary where it gives one, else our own words        (optional)
      lastAction  { date: "2026-03-01", text: "Referred to committee" }                      (optional)
+     passed      [{ chamber: "House", date: "2026-03-01" }]                                   (optional; only for a bill at the one-chamber or both-chambers stage: each chamber that passed it, as the
+                 source names it ("House", "Senate", or a state's "Assembly"), and the day, in the order they passed it. The Status column shows it: "Passed House, March 1, 2026", or for a bill that
+                 passed both "Passed Senate, May 19, 2026; Assembly, August 30, 2026". A bill at either stage with less than the stage means (no chamber, or one of two) is shown with a line saying
+                 what is not in the data, never with a guess)
      source      { label: "Legislature", url: "https://..." }                                (optional)
 
    A field the source does not give is left out, and the page shows an en dash for it, never a guess; a column that is empty for every
@@ -34,31 +38,28 @@
    a bill whose stage is failed, or missing, is kept in this file but not listed, and a note under the table says how
    many were left out and why. Federal bills (Congress) and state bills share one list and one definition.
 
-   MIDTERM_RESULTS, MIDTERM_SOURCES, MIDTERM_PAGES, MIDTERM_NOTE and MIDTERM_NATIONAL are the 2026 midterm results shown
-   beside the legislation, labelled as election results, not legislation. They come from the Associated Press's midterm results
-   (Senate, House and governor, state by state), cited in MIDTERM_SOURCES, and from nothing else. They are shown in each state's card, as totals in the overview, and in the results table under the bills. Each state can carry three
-   offices, and the link in its Source column is built from the state's name and MIDTERM_PAGES:
-     senate     { result, detail? }   the state's 2026 Senate race, if it has one
-     governor   { result, detail? }   the state's 2026 governor race, if it has one
-       result   "d-gain"    Democrats won a Republican-held seat       "r-gain"   Republicans won a Democratic-held seat
-                "d-hold"    Democrats held a Democratic-held seat      "r-hold"   Republicans held a Republican-held seat
-                "uncalled"  the race has not been called
-       detail   a plain statement of the result, in our own words
-     house      { d, r, dLead, rLead, runoff }   the state's House districts: d and r are won by that party, dLead and rLead are
-                leading and not yet called, runoff are going to a runoff; a count of zero is left out */
+   The 2026 midterm results (the Associated Press's Senate, House and governor results by state, which MIDTERM_RESULTS, MIDTERM_SOURCES, MIDTERM_PAGES, MIDTERM_NOTE and MIDTERM_NATIONAL held here) were removed on
+   2026-11-23, at the owner's request, and the page no longer shows them anywhere. A copy of that data is in the shared notes folder (midterm-results-removed-2026-11-23). */
 const LEGISLATION_DATA = [];
 
 // The places other than the 50 states and DC that can have bills. They have no shape on the map, so the Show menu and the tables are
 // their only way in. Open States covers Puerto Rico and none of the other territories; add one here when a source covers it.
 const LEGISLATION_TERRITORIES = { PR: 'Puerto Rico' };
 
+/* STAGES, and the ORDER OF PROGRESS. `rank` is the one place that says how far along a stage is, and it is what the page sorts by: the Status column's sort (click its header, or choose it in the Sort
+   menu: least progress first, or furthest along first), the Status menu's order and the stats bar's order all read it, so a bill is never put in an order by the spelling of its stage. Alphabetical would be
+   wrong: it puts "Enacted" before "In committee" and before "Passed one chamber", the opposite of what the stages mean (the owner's feedback, 2026-11-23: Committee, then Passed, then Enacted).
+   1 Introduced, 2 In committee, 3 Passed one chamber, 4 Passed both chambers, 5 Enacted. A bill that failed (it died in committee, was vetoed or withdrawn, or its session ended) has rank 0, below every
+   stage that is alive: it made no further progress, and it is not shown in any case (only active bills are listed), so the rank is only what keeps the rule whole should a failed stage ever be shown. A
+   stage with no rank sorts after all the others in either direction, so a stage added here and forgotten does not take the top of the list. A test (tests/interactions.js) pins these ranks and fails if the
+   page sorts the Status column any other way. Keep the entries below in the same order as the ranks, for the reader of this file. */
 const LEGISLATION_STAGES = {
-  'introduced':    { label: 'Introduced',           active: true },
-  'committee':     { label: 'In committee',         active: true },
-  'one-chamber':   { label: 'Passed one chamber',   active: true },
-  'both-chambers': { label: 'Passed both chambers', active: true },
-  'enacted':       { label: 'Enacted',              active: true },   // it has not failed, so it counts as active
-  'failed':        { label: 'Failed',               active: false },  // died in committee, vetoed, withdrawn, or the session ended
+  'introduced':    { label: 'Introduced',           active: true,  rank: 1 },
+  'committee':     { label: 'In committee',         active: true,  rank: 2 },
+  'one-chamber':   { label: 'Passed one chamber',   active: true,  rank: 3 },
+  'both-chambers': { label: 'Passed both chambers', active: true,  rank: 4 },
+  'enacted':       { label: 'Enacted',              active: true,  rank: 5 },   // it has not failed, so it counts as active
+  'failed':        { label: 'Failed',               active: false, rank: 0 },   // died in committee, vetoed, withdrawn, or the session ended
 };
 
 /* TOPICS. The topic chips (always showing, above the search) and the "Topics:" line in the bills table come from this list and from nothing else. A bill's
@@ -196,82 +197,3 @@ const LEGISLATION_TOPICS = [
       'council on', 'council to', 'grant program', 'funding', 'fund$'
     ] },
 ];
-
-const MIDTERM_SOURCES = {
-  ap: {
-    org: 'The Associated Press', short: 'AP', title: '2026 Midterm Election Results: Senate, House and Governor Races', kind: 'results page', updated: 'November 17, 2026, 9:44 AM',
-    url: 'https://apnews.com/projects/elections-2026/',
-  },
-};
-
-// Where AP shows one state's results for each office: the link in a row's Source column. {slug} is the state's name in lower case, with hyphens.
-const MIDTERM_PAGES = {
-  senate:   'https://apnews.com/projects/elections-2026/{slug}-us-senate-results/',
-  house:    'https://apnews.com/projects/elections-2026/{slug}-us-house-results/',
-  governor: 'https://apnews.com/projects/elections-2026/{slug}-governor-results/',
-};
-
-const MIDTERM_NOTE = 'Each row links to AP’s page for each of that state’s races.';
-
-// The totals AP's overview showed when it was read. The Senate and governor totals include the seats not up in 2026.
-const MIDTERM_NATIONAL = {
-  src: 'ap', updated: 'November 17, 2026, 9:44 AM',
-  senate: { democrats: 55, republicans: 44, toBeCalled: 1 },
-  house: { democrats: 256, republicans: 171, toBeCalled: 8 },
-  governor: { democrats: 30, republicans: 20, toBeCalled: 0 },
-};
-
-// The 50 states. A state has a senate entry only if it had a Senate race in 2026 (35 seats, two of them special elections, in Ohio and
-// Florida), and a governor entry only if it had a governor race (36); every state has House districts. DC is not in AP's results.
-const MIDTERM_RESULTS = {
-  AL: { senate: { result: 'r-hold' }, house: { d: 2, r: 5 }, governor: { result: 'r-hold' } },
-  AK: { senate: { result: 'uncalled', detail: 'Not yet called: Democrat Mary Peltola leads, with an estimated 98% of votes counted at AP’s November 16, 10:40 PM update. Ranked-choice counting follows if no candidate has a majority of first-choice votes.' }, house: { rLead: 1 }, governor: { result: 'd-gain' } },
-  AZ: { house: { d: 5, r: 4 }, governor: { result: 'd-hold' } },
-  AR: { senate: { result: 'r-hold' }, house: { r: 4 }, governor: { result: 'r-hold' } },
-  CA: { house: { d: 48, r: 4 }, governor: { result: 'd-hold' } },
-  CO: { senate: { result: 'd-hold' }, house: { d: 7, r: 1 }, governor: { result: 'd-hold' } },
-  CT: { house: { d: 5 }, governor: { result: 'd-hold' } },
-  DE: { senate: { result: 'd-hold' }, house: { d: 1 } },
-  FL: { senate: { result: 'r-hold' }, house: { d: 8, r: 20 }, governor: { result: 'r-hold' } },
-  GA: { senate: { result: 'd-hold' }, house: { d: 5, r: 9 }, governor: { result: 'd-gain' } },
-  HI: { house: { d: 2 }, governor: { result: 'd-hold' } },
-  ID: { senate: { result: 'r-hold' }, house: { r: 2 }, governor: { result: 'r-hold' } },
-  IL: { senate: { result: 'd-hold' }, house: { d: 14, r: 3 }, governor: { result: 'd-hold' } },
-  IN: { house: { d: 3, r: 6 } },
-  IA: { senate: { result: 'd-gain' }, house: { d: 3, r: 1 }, governor: { result: 'd-gain' } },
-  KS: { senate: { result: 'd-gain' }, house: { d: 1, r: 3 }, governor: { result: 'd-hold' } },
-  KY: { senate: { result: 'r-hold' }, house: { d: 2, r: 4 } },
-  LA: { senate: { result: 'r-hold' }, house: { d: 1, r: 3, runoff: 2 } },
-  ME: { senate: { result: 'd-gain' }, house: { d: 1, r: 1 }, governor: { result: 'd-hold' } },
-  MD: { house: { d: 7, r: 1 }, governor: { result: 'd-hold' } },
-  MA: { senate: { result: 'd-hold' }, house: { d: 9 }, governor: { result: 'd-hold' } },
-  MI: { senate: { result: 'd-hold' }, house: { d: 9, r: 4 }, governor: { result: 'd-hold' } },
-  MN: { senate: { result: 'd-hold' }, house: { d: 4, r: 3, dLead: 1 }, governor: { result: 'd-hold' } },
-  MS: { senate: { result: 'd-gain', detail: 'Democrat Scott Colom was elected, flipping this Republican-held seat.' }, house: { d: 1, r: 3 } },
-  MO: { house: { d: 3, r: 5 } },
-  MT: { senate: { result: 'r-hold' }, house: { d: 1, r: 1 } },
-  NE: { senate: { result: 'r-hold' }, house: { d: 1, r: 2 }, governor: { result: 'r-hold' } },
-  NV: { house: { d: 4 }, governor: { result: 'd-gain' } },
-  NH: { senate: { result: 'd-hold' }, house: { d: 2 }, governor: { result: 'r-hold' } },
-  NJ: { senate: { result: 'd-hold' }, house: { d: 11, r: 1 } },
-  NM: { senate: { result: 'd-hold' }, house: { d: 3 }, governor: { result: 'd-hold' } },
-  NY: { house: { d: 20, r: 6 }, governor: { result: 'd-hold' } },
-  NC: { senate: { result: 'd-gain' }, house: { d: 9, r: 2, dLead: 2, rLead: 1 } },
-  ND: { house: { r: 1 } },
-  OH: { senate: { result: 'd-gain' }, house: { d: 8, r: 7 }, governor: { result: 'd-gain' } },
-  OK: { senate: { result: 'r-hold' }, house: { r: 5 }, governor: { result: 'r-hold' } },
-  OR: { senate: { result: 'd-hold' }, house: { d: 5, r: 1 }, governor: { result: 'd-hold' } },
-  PA: { house: { d: 11, r: 6 }, governor: { result: 'd-hold' } },
-  RI: { senate: { result: 'd-hold' }, house: { d: 2 }, governor: { result: 'd-hold' } },
-  SC: { senate: { result: 'd-gain' }, house: { d: 2, r: 5 }, governor: { result: 'r-hold' } },
-  SD: { senate: { result: 'r-hold' }, house: { r: 1 }, governor: { result: 'r-hold' } },
-  TN: { senate: { result: 'r-hold' }, house: { r: 8, dLead: 1 }, governor: { result: 'r-hold' } },
-  TX: { senate: { result: 'd-gain' }, house: { d: 14, r: 24 }, governor: { result: 'd-gain' } },
-  UT: { house: { d: 1, r: 3 } },
-  VT: { house: { d: 1 }, governor: { result: 'r-hold' } },
-  VA: { senate: { result: 'd-hold' }, house: { d: 8, r: 3 } },
-  WA: { house: { d: 8, r: 2 } },
-  WV: { senate: { result: 'r-hold' }, house: { r: 2 } },
-  WI: { house: { d: 4, r: 4 }, governor: { result: 'd-hold' } },
-  WY: { senate: { result: 'r-hold' }, house: { r: 1 }, governor: { result: 'r-hold' } },
-};
