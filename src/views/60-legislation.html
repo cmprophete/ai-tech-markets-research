@@ -1,13 +1,13 @@
-      <!-- ── GOVERNMENT ACTION ── (the one nav tab, with four sections, All, Cases, Enforcement and Legislation, each a view of its own: routes #all, #cases, #enforcement, #legislation). One area serves all four, in this
+      <!-- ── GOVERNMENT ACTION ── (the one nav tab, with four sections, in the switch's order Legislation, Enforcement, Cases and All, each a view of its own: routes #legislation, #enforcement, #cases, #all; the tab opens on Legislation, the first in the switch: the owner, 2026-11-24; it was All, which comes last, from 2026-11-18). One area serves all four, in this
            order from the top: the toolbar (the section switch, the Show menu, on Legislation and All the Status menu and the checkbox for the bills that only lightly mention AI, and at its right end the Reset button, which puts the whole tab back as it opens: no jurisdiction, no filter anywhere, the order reset, the All view), the topic chips,
-           the search (and on Legislation the Sort menu), the result line, the map of the states with its card, and then the section's own list: the bills here (#legBillsSection), or the rows of data/legislation-actions.js (#enforcementArea, lower down), and on All all of them, in this order: the midterm
-           results by state (#legResultsSection), the bills, the key cases and the enforcement actions. The map and the card are the same in all three (src/js/60-legislation.js builds everything above the lists from data/us-map.js, the
-           outlines, data/legislation-data.js, the stages and the 2026 midterm results from the Associated Press, and data/legislation-bills.js, the bills, which are fetched the first time any of the three
+           the search (and on Legislation the Sort menu), the result line, the map of the states with its card, and then the section's own list: the bills here (#legBillsSection), or the rows of data/legislation-actions.js (#enforcementArea, lower down), and on All all of them, in this order: the bills,
+           the key cases and the enforcement actions. The map and the card are the same in all three (src/js/60-legislation.js builds everything above the lists from data/us-map.js, the
+           outlines, data/legislation-data.js, the stages and the topics, and data/legislation-bills.js, the bills, which are fetched the first time any of the three
            sections opens); src/js/55-enforcement.js draws the two lists. A control or a list that belongs to some of the sections carries gov-leg-only (the bills' own: Status, the checkbox, the topic chips, the search, Sort, the
            result line and the bills table: shown on All and Legislation), gov-lists-only (the lists' own: the chips, the search, a Sort menu and the result line, shown on Enforcement and Cases; the two Sort menus, #legSort and #enfSort, are one setting for the tab,
-           legView.sort) or gov-all-only (the midterm results table: All alone, first), and src/styles/policy.css shows it only there. All is Legislation's controls, which then narrow the lists as well (their words and topics are the same vocabulary), and every list: the bills,
-           the enforcement actions, the key cases and the midterm results, with a card that holds all of it. Legislation, Enforcement and Cases show their own data alone. The map's states carry no letters of their own (pointing at one names it in the panel); #legTiles
-           holds one button for each state too small to point at, which the script adds. The bills table is paged (#legBillsPager), and the bills arrive in a file of their own. The masthead above, one for all four sections, is
+           legView.sort), and src/styles/policy.css shows it only there. All is Legislation's controls, which then narrow the lists as well (their words and topics are the same vocabulary), and every list: the bills,
+           the enforcement actions and the key cases, with a card that holds all of it. Legislation, Enforcement and Cases show their own data alone. The map's states carry no letters of their own (pointing at one names it in the panel); #legTiles
+           holds one button for each state too small to point at, which the script adds; at the map's bottom right (#legLevels) are #legFedBtn, the Federal button (Congress is a place like a state: the same handlers pin and unpin it), and #legStatesBtn, the States button (every state at once, the Show menu's All states; the owner, 2026-11-24), and the place pinned decides what the map shades (Federal shades nothing, since a federal row is on no state, and a single pinned state shades only itself). The bills table is paged (#legBillsPager), and the bills arrive in a file of their own. The masthead above, one for all four sections, is
            govLede() and govMasthead() in src/js/60-legislation.js (TAB_DESCS in src/js/70-render.js gives all four sections the same). The place chosen in the Show menu (or on the map) is shared by the four. -->
       <div id="legislationArea">
         <!-- The toolbar sticks at the top of the window, and the topic chips and the search bar stick under it, in every section (the owner's request, 2026-11-18: the topics belong to the sticky bar); all three scroll
@@ -16,10 +16,10 @@
           <div class="leg-controls">
             <div class="leg-controls-main">
             <div class="pol-subview-toggle" id="govSwitch" role="group" aria-label="Section of Government action">
-              <button class="pol-subview-btn" type="button" id="govSwitchAll" data-gov="all" aria-pressed="false">All</button>
-              <button class="pol-subview-btn" type="button" id="govSwitchCases" data-gov="cases" aria-pressed="false">Cases</button>
-              <button class="pol-subview-btn" type="button" id="govSwitchEnforcement" data-gov="enforcement" aria-pressed="false">Enforcement</button>
               <button class="pol-subview-btn" type="button" id="govSwitchLegislation" data-gov="legislation" aria-pressed="false">Legislation</button>
+              <button class="pol-subview-btn" type="button" id="govSwitchEnforcement" data-gov="enforcement" aria-pressed="false">Enforcement</button>
+              <button class="pol-subview-btn" type="button" id="govSwitchCases" data-gov="cases" aria-pressed="false">Cases</button>
+              <button class="pol-subview-btn" type="button" id="govSwitchAll" data-gov="all" aria-pressed="false">All</button>
             </div>
             <div class="leg-select-pair" id="legShowPair">
               <label class="leg-ctl-label" for="legStateSelect">Show</label>
@@ -33,7 +33,7 @@
               <input type="checkbox" id="legPassing"> Include bills that only lightly mention AI <span class="leg-muted-count" id="legPassingCount"></span>
             </label>
             </div>
-            <button class="reset-btn leg-reset" type="button" id="legReset" title="Reset the jurisdiction, every filter in every section and the order, and return to All"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="legResetText">Reset all</span></button>
+            <button class="reset-btn leg-reset" type="button" id="legReset" title="Reset the jurisdiction, every filter in every section and the order, and return to Legislation"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2m-.5-4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg><span id="legResetText">Reset all</span></button>
           </div>
         </div>
         <!-- The topic chips, always showing and sticking with the toolbar and the search bar: the bills' own on Legislation (#legTopicPills) and the lists' on Enforcement and Cases (#enfTopicPills). There was a note under the
@@ -47,7 +47,7 @@
           <div class="controls-row">
             <div class="search-wrap gov-leg-only">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="search" id="legSearch" placeholder="Search bills, states, topics…" aria-label="Search the legislation" autocomplete="off">
+              <input type="search" id="legSearch" placeholder="Search bills, states, topics, status, dates…" aria-label="Search the legislation" autocomplete="off">
             </div>
             <div class="search-wrap gov-lists-only" id="enfSearchWrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -66,6 +66,8 @@
               <select id="legSort" aria-label="Sort the legislation">
                 <option value="recent" selected>Most recent action</option>
                 <option value="oldest">Oldest action</option>
+                <option value="status">Status, least progress first</option>
+                <option value="status-desc">Status, most progress first</option>
                 <option value="jurisdiction">Jurisdiction</option>
               </select>
             </span>
@@ -81,24 +83,49 @@
           <div class="leg-map-wrap">
             <div class="leg-map-box" id="legMapBox">
               <svg id="legMap" class="leg-map" viewBox="0 0 975 610" role="img" aria-label="Map of the United States. Choose a state, or Federal, in the Show menu; the panel and the list follow it."></svg>
-              <div class="leg-tiles" id="legTiles" role="group" aria-labelledby="legTilesLabel"><span class="leg-tiles-label" id="legTilesLabel">Small states</span></div>
+              <!-- The buttons for the places that are not a shape on the map. At the map's bottom right (the owner, 2026-11-24: "place the Federal and States buttons at the bottom right of the map"), the two levels of government: Federal
+                   (Congress is a place, as a state is: the same data-state handlers pin it, the Show menu has it, Reset lets it go) and States (every state at once: the Show menu's "All states", the same handlers again). Neither has letters on the map to point at,
+                   so each is a real button with a small inline-SVG icon, drawn in the button's own colour, and the word: a Capitol dome for Federal, four tiles for States. Pressing Federal shades nothing on the map (a federal row is on no state);
+                   pressing States shades the states by their own rows (legPaint in src/js/60-legislation.js). Then, in a gutter at the map's right edge, one button for each of the nine states too small to point at. -->
+              <div class="leg-levels" id="legLevels" role="group" aria-label="Federal, or all the states">
+                <button class="leg-level" type="button" id="legFedBtn" data-state="federal" aria-pressed="false" aria-label="Federal (Congress)" title="Federal (Congress)">
+                  <svg class="leg-level-icon" width="24" height="22" viewBox="0 0 24 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M12 1.2v2.6"/>
+                    <path d="M7.4 9.2C7.4 5.9 9.4 3.8 12 3.8s4.6 2.1 4.6 5.4"/>
+                    <path d="M6.2 9.2h11.6v2.4H6.2z"/>
+                    <path d="M8.6 11.6v-2.4M12 11.6V9.2M15.4 11.6V9.2"/>
+                    <path d="M2.6 11.6h18.8v2H2.6z"/>
+                    <path d="M4.6 13.6v5.4M8.2 13.6v5.4M11.2 13.6v5.4M12.8 13.6v5.4M15.8 13.6v5.4M19.4 13.6v5.4"/>
+                    <path d="M2 19h20M1 21h22"/>
+                  </svg>
+                  <span class="leg-level-word">Federal</span>
+                </button>
+                <button class="leg-level" type="button" id="legStatesBtn" data-state="states" aria-pressed="false" aria-label="All states" title="All states">
+                  <svg class="leg-level-icon" width="24" height="22" viewBox="0 0 24 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <rect x="2.5" y="2" width="8.5" height="8" rx="1.5"/>
+                    <rect x="13" y="2" width="8.5" height="8" rx="1.5"/>
+                    <rect x="2.5" y="12" width="8.5" height="8" rx="1.5"/>
+                    <rect x="13" y="12" width="8.5" height="8" rx="1.5"/>
+                  </svg>
+                  <span class="leg-level-word">States</span>
+                </button>
+              </div>
+              <div class="leg-gutter" id="legGutter">
+                <div class="leg-tiles" id="legTiles" role="group" aria-labelledby="legTilesLabel"><span class="leg-tiles-label" id="legTilesLabel">Small states</span></div>
+              </div>
             </div>
             <div class="leg-legend" id="legLegend"></div>
             <p class="leg-map-source" id="legMapSource"></p>
           </div>
           <div class="leg-panel-slot"><aside class="leg-panel" id="legPanel" aria-label="Selected state"></aside></div>
         </div>
-        <!-- The midterm results, by state, at the head of All (they were a view of their own until 2026-11-18; the owner asked for that view to go and the table to stay, then for All, which holds everything, and then for them first): ten states to a
-             page, each row linking to AP's pages for that state's races, the pinned jurisdiction narrowing it to its row. -->
-        <section class="leg-section gov-all-only" id="legResultsSection" aria-labelledby="legResultsTitle">
-          <h2 class="leg-section-title" id="legResultsTitle"><span class="leg-scope leg-scope--title" id="legResultsScope"></span></h2>   <!-- "Arkansas · 2026 Midterm results": the place, then what the table is, as the other sections' titles are written -->
-          <div class="leg-table-wrap" id="legResultsTable" tabindex="-1"></div>
-          <p class="leg-source" id="legSource"></p>
-          <nav class="pager" id="legResultsPager" hidden></nav>
-        </section>
         <!-- Legislation's list: the bills, ten to a page. -->
         <section class="leg-section gov-leg-only" id="legBillsSection" aria-label="Bills">
-          <h2 class="leg-section-title" id="legBillsTitle"><span class="leg-scope leg-scope--title" id="legBillsScope"></span></h2>
+          <!-- The title, and at its right the Export to CSV pill: the table's own toolbar. It exports every bill in view (the jurisdiction, the filters, the search and the order), not the ten on the page (legExportCsv). -->
+          <div class="leg-section-head">
+            <h2 class="leg-section-title" id="legBillsTitle"><span class="leg-scope leg-scope--title" id="legBillsScope"></span></h2>
+            <button class="leg-export" type="button" id="legExport" disabled>Export to CSV</button>
+          </div>
           <div class="leg-stats" id="legBillsStats" hidden></div>
           <div class="leg-table-wrap" id="legBillsTable" tabindex="-1"></div>
           <p class="leg-source" id="legBillsNote"></p>
