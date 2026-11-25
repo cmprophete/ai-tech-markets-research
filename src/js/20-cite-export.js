@@ -110,24 +110,7 @@
     return md.join('\n');
   }
 
-  // Policy category identity colors, used by the Links graph (its node dots and
-  // its legend). The Map's rows use the four area colors, CAT_COLOR_VARS below.
-  // Every value is an ESP token or a documented light/dark sibling of one
-  // (see :root) — no invented hues.
-  const POL_CAT_COLORS = {
-    'safety-net':    '#2C3254',  // Warm Navy
-    'labor-rights':  '#70AD8F',  // Soft Green
-    'tax-wealth':    '#472B51',  // Deep Purple
-    'healthcare':    '#C99A3F',  // Warm Gold, darkened
-    'work-structure':'#5A6285',  // Warm Navy, lightened
-    'education':     '#4A8A70',  // Soft Green, darkened
-    'antitrust':     '#7A5C85',  // Deep Purple, lightened
-    'housing':       '#B8863B',  // Warm Gold, darkened further (8-9px marks)
-    'jobs':          '#3C4164',  // Text Black
-    'international': '#C4806A',  // Warm Pink, darkened (8-9px marks)
-    'civil-rights':  '#A8623F',  // Warm Pink, darkened further — reads as caution
-  };
-  // Merged-category identity colors, also shared with the Links band legend.
+  // Merged-category identity colors: the Map's rows, and the dots and stripes of the Compare and Links views (polCmpAreaColor).
   // Keys track MERGED_POLICY_CATEGORIES in tracker-data.js; a key that falls
   // out of sync degrades to var(--muted) grey rather than throwing, so it is
   // easy to miss. Gold is reserved for Mitigating Harms because that row
@@ -154,9 +137,10 @@
     // .header-tab-desc, fed from TAB_DESCS.policy.
     if (!area.hasChildNodes()) {
 
-      // All / Links / Compare view switch. All is the four area rows with every policy, a policy the team features carrying a "Featured" label on its tile
-      // (marked in the `featured` column of the Sheet's policy map tab, which reaches the page as data/policy-map.js); Links is the graph of how the policies relate to one
-      // another; Compare sets two policies side by side with a fight graphic and samples of what works well with each and what competes with it
+      // Links / Compare / All view switch, in that order since 2026-11-24 (the owner: "order the views like Links Compare All"); the Landscape still opens on All, the last of the three, and #policy is All.
+      // All is the four area rows with every policy, a policy the team features carrying a "Featured" label on its tile
+      // (marked in the `featured` column of the Sheet's policy map tab, which reaches the page as data/policy-map.js); Links follows the links from one policy to the next: what works well with it on the
+      // left, what competes with it on the right (30-policy-links.js); Compare sets two policies side by side with a fight graphic and samples of what works well with each and what competes with it
       // (30-policy-compare.js). The first view was called Map until 2026-11-19. There was a Featured view of its own for part of that day (the featured policies
       // alone, in the same rows); the owner replaced it the same day with the label, so a featured policy is seen where it sits among the others.
       const subToggle = document.createElement('div');
@@ -164,10 +148,30 @@
       subToggle.setAttribute('role', 'group');
       subToggle.setAttribute('aria-label', 'Landscape view');
       subToggle.innerHTML = `
-        <button class="pol-subview-btn active" id="polSubviewAll" type="button" aria-pressed="true">All</button>
         <button class="pol-subview-btn" id="polSubviewLinks" type="button" aria-pressed="false">Links</button>
-        <button class="pol-subview-btn" id="polSubviewCompare" type="button" aria-pressed="false">Compare</button>`;
-      area.appendChild(subToggle);
+        <button class="pol-subview-btn" id="polSubviewCompare" type="button" aria-pressed="false">Compare</button>
+        <button class="pol-subview-btn active" id="polSubviewAll" type="button" aria-pressed="true">All</button>`;
+      // The switch and, beside it on the same row, the controls of the view showing (the owner, 2026-11-24: "Start from should be in line with the views", then the same for Compare's two menus). Each of Links and Compare has a
+      // room of its own for them (30-policy-links.js, 30-policy-compare.js), and only the room of the view that is showing is shown; All has none.
+      const subBar = document.createElement('div');
+      subBar.className = 'pol-subview-bar';
+      const makeSlot = (id, label) => {
+        const slot = document.createElement('div');
+        slot.id = id;
+        slot.className = 'controls pol-subview-slot';   // .controls brings the shared filter bar's menu, label and pill styles (filterbar.css); policy.css turns its bar look off
+        slot.setAttribute('role', 'region');
+        slot.setAttribute('aria-label', label);
+        slot.hidden = true;
+        return slot;
+      };
+      const linksSlot = makeSlot('polLinksSlot', 'Choose a policy to start from'), compareSlot = makeSlot('polCmpSlot', 'Choose two policies to compare');
+      subBar.appendChild(subToggle);
+      subBar.appendChild(linksSlot);
+      subBar.appendChild(compareSlot);
+      area.appendChild(subBar);
+      // Compare's row is pinned under the top of the window (policy.css), so its live height is kept in --pol-bar-h for what is scrolled to the top to clear (the ring's scroll margin). offsetHeight is in the page's own
+      // pixels, which the zoom on the body (tokens.css) scales together with the margin it feeds, so it needs no allowance, as a measured rect would.
+      if (typeof ResizeObserver === 'function') new ResizeObserver(() => area.style.setProperty('--pol-bar-h', subBar.offsetHeight + 'px')).observe(subBar);
 
       // ── Category rows ────────────────────────────────────────
       // Phase (Repair→Transform) is no longer an axis of the map: the four
@@ -273,293 +277,25 @@
         catRows.style.display = mode === 'all' ? '' : 'none';
         linksArea.style.display = mode === 'links' ? '' : 'none';
         compareArea.style.display = mode === 'compare' ? '' : 'none';
-        if (mode === 'links' && !linksArea.dataset.built) {
-          linksArea.dataset.built = '1';
-          renderPolicyLinksGraph(linksArea);
+        linksSlot.hidden = mode !== 'links';
+        compareSlot.hidden = mode !== 'compare';
+        subBar.classList.toggle('is-pinned', mode === 'compare');   // Compare's row stays under the top of the window while its long rows are read (policy.css); the other two are short
+        if (mode === 'links') {
+          if (!linksArea.dataset.built) { linksArea.dataset.built = '1'; renderPolicyLinks(linksArea, linksSlot); }
+          else { polLinksLayout(); polLinksSyncBack(); }   // the lines are measured from where the tiles are, and the area was hidden while it last changed size; the Back pill follows the step the page is on now
         }
-        if (mode === 'compare' && !compareArea.dataset.built) {
-          compareArea.dataset.built = '1';
-          renderPolicyCompare(compareArea);
+        if (mode === 'compare') {
+          if (!compareArea.dataset.built) { compareArea.dataset.built = '1'; renderPolicyCompare(compareArea, compareSlot); }
+          else polCmpSyncBack();   // the step the page is on may have been made by the other view since (a move on Links), and then there is no earlier pair to go back to
         }
+        // The address says what is on screen: Compare has one for the pair showing (#compare/<a>/<b>), All and Links are the tab's own (#policy). It is rewritten, not added to the history (setHash), and is left alone while the
+        // router is applying an address (it is that address, and the router writes the final one itself).
+        setHash(currentRoute());
       };
+      polShowView = showView;
       Object.entries(viewButtons).forEach(([mode, btn]) => btn.addEventListener('click', () => showView(mode)));
 
     }
-  }
-
-  // ── Policy Links graph (test run) ───────────────────────────────────
-  // Hand-rolled SVG force simulation, no external library — see
-  // docs/adr/0002-policy-links-hand-rolled-svg.md. Edges are derived from
-  // each policy's existing `pairsWith` field at render time; no new
-  // connections data was authored for this pass — see
-  // docs/adr/0001-policy-links-reuse-pairswith.md. Nodes softly gravitate
-  // toward their merged category's vertical band (Economic Security top,
-  // Mitigating Harms bottom — the curated order MERGED_POLICY_CATEGORIES is
-  // already defined in), but the repel/spring physics can nudge a node off that
-  // line, which is deliberate: it lets cross-category edges read as a
-  // short, clear line rather than a rigid line punching across the canvas.
-  // Rival policies (each card's `competesWith`) are drawn as dashed lines over
-  // the finished layout, and do not move anything: see `rivals` below.
-  function renderPolicyLinksGraph(container) {
-    const W = 1040, H = 960;
-    const mergedOrder = Object.keys(MERGED_POLICY_CATEGORIES); // curated top→bottom order
-    const bandH = H / mergedOrder.length;
-
-    // A node's label is HTML in a foreignObject, in the graph's own units. LABEL_FS is the font size .pol-links-node-label sets (13px, the notes size on the
-    // other tabs); LABEL_W is how wide a label may get before it wraps. Both only size the boxes the layout keeps apart: the browser does the real wrapping.
-    const LABEL_FS = 13, LABEL_W = 150, LABEL_LH = 1.28;
-    // How tall a title's label is: its lines, estimated word by word (Public Sans averages about 0.57em a character), kept a little generous.
-    const labelHeight = title => {
-      const em = LABEL_FS * 0.57; let lines = 1, w = 0;
-      title.split(/\s+/).forEach(word => {
-        const ww = word.length * em;
-        if (w && w + em + ww > LABEL_W) { lines++; w = ww; } else w += (w ? em : 0) + ww;
-      });
-      return Math.max(20, lines * LABEL_FS * LABEL_LH + 2);
-    };
-
-    // ── Build nodes, seeded with a golden-angle spread so the pre-settle
-    // starting layout is already roughly non-overlapping. ──
-    const nodes = POLICY_DATA.map((p, i) => {
-      const mergedCat = CATEGORY_MERGE_MAP[p.category] || mergedOrder[mergedOrder.length - 1];
-      const bandIdx = Math.max(0, mergedOrder.indexOf(mergedCat));
-      const bandCenter = bandIdx * bandH + bandH / 2;
-      const seed = (i * 137.5) % 360;
-      const x = W / 2 + Math.cos(seed * Math.PI / 180) * (W / 2 - 100);
-      const y = bandCenter + Math.sin(seed * Math.PI / 180) * (bandH / 2 - 30);
-      return { id: p.id, title: p.title, category: p.category, mergedCat, bandCenter, x, y, vx: 0, vy: 0, h: labelHeight(p.title) };
-    });
-    const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
-
-    // Edges = each policy's `pairsWith`, de-duplicating mutual A↔B pairs
-    // (most are authored on both sides) into a single edge.
-    const edgeMap = new Map();
-    POLICY_DATA.forEach(p => {
-      (p.pairsWith || []).forEach(l => {
-        if (!nodeById[l.id]) return; // guard against a stale id
-        const key = [p.id, l.id].sort().join('|');
-        if (!edgeMap.has(key)) edgeMap.set(key, { a: p.id, b: l.id, whys: [] });
-        if (l.why) edgeMap.get(key).whys.push(l.why);
-      });
-    });
-    const edges = [...edgeMap.values()];
-
-    // Rival policies: each policy's `competesWith`, drawn as dashed lines (since 2026-11-19, at the owner's request; the field was stored and shown nowhere
-    // before). They are laid over the finished layout and do not pull on it: two rivals are not meant to sit together, and the layout below, and the test
-    // that keeps its labels apart, stay as they were. A pair authored on both sides is one line, an id that is no policy draws nothing, and a pair that
-    // also pairs with each other keeps only its solid line, because the two would lie on top of each other.
-    const rivalMap = new Map();
-    POLICY_DATA.forEach(p => {
-      (p.competesWith || []).forEach(l => {
-        if (!nodeById[l.id] || l.id === p.id) return; // guard against a stale id
-        const key = [p.id, l.id].sort().join('|');
-        if (edgeMap.has(key)) return;
-        if (!rivalMap.has(key)) rivalMap.set(key, { a: p.id, b: l.id, whys: [] });
-        if (l.why) rivalMap.get(key).whys.push(l.why);
-      });
-    });
-    const rivals = [...rivalMap.values()];
-
-    // ── Physics: repel + spring + soft per-band gravity, cooled over a
-    // fixed number of ticks and settled before first paint. ──
-    const REPEL = 4200, SPRING_LEN = 105, SPRING_K = 0.02, GRAVITY_K = 0.03, CENTER_K = 0.0015, DAMP = 0.82;
-    let alpha = 1;
-    function tick() {
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j];
-          let dx = a.x - b.x, dy = a.y - b.y;
-          const distSq = dx * dx + dy * dy || 0.01;
-          const force = (REPEL * alpha) / distSq;
-          const dist = Math.sqrt(distSq);
-          dx /= dist; dy /= dist;
-          a.vx += dx * force; a.vy += dy * force;
-          b.vx -= dx * force; b.vy -= dy * force;
-        }
-      }
-      edges.forEach(e => {
-        const a = nodeById[e.a], b = nodeById[e.b];
-        let dx = b.x - a.x, dy = b.y - a.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-        const force = SPRING_K * (dist - SPRING_LEN) * alpha;
-        dx /= dist; dy /= dist;
-        a.vx += dx * force; a.vy += dy * force;
-        b.vx -= dx * force; b.vy -= dy * force;
-      });
-      nodes.forEach(n => {
-        n.vy += (n.bandCenter - n.y) * GRAVITY_K * alpha;
-        n.vx += (W / 2 - n.x) * CENTER_K * alpha;
-      });
-      nodes.forEach(n => {
-        n.vx *= DAMP; n.vy *= DAMP;
-        n.x += n.vx; n.y += n.vy;
-        n.x = Math.max(24, Math.min(W - 190, n.x));
-        n.y = Math.max(16, Math.min(H - 16, n.y));
-      });
-      alpha *= 0.985;
-    }
-    for (let i = 0; i < 400 && alpha > 0.01; i++) tick();
-
-    // The physics treats a node as a point, but each one carries a label to its right, so labels sat on top of each other. Once it has settled, push any
-    // two nodes whose dot-and-label boxes touch apart along the shorter way out, a pass at a time, with a light pull back toward the node's band, until
-    // none touch. The band names at the top left of each band are boxes that do not move. Deterministic, like the rest of the layout.
-    const boxOf = n => ({ l: n.x - 10, r: n.x + 11 + LABEL_W, t: n.y - 10, b: n.y - 10 + n.h });
-    const bandNames = mergedOrder.map((mcId, i) => ({ l: 8, r: 20 + MERGED_POLICY_CATEGORIES[mcId].length * 9, t: i * bandH + 4, b: i * bandH + 26 }));
-    for (let pass = 0; pass < 240; pass++) {
-      let touching = 0;
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const a = nodes[i], b = nodes[j], A = boxOf(a), B = boxOf(b);
-          const ox = Math.min(A.r, B.r) - Math.max(A.l, B.l) + 6, oy = Math.min(A.b, B.b) - Math.max(A.t, B.t) + 4;
-          if (ox <= 0 || oy <= 0) continue;
-          touching++;
-          if (oy <= ox) { const d = (oy / 2) * (a.y <= b.y ? -1 : 1); a.y += d; b.y -= d; }
-          else { const d = (ox / 2) * (a.x <= b.x ? -1 : 1); a.x += d; b.x -= d; }
-        }
-      }
-      nodes.forEach(n => {
-        n.y += (n.bandCenter - n.y) * 0.01;
-        bandNames.forEach(L => { const B = boxOf(n); if (B.r > L.l && B.l < L.r && B.b > L.t && B.t < L.b) n.y += L.b - B.t + 2; });
-        n.x = Math.max(24, Math.min(W - 190, n.x));
-        n.y = Math.max(16, Math.min(H - 6 - n.h, n.y));
-      });
-      if (!touching) break;
-    }
-
-    // ── Render as SVG (real DOM nodes — see ADR 0002 for why not canvas) ──
-    const svgNS = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.setAttribute('class', 'pol-links-svg');
-    svg.setAttribute('role', 'img');
-    // The first and last area come from the data (this label once ended "to Global", an area that no longer exists).
-    svg.setAttribute('aria-label', `Graph of the policies by policy area, from ${MERGED_POLICY_CATEGORIES[mergedOrder[0]]} at the top to ${MERGED_POLICY_CATEGORIES[mergedOrder[mergedOrder.length - 1]]} at the bottom, with a line between policies that pair with each other${rivals.length ? ' and a dashed line between policies that compete' : ''}.`);
-
-    mergedOrder.forEach((mcId, i) => {
-      const y = i * bandH;
-      if (i > 0) {
-        const line = document.createElementNS(svgNS, 'line');
-        line.setAttribute('x1', 0); line.setAttribute('x2', W);
-        line.setAttribute('y1', y); line.setAttribute('y2', y);
-        line.setAttribute('stroke', 'var(--border)');
-        line.setAttribute('stroke-dasharray', '3 5');
-        svg.appendChild(line);
-      }
-      const label = document.createElementNS(svgNS, 'text');
-      label.setAttribute('x', 14); label.setAttribute('y', y + 18);
-      label.setAttribute('class', 'pol-links-band-label');
-      label.textContent = MERGED_POLICY_CATEGORIES[mcId];
-      svg.appendChild(label);
-    });
-
-    const edgeGroup = document.createElementNS(svgNS, 'g');
-    const edgeEls = edges.map(e => {
-      const a = nodeById[e.a], b = nodeById[e.b];
-      const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('class', 'pol-links-edge');
-      line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
-      line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
-      const title = document.createElementNS(svgNS, 'title');
-      title.textContent = e.whys.join(' ');
-      line.appendChild(title);
-      edgeGroup.appendChild(line);
-      return { el: line, a: e.a, b: e.b };
-    });
-    // The rivals' dashed lines go in the same group, so pointing at a policy lights both kinds. Each carries its authors' reasons as its tooltip, like a solid one.
-    const rivalEls = rivals.map(e => {
-      const a = nodeById[e.a], b = nodeById[e.b];
-      const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('class', 'pol-links-rival');
-      line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
-      line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
-      const title = document.createElementNS(svgNS, 'title');
-      title.textContent = e.whys.join(' ');
-      line.appendChild(title);
-      edgeGroup.appendChild(line);
-      return { el: line, a: e.a, b: e.b };
-    });
-    const lineEls = edgeEls.concat(rivalEls);
-    svg.appendChild(edgeGroup);
-
-    const nodeGroup = document.createElementNS(svgNS, 'g');
-    const nodeEls = {};
-    nodes.forEach(n => {
-      const g = document.createElementNS(svgNS, 'g');
-      g.setAttribute('class', 'pol-links-node');
-      g.setAttribute('tabindex', '0');
-      g.setAttribute('role', 'button');
-      g.setAttribute('aria-label', `${n.title}. Open this policy.`);
-
-      const dot = document.createElementNS(svgNS, 'circle');
-      dot.setAttribute('class', 'pol-links-node-dot');
-      dot.setAttribute('cx', n.x); dot.setAttribute('cy', n.y); dot.setAttribute('r', 8);
-      dot.setAttribute('fill', POL_CAT_COLORS[n.category] || 'var(--muted)');
-
-      // foreignObject + div (not SVG <text>) so long titles wrap onto
-      // multiple lines instead of running off as one unbroken string.
-      const labelFo = document.createElementNS(svgNS, 'foreignObject');
-      labelFo.setAttribute('class', 'pol-links-node-label-fo');
-      labelFo.setAttribute('x', n.x + 11); labelFo.setAttribute('y', n.y - 10);
-      labelFo.setAttribute('width', LABEL_W); labelFo.setAttribute('height', n.h);
-      const labelDiv = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-      labelDiv.setAttribute('class', 'pol-links-node-label');
-      labelDiv.textContent = n.title;
-      labelFo.appendChild(labelDiv);
-
-      // Larger invisible hit target — the 8px dot alone is too small to click/tap reliably.
-      const hit = document.createElementNS(svgNS, 'circle');
-      hit.setAttribute('class', 'pol-links-node-hit');
-      hit.setAttribute('cx', n.x); hit.setAttribute('cy', n.y); hit.setAttribute('r', 14);
-
-      g.appendChild(hit); g.appendChild(dot); g.appendChild(labelFo);
-      nodeGroup.appendChild(g);
-      nodeEls[n.id] = g;
-
-      const openIt = () => openPolModalById(n.id);
-      g.addEventListener('click', openIt);
-      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openIt(); } });
-
-      const highlight = on => {
-        Object.values(nodeEls).forEach(el => el.classList.remove('lit', 'dimmed'));
-        lineEls.forEach(e => e.el.classList.remove('lit', 'dimmed'));
-        if (!on) return;
-        const connected = new Set([n.id]);
-        lineEls.forEach(e => {
-          const touches = e.a === n.id || e.b === n.id;
-          e.el.classList.add(touches ? 'lit' : 'dimmed');
-          if (touches) { connected.add(e.a); connected.add(e.b); }
-        });
-        Object.entries(nodeEls).forEach(([id, el]) => el.classList.add(connected.has(id) ? 'lit' : 'dimmed'));
-      };
-      g.addEventListener('mouseenter', () => highlight(true));
-      g.addEventListener('mouseleave', () => highlight(false));
-      g.addEventListener('focus', () => highlight(true));
-      g.addEventListener('blur', () => highlight(false));
-    });
-    svg.appendChild(nodeGroup);
-
-    const outer = document.createElement('div');
-    outer.className = 'pol-links-graph-outer';
-    outer.appendChild(svg);
-
-    const legend = document.createElement('div');
-    legend.className = 'pol-links-legend';
-    // Only legend categories that actually have a node on the graph. Base
-    // categories are allowed to sit empty while cards are being written for
-    // them (antitrust does today), and an unfilterable legend dot pointing at
-    // nothing reads as a rendering bug.
-    const dotItems = Object.entries(POLICY_CATEGORIES)
-      .filter(([catId]) => POLICY_DATA.some(p => p.category === catId))
-      .map(([catId, catLabel]) =>
-      `<span class="pol-links-legend-item"><span class="pol-links-legend-dot" style="background:${POL_CAT_COLORS[catId]}"></span>${catLabel}</span>`
-    ).join('');
-    // The two kinds of line, each drawn as a sample of itself. The dashed one is listed only when the graph draws one.
-    const lineKey = (cls, label) => `<span class="pol-links-legend-item"><svg class="pol-links-key-line ${cls}" width="26" height="8" viewBox="0 0 26 8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4"/></svg>${label}</span>`;
-    legend.innerHTML = dotItems + lineKey('', 'Pairs with') + (rivals.length ? lineKey('pol-links-key-line--rival', 'Competes with') : '');
-    outer.appendChild(legend);
-
-    container.innerHTML = '';
-    container.appendChild(outer);
   }
 
   function openPolModal(p) {
@@ -610,7 +346,7 @@
     // links in its own text. A "How it interacts" section (the card's pairsWith and
     // competesWith as lists of cross-links, with their why text) sat between
     // Strengths/Risks and this one until the same day; the two fields stay in the
-    // data, because pairsWith draws the Links graph's lines.
+    // data, because pairsWith and competesWith fill the Links view's two columns.
     const landscapeHTML = p.landscape ? `
       <div class="pol-modal-section">
         <div class="pol-modal-label">Precedents & landscape</div>
