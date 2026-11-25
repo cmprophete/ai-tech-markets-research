@@ -33,12 +33,16 @@ What it keeps, and why:
   AI", under More filters) is turned on. A federal bill is about AI when one of its titles names it (or a close relative of it: tools/congress_fetch.py); one that
   only its CRS summary names is written the same way, `passing: true`, and counted in LEGISLATION_FEEDS.govinfo.passing.
 - Only bills that are active (the page's definition: introduced and not failed, data/legislation-data.js). A state bill is active when it
-  became law, or when its session has not ended and its latest action is not a failure, withdrawal or veto. A bill the search found that is
+  became law, or when its session has not ended and it has not failed: its latest action is not a failure or withdrawal, and the governor has
+  not vetoed it with the veto left standing (os_veto_stands: a veto with nothing after it that shows the legislature acting on the bill again,
+  whether the veto is sustained, still pending or tabled). A bill the search found that is
   not active is counted in LEGISLATION_FEEDS.openstates.omitted and not written out. Open States' session dates are the legislatures' formal
   ones, so a bill stays active until its session formally ends: in California that is November 30, though the last day to pass bills was in
   August.
 - The stage of a state bill comes from the standard classification Open States gives each action: passed by a chamber ("passage"), signed
-  or became law, referred to a committee, introduced. A federal bill's stage comes from its GovInfo actions the same way.
+  or became law, vetoed ("executive-veto"), referred to a committee, introduced. A federal bill's stage comes from its GovInfo actions the same way
+  (tools/congress_fetch.py's stage_of, which reads no vetoes: none of the federal bills the scan has was vetoed, and the build prints a
+  "veto:" line if a bill that is not law is listed with a veto in its latest action).
 
 The build stops, writing nothing, if an input has a shape it does not expect: a jurisdiction it does not know, a date that does not parse,
 a bad link, a federal scan that is missing.
@@ -86,6 +90,22 @@ def cap_committees(text, keep=3):
 def iso_long(iso):
     m = re.fullmatch(r'(\d{4})-(\d{2})-(\d{2})', iso or '')
     return date_long(int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else ''
+
+
+PASSED_STAGES = ('one-chamber', 'both-chambers')   # the stages whose row says which chamber passed it, and when (`passed`)
+OS_COMMITTEE_VOTE = {'committee-passage', 'committee-passage-favorable', 'committee-passage-unfavorable'}   # Open States' classes for a committee's vote: not a chamber's passage (see os_passages)
+
+
+def merge_passages(lists):
+    """[{'chamber', 'date'}, ...] lists (one for each bill of a set of identical House and Senate bills, as tools/congress_fetch.py saves them) -> one list, a chamber once,
+    with its LATEST date, in the order the chambers passed it (the earlier date first, the House first when both passed it the same day). A House bill and its identical Senate
+    companion are one row on the page, so a chamber that passed either of them counts. The order is decided here, once: the page and the CSV show the list as it is written."""
+    best = {}
+    for lst in lists:
+        for p in lst or []:
+            if p.get('chamber') in ('House', 'Senate') and re.fullmatch(r'\d{4}-\d{2}-\d{2}', p.get('date') or ''):
+                best[p['chamber']] = max(best.get(p['chamber'], ''), p['date'])
+    return [{'chamber': c, 'date': best[c]} for c in sorted(best, key=lambda c: (best[c], c != 'House'))]
 
 
 def federal_rows(cache):
@@ -151,6 +171,14 @@ def federal_rows(cache):
             row['summary'] = summary
         if lasts:
             row['lastAction'] = max(lasts, key=lambda x: x['date'])
+        # Which chamber passed it, and when, for a bill that passed one or both (the Status column says it; the owner's requests, 2026-11-23). Only a bill at those stages carries it. A bill
+        # the scan has no passage for (candidates.json written by a copy of tools/congress_fetch.py from before the field existed, or an action GovInfo words differently) gets none, and the
+        # page says that the chamber and date are not in the data: nothing here is guessed from the bill's other actions. (The scan has no both-chambers bill today: the 119th Congress's
+        # bills that passed both chambers have all become law; the code is here for the first one that has not.)
+        if stage in PASSED_STAGES:
+            passed = merge_passages(m.get('passed') for m in members)
+            if passed:
+                row['passed'] = passed
         if subjects:
             row['subjects'] = subjects
         if all(m['tier'] == 'summary' for m in members):
@@ -165,7 +193,20 @@ def federal_rows(cache):
 
 
 # ───────────────────────────── state bills from Open States ─────────────────────────────
-OS_DEAD = ('failure', 'withdrawal', 'executive-veto', 'committee-failure', 'veto-override-failure')
+OS_DEAD = ('failure', 'withdrawal', 'committee-failure')   # a bill is over when its LAST action carries one of these classes. A veto is not here: os_veto_stands reads a veto wherever it sits in a bill's history.
+
+# VETOES. Open States classes a governor's veto of a whole bill "executive-veto", a vote that failed to override it "veto-override-failure" and one that passed "veto-override-passage". A veto
+# used to count only when it was the bill's LAST action, so it was lost behind any action Open States gives no class that came after it: California's "In Senate. Consideration of
+# Governor's veto pending." and "Veto sustained." (SB 7 and SB 11 were listed at Passed both chambers for months after the Governor killed them, found 2026-11-23) and New York's "TABLED"
+# (class "amendment-deferral", A 3411). The rule now: a bill is failed when the governor vetoed it outright and NOTHING AFTER THE VETO shows the legislature acting on the bill again. It is read
+# from the classification only; the words of an action are used for one thing, to leave out a veto that is not a rejection (below), never to decide a stage.
+OS_VETO_MARKS = {'executive-veto', 'veto-override-failure'}       # the veto, or the failed vote to override it: the bill is over unless something after it revives it
+OS_REVIVES = {'passage', 'veto-override-passage', 'executive-signature', 'became-law'}   # after a veto: a chamber passing the bill again (an override, or agreeing to the governor's changes), or the bill becoming law
+# Not every action Open States classes "executive-veto" rejects the bill, and one that does not must not end it: a line-item veto (Ohio's "line item veto receipt": the bill is law without the
+# vetoed items; Open States' own class for these is "executive-veto-line-item", which is not read here), and a conditional or amendatory veto (New Jersey's "Conditional Veto, Received in the
+# Assembly": the governor asks for changes, the legislature may agree, and the bill lives). The veto's own words say which, so such a veto is left out, and a bill it leaves can only be
+# placed by what else its actions say (never guessed: it keeps the stage it has).
+OS_VETO_NOT_OUTRIGHT = re.compile(r'conditional|amendatory|line[- ]item|in part|partial', re.I)
 # A bill is "about AI" when its title or the legislature's own summary names it. The full-text search finds every bill that mentions the phrase
 # anywhere, including a school code or a resolution about Taiwan that says it once; those are counted and left out, not listed.
 AI_NAMED = re.compile(r'artificial intelligence|machine learning|generative|deep ?fakes?|synthetic media|digital replica|artificially generated|digitally (?:altered|generated)|chatbot|large language model|algorithmic|automated decision|automation displacement', re.I)
@@ -200,15 +241,65 @@ def subject_terms(b):
     return [x.strip() for x in (b.get('subject') or []) if x.strip() and flat(x) not in title]
 
 
+def os_passages(actions):
+    """Where a state bill passed a chamber: [(the chamber's name as the legislature writes it, 'YYYY-MM-DD')], at most one for each chamber, in the order the chambers passed it (the
+    earlier date first; the lower chamber first when both passed it the same day). It reads the same actions os_stage reads (the standard classification "passage", by the upper or lower
+    chamber), so a bill is at the one-chamber stage when this has one entry, and at the both-chambers stage when it has two, with two exceptions that leave FEWER entries than the stage
+    means, and the page then says what is not in the data: a joint action by the whole legislature (it has no chamber to name here), and an action Open States also classes as a committee's vote
+    (OS_COMMITTEE_VOTE), which os_stage still counts as a passage but this does not, because a committee voting to adopt a bill is not the chamber passing it. That is California's SCR 82: its two
+    Assembly "passages" are "From committee: Be adopted and re-refer to Com. on APPR.", so the Assembly is not named for it and its Status cell says the other chamber and its date are not in the
+    data. (os_stage was left as it is: SCR 82 stays at Passed both chambers, which it probably is not; that is a separate question.) The name is the legislature's own, never turned into "House" or "Senate" for it: California, New York, New Jersey,
+    Nevada and Wisconsin's lower chamber is the Assembly, and calling it the House would be wrong. A chamber that passed a bill more than once (New York re-passes bills in the second
+    year of its session) gives its LATEST date, the vote that is standing. A chamber with no name, or a date that does not parse, is left out rather than guessed (the page then says
+    the chamber and date are not in the data). A unicameral legislature (Nebraska) and a joint action by the whole legislature have no chamber to name here. Note that this follows
+    Open States' own classification: an action it classes as "passage" is shown as a passage, even where the legislature's own words describe a committee vote (California's SCR 82)."""
+    best = {}
+    for a in actions or []:
+        cls = set(a.get('classification') or [])
+        if 'passage' not in cls or cls & OS_COMMITTEE_VOTE:
+            continue
+        org = a.get('organization') or {}
+        side, name, day = org.get('classification'), re.sub(r'\s+', ' ', org.get('name') or '').strip(), (a.get('date') or '')[:10]
+        if side not in ('lower', 'upper') or not name or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day):
+            continue
+        if side not in best or day > best[side][1]:
+            best[side] = (name, day)
+    return [best[s] for s in sorted(best, key=lambda s: (best[s][1], s != 'lower'))]
+
+
+def os_sorted(actions):
+    """A bill's actions in the order they happened: by date, then by Open States' own order within a day (the order is decided here once; every rule that asks what came AFTER an action reads it)."""
+    return sorted(actions or [], key=lambda a: (a.get('date') or '', a.get('order') or 0))
+
+
+def os_veto_stands(actions):
+    """True when the governor vetoed the whole bill and nothing after the veto shows the legislature acting on it again: the veto stands, and the bill is over (os_stage then says failed).
+    Where it is read: the LAST action classified "executive-veto" (a veto) or "veto-override-failure" (a vote that failed to override one), wherever it sits among a bill's actions, and then every
+    action after it. If one of them is classified as a chamber passing the bill, an override, a signature or the bill becoming law (OS_REVIVES), the legislature acted again, so this says False
+    and the stage rule goes on to place the bill by its other actions. Nothing is guessed from words: a veto Open States did not classify is not found, a bill with no veto gives False, and the
+    veto's own text is looked at only to leave out one that is not a rejection of the bill (OS_VETO_NOT_OUTRIGHT: a line-item veto, a conditional or amendatory one). So a veto that is only PENDING
+    (California's "In Senate. Consideration of Governor's veto pending.", its sustained "Veto sustained.", New York's "TABLED") is a veto that stands: the page's own definition lists "vetoed" among the
+    ways a bill fails, and a bill the governor vetoed on the same day with no such line after it is already failed by the same classification. If the source records an override later, the next
+    build sees "veto-override-passage" and the bill is enacted."""
+    acts = os_sorted(actions)
+    last = None
+    for i, a in enumerate(acts):
+        if set(a.get('classification') or []) & OS_VETO_MARKS and not OS_VETO_NOT_OUTRIGHT.search(a.get('description') or ''):
+            last = i
+    return last is not None and not any(set(a.get('classification') or []) & OS_REVIVES for a in acts[last + 1:])
+
+
 def os_stage(actions, ended):
-    """(stage, alive): from the standard classification of each action. alive is False for a bill that failed, was withdrawn or vetoed, or
+    """(stage, alive): from the standard classification of each action. alive is False for a bill that failed, was withdrawn or vetoed (a veto that stands: os_veto_stands), or
     whose session has ended without it becoming law."""
-    acts = sorted(actions or [], key=lambda a: (a.get('date') or '', a.get('order') or 0))
+    acts = os_sorted(actions)
     cls = [set(a.get('classification') or []) for a in acts]
     chambers = {((a.get('organization') or {}).get('classification') or '') for a, c in zip(acts, cls) if 'passage' in c}
     if any(c & {'became-law', 'executive-signature', 'veto-override-passage'} for c in cls):
         return 'enacted', True
     if cls and cls[-1] & set(OS_DEAD):
+        return 'failed', False
+    if os_veto_stands(actions):
         return 'failed', False
     if ended:
         return 'failed', False
@@ -345,6 +436,7 @@ def os_rows(cache, today, terms, site=None):
         site_full = '' if abstract_full.strip() else (site.get(f"{code}|{sid}|{b['identifier']}") or {}).get('summary', '')
         abstract, from_site = cap_text(abstract_full), cap_text(site_full)
         out.append({'state': code, 'bill': b['identifier'], 'session': re.sub(r',? Regular Session$', '', s.get('name') or sid), 'sid': sid, 'stage': stage, 'date': la,
+                    'passed': os_passages(b.get('actions')) if stage in PASSED_STAGES else [],   # which chamber(s) passed it, and when, for a bill that passed one or both (see os_passages)
                     'text': la_text if la else re.sub(r'\s+', ' ', b.get('latest_action_description') or '').strip(), 'title': re.sub(r'\s+', ' ', b.get('title') or '').strip(),
                     'summary': abstract or from_site, 'site': bool(from_site), 'subjects': subject_terms(b),
                     'url': official or b.get('openstates_url') or '', 'official': bool(official),
@@ -357,6 +449,22 @@ def slug(s):
 
 
 # ───────────────────────────── writing the file ─────────────────────────────
+VETO_WORD = re.compile(r'\bveto', re.I)
+
+
+def listed_with_a_veto(rows):
+    """The names of the bills (federal and state rows, as the build writes them) that are listed, are not law and say "veto" in their latest action: a bill the stage rule did not place.
+    A state bill's veto is read from Open States' classification (os_veto_stands) and a federal bill's not at all (tools/congress_fetch.py's stage_of reads no vetoes, because none of the
+    bills the scan has was vetoed), so this is the net under both: a veto the rule missed shows here, in the build's output, instead of as a dead bill on the page. A conditional veto (New Jersey)
+    is the expected exception: it keeps its bill alive on purpose."""
+    out = []
+    for r in rows:
+        text = (r.get('lastAction') or {}).get('text') or r.get('text') or ''
+        if r.get('stage') != 'enacted' and VETO_WORD.search(text):
+            out.append((r['state'] + ' ' + r['bill']) if 'state' in r else r['bill'])
+    return out
+
+
 def js(v):
     return json.dumps(v, ensure_ascii=False, separators=(',', ':'))
 
@@ -420,7 +528,9 @@ def build(args):
    docs/legislation-sources.md. Loaded the first time the Legislation tab opens (loadPayload in src/js/05-lazy.js); it adds its rows to
    LEGISLATION_DATA (data/legislation-data.js) and then the tab redraws. A state bill is S(state, bill, session number, stage, last action date,
    last action text, title, summary, subject numbers, link, 1 if the link is the legislature's own, 1 if the bill only mentions AI in its text
-   and is hidden until the page's checkbox for them is on); the numbers index SESSIONS and SUBJECTS. */
+   and is hidden until the page's checkbox for them is on, and, for a bill that has passed one or both chambers, [[the chamber's name as the legislature writes it,
+   the date it passed], ...]); the numbers index SESSIONS and SUBJECTS. A bill at the one-chamber or both-chambers stage carries `passed`, a list with each chamber that
+   passed it and the day, in the order it passed them (a federal row: [{{"chamber": "House", "date": "2026-06-24"}}]); a bill whose source does not give them has none, and the page says so. */
 const LEGISLATION_FEEDS = {js(feeds)};
 """
     body = ['(function () {',
@@ -430,17 +540,18 @@ const LEGISLATION_FEEDS = {js(feeds)};
             '  const add = b => LEGISLATION_DATA.push(b);']
     for b in fed:
         body.append('  add(' + js(b) + ');')
-    body.append("  const S = (state, bill, session, stage, date, text, title, summary, subjects, url, official, passing) => {")
+    body.append("  const S = (state, bill, session, stage, date, text, title, summary, subjects, url, official, passing, passed) => {")
     body.append("    const b = { id: 'os-' + state.toLowerCase() + '-' + session + '-' + bill.toLowerCase().replace(/[^a-z0-9]+/g, '-'), level: 'state', state, bill, session: SESSIONS[session], stage,")
     body.append("      source: url ? { label: official ? 'Legislature' : 'Open States', url } : OS };")
     body.append("    if (title) b.title = title; if (summary) b.summary = summary; if (date) b.lastAction = text ? { date, text } : { date };")
     body.append("    if (subjects.length) b.subjects = subjects.map(i => SUBJECTS[i]);")
     body.append("    if (passing) b.passing = true;")
+    body.append("    if (passed) b.passed = passed.map(p => ({ chamber: p[0], date: p[1] }));")
     body.append("    add(b);")
     body.append("  };")
     for r in state_rows:
         body.append('  S(' + ','.join(js(x) for x in (r['state'], r['bill'], sess_idx[(r['state'], r['sid'])], r['stage'], r['date'], r['text'], r['title'], r['summary'],
-                                                      [subj_idx[x] for x in r['subjects']], r['url'], 1 if r['official'] else 0, 1 if r['passing'] else 0)) + ');')
+                                                      [subj_idx[x] for x in r['subjects']], r['url'], 1 if r['official'] else 0, 1 if r['passing'] else 0) + ((r['passed'],) if r['passed'] else ())) + ');')
     body.append('})();')
     text = head + '\n'.join(body) + '\n'
     print(f"federal: {len(fed)} rows ({len(fed) - fed_passing} with AI in a title, {fed_passing} only in the CRS summary and hidden behind the checkbox), from the scan of {sum(scan['scanned'].values()):,} GovInfo files read {scan['read']} (GovInfo last changed them {scan['updated'] or '?'})")
@@ -450,6 +561,22 @@ const LEGISLATION_FEEDS = {js(feeds)};
     print('         by stage:', dict(sorted(by_stage.items())))
     print(f'         {sum(1 for r in state_rows if r["summary"])} with the legislature\'s own summary ({sum(1 for r in state_rows if r["summary"] and not r.get("site"))} from Open States, {sum(1 for r in state_rows if r.get("site"))} read from the legislature\'s site), {sum(1 for r in state_rows if r["subjects"])} with subject terms, {sum(1 for r in state_rows if r["official"])} linked to the legislature\'s own page')
     print(f'         {len({r["state"] for r in state_rows})} jurisdictions')
+    # Which chamber(s) passed each bill that passed one or both, and when (the Status column says it): how many of those bills carry what the stage promises (one chamber, or two). One that
+    # does not is a bill the source gave no passage for (or an old candidates.json: run tools/congress_fetch.py again); the page says "not in our data" for it, and this says it here so it
+    # is not a surprise.
+    name = lambda r: (r['state'] + ' ' + r['bill']) if 'state' in r else r['bill']
+    for label, rows_ in (('federal', fed), ('state', state_rows)):
+        for stage, n, what in (('one-chamber', 1, 'passed one chamber'), ('both-chambers', 2, 'passed both chambers')):
+            at = [r for r in rows_ if r['stage'] == stage]
+            if not at:
+                continue
+            miss = [r for r in at if len(r.get('passed') or []) < n]
+            without = '' if not miss else '; without: ' + ', '.join(name(r) for r in miss[:8]) + (' ...' if len(miss) > 8 else '')
+            print(f"passed:  {len(at) - len(miss)} of {len(at)} {label} bills that {what} carry {'the chamber and the date' if n == 1 else 'both chambers and their dates'}{without}")
+    # A bill that is listed, is not law and says "veto" in its latest action: the stage rule did not place it (see listed_with_a_veto). Nothing is printed when there is none.
+    vetoed = listed_with_a_veto(fed + state_rows)
+    if vetoed:
+        print(f"veto:    {len(vetoed)} listed bills that are not law mention a veto in their latest action: {', '.join(vetoed[:8])}{' ...' if len(vetoed) > 8 else ''}. Check each: a conditional or line-item veto keeps a bill alive; a veto that stands means the stage rule missed it")
     print(f'file:    {len(text):,} bytes')
     if args.dry_run:
         print('(dry run: nothing written)')
