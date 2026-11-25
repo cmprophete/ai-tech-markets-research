@@ -116,7 +116,7 @@ browser against a local server) over reasoning about whether it would work.
   adding a tab also means its button in `src/views/10-header.html`, its area in
   `src/views/`, its show/hide rule in `src/styles/policy.css`, and the view lists
   in `setView()`. The Government action tab is a worked example of all of these: one
-  nav tab with four sections (All, Cases, Enforcement, Legislation), each a view of its own switched in the toolbar. The four
+  nav tab (labelled Enforcement and Legislation) with four sections (Legislation, Enforcement, Cases, All; the tab opens on Legislation), each a view of its own switched in the toolbar. The four
   share one area, toolbar, chips, search and map (`60-legislation.html`, `60-legislation.js`,
   `legislation.css`; a control or a list that belongs to some of the sections carries
   `gov-leg-only`, `gov-lists-only` or `gov-all-only`, shown by `policy.css`), Enforcement and Cases share
