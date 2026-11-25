@@ -1,15 +1,11 @@
   /* ── LEGISLATION TAB ─────────────────────────────────────────────────────────────────────────────────────────
-     A map of the states and its card, the bills table and the midterm results table (src/js/60-legislation.js builds them; Enforcement and Cases share the map, the toolbar and the area). The type is the site's: the section titles and the
+     A map of the states and its card and the bills table (src/js/60-legislation.js builds them; Enforcement and Cases share the map, the toolbar and the area). The type is the site's: the section titles and the
      panel title are the 20px bold of the Landscape area titles, the small labels are the header's group-label spec, text is 14px,
      the chips are the Papers chips and the section switch is the Landscape Map/Links toggle. The fills are the site's palette:
-     navy for the strongest state of a layer, tints of it below, gold hatching for "uncalled". The variables live on the area
+     navy for the strongest state of a layer and tints of it below. The variables live on the area
      so the tables and the legend can use them too. */
   #legislationArea {
     --leg-none: color-mix(in srgb, var(--navy) 7%, var(--light-beige));
-    --leg-gain: var(--navy);
-    --leg-hold: color-mix(in srgb, var(--navy) 34%, var(--light-beige));
-    --leg-rhold: color-mix(in srgb, var(--pink) 78%, var(--light-beige));
-    --leg-rgain: var(--pink);
     --leg-b1: color-mix(in srgb, var(--green) 32%, var(--light-beige));
     --leg-b2: color-mix(in srgb, var(--green) 62%, var(--light-beige));
     --leg-b3: color-mix(in srgb, var(--green-deep) 65%, var(--navy));
@@ -57,19 +53,11 @@
   .leg-map-wrap { min-width: 0; }
   .leg-map { display: block; width: 100%; height: auto; }
   .leg-state { fill: var(--leg-none); stroke: var(--divider); stroke-width: 0.9; stroke-linejoin: round; cursor: pointer; transition: fill 0.15s; }
-  /* The fill follows a class set from the data: fill-d-gain and friends for a Senate or governor race, fill-h-* for a House delegation
-     (which party won more of its seats), fill-b1 to fill-b3 for the number of bills. Navy is the strongest, then its tints. */
-  .leg-state.fill-d-gain, .leg-state.fill-h-d { fill: var(--leg-gain); }
-  .leg-state.fill-d-hold, .leg-state.fill-h-even { fill: var(--leg-hold); }
-  .leg-state.fill-r-hold { fill: var(--leg-rhold); }
-  .leg-state.fill-r-gain, .leg-state.fill-h-r { fill: var(--leg-rgain); }
-  .leg-state.fill-uncalled, .leg-state.fill-h-none { fill: url(#legHatch); }
+  /* The fill follows a class set from the data: fill-b1 to fill-b3 for the number of rows a state has. Navy is the strongest, then its tints. */
   .leg-state.fill-b1 { fill: var(--leg-b1); }
   .leg-state.fill-b2 { fill: var(--leg-b2); }
   .leg-state.fill-b3 { fill: var(--leg-b3); }
-  .leg-hatch-bg   { fill: color-mix(in srgb, var(--gold) 30%, var(--light-beige)); }
-  .leg-hatch-line { stroke: var(--gold-deep); stroke-width: 2; }
-  /* A ring is a pink halo under a navy line, so it shows on a navy state, on a pale one and on the gold hatching of a race not yet called (gold, the nav accent of this tab's group, would vanish on that). */
+  /* A ring is a pink halo under a navy line, so it shows on a navy state and on a pale one. */
   .leg-ring-halo { fill: none; stroke: var(--pink); stroke-width: 5.5; stroke-linejoin: round; pointer-events: none; }
   .leg-ring-halo.is-pinned { stroke-width: 7; }
   .leg-ring { fill: none; stroke: var(--navy); stroke-width: 1.6; stroke-linejoin: round; pointer-events: none; }
@@ -80,11 +68,30 @@
      pointed at or pinned, or when the button has the keyboard's focus. On a phone the gutter goes and the buttons become a row under the
      map. The type is the small pill type of the Fact Bank's buttons. */
   .leg-map-box { position: relative; padding-right: 46px; }
-  /* The column is nine buttons of 24px and eight gaps of 3px, 240px in all. It starts 14% down the map, level with the Northeast, but
-     never lower than the map's height less its own (244px, with a little to spare), so on a short map, with the panel beside it or in
-     a narrow window, it cannot run on past the bottom into the legend. */
-  .leg-tiles { position: absolute; top: min(14%, calc(100% - 244px)); right: 0; width: 40px; display: flex; flex-direction: column; gap: 3px; }
+  /* The gutter is the column of small-state buttons: nine of 24px and eight gaps of 3px, 240px. It starts 6% down the map, but never lower than the map's height less its own and the room the two level buttons take under it (14px
+     between, and 50px for them: 308px, with a little to spare), so on a short map, with the panel beside it or in a narrow window, it cannot run on past the bottom into them or into the legend. */
+  .leg-gutter { position: absolute; top: min(6%, calc(100% - 308px)); right: 0; width: 46px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  /* The Federal and States buttons sit at the map's bottom right (the owner, 2026-11-24): side by side in the corner of the map's box, 46px wide and 50px tall each with 8px between, over the empty sea below the Atlantic coast and under the column of
+     small-state buttons. On a phone they become a row under the map (below). */
+  .leg-levels { position: absolute; right: 0; bottom: 0; display: flex; gap: 8px; }
+  /* A narrow map (a window of 520 to about 1000px) is shorter than the gutter, which would then run up out of the top of its box: the box is never shorter than the gutter and a little over, so the column always lies inside it. */
+  @media (min-width: 521px) { .leg-map-box { min-height: 312px; } }
+  .leg-tiles { width: 40px; display: flex; flex-direction: column; gap: 3px; }
   .leg-tiles[hidden] { display: none; }
+  /* The two level buttons, Federal and States (each a place, so each works as a state does: it previews its card, pins the list to it, and lets go when pressed again; Federal is Congress, States is every state at once): an icon over the
+     word, drawn in the button's own colour (navy), on the same pale fill and thin navy border as the small-state buttons, with the same pink-and-navy ring when it is pointed at or pinned. A Capitol dome for Federal, four tiles
+     for States. Pinned it is also filled navy with the icon and word in beige, so the state is a shape and a fill, not a colour alone (and aria-pressed says it). The word is the site's chip type (Haas 11px, 500, 0.02em), and
+     semibold while pinned, as a pressed chip is. (They were .leg-fed, for the one button, until 2026-11-24.) */
+  .leg-level {
+    box-sizing: border-box; flex: none; width: 46px; height: 50px; padding: 4px 0 3px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; line-height: 1; color: var(--navy);
+    background: var(--leg-none); border: 1px solid color-mix(in srgb, var(--navy) 25%, transparent); border-radius: var(--r-tag);
+    transition: background 0.15s, color 0.15s;
+  }
+  .leg-level-icon { display: block; flex: none; }
+  .leg-level:hover, .leg-level.is-hover, .leg-level:focus-visible { outline: none; box-shadow: 0 0 0 1.5px var(--navy), 0 0 0 4.5px var(--pink); }
+  .leg-level.is-pinned { background: var(--navy); color: var(--light-beige); font-weight: 600; box-shadow: 0 0 0 2px var(--navy), 0 0 0 5.5px var(--pink); }
   .leg-tiles-label { display: none; font-family: var(--grot); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .leg-tile {
     box-sizing: border-box; flex: none; height: 24px; padding: 0; cursor: pointer;
@@ -92,18 +99,13 @@
     background: var(--leg-none); border: 1px solid color-mix(in srgb, var(--navy) 25%, transparent); border-radius: var(--r-tag);
     transition: background 0.15s;
   }
-  .leg-tile.fill-d-gain, .leg-tile.fill-h-d, .leg-tile.fill-b3 { color: var(--light-beige); }
+  .leg-tile.fill-b3 { color: var(--light-beige); }
   .leg-tile:hover, .leg-tile.is-hover, .leg-tile:focus-visible { outline: none; box-shadow: 0 0 0 1.5px var(--navy), 0 0 0 4.5px var(--pink); }
   .leg-tile.is-pinned { box-shadow: 0 0 0 2px var(--navy), 0 0 0 5.5px var(--pink); }
   .leg-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 2px 0; font-size: 13px; line-height: 1.4; color: var(--text); }
   .leg-legend-item { display: inline-flex; align-items: center; gap: 7px; }
   .leg-muted-count { color: var(--muted); font-variant-numeric: tabular-nums; }
   .leg-swatch { width: 14px; height: 14px; flex: none; border-radius: var(--r-tag); border: 1px solid color-mix(in srgb, var(--navy) 25%, transparent); background: var(--leg-none); }
-  .leg-swatch.fill-d-gain, .leg-swatch.fill-h-d, .leg-tile.fill-d-gain, .leg-tile.fill-h-d { background: var(--leg-gain); }
-  .leg-swatch.fill-d-hold, .leg-swatch.fill-h-even, .leg-tile.fill-d-hold, .leg-tile.fill-h-even { background: var(--leg-hold); }
-  .leg-swatch.fill-r-hold, .leg-tile.fill-r-hold { background: var(--leg-rhold); }
-  .leg-swatch.fill-r-gain, .leg-swatch.fill-h-r, .leg-tile.fill-r-gain, .leg-tile.fill-h-r { background: var(--leg-rgain); }
-  .leg-swatch.fill-uncalled, .leg-swatch.fill-h-none, .leg-tile.fill-uncalled, .leg-tile.fill-h-none { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--gold) 30%, var(--light-beige)) 0 3px, var(--gold-deep) 3px 5px); }
   .leg-swatch.fill-b1, .leg-tile.fill-b1 { background: var(--leg-b1); }
   .leg-swatch.fill-b2, .leg-tile.fill-b2 { background: var(--leg-b2); }
   .leg-swatch.fill-b3, .leg-tile.fill-b3 { background: var(--leg-b3); }
@@ -118,7 +120,7 @@
   /* The card never grows taller than the map column beside it. Its slot is a grid item that is stretched to the row's height, which the map sets, and that
      takes no height from its content (contain: size); the card inside is as tall as its content, up to the slot, and scrolls beyond that. Without this a state
      with long bill titles in its card (Tennessee's ran to 554 characters) made the card, and with it the row and everything under it, twice as tall as the map, and the page
-     jumped as the pointer crossed states. The card no longer lists bills (the owner had the previews taken out, 2026-11-12); the cap stays for the stats and results it does hold.
+     jumped as the pointer crossed states. The card no longer lists bills (the owner had the previews taken out, 2026-11-12); the cap stays for the stats and blocks it does hold.
      Where contain: size is not understood the card simply grows, as it used to. A pinned card scrolls, and so does a hovered one the pointer has reached (LEG_CARD_GRACE). */
   .leg-panel-slot { align-self: stretch; contain: size; min-width: 0; }
 
@@ -128,17 +130,6 @@
   .leg-panel p { font-size: 14px; line-height: 1.6; color: var(--text); margin: 0; }
   .leg-panel p + p { margin-top: 8px; }
   .leg-panel .leg-muted { color: var(--muted); }
-  .leg-office { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 0 10px; align-items: start; }
-  .leg-office + .leg-office { margin-top: 10px; }
-  .leg-office-name { padding-top: 2px; font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--headline); }
-  .leg-office-body > * { font-size: 14px; line-height: 1.5; color: var(--text); margin: 0; }
-  .leg-office-body > * + * { margin-top: 4px; }
-  .leg-office-body > .leg-muted { color: var(--muted); }
-  /* A race's result: a square in the party's colour (the map's fills, so the table matches its legend) and the words. A hold is plain text; a gain, a seat that changed hands, and a race
-     not yet called are the news, so those are bold. They were coloured pills, one in every cell. */
-  .leg-result { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
-  .leg-result--news { font-weight: 600; color: var(--headline); }
-  .leg-swatch--sm { width: 10px; height: 10px; border-radius: 2px; }
 
   .leg-section { margin-top: 38px; }
   /* A table's block ends with a divider under its page numbers: the table, the note under it, the page numbers, then the line (the owner, 2026-11-18: each blurb below its table and above the divider, and the page numbers above it
@@ -149,11 +140,23 @@
   /* Whatever display a rule in this tab gives an element (the map stage is a grid, the Show menu a flex row), the hidden attribute wins: the script hides the checkbox until some bill only lightly
      mentions AI, Clear until a place is pinned, and the lists' controls and note while a section has no rows. */
   #legislationArea [hidden] { display: none; }
+  /* The bills' title row: the title at the left, and the Export to CSV pill (.leg-export, below) at the right. The row carries the title's bottom margin, and the title (a heading, which the pill is not part of) none. */
+  .leg-section-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; }
+  .leg-section-head .leg-section-title { margin: 0; }
+  /* The Export to CSV pill: the owner wants pills for what she clicks, and this is the Fact Bank's action pill (.act-btn in policy.css) value for value: Haas 12px semibold, a navy outline on the pale fill, navy when
+     pointed at. It is out of use (faint) while there is nothing in view to save. */
+  .leg-export {
+    background: var(--light-beige); border: 1px solid var(--navy); color: var(--navy); border-radius: var(--r-ctl); padding: 4px 12px; font-family: var(--grot);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s;
+  }
+  .leg-export:hover:not(:disabled) { background: var(--navy); color: var(--beige); }
+  .leg-export:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .leg-export:disabled { opacity: 0.45; cursor: default; }
   .leg-section-title {
     display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px;
     font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: var(--headline);
   }
-  /* The jurisdiction beside the 2026 Midterm results title. It was 10px, uppercase and muted, and was missed; it is now 15px bold, in navy and in the same family
+  /* The jurisdiction beside a section's title. It was 10px, uppercase and muted, and was missed; it is now 15px bold, in navy and in the same family
      as the title, so it reads as part of it. */
   .leg-scope { font-family: var(--sans); font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--navy); font-variant-numeric: tabular-nums; }
   /* The Bills section's title has no words of its own: it is the jurisdiction and the count ("New York · 8 bills"), at the size, weight and colour of a section title
@@ -169,6 +172,20 @@
   .leg-stats-key { flex: 0 1 auto; display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0; padding: 0; list-style: none; font-family: var(--grot); font-size: 12px; letter-spacing: 0.02em; color: var(--text); font-variant-numeric: tabular-nums; }
   .leg-stats-key li { display: inline-flex; align-items: center; gap: 6px; }
   .leg-stats-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+  /* The key of the table's stats bar can be pressed (the owner, 2026-11-23: "the chart key ... should be clickable"): each entry is a button that shows only the bills at that stage, which is choosing it in the Status menu. It is
+     what she clicks, so it is a pill, the Topics chips' own (Haas 12px, 500, a navy outline on the pale fill, navy with white text and semibold when it is the one on), holding the stage's swatch and its count and share; the
+     card's key, which is only to read, stays plain text. A pressed pill's swatch gets a pale edge, so the navy one (Enacted) shows on the navy pill. */
+  .leg-stats-key--pills { gap: 6px 8px; }
+  .leg-stats-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 4px 12px; cursor: pointer; white-space: nowrap;
+    font: inherit; font-weight: 500; letter-spacing: inherit; font-variant-numeric: tabular-nums; color: var(--navy);
+    background: var(--light-beige); border: 1px solid var(--navy); border-radius: var(--r-ctl); transition: background 0.15s;
+  }
+  .leg-stats-btn:hover { background: color-mix(in srgb, var(--navy) 7%, var(--light-beige)); }
+  .leg-stats-btn[aria-pressed="true"] { background: var(--navy); color: #fff; font-weight: 600; }
+  .leg-stats-btn[aria-pressed="true"]:hover { background: var(--navy); }
+  .leg-stats-btn[aria-pressed="true"] .leg-stats-swatch { box-shadow: 0 0 0 1.5px var(--beige); }
+  .leg-stats-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .leg-stats [data-stage] { background: var(--leg-b2); }
   .leg-stats [data-stage="introduced"] { background: var(--leg-b1); }
   .leg-stats [data-stage="committee"] { background: color-mix(in srgb, var(--green) 47%, var(--light-beige)); }
@@ -187,7 +204,7 @@
   /* The blocks of key cases and enforcement actions in the card (enfCardBlock, src/js/55-enforcement.js) are a count and a link, with no titles (the owner, 2026-11-18); the link is a .leg-more-link, which the card's click handler reads for the list it is for (data-kind). */
   .leg-table-wrap { overflow-x: auto; background: var(--light-beige); border: 1px solid var(--border); border-radius: var(--r-card); }
   /* After a page change the table takes focus (so a keyboard reader starts at its first row); it is not a tab stop. */
-  #legBillsTable:focus, #legResultsTable:focus { outline: none; }
+  #legBillsTable:focus { outline: none; }
   /* A title scrolled to (the pager, the card's link) would land under the sticky bar, so its margin is the bar's live height (--leg-bar-h, set by legSyncBarHeight) and a little more. */
   .leg-section-title { scroll-margin-top: calc(var(--leg-bar-h, 0px) + 16px); }
   .leg-table { width: 100%; min-width: 760px; border-collapse: collapse; }
@@ -195,22 +212,23 @@
     text-align: left; white-space: nowrap; padding: 10px 14px; background: var(--source-band); border-bottom: 1px solid var(--border);
     font-family: var(--grot); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
   }
+  /* A sortable header (Status and Last action): a real button that takes the header's own type, so the column reads as it did, with an arrow beside it. Sorted, the arrow is the one that points the way (up when
+     ascending, down when descending) and the word is in the headline colour and semibold; not sorted, both arrows show faintly, which says it can be. The th's aria-sort says the same to a screen reader. */
+  .leg-sort-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 0; background: none; border: 0; cursor: pointer;
+    font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
+  }
+  .leg-sort-btn:hover { color: var(--navy); }
+  .leg-sort-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; border-radius: 2px; }
+  .leg-sort-icon { flex: none; fill: currentColor; opacity: 0.4; }
+  .leg-table th[aria-sort="ascending"] .leg-sort-btn, .leg-table th[aria-sort="descending"] .leg-sort-btn { color: var(--headline); font-weight: 600; }
+  .leg-table th[aria-sort="ascending"] .leg-sort-icon, .leg-table th[aria-sort="descending"] .leg-sort-icon { opacity: 1; }
+  .leg-table th[aria-sort="ascending"] .leg-sort-icon .down, .leg-table th[aria-sort="descending"] .leg-sort-icon .up { display: none; }
   .leg-table td { padding: 12px 14px; vertical-align: top; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.55; color: var(--text); }
   .leg-table tbody tr:first-child td { border-top: none; }
   .leg-table td:first-child { white-space: nowrap; }
   .leg-table .leg-num { font-size: 13px; font-weight: 600; color: var(--headline); white-space: nowrap; }
   .leg-table .leg-empty-row td { color: var(--muted); }
-  /* The results table's columns are one size whether a state or all fifty are showing, in the order State, Senate, House, Governor, Source.
-     Left to its content they were not: with fifty rows the Senate column grew to 44% of the table, because Alaska's note is long, and with
-     one state it was 17%. Source is the least needed column, so it gets the smallest share that keeps its one line of links ("AP: Senate,
-     House, Governor", 214px with its padding) whole at a normal desktop width, 19% (229px at a 1280px window); in a narrower window it
-     wraps rather than take room from the three results columns, which carry the notes. The minimums are the widest thing that cannot
-     wrap, so the columns also agree in a narrow window: the longest state name (New Hampshire, 131px with its padding) and the widest
-     result (a square and "Democratic gain" in bold, 160px with its padding). */
-  .leg-table--results th:nth-child(1) { width: 12%; min-width: 134px; }
-  .leg-table--results th:nth-child(2), .leg-table--results th:nth-child(4) { width: 20%; min-width: 160px; }
-  .leg-table--results th:nth-child(3) { width: 29%; }
-  .leg-table--results th:nth-child(5) { width: 19%; }
   .leg-status-note { margin-top: 4px; font-size: 13px; line-height: 1.45; color: var(--muted); }
   /* A column keeps a minimum width, so that a long summary does not squeeze the others into a narrow tower: the status column when a bill has
      status words (a federal bill's committees), the title, the last action and, above all, the summary. The wrapper scrolls sideways if all of
@@ -251,7 +269,11 @@
   /* Below this the map is too small to leave room beside it: the buttons become a labelled row under it, each a comfortable thumb target. */
   @media (max-width: 520px) {
     .leg-map-box { padding-right: 0; }
-    .leg-tiles { position: static; width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin-top: 14px; }
+    /* the two level buttons are a row under the map, at its right (they are the map's bottom right at every width), wide ones with the icon beside the word, and then the gutter is a row too: the small-state buttons under their label */
+    .leg-levels { position: static; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+    .leg-gutter { position: static; width: auto; flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 14px 18px; margin-top: 14px; }
+    .leg-level { width: auto; height: 44px; flex-direction: row; gap: 8px; padding: 0 14px; font-size: 12px; }
+    .leg-tiles { flex: 1 1 200px; width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 8px; }
     .leg-tiles-label { display: block; flex: 0 0 100%; margin: 0 0 -4px; }
     .leg-tile { width: 44px; height: 34px; }
     /* four sections in one pill group: a little tighter, so "All", "Cases", "Enforcement" and "Legislation" fit a phone's width */
@@ -261,4 +283,4 @@
     .leg-controls-main { flex: 1 1 100%; }
     #legislationArea .leg-reset { flex: 1 1 100%; justify-content: center; margin-left: 0; }
   }
-  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-tile { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .leg-state, .leg-tile, .leg-level, .leg-export, .leg-stats-btn { transition: none; } }
