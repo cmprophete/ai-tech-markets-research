@@ -1,0 +1,22 @@
+# Each policy in the Links view has an address, and each move adds a history step
+
+**Status:** accepted (2026-11-24; the owner's "Yes, add it", to the question whether to "give each policy in the Links view its own address, as Compare has"). Follows [0007](0007-compare-pair-addresses-push-history.md), which made the Compare view's pair an address and each change of it a history step; this is the same decision for the Links view built in [0008](0008-policy-links-view-follow-the-links.md).
+
+**Context.** The Links view followed the links from one policy to the next with a path kept in the page: no address, nothing for the browser's Back to walk, no way to send someone a link to a policy's neighbourhood. [0008](0008-policy-links-view-follow-the-links.md) listed it as not done ("a route and a branch in `currentRoute`, plus a decision on whether a step adds a history step"); the Compare view had answered both the day before. The same day the owner asked for a Back button on the view, and for Randomize and Refresh buttons on it as on Compare.
+
+**Decision.**
+
+- The policy in the middle is the address: `#links/<policy-id>` (a policy's id is lower-case letters, digits and hyphens, so nothing is escaped). `#links` is the view on the policy it opens with (the one with the most links). An address that names no policy on the page (an id that is no policy, a policy the Sheet has archived) opens the view on that first policy and is rewritten to say so, as Compare's does. The router applies it through `polLinksSet` (`src/js/40-router.js`), which draws and never writes the address or adds a step; the id is looked up in `POLICY_DATA` and nothing else from the address reaches the page.
+- Every move the reader makes (a neighbour in a column, a name in the list of reasons, a step of the Path, the menu, Randomize, Refresh: everything that goes through `polLinksCommit`) adds ONE history step with `pushState`. When the move leaves the address as it was (the path shortened to the same policy, Refresh while already there) the step is rewritten with `replaceState` instead, because two steps with one address would make Back fire no `hashchange` and leave the view unchanged. A tab, the Landscape's switch and the policy dialog only rewrite the address, as they always did.
+- The step remembers the whole path and the policy before it in `history.state`, as `{ polLinks: { trail, prev } }`. `polLinksSet` trusts the remembered path only when it ends at the address's policy, holds at most 12 steps and names only policies still on the page; a link, a typed address or a stale state starts a new path at the policy. That is also why a reload keeps the path.
+- The **Back** pill is the browser's Back limited to the moves: it is on only when the step the page is on was made by a move, it names the policy that move left, and pressing it calls `history.back()`, so the policies have one timeline. It undoes a Randomize or a menu choice as well, which the Path's pills (earlier steps of one walk along the links) do not.
+- **Randomize** is a policy chosen at random other than the one in the middle, as the start of a new path (it is not a step along the links); **Refresh** is back to where the view opens, with a new path. Both are moves like any other. Refresh is the owner's word, read as "start over", since Randomize is "show me another"; she confirmed that reading on 2026-11-24 ("Yes, keep it").
+- **Copy link** copies `appURL('links/<policy-id>')`, the page's own location plus the policy, built as the policy dialog's and Compare's Copy link are.
+
+**Consequences.**
+
+- Back and Forward walk the path on the standalone page and in the embed, a reload keeps it, and a link opens the view on its policy. Inside the embed the parent page's address does not follow the policy (the reason Copy link exists, as in 0007).
+- A reader who made ten moves needs ten presses of Back to leave the view. The Path's pills are the quicker way back along one walk.
+- The step is added inside `try`/`catch`: Safari limits how often a page may add one, and a refusal costs only the address and Back, never the view.
+- `tests/routes.js` pins three more routes (`#links`, `#links/ui-reform` and `#links/nowhere`). The checks that need the browser's Back and Forward wait for them (jsdom finishes them a moment later), so they run as one async group at the end of `tests/interactions.js` (`linksAddressTests`), like Compare's.
+- Only Chromium and the jsdom tests were run, as for 0007.
