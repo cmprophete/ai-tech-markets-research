@@ -15,7 +15,7 @@ const { load, settle } = require('./dom.js');
 let failed = 0;
 // The Government action tab's masthead, the owner's own words (GOV_COPY in src/js/60-legislation.js): the same in every section, with no count in it.
 const GOV_HEADER = 'What is government doing about AI?';
-const GOV_BLURB = 'A centralized repository of active bills, key cases and enforcement actions about AI, both federal and in the states, alongside the 2026 midterm results. Use the switch to see everything together or one kind at a time, and hover a state or choose a place in the Show menu to narrow what you see.';
+const GOV_BLURB = 'A centralized repository of active bills, key cases and enforcement actions about AI, both federal and in the states. Use the switch to see everything together or one kind at a time, and hover a state or choose a place in the Show menu to narrow what you see.';
 const ok = (name, cond, detail) => {
   console.log((cond ? '  PASS  ' : '  FAIL  ') + name + (cond || !detail ? '' : '\n           ' + detail));
   if (!cond) failed++;
@@ -44,7 +44,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
     ['viewFactBank', 'fact-bank', '#fact-bank'],
     ['viewAgenda', 'agenda', '#brief'],
     ['viewPolicy', 'policy', '#policy'],
-    ['viewGovernment', 'all', '#all'],   // one tab for All, Cases, Enforcement and Legislation: from another tab it opens the section that was open last, All at first
+    ['viewGovernment', 'legislation', '#legislation'],   // one tab for Legislation, Enforcement, Cases and All: from another tab it opens the section that was open last, Legislation at first (the owner, 2026-11-24; All was the one it opened on from 2026-11-18)
   ];
   for (const [id, view, hash] of cases) {
     click(w, d, id);
@@ -57,17 +57,17 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
 }
 
 /* ── Government action: one tab, four sections ───────────────────────────────────────────────────────────────────
-   The nav has ONE tab for All, Cases, Enforcement and Legislation (until 2026-11-17 they were two tabs, Enforcement and Legislation; the owner preferred one; All, which holds everything, was added on 2026-11-18). Under the
+   The nav has ONE tab for Legislation, Enforcement, Cases and All (until 2026-11-17 they were two tabs, Enforcement and Legislation; the owner preferred one; All, which holds everything, was added on 2026-11-18). Under the
    masthead a switch moves between the four sections, each a view of its own with an address of its own (#all, #cases, #enforcement, #legislation); the nav tab stays marked for all four, the open section is pressed in the switch,
-   and the tab opens the section that was open last, All at first. The switch is there for the four sections only. */
+   and the tab opens the section that was open last, Legislation at first (the owner, 2026-11-24; All from 2026-11-18). The switch is there for the four sections only. */
 {
   const { w, d } = load('index.html', '#about');
-  const SECTIONS = [['govSwitchAll', 'all', '#all'], ['govSwitchCases', 'cases', '#cases'], ['govSwitchEnforcement', 'enforcement', '#enforcement'], ['govSwitchLegislation', 'legislation', '#legislation']];
+  const SECTIONS = [['govSwitchLegislation', 'legislation', '#legislation'], ['govSwitchEnforcement', 'enforcement', '#enforcement'], ['govSwitchCases', 'cases', '#cases'], ['govSwitchAll', 'all', '#all']];   // the switch's order: Legislation, Enforcement, Cases, then All (the owner, 2026-11-23)
   const nav = d.getElementById('viewGovernment'), pressed = () => SECTIONS.filter(([id]) => d.getElementById(id).getAttribute('aria-pressed') === 'true').map(([id]) => id).join();
   // the switch is in the toolbar of the Government action area, so it shows when no ancestor is hidden: 'none' while another tab is open, 'block' on the three sections
   const shown = () => { for (let n = d.getElementById('govSwitch'); n && n !== d.body; n = n.parentElement) if (w.getComputedStyle(n).display === 'none') return 'none'; return 'block'; };
-  ok('the switch has four buttons, All first and then the owner\'s order, Cases, Enforcement, Legislation, and it is hidden, with none pressed, while another tab is open',
-     [...d.querySelectorAll('#govSwitch .pol-subview-btn')].map(b => b.textContent.trim()).join() === 'All,Cases,Enforcement,Legislation' && pressed() === '' && shown() === 'none', shown());
+  ok('the switch has four buttons in the owner\'s order, Legislation, Enforcement, Cases and then All last (2026-11-23), and it is hidden, with none pressed, while another tab is open',
+     [...d.querySelectorAll('#govSwitch .pol-subview-btn')].map(b => b.textContent.trim()).join() === 'Legislation,Enforcement,Cases,All' && pressed() === '' && shown() === 'none', shown());
   for (const [id, view, hash] of SECTIONS) {
     click(w, d, id);
     ok(`the ${view} section opens from the switch: its view, its address, its button pressed, the switch showing, and the one nav tab, Enforcement and Legislation, marked and labelling the panel`,
@@ -88,7 +88,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
 
 /* ── the grouped nav and the front page ───────────────────────────────────
    The header nav is three labelled groups: Research (Fact Bank, Papers: alphabetical), Policy (Brief, then Landscape) and
-   Government action (ONE tab, labelled Enforcement and Legislation in the owner's words above the group label; it holds Cases, Enforcement and Legislation, which were two tabs, Enforcement and Legislation,
+   Government action (ONE tab, labelled Enforcement and Legislation above the group label (it read Legislation and Enforcement on 2026-11-23, when her reviewers asked for Legislation first, and the owner put it back on 2026-11-24); it holds Legislation, Enforcement, Cases and All, which were two tabs, Enforcement and Legislation,
    until 2026-11-17, and Legislation was the group of its own from 2026-11-12, when it left Policy). About has no door
    cards: it sets out the three names as sections, each opening with the question it answers and then what the dashboard offers for it. The Research and Policy copy is the owner's own and is
    guarded below; the Government action section (added 2026-11-12 at the owner's request, after the owner asked for About to carry the day's work) is drafted copy for the owner to edit. */
@@ -99,7 +99,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
     [...g.querySelectorAll('.tab-group-btns > .header-nav-btn')].map(b => b.id).join('+'));
   ok('the nav is three labelled groups: Research (Fact Bank, Papers), Policy (Brief, Landscape) and Government action, whose one tab reads Enforcement and Legislation',
      groups.join() === 'research:Research:viewFactBank+viewCards,policy:Policy:viewAgenda+viewPolicy,government:Government action:viewGovernment', groups.join());
-  ok('the tabs read Fact Bank, Papers, Brief, Landscape, Enforcement and Legislation (Cases, Enforcement and Legislation are the last one\'s sections, not tabs)',
+  ok('the tabs read Fact Bank, Papers, Brief, Landscape, Enforcement and Legislation (Legislation, Enforcement, Cases and All are the last one\'s sections, not tabs)',
      [...d.querySelectorAll('.header-nav-btn')].map(b => b.textContent.trim()).join() === 'Fact Bank,Papers,Brief,Landscape,Enforcement and Legislation' && !d.getElementById('viewEnforcement') && !d.getElementById('viewLegislation'));
   ok('the tabs of each group are in alphabetical order',
      [...d.querySelectorAll('.tab-group')].every(g => {
@@ -145,9 +145,9 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
        const t = [...aboutSecs[0].querySelectorAll('.about-section-text')];
        return t.length === 2 && t[1].textContent.startsWith('Each question calls for a different kind of answer');
      })() && aboutSecs[aboutSecs.length - 1].lastElementChild.matches('.about-credit'));
-  ok('each section ends with links to the tabs and sections it describes: Research to the Fact Bank and Papers, Policy to the Brief and Landscape, Government action to Cases, Enforcement and Legislation',
+  ok('each section ends with links to the tabs and sections it describes: Research to the Fact Bank and Papers, Policy to the Brief and Landscape, Government action to Legislation, Enforcement, Cases and All, in the switch\'s order',
      labelled.length === 3 && labelled.every(sec => sec.lastElementChild.matches('.about-links')) &&
-     labelled.map(sec => [...sec.querySelectorAll('.about-links a')].map(a => a.getAttribute('href')).join()).join('|') === '#fact-bank,#papers|#brief,#policy|#all,#cases,#enforcement,#legislation');
+     labelled.map(sec => [...sec.querySelectorAll('.about-links a')].map(a => a.getAttribute('href')).join()).join('|') === '#fact-bank,#papers|#brief,#policy|#legislation,#enforcement,#cases,#all');
   ok('each question is one paragraph: a lead statement run on into its questions, marked up without changing a word',
      labelled.length === 3 && labelled.every(sec => {
        const q = sec.querySelector('.about-question'), kids = [...q.children];
@@ -162,8 +162,8 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
      labelled.map(sec => sec.dataset.group).join() === 'research,policy,government' &&
      [['research', 'green'], ['policy', 'pink'], ['government', 'gold']].every(([g, c]) => new RegExp(`\\.about-section\\[data-group="${g}"\\][^{]*\\{\\s*--group-accent:\\s*var\\(--${c}\\)`).test(navCss)));
   const govSec = labelled[2];
-  ok('the Government action section names the sources behind the Legislation tab (GovInfo, Open States, the Congressional Research Service and the Associated Press), says the topics are our reading, names no tracker or advocacy group, and states no number that the page computes and would let go stale',
-     !!govSec && ['GovInfo', 'Open States', 'Congressional Research Service', 'Associated Press'].every(n => govSec.querySelector('.about-note').textContent.includes(n)) &&
+  ok('the Government action section names the sources behind the Legislation tab (GovInfo, Open States and the Congressional Research Service; the Associated Press is gone with the midterm results), says the topics are our reading, names no tracker or advocacy group, and states no number that the page computes and would let go stale',
+     !!govSec && ['GovInfo', 'Open States', 'Congressional Research Service'].every(n => govSec.querySelector('.about-note').textContent.includes(n)) && !/Associated Press|midterm/i.test(govSec.textContent) &&
      /Topics are our reading/.test(govSec.querySelector('.about-note').textContent) && !/tracker/i.test(govSec.querySelector('.about-note').textContent) &&
      !/\d/.test(govSec.textContent.replace('2026', '')), govSec && govSec.textContent);
 }
@@ -492,8 +492,19 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const hrefs = () => [...d.querySelectorAll('#legPanel a.leg-enf-link')].map(a => a.getAttribute('href')).join();
   const shownBlock = id => { for (let n = d.getElementById(id); n && n !== d.body; n = n.parentElement) if (w.getComputedStyle(n).display === 'none') return false; return true; };
   const place = d.getElementById('legStateSelect'), legSel = place;   // the Show menu is one menu for the three sections
-  const pills = () => [...d.querySelectorAll('#enfTopicPills button[data-topic]')], pillN = b => Number(b.querySelector('.kw-count').textContent);
+  const pills = () => [...d.querySelectorAll('#enfTopicPills button[data-topic]')];
   const pill = id => pills().find(b => b.dataset.topic === id);
+  // The chips carry no counts (the owner, 2026-11-24: "Remove counts from topics in the Government Action tab"), so what a chip leaves is read as a reader would find it out: by choosing it and putting it back. A chip that is on leaves what is in view now,
+  // one with nothing behind it is dimmed and leaves none, and All (when it is not on) would clear the topics, which cannot be put back, so it is not read.
+  const pillN = b => {
+    if (b.disabled) return 0;
+    const line = () => Number(d.getElementById('enfResultLine').textContent.replace(/,/g, '').match(/^(\d+) of/)[1]);
+    if (b.getAttribute('aria-pressed') === 'true') return line();
+    if (b.dataset.topic === 'all') return NaN;
+    fire(b, 'click'); const n = line(); fire(pill(b.dataset.topic), 'click');
+    return n;
+  };
+  const pillHasCount = () => pills().some(b => b.querySelector('.kw-count') || /\d/.test(b.textContent));
 
   // the guard on the real file
   const real = JSON.parse(w.eval('JSON.stringify(__REAL_ACTIONS)'));   // the real file's rows, set aside by noActions
@@ -583,8 +594,8 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('a place that is not one (a stale or mistyped link) opens the section on every jurisdiction, and the address is rewritten to say so', bodyView(rx.d) === 'cases' && rx.d.getElementById('legStateSelect').value === '' && rx.w.location.hash === '#cases', rx.w.location.hash);
 
   // the topic filter, on Enforcement
-  ok('the topic filter is the Papers chips: All, then only the topics some enforcement action bears on, in the order of the bills\' topics, each with the count it would leave',
-     pills().map(b => b.dataset.topic).join() === 'all,chatbots,kids,bias,consumer' && pills().map(pillN).join() === '3,1,1,1,2' && pills()[0].getAttribute('aria-pressed') === 'true', pills().map(b => b.dataset.topic + ' ' + pillN(b)).join(' | '));
+  ok('the topic filter is the Papers chips: All, then only the topics some enforcement action bears on, in the order of the bills\' topics, with no count on any chip (choosing each leaves 3, 1, 1, 1 and 2 actions)',
+     pills().map(b => b.dataset.topic).join() === 'all,chatbots,kids,bias,consumer' && !pillHasCount() && pills().map(pillN).join() === '3,1,1,1,2' && pills()[0].getAttribute('aria-pressed') === 'true', pills().map(b => b.dataset.topic + ' ' + pillN(b)).join(' | '));
   fire(pill('consumer'), 'click');
   ok('choosing a topic narrows the list, marks the chip and counts it in the Reset button, with the section: Reset all (2)', secs().map(titleOf).join('|') === 'All jurisdictions · 2 enforcement actions' &&
      pill('consumer').getAttribute('aria-pressed') === 'true' && d.getElementById('legResetText').textContent === 'Reset all (2)' && d.getElementById('enfResultLine').textContent === '2 of 3 enforcement actions.', d.getElementById('enfResultLine').textContent);
@@ -596,7 +607,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('a topic picked on Enforcement is dropped on the way to Cases if Cases has no row for it (consumer), and kept if it has (bias): Cases shows its one case on bias',
      pills().map(b => b.dataset.topic).join() === 'all,work,bias,liability' && pill('bias').getAttribute('aria-pressed') === 'true' && pill('consumer') === undefined && secs().map(titleOf).join('|') === 'All jurisdictions · 1 key case' && idsOf(secs()[0]) === 'zz-case-1', pills().map(b => b.dataset.topic).join());
   fire(pills()[0], 'click');
-  ok('All clears the topics: the chips on Cases are All, then the topics some case bears on, each with its count', pills().map(pillN).join() === '2,1,1,1' && pills()[0].getAttribute('aria-pressed') === 'true' && d.getElementById('legResetText').textContent === 'Reset all (1)', pills().map(b => b.dataset.topic + ' ' + pillN(b)).join(' | '));
+  ok('All clears the topics: the chips on Cases are All, then the topics some case bears on, with no count on any (choosing each leaves what it did)', !pillHasCount() && pills().map(pillN).join() === '2,1,1,1' && pills()[0].getAttribute('aria-pressed') === 'true' && d.getElementById('legResetText').textContent === 'Reset all (1)', pills().map(b => b.dataset.topic + ' ' + pillN(b)).join(' | '));
 
   // Cases
   ok('Cases is its own section: its list has its own count and no action in it, and the caution that a ruling is only what that court held is in the note under it',
@@ -614,7 +625,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const search = d.getElementById('enfSearch');
   goto('govSwitchEnforcement');
   search.value = 'chatbot'; search.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260);
-  ok('searching finds a row by any of its words, topics included, and Reset all clears the search too', idsOf(secs()[0]) === 'zz-tx-1' && (fire(d.getElementById('legReset'), 'click'), search.value === '' && bodyView(d) === 'all' && secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 3 enforcement actions'));
+  ok('searching finds a row by any of its words, topics included, and Reset all clears the search too', idsOf(secs()[0]) === 'zz-tx-1' && (fire(d.getElementById('legReset'), 'click'), search.value === '' && bodyView(d) === 'legislation' && (goto('govSwitchAll'), secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 3 enforcement actions')));   // Reset puts the tab back on Legislation (2026-11-24), so All is opened again to see the lists
   goto('govSwitchEnforcement');
 
   // the map's card: Enforcement, Legislation and All each hold their own data, and All holds everything
@@ -632,10 +643,10 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('a place with nothing listed gets no link: Alabama says None listed for it on Enforcement, and nothing to follow', /None listed for Alabama yet\./.test(card()) && !d.querySelector('#legPanel .leg-more-link'), card());
   goto('govSwitchLegislation');
   fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
-  ok('on Legislation the card for Texas holds the bills alone: nothing of what Enforcement and Cases list, and no midterm results', labelsNow() === 'Bills' && !/Enforcement|Pieces|Sample/.test(card()), card());
+  ok('on Legislation the card for Texas holds the bills alone: nothing of what Enforcement and Cases list', labelsNow() === 'Bills' && !/Enforcement|Pieces|Sample/.test(card()), card());
   goto('govSwitchAll');
   fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
-  ok('on All it holds everything, in the owner\'s order: the midterm results, the bills, then the key cases and the enforcement actions, each a block of its own', labelsNow() === '2026 Midterm results,Bills,Key cases,Enforcement actions', labelsNow());
+  ok('on All it holds everything, in the owner\'s order: the bills, then the key cases and the enforcement actions, each a block of its own (the midterm results that used to come first were removed on 2026-11-23)', labelsNow() === 'Bills,Key cases,Enforcement actions', labelsNow());
   ok('the card for Texas has a block for each kind, key cases first: the cases say none are listed for Texas, with no link, and the enforcement actions count its one action, without its title, and end with "See more details below"',
      /Key cases\s*None listed for Texas yet\./.test(card()) && /Enforcement actions\s*1 enforcement action\.\s*See more details below/.test(card()) && !/Texas and Sample Inc\./.test(card()) && kindLinks() === 'enforcement', card() + ' | ' + kindLinks());
   fire(d.querySelector('#legMap path[data-state="CA"]'), 'mouseover');
@@ -649,14 +660,14 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the card for Federal on All names both bodies, Congress and the federal agencies and courts, and counts the agencies\' and courts\' rows in a block for each kind, each with its link',
      /Federal \(Congress, agencies and courts\)/.test(card()) && /Bills in Congress/.test(card()) && /Key cases\s*1 key case\./.test(card()) && /Enforcement actions\s*2 enforcement actions\./.test(card()) && kindLinks() === 'case,enforcement', card() + ' | ' + kindLinks());
 
-  // All's page: the midterm results, the bills, then the key cases and the enforcement actions, narrowed together by the bills' own search and chips, by the place and by the Sort menu
+  // All's page: the bills, then the key cases and the enforcement actions, narrowed together by the bills' own search and chips, by the place and by the Sort menu
   fire(d.getElementById('legReset'), 'click');
   goto('govSwitchAll');
-  const order = () => [...d.querySelectorAll('#legResultsSection, #legBillsSection, #enfLists section')].map(e => e.id || e.dataset.kind).join();
+  const order = () => [...d.querySelectorAll('#legBillsSection, #enfLists section')].map(e => e.id || e.dataset.kind).join();
   const resultLine = () => d.getElementById('legResultLine').textContent;
   const nBillsAll = Number((/^([\d,]+) of /.exec(resultLine()) || [])[1].replace(/,/g, ''));
-  ok('on All the page holds the midterm results first, then the bills, then the key cases, then the enforcement actions, each with its own count',
-     order() === 'legResultsSection,legBillsSection,case,enforcement' && secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 3 enforcement actions' && idsOf(secs()[0]) === 'zz-ca-1,zz-case-1' && idsOf(secs()[1]) === 'zz-tx-1,zz-fed-1,zz-fed-2', order() + ' ' + secs().map(titleOf).join('|'));
+  ok('on All the page holds the bills first, then the key cases, then the enforcement actions, each with its own count',
+     order() === 'legBillsSection,case,enforcement' && secs().map(titleOf).join('|') === 'All jurisdictions · 2 key cases|All jurisdictions · 3 enforcement actions' && idsOf(secs()[0]) === 'zz-ca-1,zz-case-1' && idsOf(secs()[1]) === 'zz-tx-1,zz-fed-1,zz-fed-2', order() + ' ' + secs().map(titleOf).join('|'));
   ok('in each list the note is right under the table and above the divider under the page numbers: heading, table, note, pager; and the notes carry the cautions the two blurbs used to: an allegation is not a finding, and a ruling is only what that court held',
      secs().length === 2 && secs().every(s => [...s.children].map(c => c.tagName + (c.classList.contains('leg-source') ? '.note' : '')).join() === 'H3,DIV,P.note,NAV') && /^Each entry is checked against the court's own page/.test(secs()[0].querySelector('.leg-source').textContent) && /A ruling is only what that court held/.test(secs()[0].querySelector('.leg-source').textContent) &&
      /^Each entry is checked against the agency's or attorney general's own page/.test(secs()[1].querySelector('.leg-source').textContent) && /an allegation is described as an allegation/.test(secs()[1].querySelector('.leg-source').textContent), secs().map(s => [...s.children].map(c => c.tagName).join()).join(' | '));
@@ -673,21 +684,24 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the bills\' search narrows the lists too: "chatbot" leaves the one enforcement action about chatbots and no key case, and the result line says so',
      idsOf(secs()[1]) === 'zz-tx-1' && secs().map(titleOf).join('|') === 'All jurisdictions · 0 key cases|All jurisdictions · 1 enforcement action' && /, 0 of 2 key cases and 1 of 3 enforcement actions\.$/.test(resultLine()) && /No key cases match the search and filters chosen\./.test(secs()[0].textContent), resultLine());
   fire(d.getElementById('legReset'), 'click');
+  goto('govSwitchAll');   // Reset puts the tab back on Legislation (2026-11-24), so All is opened again
   fire(d.querySelector('#legTopicPills button[data-topic="bias"]'), 'click');
   ok('so do the bills\' topic chips: Bias and automated decisions leaves one key case and one enforcement action', idsOf(secs()[0]) === 'zz-case-1' && idsOf(secs()[1]) === 'zz-fed-2' && /, 1 of 2 key cases and 1 of 3 enforcement actions\.$/.test(resultLine()), resultLine());
   fire(d.getElementById('legReset'), 'click');
+  goto('govSwitchAll');
   change(place, 'TX');
-  ok('a place narrows the lists as it narrows the bills and the results: Texas has no key case and one enforcement action, and the address stays #all',
-     secs().map(titleOf).join('|') === 'Texas · 0 key cases|Texas · 1 enforcement action' && idsOf(secs()[1]) === 'zz-tx-1' && d.getElementById('legResultsScope').textContent === 'Texas · 2026 Midterm results' && w.location.hash === '#all', secs().map(titleOf).join('|') + ' ' + w.location.hash);
+  ok('a place narrows the lists as it narrows the bills: Texas has no key case and one enforcement action, and the address stays #all',
+     secs().map(titleOf).join('|') === 'Texas · 0 key cases|Texas · 1 enforcement action' && idsOf(secs()[1]) === 'zz-tx-1' && w.location.hash === '#all', secs().map(titleOf).join('|') + ' ' + w.location.hash);
   fire(d.getElementById('legReset'), 'click');
+  goto('govSwitchAll');
   change(d.getElementById('legSort'), 'oldest');
   ok('the Sort menu orders every list: Oldest puts the 2025 case and the December 2025 action first', idsOf(secs()[0]) === 'zz-case-1,zz-ca-1' && idsOf(secs()[1]) === 'zz-fed-2,zz-fed-1,zz-tx-1', idsOf(secs()[0]) + ' ' + idsOf(secs()[1]));
   change(d.getElementById('legSort'), 'recent');
   goto('govSwitchLegislation');
-  ok('Legislation holds the bills alone: no list of cases or enforcement actions, no midterm results table, and the same masthead as every other section',
-     !shownBlock('enforcementArea') && !shownBlock('legResultsSection') && shownBlock('legBillsSection') && mast() === allMastText, mast());
+  ok('Legislation holds the bills alone: no list of cases or enforcement actions, and the same masthead as every other section',
+     !shownBlock('enforcementArea') && shownBlock('legBillsSection') && mast() === allMastText, mast());
 
-  // the Reset button puts the whole tab back as it opens (the owner: "reset should also reset views"): no place, no filter in ANY section, the order, and the All view; its count says how many things differ
+  // the Reset button puts the whole tab back as it opens (the owner: "reset should also reset views"): no place, no filter in ANY section, the order, and the Legislation view (where the tab opens since 2026-11-24, All before); its count says how many things differ
   goto('govSwitchLegislation');
   fire(d.querySelector('#legTopicPills button[data-topic="bias"]'), 'click');
   goto('govSwitchEnforcement');
@@ -698,9 +712,9 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   change(d.getElementById('enfSort'), 'oldest');
   ok('it counts this section\'s own chip, the place and the order as well: Reset all (5)', resetText() === 'Reset all (5)', resetText());
   fire(d.getElementById('legReset'), 'click');
-  ok('pressing it returns to All and clears the chip, the place and the order, and the address is #all', bodyView(d) === 'all' && place.value === '' && w.location.hash === '#all' && resetText() === 'Reset all' && d.getElementById('legSort').value === 'recent', resetText() + ' ' + w.location.hash);
+  ok('pressing it returns to Legislation, where the tab opens, and clears the chip, the place and the order, and the address is #legislation', bodyView(d) === 'legislation' && place.value === '' && w.location.hash === '#legislation' && resetText() === 'Reset all' && d.getElementById('legSort').value === 'recent', resetText() + ' ' + w.location.hash);
   goto('govSwitchLegislation');
-  ok('the topic chosen on Legislation, which was not on the page when it was pressed, is cleared too', d.querySelector('#legTopicPills button[data-topic="bias"]').getAttribute('aria-pressed') === 'false' && d.querySelector('#legTopicPills button[data-topic="all"]').getAttribute('aria-pressed') === 'true' && resetText() === 'Reset all (1)', resetText());
+  ok('the topic chosen on Legislation, which was not on the page when it was pressed, is cleared too', d.querySelector('#legTopicPills button[data-topic="bias"]').getAttribute('aria-pressed') === 'false' && d.querySelector('#legTopicPills button[data-topic="all"]').getAttribute('aria-pressed') === 'true' && resetText() === 'Reset all', resetText());
   goto('govSwitchEnforcement');
   ok('and so is the chip chosen on Enforcement: it is not still chosen when the section is open again', pills()[0].getAttribute('aria-pressed') === 'true' && pills().every(b => b.dataset.topic === 'all' || b.getAttribute('aria-pressed') === 'false'), pills().map(b => b.dataset.topic + ':' + b.getAttribute('aria-pressed')).join());
 
@@ -839,17 +853,18 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
     ok(`${name}: the map and its card are showing, shaded by ${noun}, with the sources under it`,
        shown(id('legStage')) && d.querySelectorAll('#legMap path.leg-state').length === 51 && new RegExp(`Federal ${noun}, not on the map`).test(id('legLegend').textContent) && (leg || !/bills/.test(id('legLegend').textContent)) &&
        id('legMapSource').textContent.startsWith(leg ? 'Sources: ' : 'Source: ') && id('legPanel').textContent.includes('United States') && !d.getElementById('legLayerResults') && !d.getElementById('legOfficeToggle'));
-    ok(`${name}: the section's own lists are showing and the others' are not: the bills on Legislation and All, the cases and enforcement lists on All, Enforcement and Cases, and the midterm results table, first, on All alone`,
-       shown(id('legBillsSection')) === leg && shown(id('enforcementArea')) === !isLeg && shown(id('legResultsSection')) === isAll &&
-       (!isAll || (!!(id('legResultsSection').compareDocumentPosition(id('legBillsSection')) & 4) && !!(id('legBillsSection').compareDocumentPosition(id('enforcementArea')) & 4))), route);
+    ok(`${name}: the section's own lists are showing and the others' are not: the bills on Legislation and All, the cases and enforcement lists on All, Enforcement and Cases, and no results table anywhere`,
+       shown(id('legBillsSection')) === leg && shown(id('enforcementArea')) === !isLeg && !d.getElementById('legResultsSection') &&
+       (!isAll || !!(id('legBillsSection').compareDocumentPosition(id('enforcementArea')) & 4)), route);
     const cardLabels = [...d.querySelectorAll('#legPanel .leg-block .leg-label')].map(x => x.textContent);
     const ownLabel = route === 'cases' ? 'Key cases' : 'Enforcement actions';
-    ok(`${name}: the card holds ${isAll ? 'everything, the midterm results first, then the bills, then the key cases and the enforcement actions' : isLeg ? 'the bills alone' : 'this section\'s own block alone'}`,
-       isAll ? cardLabels.join() === '2026 Midterm results,National totals,Bills,Key cases,Enforcement actions' : isLeg ? cardLabels.join() === 'Bills' : cardLabels.join() === ownLabel, cardLabels.join());
+    ok(`${name}: the card holds ${isAll ? 'everything: the bills, then the key cases and the enforcement actions' : isLeg ? 'the bills alone' : 'this section\'s own block alone'}`,
+       isAll ? cardLabels.join() === 'Bills,Key cases,Enforcement actions' : isLeg ? cardLabels.join() === 'Bills' : cardLabels.join() === ownLabel, cardLabels.join());
     const sortId = leg ? 'legSort' : 'enfSort', otherSort = leg ? 'enfSort' : 'legSort';
-    ok(`${name}: there is a Sort menu in the search bar's first row after the search box, with the three choices, and the other section's menu is not showing`,
+    ok(`${name}: there is a Sort menu in the search bar's first row after the search box, with ${leg ? 'its five choices (the bills\' two Status orders, by progress, as well as the dates and the jurisdiction)' : 'the three choices (a list has no stage to order by)'}, and the other section's menu is not showing`,
        shown(id(sortId)) && !shown(id(otherSort)) && id(sortId).closest('.controls-row') === id(searchId).closest('.controls-row') && before(searchId, sortId) &&
-       [...id(sortId).options].map(o => o.value).join() === 'recent,oldest,jurisdiction' && [...id(sortId).options].map(o => o.textContent).join() === (leg ? 'Most recent action,Oldest action,Jurisdiction' : 'Most recent,Oldest,Jurisdiction'), route);
+       [...id(sortId).options].map(o => o.value).join() === (leg ? 'recent,oldest,status,status-desc,jurisdiction' : 'recent,oldest,jurisdiction') &&
+       [...id(sortId).options].map(o => o.textContent).join('|') === (leg ? 'Most recent action|Oldest action|Status, least progress first|Status, most progress first|Jurisdiction' : 'Most recent|Oldest|Jurisdiction'), route);
     ok(`${name}: there is no More filters toggle, and the Show menu says "All jurisdictions" first`,
        !d.querySelector('#legislationArea .more-toggle') && id('legStateSelect').options[0].textContent === 'All jurisdictions');
     if (leg) continue;
@@ -900,7 +915,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
       fire(path(st.state), 'mouseover');
       const stateLabels = [...d.querySelectorAll('#legPanel .leg-block .leg-label')].map(x => x.textContent);
       const kindLink = d.querySelector('#legPanel .leg-more-link');
-      ok(`${name}: the card for ${stateName} holds this section's block alone, with a "See more details below" link for its rows, and nothing about the bills or the midterm results`,
+      ok(`${name}: the card for ${stateName} holds this section's block alone, with a "See more details below" link for its rows, and nothing about the bills`,
          stateLabels.join() === ownLabel && !!kindLink && kindLink.textContent === 'See more details below' && kindLink.getAttribute('data-kind') === kind && !/Bills|Midterm/.test(d.getElementById('legPanel').textContent), stateLabels.join());
     }
   }
@@ -909,7 +924,7 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   await settle(10);
   const id = x => d.getElementById(x), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true })), legend = () => id('legLegend').textContent;
   const fedIn = () => Number((/Federal bills, not on the map\s*([\d,]+)/.exec(legend()) || [])[1].replace(/,/g, ''));
-  const chip = [...d.querySelectorAll('#legTopicPills button[data-topic]')].find(b => !['all', 'none'].includes(b.dataset.topic) && !b.disabled && Number(b.querySelector('.kw-count').textContent.replace(/,/g, '')) > 0 && fedIn() > 0);
+  const chip = [...d.querySelectorAll('#legTopicPills button[data-topic]')].find(b => !['all', 'none'].includes(b.dataset.topic) && !b.disabled && fedIn() > 0);
   const fedAll = fedIn();
   fire(chip, 'click');
   const fedFiltered = fedIn();
@@ -932,28 +947,208 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the Landscape masthead no longer counts the policies, and still says how many areas the map draws them in, computed from the map', !!m && num(m[1]) === rows && rows > 0 && listed > 0, `${text} | listed ${listed} in ${rows} rows`);
 }
 
-/* ── Landscape: the Links graph keeps its labels apart ──────────────────────────────────────────────────────
-   The graph's force layout treats a node as a point, but every node carries a label to its right, so labels sat on top of each
-   other (7 pairs of labels and 8 labels over another node's dot, at the old 9.5px size; the labels are 13px now, which would be
-   worse still). A pass after the physics pushes the dot-and-label boxes apart. jsdom has no layout, so this reads the boxes the
-   layout wrote into the SVG: each label's foreignObject (x, y, width, height) and the dot beside it. */
-{
-  const { w, d } = load('index.html', '#policy');
-  const links = [...d.querySelectorAll('.pol-subview-btn')].find(b => /^links/i.test(b.textContent.trim()));
-  links.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  const boxes = [...d.querySelectorAll('.pol-links-node')].map(g => {
-    const fo = g.querySelector('foreignObject'), at = n => +fo.getAttribute(n), cx = +g.querySelector('.pol-links-node-dot').getAttribute('cx');
-    return { t: fo.textContent, l: cx - 10, r: at('x') + at('width'), top: at('y'), b: at('y') + at('height') };
+/* ── Landscape: the Links view follows the links from one policy ──────────────────────────────────────────────────────────
+   2026-11-24, the owner, from four sketches: a view that "starts from one policy and lets you browse outward: compatible neighbours on the left, competing ones on the right, with reasons below.
+   Click any neighbour to move to it." (src/js/30-policy-links.js, docs/adr/0008-policy-links-view-follow-the-links.md; it replaced the force graph). What to expect is worked out here from the cards
+   themselves, with code of its own: a link written on either card is a link between the two, an id that is no policy (or the policy itself) is nothing, and a policy's own entries come first, then the
+   policies that name it, so these checks hold whatever the authors record. jsdom has no layout, so the columns are checked as markup, and the lines with a width given to the stage. */
+const linksFacts = pg => JSON.parse(pg.w.eval(`JSON.stringify((() => {
+  const live = new Set(POLICY_DATA.map(p => p.id));
+  const own = field => Object.fromEntries(POLICY_DATA.map(p => [p.id, (p[field] || []).filter(l => live.has(l.id) && l.id !== p.id)]));
+  const rel = {}, why = {};
+  [['pair', 'pairsWith'], ['riv', 'competesWith']].forEach(([kind, field]) => {
+    const o = own(field), out = {};
+    POLICY_DATA.forEach(p => { out[p.id] = o[p.id].map(l => l.id).filter((x, i, a) => a.indexOf(x) === i); });
+    POLICY_DATA.forEach(p => o[p.id].forEach(l => { if (!out[l.id].includes(p.id)) out[l.id].push(p.id); }));
+    rel[kind] = out;
+    why[kind] = {};
+    POLICY_DATA.forEach(p => o[p.id].forEach(l => { why[kind][p.id + '|' + l.id] = l.why || ''; }));
   });
-  const touching = [];
-  boxes.forEach((A, i) => boxes.slice(i + 1).forEach(B => { if (A.l < B.r && B.l < A.r && A.top < B.b && B.top < A.b) touching.push(`${A.t} / ${B.t}`); }));
-  ok('the Links graph draws every policy and lays its labels out so that none sits on another label or dot',
-     boxes.length === w.eval('POLICY_DATA.length') && boxes.length > 0 && touching.length === 0, `${boxes.length} nodes, touching: ${touching.slice(0, 4).join('; ')}`);
+  return {
+    order: POLICY_DATA.map(p => p.id),
+    title: Object.fromEntries(POLICY_DATA.map(p => [p.id, p.title])),
+    area: Object.fromEntries(POLICY_DATA.map(p => [p.id, CATEGORY_MERGE_MAP[p.category]])),
+    areas: Object.entries(MERGED_POLICY_CATEGORIES),
+    pair: rel.pair, riv: rel.riv, why,
+  };
+})())`));
+// The reasons the page should show for a policy and a neighbour: each author's, once when the two wrote the same.
+const linksReasons = (F, kind, a, b) => [F.why[kind][a + '|' + b], F.why[kind][b + '|' + a]].filter((w, i, all) => w && all.indexOf(w) === i);
+// Where the view opens: the policy with the most neighbours (partners and rivals, each counted once), ties by title.
+const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[id]]).size; return F.order.slice().sort((a, b) => reach(b) - reach(a) || F.title[a].localeCompare(F.title[b]))[0]; };
+{
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const open = pg => { click(pg.w, pg.d, 'polSubviewLinks'); return pg; };
+  const all = (pg, s) => [...pg.d.querySelectorAll(s)];
+  const middle = pg => pg.d.querySelector('.pol-links-name').textContent;
+  const goIds = (pg, s) => all(pg, s).map(t => t.dataset.go);
+  const pick = (pg, id) => { const m = pg.d.getElementById('polLinksPick'); m.value = id; m.dispatchEvent(new pg.w.Event('change', { bubbles: true })); };
+  const press = (pg, el) => el.dispatchEvent(new pg.w.MouseEvent('click', { bubbles: true }));
+  const pathText = pg => all(pg, '#polLinksPath .kw-pill, #polLinksPath .pol-links-here').map(e => e.textContent);
+  const menuValue = pg => pg.d.getElementById('polLinksPick').value;
+
+  const pg = open(load('index.html', '#policy'));
+  const F = linksFacts(pg), start = linksStart(F);
+  ok('the Links view opens on the policy with the most links, with a menu, a path, the two columns, the policy in the middle and the reasons, and logs no error',
+     middle(pg) === F.title[start] && menuValue(pg) === start && !!pg.d.getElementById('polLinksPath') && !!pg.d.getElementById('polLinksPartners') && !!pg.d.getElementById('polLinksRivals') && !!pg.d.getElementById('polLinksCard') && !!pg.d.getElementById('polLinksWhy') && pg.errors.length === 0,
+     `${middle(pg)} vs ${F.title[start]} | ${pg.errors.join(' | ')}`);
+  ok('the old graph is gone: no graph function, no svg of nodes and edges', pg.w.eval('typeof renderPolicyLinksGraph') === 'undefined' && !pg.d.querySelector('.pol-links-svg, .pol-links-node, .pol-links-edge'), '');
+
+  const groups = all(pg, '#polLinksPick optgroup'), wantGroups = F.areas.filter(([a]) => F.order.some(id => F.area[id] === a));
+  ok('the menu lists every policy once, under its area, in the order the All view lists them: the areas in their order, the policies alphabetically',
+     sameList(groups.map(g => g.label), wantGroups.map(([, label]) => label)) &&
+     sameList(groups.map(g => [...g.querySelectorAll('option')].map(o => o.value)), wantGroups.map(([a]) => F.order.filter(id => F.area[id] === a).sort((x, y) => F.title[x].localeCompare(F.title[y])))) &&
+     all(pg, '#polLinksPick option').length === F.order.length, `${groups.map(g => g.label)}`);
+
+  // Every policy in turn, from the menu: the columns, the counts, the middle and the reasons.
+  const wrongCols = [], wrongRows = [], wrongMid = [];
+  F.order.forEach(id => {
+    pick(pg, id);
+    if (!sameList(goIds(pg, '#polLinksPartners .pol-links-tile'), F.pair[id]) || !sameList(goIds(pg, '#polLinksRivals .pol-links-tile'), F.riv[id]) ||
+        pg.d.querySelector('#polLinksPartners .pol-links-hd').textContent !== `Works well with · ${F.pair[id].length}` || pg.d.querySelector('#polLinksRivals .pol-links-hd').textContent !== `Competes with · ${F.riv[id].length}`) wrongCols.push(F.title[id]);
+    const rows = all(pg, '.pol-links-row'), want = F.pair[id].map(q => ['pair', q]).concat(F.riv[id].map(q => ['riv', q]));
+    if (rows.length !== want.length || want.some(([kind, q], i) => rows[i].querySelector('.pol-links-go').dataset.go !== q || rows[i].classList.contains('pol-links-row--rival') !== (kind === 'riv') ||
+        !sameList([...rows[i].querySelectorAll('.pol-links-text')].map(p => p.textContent), linksReasons(F, kind, id, q)))) wrongRows.push(F.title[id]);
+    const area = F.areas.find(([a]) => a === F.area[id]);
+    if (middle(pg) !== F.title[id] || !pg.d.getElementById('polLinksCard').textContent.includes(area[1]) || menuValue(pg) !== id) wrongMid.push(F.title[id]);
+  });
+  ok('for every policy, the left column is exactly what works well with it and the right column exactly what competes with it, in the order of the cards, each headed with its count',
+     wrongCols.length === 0, `${wrongCols.length} of ${F.order.length} wrong: ${wrongCols.slice(0, 3).join('; ')}`);
+  ok('for every policy, under the columns each neighbour comes again as a row, partners then rivals, with the authors\' reasons as written (a paragraph for each author) and the dashed rule on a rival\'s row',
+     wrongRows.length === 0, `${wrongRows.length} wrong: ${wrongRows.slice(0, 3).join('; ')}`);
+  ok('for every policy, the middle names it and its area and the menu shows it', wrongMid.length === 0, wrongMid.slice(0, 3).join('; '));
+
+  pick(pg, start);
+  const tiles = all(pg, '.pol-links-tile');
+  ok('a neighbour is a button, in a column that is a group named for how it is linked to the policy in the middle',
+     tiles.length > 0 && tiles.every(t => t.tagName === 'BUTTON' && t.type === 'button' && t.getAttribute('aria-label')) &&
+     pg.d.getElementById('polLinksPartners').getAttribute('role') === 'group' && pg.d.getElementById('polLinksPartners').getAttribute('aria-label') === 'Works well with ' + F.title[start] &&
+     pg.d.getElementById('polLinksRivals').getAttribute('role') === 'group' && pg.d.getElementById('polLinksRivals').getAttribute('aria-label') === 'Competes with ' + F.title[start], `${tiles.length} tiles`);
+  ok('a partner\'s tile has a solid outline and a rival\'s a dashed one (the class the styles read), and the two columns are told apart by shape and not by colour alone',
+     all(pg, '#polLinksPartners .pol-links-tile').every(t => t.classList.contains('pol-links-tile--partner') && !t.classList.contains('pol-links-tile--rival')) && all(pg, '#polLinksRivals .pol-links-tile').every(t => t.classList.contains('pol-links-tile--rival')), '');
+
+  // Walking: a start A, a neighbour B of it, and a neighbour C of B that is not A (the data has one: the policies are linked in groups of at least two, and a group of two has no C, so the search goes on until it finds a longer one).
+  const near = id => F.pair[id].concat(F.riv[id]);
+  const A = [start].concat(F.order).find(a => near(a).some(b => near(b).some(c => c !== a))), B = near(A).find(b => near(b).some(c => c !== A)), C = near(B).find(c => c !== A);
+  if (!A) throw new Error('the Links walk checks need three policies in a row: A linked to B, B linked to C');
+  pick(pg, A);
+  press(pg, all(pg, '.pol-links-tile').find(t => t.dataset.go === B));
+  ok('clicking a neighbour moves to it: it is in the middle, the path has one more step ending in it, the menu follows, the focus is on the card, and a screen reader is told',
+     middle(pg) === F.title[B] && sameList(pathText(pg), [F.title[A], F.title[B]]) && menuValue(pg) === B && pg.d.activeElement === pg.d.getElementById('polLinksCard') &&
+     pg.d.getElementById('polLinksStatus').textContent.startsWith('Showing ' + F.title[B]),
+     `${middle(pg)} | ${pathText(pg)} | ${pg.d.activeElement && pg.d.activeElement.id} | ${pg.d.getElementById('polLinksStatus').textContent}`);
+  press(pg, all(pg, '.pol-links-go').find(b => b.dataset.go === C));
+  ok('the name of a neighbour in the list of reasons moves to it too', middle(pg) === F.title[C] && sameList(pathText(pg), [F.title[A], F.title[B], F.title[C]]), `${middle(pg)} | ${pathText(pg)}`);
+  press(pg, all(pg, '.pol-links-tile').find(t => t.dataset.go === B));
+  ok('stepping to the policy you came from is a step back: the path gets shorter instead of longer', middle(pg) === F.title[B] && sameList(pathText(pg), [F.title[A], F.title[B]]), `${middle(pg)} | ${pathText(pg)}`);
+
+  // A walk along the links that never steps straight back: the first neighbour that is not the policy just left (the data has no dead end in 14 steps; the check says so if it ever has).
+  const walk = n => {
+    for (let i = 0; i < n; i++) {
+      const before = pathText(pg).slice(-2, -1)[0], t = all(pg, '.pol-links-tile').find(x => x.querySelector('.pol-links-tile-title').textContent !== before);
+      if (!t) throw new Error(`the walk reached a dead end after ${i} steps, at ${middle(pg)}: every neighbour is the policy it came from`);
+      press(pg, t);
+    }
+  };
+  pick(pg, start);
+  walk(3);
+  press(pg, all(pg, '#polLinksPath [data-step]')[0]);
+  ok('an earlier step of the path is a button that goes back to it and drops the steps after it', sameList(pathText(pg), [F.title[start]]) && middle(pg) === F.title[start] && menuValue(pg) === start, `${pathText(pg)}`);
+
+  // The path keeps the last 12 steps and shows the latest 5: the first of the pills it shows is step 7 of the 12 kept.
+  pick(pg, start);
+  walk(14);
+  const steps = all(pg, '#polLinksPath [data-step]');
+  ok('the path remembers 12 steps and shows the latest 5, with an ellipsis before them', pathText(pg).length === 5 && steps.length === 4 && steps[0].dataset.step === '7' && /…/.test(pg.d.getElementById('polLinksPath').textContent), `${pathText(pg).length} shown, first step ${steps[0] && steps[0].dataset.step}`);
+  const other = F.order.find(id => id !== menuValue(pg));
+  pick(pg, other);
+  ok('choosing a policy from the menu starts a new path from it', pathText(pg).length === 1 && middle(pg) === F.title[other] && all(pg, '#polLinksPath [data-step]').length === 0, `${pathText(pg)}`);
+
+  press(pg, pg.d.querySelector('#polLinksCard [data-open]'));
+  ok('the button in the middle opens that policy\'s dialog', pg.d.getElementById('polModalTitle').textContent === F.title[other], pg.d.getElementById('polModalTitle').textContent);
+
+  // Wide enough for three columns the lines are drawn; narrower they are not. (jsdom has no layout: the stage is given a width.)
+  pick(pg, start);
+  const stage = pg.d.getElementById('polLinksStage'), width = w => { Object.defineProperty(stage, 'clientWidth', { configurable: true, get: () => w }); pg.w.dispatchEvent(new pg.w.Event('resize')); };
+  width(900);
+  const nP = F.pair[start].length, nR = F.riv[start].length;
+  ok('given the width for three columns, a line joins each neighbour to the middle: solid for each that works well with it, dashed for each that competes with it',
+     !stage.classList.contains('is-stacked') && all(pg, '.pol-links-line').length === nP + nR && all(pg, '.pol-links-line--partner').length === nP && all(pg, '.pol-links-line--rival').length === nR, `${all(pg, '.pol-links-line').length} lines for ${nP} + ${nR}`);
+  width(400);
+  ok('narrower than that the columns stack and no line is drawn', stage.classList.contains('is-stacked') && all(pg, '.pol-links-line').length === 0, `${all(pg, '.pol-links-line').length} lines`);
+  // The menu's place and the pills beside it (the owner, 2026-11-24): "Start from" is in line with the views, there is no line of instructions, the headings are the dialog's own label, and Randomize and Refresh are as on Compare.
+  const slotEl = pg.d.getElementById('polLinksSlot'), cmpSlotEl = pg.d.getElementById('polCmpSlot'), barEl = pg.d.querySelector('.pol-subview-bar'), menuEl = pg.d.getElementById('polLinksPick'), slotStates = [], pinStates = [];
+  const seeSlots = () => { slotStates.push(slotEl.hidden); pinStates.push(barEl.classList.contains('is-pinned')); };
+  click(pg.w, pg.d, 'polSubviewAll'); seeSlots(); click(pg.w, pg.d, 'polSubviewCompare'); seeSlots(); click(pg.w, pg.d, 'polSubviewLinks'); seeSlots();
+  ok('"Start from" is on the same row as the switch, in line with the views: the menu is in the slot beside the three view buttons and not in the view under them, and the slot shows only while Links is on',
+     !!barEl && barEl.contains(slotEl) && !!barEl.querySelector('.pol-subview-toggle') && slotEl.contains(menuEl) && !pg.d.getElementById('polLinksArea').contains(menuEl) && sameList(slotStates, [true, true, false]), JSON.stringify(slotStates));
+  ok('the row is marked pinned (it sticks under the top of a wide window, policy.css) only while Compare is showing: not on All, not on Links',
+     sameList(pinStates, [false, true, false]), JSON.stringify(pinStates));
+  ok('the two views have a slot each on that row, Links\' and Compare\'s, and exactly the slot of the view showing is shown (none for All)',
+     !!cmpSlotEl && barEl.contains(cmpSlotEl) && slotEl !== cmpSlotEl && !!slotEl.hidden === false && cmpSlotEl.hidden === true, `links hidden ${slotEl.hidden}, compare hidden ${cmpSlotEl.hidden}`);
+  ok('there is no line of instructions in the view: "Click any policy on either side to move to it." is gone (the owner, 2026-11-24)', !/Click any policy/.test(pg.d.getElementById('policyArea').textContent) && !pg.d.querySelector('.pol-links-hint'), '');
+  const heads = all(pg, '#polLinksPartners .pol-links-hd, #polLinksRivals .pol-links-hd');
+  ok('the headings over the two columns are the dialog\'s own label, as Compare\'s row labels are (15.5px bold), so the same words are the same type in both views',
+     heads.length === 2 && heads.every(h => h.classList.contains('pol-modal-label') && h.getAttribute('role') === 'heading'), heads.map(h => h.className).join(' | '));
+  const pillWords = [...slotEl.querySelectorAll('.kw-pill')].map(b => b.textContent);
+  ok('beside the menu are the Back, Copy Draft, Copy link, Print, Randomize and Refresh pills, in alphabetical order (the owner, 2026-11-24), as one unit, and there is no Add button (she took it out the same day)',
+     sameList(pillWords, ['Back', 'Copy Draft', 'Copy link', 'Print', 'Randomize', 'Refresh']) && sameList(pillWords, pillWords.slice().sort((x, y) => x.localeCompare(y))) && slotEl.querySelectorAll('.pol-subview-pills').length === 1 && !pg.d.getElementById('polLinksAdd') && !/\bAdd\b/.test(slotEl.textContent), pillWords.join());
+  const slotKids = [...slotEl.children];
+  ok('the menu comes first in the slot and the pills after it, each as a unit (the owner, 2026-11-24: "the policy selections should be before" the buttons): the menu is the first thing after the switch, and the six pills follow it',
+     slotKids.length === 2 && slotKids[0].classList.contains('pol-subview-pick') && slotKids[1].classList.contains('pol-subview-pills') && slotKids[0].contains(menuEl) && sameList([...slotKids[1].children].map(b => b.id), ['polLinksBack', 'polLinksCopyDraft', 'polLinksCopy', 'polLinksPrint', 'polLinksRandom', 'polLinksRefresh']), slotKids.map(k => k.className).join(' | '));
+
+  // Randomize and Refresh. The check sets the random numbers, so it knows which policy they choose (the page picks the one at the place a number names in the order of the cards).
+  const idAt = x => F.order[Math.floor(x * F.order.length)], stub = values => { const q = values.slice(); pg.w.Math.random = () => q.length ? q.shift() : 0.5; };
+  const n1 = [0.2, 0.4, 0.6, 0.8].find(x => idAt(x) !== start), n2 = [0.1, 0.3, 0.5, 0.7, 0.9].find(x => idAt(x) !== idAt(n1));
+  pick(pg, start);
+  stub([n1]); press(pg, pg.d.getElementById('polLinksRandom'));
+  ok('Randomize goes to a policy at random and starts a new path there: the number ' + n1 + ' chooses the policy at that place, the menu follows, and the path is that policy alone',
+     middle(pg) === F.title[idAt(n1)] && menuValue(pg) === idAt(n1) && sameList(pathText(pg), [F.title[idAt(n1)]]), `${middle(pg)} | ${pathText(pg)}`);
+  stub([n1, n2]); press(pg, pg.d.getElementById('polLinksRandom'));
+  ok('and Randomize never picks the policy that is already in the middle: when the number would, it draws again', middle(pg) === F.title[idAt(n2)], `${middle(pg)}`);
+  walk(2); while (middle(pg) === F.title[start]) walk(1);
+  const awayFromStart = middle(pg) !== F.title[start] && pathText(pg).length > 1;
+  press(pg, pg.d.getElementById('polLinksRefresh'));
+  ok('Refresh takes the view back to where it opens, the policy with the most links, with a new path', awayFromStart && middle(pg) === F.title[start] && menuValue(pg) === start && sameList(pathText(pg), [F.title[start]]), `${middle(pg)} | ${pathText(pg)}`);
+  const histBefore = pg.w.history.length;
+  press(pg, pg.d.getElementById('polLinksRefresh'));
+  ok('and Refresh does nothing when the view is already there with no path behind it: no step is added', pg.w.history.length === histBefore && sameList(pathText(pg), [F.title[start]]), `${pg.w.history.length - histBefore} steps`);
+  ok('nothing logs an error through all of it', pg.errors.length === 0, pg.errors.join(' | '));
+}
+
+/* ── Landscape: the type matches across the three views (Links, Compare, All) ─────────────────────────────────────────────────
+   The owner, 2026-11-24: "match the typography across all those views". Where the same thing appears in more than one view it is set in the same style. jsdom cannot resolve a stylesheet, so this reads the rules
+   themselves (comments out) and compares the declarations of the selectors that stand for the same role, so that a change made to one and not to the others fails here. The sizes were also measured in a real browser,
+   view by view, on the day: the Links view's column headings were 12px labels where Compare sets the same words in the dialog's 15.5px label, and the policy in the middle was 15.5px where Compare and the All view
+   set a policy or an area as the subject in 20px. */
+{
+  const fs = require('fs'), path = require('path');
+  const css = ['policy.css', 'cards.css', 'modals.css'].map(f => fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
+  const declsOf = sel => {
+    const out = {};
+    for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      if (!m[1].split(',').some(x => x.trim() === sel)) continue;
+      m[2].split(';').forEach(d => { const i = d.indexOf(':'); if (i > 0) out[d.slice(0, i).trim()] = d.slice(i + 1).trim(); });
+    }
+    return out;
+  };
+  const TILE = ['font-size', 'font-weight', 'line-height'], NAME = ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'line-height'];
+  const roles = [
+    ['a policy\'s title in a tile: the All view\'s tile, a Compare sample, a Links neighbour', '.pol-cat-card-title', ['.pol-cmp-sample-title', '.pol-links-tile-title'], TILE],
+    ['the policy that is the subject: an area\'s title in the All view, a policy\'s name over Compare\'s comparison, the policy in the middle of Links', '.pol-cat-row-title', ['.pol-cmp-name', '.pol-links-name'], NAME],
+    ['the authors\' reasons: Compare\'s samples and the Links list', '.pol-cmp-sample-why', ['.pol-links-text'], ['font-size', 'line-height', 'color']],
+    ['the area under a title: Compare\'s name boxes and head cells, a Links neighbour', '.pol-cmp-areaname', ['.pol-cmp-area', '.pol-links-tile-area'], ['font-size', 'color']],
+    ['a line of notes with nothing in it: Compare\'s "No recorded partners" and the Links empty column', '.pol-cmp-none', ['.pol-links-none'], ['font-size', 'color']],
+  ];
+  const wrong = [];
+  roles.forEach(([what, base, others, props]) => others.forEach(o => props.forEach(p => { const a = declsOf(base)[p], b = declsOf(o)[p]; if (a === undefined || b === undefined || a !== b) wrong.push(`${what}: ${p} is ${a} on ${base} and ${b} on ${o}`); })));
+  ok('the type matches across the three views: the same role has the same family, size, weight, spacing, line height and colour wherever it appears (a title in a tile, the policy that is the subject, the authors\' reasons, the area under a title, a line of notes)',
+     wrong.length === 0, wrong.slice(0, 4).join(' | '));
 }
 
 /* ── Landscape: the cards the Sheet's policy map tab archives are left out ──────────────────────────────────────────────────────
    data/policy-map.js (generated by tools/policy_map.py from the tab; docs/policy-doc-sync.md) lists the ids of the archived cards, and the page
-   takes them out of POLICY_DATA before anything reads it, so the Landscape, its counts, the Links graph and the dialogs all leave them out. These
+   takes them out of POLICY_DATA before anything reads it, so the Landscape, its counts, the Links view and the dialogs all leave them out. These
    checks lay a POLICY_MAP of their own over the shipped file, so they hold whichever cards the tab archives. */
 {
   const fs = require('fs'), path = require('path');
@@ -976,24 +1171,60 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('the page shows every card except the archived ones, in their order, with no console errors', sameList(idsOf(real), every.filter(id => !archived.includes(id))) && real.errors.length === 0, `${idsOf(real).length} of ${every.length}`);
   ok('the Landscape has one card fewer for each archived one', shown(real) === shown(none) - archived.length && shown(none) === every.length, `${shown(real)} shown, ${shown(none)} with none archived`);
   const syn = open(load('index.html', '#policy', { transform: withMap('const POLICY_MAP = { archived: ["min-wage-indexing", "no-such-card"] };') }));
-  const wantEdges = syn.w.eval("new Set(POLICY_DATA.flatMap(p => (p.pairsWith || []).filter(l => POLICY_DATA.some(x => x.id === l.id)).map(l => [p.id, l.id].sort().join('|')))).size");
-  ok('an archived card has no node in the Links graph, a card that pointed at it has no line to it, an id that is no card is ignored, and nothing logs an error',
-     sameList(idsOf(syn), every.filter(id => id !== 'min-wage-indexing')) && syn.d.querySelectorAll('.pol-links-node').length === every.length - 1 &&
-     syn.d.querySelectorAll('.pol-links-edge').length === wantEdges && syn.errors.length === 0, `${syn.d.querySelectorAll('.pol-links-node').length} nodes, ${syn.d.querySelectorAll('.pol-links-edge').length} lines for ${wantEdges} pairs`);
+  const menuIds = [...syn.d.querySelectorAll('#polLinksPick option')].map(o => o.value), neighbours = [...syn.d.querySelectorAll('.pol-links-tile')].map(t => t.dataset.go);
+  ok('an archived card is not in the Links view\'s menu, a card that pointed at it has no tile for it, an id that is no card is ignored, and nothing logs an error',
+     sameList(idsOf(syn), every.filter(id => id !== 'min-wage-indexing')) && sameList(menuIds.slice().sort(), idsOf(syn).slice().sort()) && !neighbours.includes('min-wage-indexing') && neighbours.every(id => menuIds.includes(id)) && syn.errors.length === 0,
+     `${menuIds.length} in the menu (${every.length - 1} expected), ${neighbours.length} neighbours`);
   const missing = load('index.html', '#policy', { transform: withMap('') });
   ok('with no policy map file the page shows every card', sameList(idsOf(missing), every) && missing.errors.length === 0, `${idsOf(missing).length} of ${every.length}`);
 }
 
-/* ── Landscape: the Links graph draws a line for each pair of policies that pair with each other ───────────────────────────────
-   Its lines come from each card's pairsWith. The card's dialog stopped listing them when its "How it interacts" section was removed (2026-11-17),
-   so the graph is the one place they show now: a pair authored on both sides is one line, and an id that is no policy draws nothing. */
+/* ── Landscape: the Links view shows a link whichever card wrote it ──────────────────────────────────────────────────────────
+   Its neighbours come from each card's pairsWith, read the way the Compare view reads them: a link written on one card is a link between the two, an id that is no policy (or the policy itself) is nothing,
+   and when both cards write a reason both are shown. The card's dialog stopped listing them when its "How it interacts" section was removed (2026-11-17), so the Landscape is the one place they show. Each
+   check lays a statement over the cards before the page reads them, so it holds whichever links the authors record. */
 {
-  const { w, d } = load('index.html', '#policy');
-  const links = [...d.querySelectorAll('.pol-subview-btn')].find(b => /^links/i.test(b.textContent.trim()));
-  links.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  const want = w.eval("new Set(POLICY_DATA.flatMap(p => (p.pairsWith || []).filter(l => POLICY_DATA.some(x => x.id === l.id)).map(l => [p.id, l.id].sort().join('|')))).size");
-  const got = d.querySelectorAll('.pol-links-edge').length;
-  ok('the Links graph draws one line for each pair of policies that pair with each other', want > 0 && got === want, `${got} lines for ${want} pairs`);
+  const fs = require('fs'), path = require('path');
+  const inl = f => f.replace(/<\/script/gi, '<\\/script');
+  const shippedMap = inl(fs.readFileSync(path.join(__dirname, '..', 'data', 'policy-map.js'), 'utf8'));
+  const afterMap = js => html => {
+    if (!html.includes(shippedMap)) throw new Error('data/policy-map.js is not inlined as the test expects');
+    return html.replace(shippedMap, () => shippedMap + '\n' + inl(js));
+  };
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const open = pg => { click(pg.w, pg.d, 'polSubviewLinks'); return pg; };
+  const all = (pg, s) => [...pg.d.querySelectorAll(s)];
+  const pick = (pg, id) => { const m = pg.d.getElementById('polLinksPick'); m.value = id; m.dispatchEvent(new pg.w.Event('change', { bubbles: true })); };
+  const goIds = (pg, s) => all(pg, s).map(t => t.dataset.go);
+  const reasonOf = (pg, id) => { const r = all(pg, '.pol-links-row').find(x => x.querySelector('.pol-links-go').dataset.go === id); return r ? [...r.querySelectorAll('.pol-links-text')].map(p => p.textContent) : null; };
+
+  const real = open(load('index.html', '#policy'));
+  const F = linksFacts(real);
+  const linked = (a, b) => F.pair[a].includes(b) || F.riv[a].includes(b);
+  const X = F.order.find(a => F.order.some(b => b !== a && !linked(a, b))), Y = F.order.find(b => b !== X && !linked(X, b));
+  if (!X || !Y) throw new Error('the one-sided link checks need two policies with no link between them');
+  const add = (id, field, link) => `POLICY_DATA.find(p => p.id === ${JSON.stringify(id)}).${field} = (POLICY_DATA.find(p => p.id === ${JSON.stringify(id)}).${field} || []).concat([${JSON.stringify(link)}]);`;
+
+  const one = open(load('index.html', '#policy', { transform: afterMap(add(X, 'pairsWith', { id: Y, why: 'ONE-SIDED REASON' })) }));
+  pick(one, Y);
+  ok('a link written on one card only is a link between the two: the other policy lists it, and the reason is shown',
+     goIds(one, '#polLinksPartners .pol-links-tile').includes(X) && sameList(reasonOf(one, X), ['ONE-SIDED REASON']) && one.errors.length === 0, `${goIds(one, '#polLinksPartners .pol-links-tile')} | ${reasonOf(one, X)}`);
+  pick(one, X);
+  ok('and the card that wrote it lists the other, with the same reason', goIds(one, '#polLinksPartners .pol-links-tile').includes(Y) && sameList(reasonOf(one, Y), ['ONE-SIDED REASON']), `${reasonOf(one, Y)}`);
+
+  const two = open(load('index.html', '#policy', { transform: afterMap(add(X, 'pairsWith', { id: Y, why: 'REASON FROM X' }) + add(Y, 'pairsWith', { id: X, why: 'REASON FROM Y' })) }));
+  pick(two, X);
+  const fromX = reasonOf(two, Y);
+  pick(two, Y);
+  const fromY = reasonOf(two, X);
+  ok('when both cards write a reason about the same pair each is shown, the policy\'s own first, as a paragraph apiece', sameList(fromX, ['REASON FROM X', 'REASON FROM Y']) && sameList(fromY, ['REASON FROM Y', 'REASON FROM X']) && two.errors.length === 0, `${fromX} | ${fromY}`);
+  const same = open(load('index.html', '#policy', { transform: afterMap(add(X, 'pairsWith', { id: Y, why: 'THE SAME REASON' }) + add(Y, 'pairsWith', { id: X, why: 'THE SAME REASON' })) }));
+  pick(same, X);
+  ok('and when they wrote the same sentence it is shown once', sameList(reasonOf(same, Y), ['THE SAME REASON']), `${reasonOf(same, Y)}`);
+
+  const bogus = open(load('index.html', '#policy', { transform: afterMap([X, Y].map(id => add(id, 'pairsWith', { id: 'no-such-policy', why: 'x' }) + add(id, 'pairsWith', { id, why: 'itself' }) + add(id, 'competesWith', { id: 'no-such-policy', why: 'x' }) + add(id, 'competesWith', { id, why: 'itself' })).join('\n')) }));
+  const same2 = F.order.every(id => { pick(bogus, id); return sameList(goIds(bogus, '#polLinksPartners .pol-links-tile'), F.pair[id]) && sameList(goIds(bogus, '#polLinksRivals .pol-links-tile'), F.riv[id]); });
+  ok('an id that is no policy, and a policy that lists itself, draw nothing in either column, and nothing logs an error', same2 && bogus.errors.length === 0, bogus.errors.join(' | '));
 }
 
 /* ── Landscape: the All / Links / Compare switch, and the Featured label ───────────────────────────────────────────────────
@@ -1027,8 +1258,8 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const picks = [inArea(areas[0])[0], inArea(areas[0])[1], inArea(areas[2])[0]];   // two in the first area and one in the third
   if (!picks.every(Boolean)) throw new Error('the Featured label test needs two policies in the first area and one in the third');
 
-  ok('the Landscape has three views, All, Links and Compare in that order, and opens on All with every policy; there is no Featured view',
-     sameList(labels(none), ['All', 'Links', 'Compare']) && sameList(pressed(none), ['true', 'false', 'false']) && tiles(none).length === all.length && !none.d.getElementById('polSubviewFeatured') && none.errors.length === 0,
+  ok('the Landscape has three views, Links, Compare and All in that order (the owner, 2026-11-24: "order the views like Links Compare All"), and still opens on All, the last of them, with every policy; there is no Featured view',
+     sameList(labels(none), ['Links', 'Compare', 'All']) && sameList(pressed(none), ['true', 'false', 'false']) && tiles(none).length === all.length && !none.d.getElementById('polSubviewFeatured') && none.errors.length === 0,
      `${labels(none)} | pressed ${pressed(none)} | ${tiles(none).length} of ${all.length} policies`);
   ok('with no policy featured, no tile carries a label and the page says nothing about it', flagged(none).length === 0 && !/Featured/i.test(none.d.getElementById('policyArea').textContent), flagged(none).join());
 
@@ -1056,10 +1287,10 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   ok('clicking a featured tile opens its policy, titled as the policy and not as the label', picks.map(p => p.title).includes(pg.d.getElementById('polModalTitle').textContent) && pg.d.getElementById('polModalTitle').textContent === featuredTile.querySelector('.pol-cat-card-title').textContent, pg.d.getElementById('polModalTitle').textContent);
 
   click(pg.w, pg.d, 'polSubviewLinks');
-  ok('Links hides the rows and draws the graph', hidden(pg, 'polCatRows') && !hidden(pg, 'polLinksArea') && pg.d.querySelectorAll('.pol-links-node').length === all.length && sameList(pressed(pg), ['false', 'true', 'false']),
-     `${pg.d.querySelectorAll('.pol-links-node').length} nodes, pressed ${pressed(pg)}`);
+  ok('Links hides the rows and shows its view, with every policy in the menu', hidden(pg, 'polCatRows') && !hidden(pg, 'polLinksArea') && pg.d.querySelectorAll('#polLinksPick option').length === all.length && sameList(pressed(pg), ['false', 'true', 'false']),
+     `${pg.d.querySelectorAll('#polLinksPick option').length} policies in the menu, pressed ${pressed(pg)}`);
   click(pg.w, pg.d, 'polSubviewAll');
-  ok('coming back to All shows the rows again with the same labels, and hides the graph', !hidden(pg, 'polCatRows') && hidden(pg, 'polLinksArea') && sameList(flagged(pg).slice().sort(byTitle), picks.map(p => p.title).sort(byTitle)) && sameList(pressed(pg), ['true', 'false', 'false']), flagged(pg).join());
+  ok('coming back to All shows the rows again with the same labels, and hides the Links view', !hidden(pg, 'polCatRows') && hidden(pg, 'polLinksArea') && sameList(flagged(pg).slice().sort(byTitle), picks.map(p => p.title).sort(byTitle)) && sameList(pressed(pg), ['true', 'false', 'false']), flagged(pg).join());
 
   const real = load('index.html', '#policy');
   const listed = JSON.parse(real.w.eval('JSON.stringify(POLICY_MAP.featured)'));
@@ -1071,10 +1302,9 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
      sameList(flagged(real).slice().sort(byTitle), listed.filter(id => id in titleOf).map(id => titleOf[id]).sort(byTitle)) && real.errors.length === 0, `${listed.length} listed, ${flagged(real).length} labelled, own flags: ${ownFlags}`);
 }
 
-/* ── Landscape: the Links graph also draws rival policies, as dashed lines ───────────────────────────────────────────────────
-   Each card's competesWith (a substitute or alternative approach: a job guarantee against a shorter workweek) was stored and shown nowhere; the owner asked on 2026-11-19
-   for the graph to show it. A pair authored on both sides is one dashed line carrying both authors' reasons as its tooltip, an id that is no policy (or an archived one)
-   draws nothing, and the lines lie over the finished layout without moving it (the label-overlap check above still holds). */
+/* ── Landscape: the Links view puts the policies that compete with a policy on the right, dashed ─────────────────────────────
+   Each card's competesWith (a substitute or alternative approach: a job guarantee against a shorter workweek) is shown in the right column, as a tile with a dashed outline, a dashed line to the policy in the middle
+   and a row with a dashed rule in the list of reasons: the same kind of mark three times, so what competes is told apart from what works well with it by shape and not by colour alone. */
 {
   const fs = require('fs'), path = require('path');
   const inl = f => f.replace(/<\/script/gi, '<\\/script');
@@ -1085,65 +1315,379 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   };
   const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const open = pg => { click(pg.w, pg.d, 'polSubviewLinks'); return pg; };
-  const dotOf = pg => {
-    const m = {};
-    pg.d.querySelectorAll('.pol-links-node').forEach(g => { const dot = g.querySelector('.pol-links-node-dot'); m[g.getAttribute('aria-label').replace(/\. Open this policy\.$/, '')] = dot.getAttribute('cx') + ',' + dot.getAttribute('cy'); });
-    return m;
-  };
-  const lineEnds = l => [l.getAttribute('x1') + ',' + l.getAttribute('y1'), l.getAttribute('x2') + ',' + l.getAttribute('y2')].sort().join(' / ');
+  const all = (pg, s) => [...pg.d.querySelectorAll(s)];
+  const pick = (pg, id) => { const m = pg.d.getElementById('polLinksPick'); m.value = id; m.dispatchEvent(new pg.w.Event('change', { bubbles: true })); };
+  const goIds = (pg, s) => all(pg, s).map(t => t.dataset.go);
 
   const real = open(load('index.html', '#policy'));
-  const facts = JSON.parse(real.w.eval(`JSON.stringify({
-    title: Object.fromEntries(POLICY_DATA.map(p => [p.id, p.title])),
-    rival: POLICY_DATA.flatMap(p => (p.competesWith || []).filter(l => l.id !== p.id && POLICY_DATA.some(x => x.id === l.id)).map(l => ({ key: [p.id, l.id].sort().join('|'), why: l.why || '' }))),
-    pair: [...new Set(POLICY_DATA.flatMap(p => (p.pairsWith || []).filter(l => POLICY_DATA.some(x => x.id === l.id)).map(l => [p.id, l.id].sort().join('|'))))],
-  })`));
-  const whys = {};
-  facts.rival.forEach(r => { (whys[r.key] = whys[r.key] || []).push(r.why); });
-  const rivalKeys = Object.keys(whys);
-  const both = rivalKeys.filter(k => facts.pair.includes(k));
-  ok('no two policies are authored as both pairing with and competing with each other (the graph has one line for a pair)', both.length === 0, both.join(', '));
+  const F = linksFacts(real);
+  const both = F.order.filter(id => F.pair[id].some(q => F.riv[id].includes(q)));
+  ok('no two policies are authored as both pairing with and competing with each other (a neighbour would be in both columns: it should be one or the other)', both.length === 0, both.map(id => F.title[id]).join(', '));
 
-  const drawn = rivalKeys.filter(k => !both.includes(k));
-  const dots = dotOf(real);
-  const ends = k => k.split('|').map(id => dots[facts.title[id]]).sort().join(' / ');
-  const lines = [...real.d.querySelectorAll('.pol-links-rival')];
-  ok('the Links graph draws one dashed line for each pair of policies that compete with each other, from one policy to the other',
-     drawn.length > 0 && lines.length === drawn.length && sameList(lines.map(lineEnds).sort(), drawn.map(ends).sort()), `${lines.length} lines for ${drawn.length} pairs`);
-  const keyOf = Object.fromEntries(drawn.map(k => [ends(k), k]));
-  ok('each dashed line carries its authors\' reasons as its tooltip', lines.every(l => (l.querySelector('title') || {}).textContent === whys[keyOf[lineEnds(l)]].filter(Boolean).join(' ')), `${lines.length} lines`);
+  const rivalPairs = new Set(F.order.flatMap(a => F.riv[a].map(b => [a, b].sort().join('|'))));
+  let dashed = 0, dashedRows = 0, solidInRival = 0;
+  F.order.forEach(id => { pick(real, id); dashed += all(real, '#polLinksRivals .pol-links-tile--rival').length; dashedRows += all(real, '.pol-links-row--rival').length; solidInRival += all(real, '#polLinksRivals .pol-links-tile--partner').length; });
+  ok('each pair of policies that compete is a dashed tile on the right of both of them, and a dashed row in the reasons of both',
+     rivalPairs.size > 0 && dashed === 2 * rivalPairs.size && dashedRows === 2 * rivalPairs.size && solidInRival === 0, `${dashed} dashed tiles, ${dashedRows} dashed rows for ${rivalPairs.size} pairs`);
+  const [a, b] = [...rivalPairs][0].split('|');
+  pick(real, a);
+  const stage = real.d.getElementById('polLinksStage');
+  Object.defineProperty(stage, 'clientWidth', { configurable: true, get: () => 900 });
+  real.w.dispatchEvent(new real.w.Event('resize'));
+  ok('the line from the policy in the middle to a rival is dashed, and one to a partner is not', all(real, '.pol-links-line--rival').length === F.riv[a].length && all(real, '.pol-links-line--partner').length === F.pair[a].length, `${all(real, '.pol-links-line--rival').length} dashed for ${F.riv[a].length}`);
 
-  const [ka, kb] = drawn[0].split('|');
-  const nodeOf = id => [...real.d.querySelectorAll('.pol-links-node')].find(g => g.getAttribute('aria-label').startsWith(facts.title[id] + '.'));
-  nodeOf(ka).dispatchEvent(new real.w.MouseEvent('mouseenter'));
-  const mine = lines.filter(l => [l.getAttribute('x1') + ',' + l.getAttribute('y1'), l.getAttribute('x2') + ',' + l.getAttribute('y2')].includes(dots[facts.title[ka]]));
-  ok('pointing at a policy lights its dashed lines and the policy at the other end, and dims the rest',
-     mine.length > 0 && mine.every(l => l.classList.contains('lit')) && lines.filter(l => !mine.includes(l)).every(l => l.classList.contains('dimmed')) && nodeOf(kb).classList.contains('lit'),
-     `${mine.length} lit of ${lines.length}`);
-  nodeOf(ka).dispatchEvent(new real.w.MouseEvent('mouseleave'));
-  ok('moving away puts every line back', lines.every(l => !l.classList.contains('lit') && !l.classList.contains('dimmed')), '');
-
-  const legend = real.d.querySelector('.pol-links-legend').textContent;
-  ok('the legend names the two kinds of line, each drawn as a sample, and the graph\'s label mentions the dashed one',
-     /Pairs with/.test(legend) && /Competes with/.test(legend) && real.d.querySelectorAll('.pol-links-key-line').length === 2 && real.d.querySelectorAll('.pol-links-key-line--rival').length === 1 && /dashed/.test(real.d.querySelector('.pol-links-svg').getAttribute('aria-label')), legend.trim().slice(-80));
-
-  const gone = kb;
+  const gone = b;
   const arch = open(load('index.html', '#policy', { transform: afterMap(`POLICY_MAP.archived.push(${JSON.stringify(gone)});`) }));
-  const left = drawn.filter(k => !k.split('|').includes(gone)).length;
-  ok('a rival that is archived has no line, and nothing logs an error', arch.d.querySelectorAll('.pol-links-rival').length === left && arch.errors.length === 0, `${arch.d.querySelectorAll('.pol-links-rival').length} lines, ${left} expected`);
+  pick(arch, a);
+  ok('a rival that is archived is in neither column, nor the menu, nor the reasons, and nothing logs an error',
+     !goIds(arch, '.pol-links-tile').includes(gone) && !goIds(arch, '.pol-links-go').includes(gone) && !all(arch, '#polLinksPick option').some(o => o.value === gone) && sameList(goIds(arch, '#polLinksRivals .pol-links-tile'), F.riv[a].filter(q => q !== gone)) && arch.errors.length === 0, `${goIds(arch, '#polLinksRivals .pol-links-tile')}`);
 
   const bare = open(load('index.html', '#policy', { transform: afterMap('POLICY_DATA.forEach(p => { p.competesWith = []; });') }));
-  ok('with no rival policies the graph draws no dashed line, lists none in its legend, and puts every policy exactly where it was',
-     bare.d.querySelectorAll('.pol-links-rival').length === 0 && !/Competes with/.test(bare.d.querySelector('.pol-links-legend').textContent) && !/dashed/.test(bare.d.querySelector('.pol-links-svg').getAttribute('aria-label')) &&
-     sameList(Object.entries(dotOf(bare)).sort(), Object.entries(dots).sort()) && bare.errors.length === 0, `${bare.d.querySelectorAll('.pol-links-rival').length} dashed lines`);
+  let noneSaid = 0, anyDashed = 0;
+  const said1 = (pg, sel) => (pg.d.querySelector(sel) || {}).textContent;
+  F.order.forEach(id => { pick(bare, id); anyDashed += all(bare, '.pol-links-tile--rival, .pol-links-row--rival').length; if (said1(bare, '#polLinksRivals .pol-links-none') === 'No recorded competing policies.') noneSaid++; });
+  ok('with no rival policies recorded the right column says so for every policy, nothing is dashed, and nothing logs an error', noneSaid === F.order.length && anyDashed === 0 && bare.errors.length === 0, `${noneSaid} of ${F.order.length} say so, ${anyDashed} dashed`);
+
+  // Where the view opens counts rivals as links too: give one policy (not the one it opens on) a rival in every other policy, and it has the most.
+  const start0 = linksStart(F), many = F.order.find(id => id !== start0), others = F.order.filter(id => id !== many);
+  const rivalrous = open(load('index.html', '#policy', { transform: afterMap(`(() => { const z = POLICY_DATA.find(p => p.id === ${JSON.stringify(many)}); z.competesWith = (z.competesWith || []).concat(${JSON.stringify(others.map(id => ({ id, why: 'a rival' })))}); })();`) }));
+  ok('the view opens on the policy with the most links, rivals counted as links too',
+     many !== start0 && rivalrous.d.querySelector('.pol-links-name').textContent === F.title[many] && rivalrous.errors.length === 0, `${rivalrous.d.querySelector('.pol-links-name').textContent} (wanted ${F.title[many]}, not ${F.title[start0]})`);
+
+  const none = open(load('index.html', '#policy', { transform: afterMap('POLICY_DATA.forEach(p => { p.pairsWith = []; p.competesWith = []; });') }));
+  const byTitle = F.order.slice().sort((x, y) => F.title[x].localeCompare(F.title[y]))[0];
+  let said = 0;
+  F.order.forEach(id => { pick(none, id); if (said1(none, '#polLinksPartners .pol-links-none') === 'No recorded partners.' && said1(none, '#polLinksRivals .pol-links-none') === 'No recorded competing policies.' && none.d.getElementById('polLinksWhy').textContent.trim() === 'No links are recorded for this policy.') said++; });
+  const fresh = open(load('index.html', '#policy', { transform: afterMap('POLICY_DATA.forEach(p => { p.pairsWith = []; p.competesWith = []; });') }));
+  ok('with no links recorded at all every policy says so in both columns and under them, the view opens on the first policy by title, and nothing logs an error',
+     said === F.order.length && fresh.d.querySelector('.pol-links-name').textContent === F.title[byTitle] && none.errors.length === 0 && fresh.errors.length === 0, `${said} of ${F.order.length}; opens on ${fresh.d.querySelector('.pol-links-name').textContent} (wanted ${F.title[byTitle]})`);
+}
+
+/* ── Landscape: each policy in the Links view has an address, and the browser's Back and Forward walk the path ────────────────────────
+   2026-11-24, the owner's "Yes, add it", as Compare has: the policy in the middle is the address (#links/<policy-id>), a link opens Links on it (40-router.js), and each move the reader makes (a neighbour, a name in the
+   list, a step of the path, the menu, Randomize, Refresh) adds ONE step to the browser's history, which remembers the whole path in history.state, so Back and Forward bring the path back with the policy. A Copy link
+   pill copies the address. The rest of the site still only rewrites the address: the switch under the masthead, the tabs and the policy dialog. The checks that wait for the browser (a Back finishes a moment after it is
+   made) are in one async function, which the last async block at the end of the file runs in order after the others. docs/adr/0009-links-policy-addresses.md */
+{
+  const fs = require('fs'), path = require('path');
+  const inl = f => f.replace(/<\/script/gi, '<\\/script');
+  const shippedMap = inl(fs.readFileSync(path.join(__dirname, '..', 'data', 'policy-map.js'), 'utf8'));
+  const afterMap = js => html => {
+    if (!html.includes(shippedMap)) throw new Error('data/policy-map.js is not inlined as the test expects');
+    return html.replace(shippedMap, () => shippedMap + '\n' + inl(js));
+  };
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  linksAddressTests = async () => {
+    const baseline = load('index.html', '#policy'); await settle(5);
+    const F = linksFacts(baseline), start = linksStart(F), near = id => F.pair[id].concat(F.riv[id]);
+    const hashFor = id => '#links/' + id, stepsOf = x => x.w.history.length;
+    const midOf = x => (x.d.querySelector('.pol-links-name') || { textContent: '(no view)' }).textContent;
+    const menuOf = x => (x.d.getElementById('polLinksPick') || { value: '(no menu)' }).value;
+    const pathOf = x => [...x.d.querySelectorAll('#polLinksPath .kw-pill, #polLinksPath .pol-links-here')].map(e => e.textContent);
+    const tileFor = (x, id) => [...x.d.querySelectorAll('.pol-links-tile')].find(t => t.dataset.go === id);
+    const nameFor = (x, id) => [...x.d.querySelectorAll('.pol-links-go')].find(b => b.dataset.go === id);
+    const press = (x, el) => el.dispatchEvent(new x.w.MouseEvent('click', { bubbles: true }));
+    const pickIn = (x, id) => { const m = x.d.getElementById('polLinksPick'); m.value = id; m.dispatchEvent(new x.w.Event('change', { bubbles: true })); };
+    const trailOf = x => { const s = x.w.history.state; return s && s.polLinks ? s.polLinks.trail : null; };
+    const attrOf = (x, id, a) => { const e = x.d.getElementById(id); return e ? e.getAttribute(a) : '(no #' + id + ')'; };
+    const areaHidden = x => { const e = x.d.getElementById('polLinksArea'); return !e || e.style.display === 'none'; };
+    const snap = x => JSON.stringify({ mid: midOf(x), menu: menuOf(x), path: pathOf(x), hash: x.w.location.hash });
+    const idAt = x => F.order[Math.floor(x * F.order.length)];
+    // A check that cannot run (a mutation took the view away, say) fails by name instead of throwing in the section after it.
+    const section = async (what, fn) => { try { await fn(); } catch (e) { ok(`${what}: the checks could not finish (${e.message})`, false, String(e.stack || e).split('\n').slice(0, 3).join(' | ')); } };
+    // Three policies in a row, as the walking checks above find them: A, a neighbour B of it, and a neighbour C of B that is not A; and one more, for the menu.
+    const A = [start].concat(F.order).find(a => near(a).some(b => near(b).some(c => c !== a))), B = near(A).find(b => near(b).some(c => c !== A)), C = near(B).find(c => c !== A);
+    const other = F.order.find(id => id !== A && id !== B && id !== C);
+
+    await section('an address opens Links on the policy it names', async () => {
+      const X = F.order.find(id => id !== start);
+      const lk = load('index.html', hashFor(X)); await settle(10);
+      ok('an address for a policy opens the Landscape on Links with it in the middle (the Policy tab current, Links pressed, the menu and the path), adds no step to the history, and logs no error',
+         lk.d.getElementById('viewPolicy').getAttribute('aria-selected') === 'true' && attrOf(lk, 'polSubviewLinks', 'aria-pressed') === 'true' && !areaHidden(lk) && midOf(lk) === F.title[X] && menuOf(lk) === X && sameList(pathOf(lk), [F.title[X]]) &&
+         lk.w.location.hash === hashFor(X) && stepsOf(lk) === 1 && lk.errors.length === 0, `${lk.w.location.hash} ${midOf(lk)} ${pathOf(lk)} steps ${stepsOf(lk)} ${lk.errors[0] || ''}`);
+      const bare0 = load('index.html', '#links'); await settle(10);
+      ok('#links opens Links on the policy it opens with (the one with the most links), and the address is rewritten to name it, with no step added',
+         midOf(bare0) === F.title[start] && bare0.w.location.hash === hashFor(start) && stepsOf(bare0) === 1 && bare0.errors.length === 0, `${bare0.w.location.hash} ${midOf(bare0)}`);
+    });
+
+    await section('an address that does not name a policy on the page', async () => {
+      // (a policy whose text comes from a Google Doc is not the one to archive here: the page's data check reports synced text for a card that is gone, which is a different check)
+      const synced = JSON.parse(baseline.w.eval('JSON.stringify(Object.keys(POLICY_TEXT))')), goneId = F.order.find(i => i !== start && !synced.includes(i));
+      const inj = encodeURIComponent('<img src=x onerror=alert(1)>'), inj2 = encodeURIComponent('"]\'[x');
+      const badLinks = [
+        ['an id that is no policy', '#links/zz-no-such-policy'],
+        ['an id in capitals', '#links/' + start.toUpperCase()],
+        ['markup where the id goes', '#links/' + inj],
+        ['quotes where the id goes', '#links/' + inj2],
+        ['a policy the Sheet has archived', hashFor(goneId), afterMap(`POLICY_MAP.archived.push(${JSON.stringify(goneId)});`)],
+      ];
+      const badOut = [];
+      for (const [what, h, transform] of badLinks) {
+        const x = load('index.html', h, transform ? { transform } : undefined); await settle(10);
+        const there = linksFacts(x), want = transform ? linksStart(there) : start;   // archiving a policy can change which one has the most links
+        badOut.push([what, midOf(x) === there.title[want], x.w.location.hash === hashFor(want), stepsOf(x) === 1, x.errors.length === 0, !x.d.querySelector('img[src="x"]')]);
+      }
+      ok('an address that does not name a policy on the page (an id that is no policy, capitals, markup, quotes, a policy the Sheet has archived) opens Links on its first policy, the address is rewritten to say so, no step is added, nothing from the address reaches the page, and nothing logs an error',
+         badOut.length === 5 && badOut.every(r => r.slice(1).every(Boolean)), badOut.filter(r => !r.slice(1).every(Boolean)).map(r => JSON.stringify(r)).join(' | '));
+      const extra = load('index.html', hashFor(A) + '/extra/parts'); await settle(10);
+      ok('parts after the id are dropped from the address', midOf(extra) === F.title[A] && extra.w.location.hash === hashFor(A) && extra.errors.length === 0, `${extra.w.location.hash}`);
+    });
+
+    await section('a move adds one step, however it is made', async () => {
+      const st = load('index.html', hashFor(A)); await settle(10);
+      const rows = [], st0 = stepsOf(st);
+      const rnd = vals => { const q = vals.slice(); st.w.Math.random = () => q.length ? q.shift() : 0.5; };
+      const doStep = (what, fn) => {
+        const n = stepsOf(st); fn();
+        const now = menuOf(st), tr = trailOf(st);
+        rows.push([what, stepsOf(st) - n === 1, st.w.location.hash === hashFor(now), !!tr && tr[tr.length - 1] === now, !!tr && sameList(tr.slice(-5).map(id => F.title[id]), pathOf(st))]);
+      };
+      doStep('a neighbour', () => press(st, tileFor(st, B)));
+      doStep('a name in the list', () => press(st, nameFor(st, C)));
+      doStep('an earlier step of the path', () => press(st, st.d.querySelector('#polLinksPath [data-step="0"]')));
+      doStep('the menu', () => pickIn(st, other));
+      const aim = [0.2, 0.4, 0.6, 0.8].find(x => idAt(x) !== other && idAt(x) !== start);
+      doStep('Randomize', () => { rnd([aim]); press(st, st.d.getElementById('polLinksRandom')); });
+      doStep('Refresh', () => press(st, st.d.getElementById('polLinksRefresh')));
+      const sameBefore = [stepsOf(st), st.w.location.hash];
+      press(st, st.d.getElementById('polLinksRefresh'));
+      ok('every move adds exactly one step to the history, at the policy\'s address, and the step remembers the path: a neighbour, a name in the list, an earlier step of the path, the menu, Randomize, and Refresh; Refresh on the policy the view opens on, with no path behind it, adds nothing',
+         rows.length === 6 && rows.every(r => r.slice(1).every(Boolean)) && sameList([stepsOf(st), st.w.location.hash], sameBefore) && stepsOf(st) === st0 + 6 && st.errors.length === 0, JSON.stringify(rows.filter(r => !r.slice(1).every(Boolean))) + ` steps ${st0} -> ${stepsOf(st)}`);
+      const keptSteps = stepsOf(st), keptPath = pathOf(st), keptMid = midOf(st);
+      click(st.w, st.d, 'viewCards'); const awayHash = st.w.location.hash;
+      click(st.w, st.d, 'viewPolicy');
+      ok('leaving the tab and coming back keeps the policy, its path and its address, and adds no step: Papers is #papers, and the Policy tab is Links on the same policy again',
+         awayHash === '#papers' && st.w.location.hash === hashFor(menuOf(st)) && midOf(st) === keptMid && sameList(pathOf(st), keptPath) && stepsOf(st) === keptSteps && st.errors.length === 0, `${awayHash} ${st.w.location.hash} steps ${keptSteps}/${stepsOf(st)}`);
+    });
+
+    await section('Back and Forward walk the path', async () => {
+      const bf = load('index.html', hashFor(A)); await settle(10);
+      const bf0 = stepsOf(bf), seen = [snap(bf)];
+      press(bf, tileFor(bf, B)); seen.push(snap(bf));
+      press(bf, nameFor(bf, C)); seen.push(snap(bf));
+      pickIn(bf, other); seen.push(snap(bf));
+      const bfSteps = stepsOf(bf), walked = [];
+      for (let i = seen.length - 2; i >= 0; i--) { bf.w.history.back(); await settle(3); walked.push(['back', snap(bf) === seen[i], stepsOf(bf) === bfSteps]); }
+      for (let i = 1; i < seen.length; i++) { bf.w.history.forward(); await settle(3); walked.push(['forward', snap(bf) === seen[i], stepsOf(bf) === bfSteps]); }
+      ok('the browser\'s Back and Forward walk the path: each policy is drawn in full again with the path that led to it (the middle, the menu, the path and the address), and neither adds a step',
+         seen.length === 4 && bfSteps === bf0 + 3 && walked.length === 6 && walked.every(r => r[1] && r[2]) && bf.errors.length === 0, JSON.stringify(walked) + ` ${bf0}/${bfSteps}`);
+    });
+
+    await section('the Back pill walks back through the policies', async () => {
+      const bk = load('index.html', hashFor(A)); await settle(10);
+      const backBtn = bk.d.getElementById('polLinksBack'), startsOff = backBtn.disabled;
+      press(bk, tileFor(bk, B)); const onAfter = !backBtn.disabled, tip = backBtn.title, atB = midOf(bk);
+      press(bk, nameFor(bk, C)); const atC = midOf(bk);
+      pickIn(bk, other); const atOther = midOf(bk);
+      const aimBack = [0.2, 0.4, 0.6, 0.8].find(x => idAt(x) !== other), qb = [aimBack]; bk.w.Math.random = () => qb.length ? qb.shift() : 0.5;
+      press(bk, bk.d.getElementById('polLinksRandom')); const atRandom = midOf(bk);
+      // The pill presses the browser's Back, which finishes a moment later: wait for it, as a reader's next glance would.
+      const back = [];
+      for (let i = 0; i < 4; i++) { backBtn.click(); await settle(3); back.push(midOf(bk)); }
+      ok('Back is off until a move has been made, names the policy it goes back to, and then undoes each move in turn, whatever made it (a neighbour, a name in the list, the menu, Randomize), until it is at the first policy and off again',
+         startsOff && onAfter && tip === 'Back to ' + F.title[A] && atRandom === F.title[idAt(aimBack)] && sameList(back, [atOther, atC, atB, F.title[A]]) && backBtn.disabled && bk.errors.length === 0, JSON.stringify([startsOff, onAfter, tip, atRandom, back]));
+    });
+
+    await section("the Back pill is the browser's Back, and an address typed in", async () => {
+      const arr = load('index.html', '#about'); await settle(10);
+      arr.w.location.hash = hashFor(B); await settle(5);
+      const backBtn = () => arr.d.getElementById('polLinksBack');
+      const arrOff = backBtn().disabled, arr1 = stepsOf(arr);
+      press(arr, tileFor(arr, C));
+      const arrOn = !backBtn().disabled, arrTip = backBtn().title, arr2 = stepsOf(arr);
+      backBtn().click(); await settle(3);
+      ok('a page opened on a policy by an address starts with Back off, even with history behind it (the step an address makes remembers no earlier policy); after a move it is on and names the policy; pressing it is the browser\'s Back: the policy and its address come back, no step is added, and it is off again',
+         arr1 === 2 && arrOff && arrOn && arrTip === 'Back to ' + F.title[B] && arr2 === arr1 + 1 && midOf(arr) === F.title[B] && arr.w.location.hash === hashFor(B) && stepsOf(arr) === arr2 && backBtn().disabled && arr.errors.length === 0,
+         `${arr1} ${arrOff} ${arrOn} ${arrTip} ${arr2}/${stepsOf(arr)} ${arr.w.location.hash}`);
+      // leaving for another view and coming back: the pill follows the step the page is on now
+      press(arr, tileFor(arr, C));
+      const onBefore = !backBtn().disabled;
+      click(arr.w, arr.d, 'polSubviewAll'); click(arr.w, arr.d, 'polSubviewLinks');
+      ok('the Back pill still follows the step after the Landscape\'s switch has been used (the switch rewrites the address and keeps the step)', onBefore && !backBtn().disabled && backBtn().title === 'Back to ' + F.title[B] && arr.errors.length === 0, backBtn().title);
+    });
+
+    await section('the path a step remembers, and a step that cannot be trusted', async () => {
+      const rs = load('index.html', hashFor(A)); await settle(10);
+      const apply = async state => { rs.w.history.replaceState(state, '', hashFor(C)); rs.w.dispatchEvent(new rs.w.HashChangeEvent('hashchange')); await settle(3); return pathOf(rs); };
+      const good = await apply({ polLinks: { trail: [A, B, C] } });
+      const twelve = [A, B, A, B, A, B, A, B, A, B, A, C], thirteen = [B].concat(twelve);
+      const longGood = await apply({ polLinks: { trail: twelve } });
+      const bads = [];
+      for (const state of [{ polLinks: { trail: [A, B] } }, { polLinks: { trail: [A, 'zz-no-such-policy', C] } }, { polLinks: { trail: thirteen } }, { polLinks: { trail: 'abc' } }, { polLinks: {} }, null, { polCmp: { prev: [A, B] } }]) bads.push(sameList(await apply(state), [F.title[C]]));
+      ok('an address restores the path its step remembers (a reload, Back, Forward) when the path ends at that policy and every policy in it is on the page, keeping at most twelve steps; a step that remembers a path that ends elsewhere, names a policy that is not there, is too long, is not a list, or is another view\'s, starts a new path at the policy',
+         sameList(good, [A, B, C].map(id => F.title[id])) && sameList(longGood, twelve.slice(-5).map(id => F.title[id])) && bads.length === 7 && bads.every(Boolean) && rs.errors.length === 0, JSON.stringify([good, longGood, bads]));
+    });
+
+    await section('a policy dialog opened from Links', async () => {
+      const dlg = load('index.html', hashFor(A)); await settle(10);
+      press(dlg, tileFor(dlg, B));
+      const dlgSteps = stepsOf(dlg), dlgTrail = trailOf(dlg);
+      press(dlg, dlg.d.querySelector('#polLinksCard [data-open]'));
+      const whileOpen = [dlg.w.location.hash, stepsOf(dlg)];
+      dlg.d.getElementById('polModalClose').click();
+      const afterClose = [dlg.w.location.hash, stepsOf(dlg), sameList(trailOf(dlg), dlgTrail)];
+      ok('a policy dialog opened from Links is #policy/<id> while it is open and gives the policy its address back when it closes; the step is rewritten, not added, and still remembers the path',
+         whileOpen[0] === '#policy/' + B && whileOpen[1] === dlgSteps && afterClose[0] === hashFor(B) && afterClose[1] === dlgSteps && afterClose[2] && dlg.errors.length === 0, JSON.stringify([whileOpen, afterClose]));
+    });
+
+    await section('Copy link', async () => {
+      const cp = load('index.html', hashFor(A)); await settle(10);
+      const copied = [];
+      cp.w.document.execCommand = () => { const t = cp.w.document.querySelector('textarea'); copied.push(t && t.value); return true; };
+      const copyBtn = cp.d.getElementById('polLinksCopy');
+      copyBtn.click();
+      const flash = copyBtn.textContent;
+      press(cp, tileFor(cp, B));
+      copyBtn.click();
+      ok('Copy link copies the address of the policy on screen, built from the page\'s own location, says it has ("Copied"), and follows the policy when it changes',
+         sameList(copied, [`https://example.org/${hashFor(A)}`, `https://example.org/${hashFor(B)}`]) && flash === 'Copied ✓' && cp.errors.length === 0, JSON.stringify(copied));
+    });
+
+    await section('Refresh on the policy the view opens on, with a path behind it', async () => {
+      const P = near(start).find(p => near(p).some(q => q !== start && q !== p && near(q).includes(start))), Q = P && near(P).find(q => q !== start && q !== P && near(q).includes(start));
+      if (!P || !Q) throw new Error('this check needs three policies that link in a ring with the one the view opens on');
+      const rf = load('index.html', hashFor(start)); await settle(10);
+      press(rf, tileFor(rf, P)); press(rf, tileFor(rf, Q)); press(rf, tileFor(rf, start));
+      const long = pathOf(rf).length, before = stepsOf(rf);
+      press(rf, rf.d.getElementById('polLinksRefresh'));
+      const afterRefresh = [pathOf(rf).length, stepsOf(rf), sameList(trailOf(rf), [start]), rf.w.location.hash];
+      rf.w.history.back(); await settle(3);
+      ok('Refresh, when the policy in the middle is already the one the view opens on but a path is behind it, shortens the path and rewrites the step instead of adding one (two steps with one address would make Back fire no hashchange and change nothing); Back then goes to the policy before',
+         long === 4 && afterRefresh[0] === 1 && afterRefresh[1] === before && afterRefresh[2] && afterRefresh[3] === hashFor(start) && midOf(rf) === F.title[Q] && sameList(pathOf(rf), [start, P, Q].map(id => F.title[id])) && rf.errors.length === 0, JSON.stringify([long, afterRefresh, midOf(rf), pathOf(rf)]));
+    });
+
+    await section('no switch while the cards are hidden', async () => {
+      const hideCards = html => { const m = 'let policyCardsHidden = false;'; if (!html.includes(m)) throw new Error('policyCardsHidden is no longer declared as the test expects'); return html.replace(m, 'let policyCardsHidden = true;'); };
+      const hid = load('index.html', hashFor(A), { transform: hideCards }); await settle(10);
+      ok('while the policy cards are hidden (policyCardsHidden) there is no Links view to put an address on: an address for a policy opens the tab on its notice, with no error, and the address is the tab\'s own',
+         /temporarily unavailable/.test(hid.d.getElementById('policyArea').textContent) && hid.w.location.hash === '#policy' && bodyView(hid.d) === 'policy' && hid.errors.length === 0, `${hid.w.location.hash} ${hid.errors[0] || ''}`);
+    });
+  };
+}
+
+/* ── Landscape: Copy Draft and Print, on the Links row and on the Compare row ────────────────────────────────────────────────
+   2026-11-24, the owner: 'Add "Add", "Copy Draft", and "Print" buttons', then "remove the add button" (src/js/32-policy-draft.js). What is left acts on what is on screen: on Links the policy in the middle, on Compare the two being compared, A
+   then B. Copy Draft is the dialog's own "Copy as draft" for each (so these checks compare it with what the dialog itself copies, not with a copy of its code), a rule between two; Print fills a sheet that is shown only when printing, each
+   policy from a page of its own, in the dialog's words. jsdom has no clipboard and no print dialog: the text is caught where the page falls back to a hidden textarea, and window.print is a stand-in that notes what the page looked like when it was called. */
+{
+  const fs = require('fs'), path = require('path');
+  const sameList = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const all = (pg, s) => [...pg.d.querySelectorAll(s)];
+  const press = (pg, el) => el.dispatchEvent(new pg.w.MouseEvent('click', { bubbles: true }));
+  const policies = pg => JSON.parse(pg.w.eval('JSON.stringify(POLICY_DATA.map(p => ({ id: p.id, title: p.title, area: MERGED_POLICY_CATEGORIES[CATEGORY_MERGE_MAP[p.category]] || null })))'));
+  const copies = pg => { const got = []; pg.w.document.execCommand = () => { const t = pg.w.document.querySelector('textarea'); got.push(t && t.value); return true; }; return got; };
+  const prints = pg => { const seen = []; pg.w.print = () => seen.push({ cls: pg.d.body.className, titles: all(pg, '#polDraftSheet .pol-draft-title').map(h => h.textContent), docs: all(pg, '#polDraftSheet .pol-draft-doc').length }); return seen; };
+  // What a card's dialog says (the labels over its text and lists, with what is under each) and what its own "Copy as draft" copies, read by opening it from the All view's tile and closing it again.
+  const labelled = root => !root ? [] : all({ d: root }, '.pol-modal-label').map(l => [l.textContent.trim(), ((l.nextElementSibling && l.nextElementSibling.textContent) || '').replace(/\s+/g, ' ').trim()]).filter(([, t]) => t);
+  const dialogOf = (pg, title, got) => {
+    const tile = all(pg, '.pol-cat-card').find(c => c.querySelector('.pol-cat-card-title').textContent === title);
+    if (!tile) return { draft: '(no tile for ' + title + ')', sections: [] };
+    tile.dispatchEvent(new pg.w.MouseEvent('click', { bubbles: true }));
+    const before = got.length;
+    press(pg, pg.d.getElementById('polCopyDraft'));
+    const out = { draft: got[before], sections: labelled(pg.d.getElementById('polModalBody')) };
+    press(pg, pg.d.getElementById('polModalClose'));
+    return out;
+  };
+  const sheetSections = (pg, k) => labelled(all(pg, '#polDraftSheet .pol-draft-doc')[k]);
+
+  // ── Links: one policy ──
+  const lk = load('index.html', '#policy');
+  click(lk.w, lk.d, 'polSubviewLinks');
+  const F = linksFacts(lk), middle = () => lk.d.querySelector('.pol-links-name').textContent;
+  const lkCopied = copies(lk), lkPrinted = prints(lk), P = policies(lk);
+  const titleOf = id => P.find(p => p.id === id).title;
+  press(lk, lk.d.getElementById('polLinksCopyDraft'));
+  const here = linksStart(F), viaDialog = dialogOf(lk, titleOf(here), lkCopied);
+  ok('on Links, Copy Draft copies the policy in the middle exactly as the dialog\'s own "Copy as draft" does, and says it has ("Copied")',
+     lkCopied.length === 2 && lkCopied[0] === viaDialog.draft && /^# /.test(lkCopied[0]) && lkCopied[0].includes('# ' + titleOf(here)) && lk.d.getElementById('polLinksCopyDraft').textContent === 'Copied ✓', `${lkCopied.length} copies, first line "${(lkCopied[0] || '').split('\n')[0]}"`);
+  // a step along the links (a neighbour's tile): the path is now two steps long and the policy in the middle is the second, not the one the path began with
+  const firstTile = lk.d.querySelector('.pol-links-tile'), stepTo = firstTile ? firstTile.dataset.go : null, nA = lkCopied.length;
+  if (firstTile) press(lk, firstTile);
+  press(lk, lk.d.getElementById('polLinksCopyDraft'));
+  ok('after a step along the links Copy Draft copies the policy now in the middle, not the one the path began with',
+     !!stepTo && stepTo !== here && lkCopied.length === nA + 1 && sameList((lkCopied[nA] || '').match(/^# .*/gm), ['# ' + titleOf(stepTo)]) && lk.d.querySelector('.pol-links-name').textContent === titleOf(stepTo), (lkCopied[nA] || '(no copy)').split('\n')[0]);
+  const other = F.order.find(id => id !== here);
+  const menu = lk.d.getElementById('polLinksPick'); menu.value = other; menu.dispatchEvent(new lk.w.Event('change', { bubbles: true }));
+  const n0 = lkCopied.length;
+  press(lk, lk.d.getElementById('polLinksCopyDraft'));
+  ok('and it follows the policy in the middle: after a move it copies the new one, and only that one (no rule, no second document)',
+     lkCopied.length === n0 + 1 && /^# /.test(lkCopied[n0]) && lkCopied[n0].startsWith('# ' + titleOf(other)) && !/\n---\n/.test(lkCopied[n0]) && (lkCopied[n0].match(/^# /gm) || []).length === 1, (lkCopied[n0] || '').split('\n')[0]);
+  press(lk, lk.d.getElementById('polLinksPrint'));
+  const dlg = dialogOf(lk, titleOf(other), lkCopied), sheet1 = sheetSections(lk, 0);
+  ok('on Links, Print fills a sheet with the policy in the middle alone, and shows it for printing: the page is marked while the print dialog is open',
+     lkPrinted.length === 1 && lkPrinted[0].docs === 1 && sameList(lkPrinted[0].titles, [titleOf(other)]) && /\bpol-draft-printing\b/.test(lkPrinted[0].cls), JSON.stringify(lkPrinted[0]));
+  ok('the sheet says what the dialog says: the same sections in the same order, the same words under each (the dialog always shows What it is and The challenge; the sheet leaves one out only when the card has no words for it)',
+     sheet1.length > 0 && sameList(sheet1, dlg.sections), `${sheet1.map(s => s[0])} against ${dlg.sections.map(s => s[0])}`);
+  const docEl = all(lk, '#polDraftSheet .pol-draft-doc')[0], areaOf = P.find(p => p.id === other).area;
+  ok('each policy on the sheet leads with its name and its area, and ends with where it is on the site (its address, built from the page\'s own location)',
+     !!docEl && docEl.querySelector('h1').textContent === titleOf(other) && (docEl.querySelector('.pol-draft-area') ? docEl.querySelector('.pol-draft-area').textContent === areaOf : !areaOf) && docEl.querySelector('.pol-draft-foot').textContent.includes(`https://example.org/#policy/${other}`), '');
+  lk.w.dispatchEvent(new lk.w.Event('afterprint'));
+  ok('when the print dialog closes the page is put back: the mark is off and the sheet is empty (so a later print of the dialog is the dialog)',
+     !/pol-draft-printing/.test(lk.d.body.className) && lk.d.getElementById('polDraftSheet').innerHTML === '', lk.d.body.className);
+  ok('there is no Add button on Links, and no count of a draft, and Copy Draft and Print are always on', !lk.d.getElementById('polLinksAdd') && !lk.d.querySelector('.pol-draft-count') && !lk.d.getElementById('polLinksCopyDraft').disabled && !lk.d.getElementById('polLinksPrint').disabled, '');
+  ok('the Links page logged no error', lk.errors.length === 0, lk.errors.join(' | '));
+
+  // ── Compare: two policies ──
+  const [a, b] = [F.order[0], F.order[1]], cm = load('index.html', `#compare/${a}/${b}`);
+  const cmCopied = copies(cm), cmPrinted = prints(cm);
+  const cmKids = [...cm.d.getElementById('polCmpSlot').children];
+  ok('on Compare the two menus come first in the slot, as a unit, and the six pills after them (the owner, 2026-11-24: "the policy selections should be before" the buttons), as on Links',
+     cmKids.length === 2 && cmKids[0].classList.contains('pol-subview-pick') && cmKids[1].classList.contains('pol-subview-pills') && sameList([...cmKids[1].children].map(b => b.id), ['polCmpBack', 'polCmpCopyDraft', 'polCmpCopy', 'polCmpPrint', 'polCmpRandom', 'polCmpRefresh']) &&
+     sameList([...cmKids[0].querySelectorAll('select')].map(m => m.id), ['polCmpA', 'polCmpB']), cmKids.map(k => k.className).join(' | '));
+  press(cm, cm.d.getElementById('polCmpCopyDraft'));
+  const dA = dialogOf(cm, titleOf(a), cmCopied), dB = dialogOf(cm, titleOf(b), cmCopied);
+  ok('on Compare, Copy Draft copies both policies, A then B, each exactly as the dialog\'s own "Copy as draft" does, a blank line, a rule and a blank line between them',
+     cmCopied.length === 3 && cmCopied[0] === dA.draft + '\n---\n\n' + dB.draft && (cmCopied[0].match(/^# /gm) || []).length === 2, `${(cmCopied[0] || '').match(/^# .*/gm)}`);
+  const swap = (id, v) => { const m = cm.d.getElementById(id); m.value = v; m.dispatchEvent(new cm.w.Event('change', { bubbles: true })); };
+  swap('polCmpA', b); swap('polCmpB', a);
+  press(cm, cm.d.getElementById('polCmpCopyDraft'));
+  const swapped = cmCopied[cmCopied.length - 1] || '';
+  ok('and it is in the order on screen: with the menus the other way round it copies B\'s policy first', swapped.startsWith('# ' + titleOf(b)) && swapped.indexOf('# ' + titleOf(a)) > swapped.indexOf('# ' + titleOf(b)) && swapped === dB.draft + '\n---\n\n' + dA.draft, (swapped.match(/^# .*/gm) || []).join(' | '));
+  press(cm, cm.d.getElementById('polCmpPrint'));
+  const s0 = sheetSections(cm, 0), s1 = sheetSections(cm, 1);
+  ok('on Compare, Print fills the sheet with both policies, in the order on screen, and marks the page while the print dialog is open',
+     cmPrinted.length === 1 && cmPrinted[0].docs === 2 && sameList(cmPrinted[0].titles, [titleOf(b), titleOf(a)]) && /\bpol-draft-printing\b/.test(cmPrinted[0].cls), JSON.stringify(cmPrinted[0]));
+  ok('each of the two says what its dialog says (the same words under the same labels)', dB.sections.length > 0 && sameList(s0, dB.sections) && sameList(s1, dA.sections), `${s0.length} and ${s1.length} sections`);
+  press(cm, cm.d.getElementById('polCmpPrint'));
+  ok('pressing Print again does not stack a second copy on the sheet: it is filled anew each time', cmPrinted.length === 2 && all(cm, '#polDraftSheet .pol-draft-doc').length === 2, `${all(cm, '#polDraftSheet .pol-draft-doc').length} documents`);
+  cm.w.dispatchEvent(new cm.w.Event('afterprint'));
+  swap('polCmpA', a); swap('polCmpB', a);
+  const sameN = cmCopied.length;
+  press(cm, cm.d.getElementById('polCmpCopyDraft')); press(cm, cm.d.getElementById('polCmpPrint'));
+  ok('with the same policy in both menus the policy is taken once, by Copy Draft and by Print', cmCopied.length === sameN + 1 && cmCopied[sameN] === dA.draft && cmPrinted.length === 3 && cmPrinted[2].docs === 1, `${cmPrinted[2] && cmPrinted[2].docs} document(s) on the sheet`);
+  ok('there is no Add button on Compare either, and no count of a draft; the Compare page logged no error', !cm.d.getElementById('polCmpAdd') && !cm.d.querySelector('.pol-draft-count') && cm.errors.length === 0, cm.errors.join(' | '));
+
+  // The Back pill follows the step the page is on, also after the other view has moved on: a Randomize on Compare makes a step with a pair before it; a move on Links is a step of its own, with no pair before it, so back on Compare
+  // there is nothing to go back to and the pill says so (it stayed on, and did nothing, before the switch re-checked it).
+  const sw = load('index.html', `#compare/${a}/${b}`), backPill = () => sw.d.getElementById('polCmpBack');
+  press(sw, sw.d.getElementById('polCmpRandom'));
+  const backAfterRandom = !backPill().disabled;
+  click(sw.w, sw.d, 'polSubviewLinks');
+  const lpick = sw.d.getElementById('polLinksPick'); lpick.value = F.order.find(id => id !== linksStart(F)); lpick.dispatchEvent(new sw.w.Event('change', { bubbles: true }));
+  click(sw.w, sw.d, 'polSubviewCompare');
+  ok('the Back pill on Compare follows the step the page is on: on after a Randomize, off again when the page is back on Compare after a move on Links', backAfterRandom && backPill().disabled && sw.errors.length === 0, `on after Randomize: ${backAfterRandom}; disabled after the move on Links: ${backPill().disabled}; ${sw.errors.join(' | ')}`);
+
+  // ── the dialog's own Print is left alone, and the sheet's styles ──
+  const css = ['policy.css', 'cards.css'].map(f => fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
+  const printBlock = /@media print \{([^@]*?\.pol-draft-foot[^@]*?)\n  \}/.exec(css);
+  ok('the sheet is never seen on a screen: it is hidden outside print, and for printing everything else on the page is hidden, but only while no dialog is open (the dialog\'s own print rules take over then)',
+     /\.pol-draft-sheet \{ display: none; \}/.test(css) && !!printBlock && /body\.pol-draft-printing:not\(\.pol-modal-open\) > \*:not\(#polDraftSheet\) \{ display: none !important; \}/.test(printBlock[1]) &&
+     /body\.pol-draft-printing:not\(\.pol-modal-open\) #polDraftSheet \{ display: block !important;/.test(printBlock[1]), printBlock ? '' : 'no print block for the sheet');
+  ok('each policy after the first starts a page of its own, and a link says where it goes (a printed page cannot be clicked), as in the dialog\'s print',
+     !!printBlock && /\.pol-draft-doc \+ \.pol-draft-doc \{ break-before: page; \}/.test(printBlock[1]) && /\.pol-draft-doc \.pol-modal-text a::after[^{]*\{ content: " \(" attr\(href\) "\)";/.test(printBlock[1]), '');
 }
 
 /* ── Landscape: the Compare view ───────────────────────────────────────────────────────────────────────────────────────────
-   The third view (the owner, 2026-11-19: "a main view comparing policies with sample complementary policies and sample conflicting policies" and "a fun graphic of the two
+   The second view, after Links (the owner, 2026-11-19: "a main view comparing policies with sample complementary policies and sample conflicting policies" and "a fun graphic of the two
    policies fighting each other"). Two policies sit side by side under a ring: a fight when the cards record them as rivals (competesWith), a tag team when they record them as
    partners (pairsWith), gloves held apart when they record nothing. Under each is the card in the dialog's own words and up to three samples of what works well with it and what
    competes with it, with the authors' reasons. What to expect is derived here from the cards themselves (a link written on either card is a link between the two), so these
-   checks hold whatever the authors record. */
+   checks hold whatever the authors record.
+
+   2026-11-23, the owner: "address this", the problems found in reading the view (two long cards that did not line up, and on a phone the second four screens down; a picture that moved for
+   ever; a white VS on gold at 2.6:1; small grey text; playful words, "fight" suggesting a winner; a sample that moved the page and a tag team button with no count and no way back; a faint
+   focus ring, small touch targets, sample buttons read out as paragraphs). The comparison is now rows, the words are plain, and each fix has a check below, after the original ones. */
 {
   const fs = require('fs'), path = require('path');
   const inl = f => f.replace(/<\/script/gi, '<\\/script');
@@ -1158,10 +1702,16 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const menu = (pg, which) => pg.d.getElementById('polCmp' + which).value;
   const ring = pg => pg.d.getElementById('polCmpRing').className.replace('pol-cmp-ring ', '');
   const reason = pg => pg.d.getElementById('polCmpReason').textContent;
-  const cols = pg => [...pg.d.querySelectorAll('.pol-cmp-col')];
+  // The comparison is rows: the first is each policy's name (a head cell), then one row for each section, its label across the top and a cell for each side.
+  const head = (pg, side) => pg.d.querySelector(`#polCmpCols .pol-cmp-row-head .pol-cmp-cell[data-side="${side}"]`);
+  const rowsOf = pg => [...pg.d.querySelectorAll('#polCmpCols .pol-cmp-row:not(.pol-cmp-row-head)')];
+  const rowLabels = pg => rowsOf(pg).map(r => r.querySelector('.pol-cmp-rowlabel').textContent);
+  const cellOf = (pg, side, label) => { const r = rowsOf(pg).find(x => x.querySelector('.pol-cmp-rowlabel').textContent === label); return r ? r.querySelector(`.pol-cmp-cell[data-side="${side}"]`) : null; };
+  const cellsOf = (pg, side) => [...pg.d.querySelectorAll(`#polCmpCols .pol-cmp-cell[data-side="${side}"]`)];
+  const textOf = c => c ? c.textContent : '(no cell)';   // a missing cell fails the check that asks for it, rather than crashing the checks after it
   const hidden = (pg, id) => pg.d.getElementById(id).style.display === 'none';
-  const samplesOf = (col, label) => {
-    const sec = [...col.querySelectorAll('.pol-modal-section')].find(s => s.querySelector('.pol-modal-label').textContent === label);
+  const samplesOf = (pg, side, label) => {
+    const sec = cellOf(pg, side, label);
     return sec ? { n: sec.querySelectorAll('.pol-cmp-sample').length, titles: [...sec.querySelectorAll('.pol-cmp-sample-title')].map(t => t.textContent), whys: [...sec.querySelectorAll('.pol-cmp-sample-why')].map(t => t.textContent),
                    more: (sec.querySelector('.pol-cmp-more') || {}).textContent || '', text: sec.textContent } : null;
   };
@@ -1184,29 +1734,55 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const rivals = distinctPairs(facts.riv), teams = distinctPairs(facts.pair);
   const most = m => facts.order.slice().sort((x, y) => partnersIn(m, y).length - partnersIn(m, x).length)[0];
 
-  ok('Compare is the third view: opening it hides the rows and the graph, builds the view, and nothing logs an error',
-     pg.d.getElementById('polSubviewCompare').getAttribute('aria-pressed') === 'true' && hidden(pg, 'polCatRows') && hidden(pg, 'polLinksArea') && !hidden(pg, 'polCompareArea') && cols(pg).length === 2 && pg.errors.length === 0, `${cols(pg).length} columns`);
+  ok('Compare is the second view: opening it hides the rows and the Links view, builds the view, and nothing logs an error',
+     pg.d.getElementById('polSubviewCompare').getAttribute('aria-pressed') === 'true' && hidden(pg, 'polCatRows') && hidden(pg, 'polLinksArea') && !hidden(pg, 'polCompareArea') && pg.d.querySelectorAll('#polCmpCols .pol-cmp-row-head .pol-cmp-cell').length === 2 && pg.errors.length === 0, `${pg.d.querySelectorAll('#polCmpCols .pol-cmp-row-head .pol-cmp-cell').length} columns`);
   ok('it opens on the first fight the cards record, in the order of the cards, both menus showing it',
-     rivals.length > 0 && menu(pg, 'A') === rivals[0][0] && menu(pg, 'B') === rivals[0][1] && ring(pg) === 'pol-cmp-fight' && sameList(cols(pg).map(c => c.querySelector('.pol-cmp-name').textContent), [facts.title[rivals[0][0]], facts.title[rivals[0][1]]]),
+     rivals.length > 0 && menu(pg, 'A') === rivals[0][0] && menu(pg, 'B') === rivals[0][1] && ring(pg) === 'pol-cmp-fight' && sameList(['a', 'b'].map(s => head(pg, s).querySelector('.pol-cmp-name').textContent), [facts.title[rivals[0][0]], facts.title[rivals[0][1]]]),
      `${menu(pg, 'A')} / ${menu(pg, 'B')} / ${ring(pg)}`);
   ok('every policy is in both menus, under its area, and the menus hold nothing else', ['A', 'B'].every(w => pg.d.querySelectorAll(`#polCmp${w} option`).length === facts.order.length && pg.d.querySelectorAll(`#polCmp${w} optgroup`).length > 0), `${pg.d.querySelectorAll('#polCmpA option').length} of ${facts.order.length}`);
 
-  const pills = () => [...pg.d.querySelectorAll('#polCmpFightRow button[data-a]')];
-  ok('each fight the cards record is a pill labelled with the two titles, and only the pair showing is pressed',
-     pills().length === rivals.length && sameList(pills().map(b => b.textContent), rivals.map(([a, b]) => `${facts.title[a]} vs ${facts.title[b]}`)) && sameList(pills().map(b => b.getAttribute('aria-pressed')), rivals.map((_, i) => i === 0 ? 'true' : 'false')),
-     pills().map(b => b.getAttribute('aria-pressed')).join());
+  ok('the rows of recorded pairs are gone (the owner, 2026-11-24): no pill for each competing pair, no Previous, Next or count of the pairs that work well together, and the row of the view is the Back, Copy Draft, Copy link, Print, Randomize and Refresh pills, in alphabetical order, and then the two menus',
+     !pg.d.getElementById('polCmpFightRow') && !pg.d.getElementById('polCmpTeamRow') && !pg.d.getElementById('polCmpTeam') && !pg.d.getElementById('polCmpTeamPrev') && !pg.d.getElementById('polCmpTeamCount') && !pg.d.querySelector('.pol-cmp-starts, .pol-cmp-scroll') &&
+     sameList([...pg.d.querySelectorAll('#polCmpSlot .kw-pill')].map(b => b.textContent), ['Back', 'Copy Draft', 'Copy link', 'Print', 'Randomize', 'Refresh']) && !/Competing pairs|Pairs that work well together|Previous|Next/.test(pg.d.getElementById('polCompareArea').textContent + pg.d.getElementById('polCmpSlot').textContent),
+     [...pg.d.querySelectorAll('#polCmpSlot .kw-pill')].map(b => b.textContent).join());
   const fightsOk = rivals.every(([a, b]) => {
-    pills().find(x => x.dataset.a === a && x.dataset.b === b).click();
-    return menu(pg, 'A') === a && menu(pg, 'B') === b && ring(pg) === 'pol-cmp-fight' && /^What they are fighting over:/.test(reason(pg)) && whysIn(facts.riv, a, b).every(w => reason(pg).includes(w));
+    pick(pg, a, 'A'); pick(pg, b, 'B');
+    return menu(pg, 'A') === a && menu(pg, 'B') === b && ring(pg) === 'pol-cmp-fight' && /^Why they compete:/.test(reason(pg)) && whysIn(facts.riv, a, b).every(w => reason(pg).includes(w));
   });
-  ok('choosing a fight sets both menus, draws the fight, and gives the authors\' own reason, as written', fightsOk && rivals.length > 0, reason(pg));
+  ok('choosing a competing pair in the menus sets both, draws it, and gives the authors\' own reason, as written', fightsOk && rivals.length > 0, reason(pg));
+  const teamRuns = teams.map(t => { pick(pg, t[0], 'A'); pick(pg, t[1], 'B'); return menu(pg, 'A') === t[0] && menu(pg, 'B') === t[1] && ring(pg) === 'pol-cmp-team' && /^Why they work well together:/.test(reason(pg)) && whysIn(facts.pair, t[0], t[1]).every(w => reason(pg).includes(w)); });
+  ok('and a pair the cards record as working well together is drawn as a team, each with the authors\' own reason, as written', teams.length > 0 && teamRuns.every(Boolean), `${teams.length} teams`);
 
-  pills().find(x => x.dataset.a === rivals[0][0]).click();
-  const teamBtn = pg.d.getElementById('polCmpTeam');
-  const teamRuns = teams.map((t, i) => { teamBtn.click(); return menu(pg, 'A') === t[0] && menu(pg, 'B') === t[1] && ring(pg) === 'pol-cmp-team' && /^Why they team up:/.test(reason(pg)) && whysIn(facts.pair, t[0], t[1]).every(w => reason(pg).includes(w)); });
-  teamBtn.click();
-  ok('the tag team button walks through the partners the cards record, in order, each as a tag team with the authors\' reason, and starts over after the last',
-     teams.length > 0 && teamRuns.every(Boolean) && menu(pg, 'A') === teams[0][0] && menu(pg, 'B') === teams[0][1], `${teams.length} teams`);
+  // Randomize (the owner, 2026-11-24): two different policies at random, as a change of the pair like any other. The check sets the random numbers, so it knows which policies they choose: the page picks the policy
+  // at the place a number names in the order of the cards (a number from 0 up to but not including 1, times the count, rounded down).
+  const realRandom = pg.w.Math.random, rand = values => { const q = values.slice(); pg.w.Math.random = () => q.length ? q.shift() : 0.5; };
+  const at = x => facts.order[Math.floor(x * facts.order.length)];
+  const ringWant = (a, b) => a === b ? 'pol-cmp-same' : linkedIn(facts.riv, a, b) ? 'pol-cmp-fight' : linkedIn(facts.pair, a, b) ? 'pol-cmp-team' : 'pol-cmp-idle';
+  const randomBtn = pg.d.getElementById('polCmpRandom');
+  pick(pg, at(0.9), 'A'); pick(pg, at(0.95), 'B');
+  rand([0.2, 0.6]); randomBtn.click();
+  ok('Randomize puts two policies at random in the two menus and draws the pair: the numbers 0.2 and 0.6 choose the policies at those places, and the ring and the reason are those of the pair',
+     menu(pg, 'A') === at(0.2) && menu(pg, 'B') === at(0.6) && ring(pg) === ringWant(at(0.2), at(0.6)) && reason(pg).length > 0, `${menu(pg, 'A')} / ${menu(pg, 'B')} / ${ring(pg)}`);
+  rand([0.3, 0.3, 0.7, 0.1]); randomBtn.click();
+  ok('Randomize never picks the same policy for both sides: when the numbers would, it draws again', menu(pg, 'A') === at(0.7) && menu(pg, 'B') === at(0.1) && menu(pg, 'A') !== menu(pg, 'B'), `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
+  rand([0.7, 0.1, 0.4, 0.8]); randomBtn.click();
+  ok('and never the pair that is already on screen: when the numbers would pick it, it draws again', menu(pg, 'A') === at(0.4) && menu(pg, 'B') === at(0.8), `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
+  pg.w.Math.random = realRandom;
+  const drawn = [], seenIds = new Set();
+  for (let i = 0; i < 300; i++) { const before = menu(pg, 'A') + '|' + menu(pg, 'B'); randomBtn.click(); const now = menu(pg, 'A') + '|' + menu(pg, 'B'); drawn.push([before, now]); seenIds.add(menu(pg, 'A')); seenIds.add(menu(pg, 'B')); }
+  ok('over 300 draws with real random numbers every draw is two different policies and a pair other than the one before, many different pairs come up, and every policy is chosen at least once (no policy and no pair is left out)',
+     drawn.every(([before, now]) => now !== before && now.split('|')[0] !== now.split('|')[1]) && new Set(drawn.map(d => d[1])).size > 100 && seenIds.size === facts.order.length && pg.errors.length === 0, `${new Set(drawn.map(d => d[1])).size} distinct pairs, ${seenIds.size} of ${facts.order.length} policies`);
+
+  // Refresh (the owner, 2026-11-24): back to the pair the view opens on, as a change of the pair like any other.
+  const refreshBtn = pg.d.getElementById('polCmpRefresh');
+  pick(pg, at(0.9), 'A'); pick(pg, at(0.95), 'B');
+  const stepsBefore = pg.w.history.length;
+  refreshBtn.click();
+  ok('Refresh takes the view back to the pair it opens on, the first competing pair the cards record: both menus, the ring and the reason, as one step of the history, at that pair\'s address',
+     menu(pg, 'A') === rivals[0][0] && menu(pg, 'B') === rivals[0][1] && ring(pg) === 'pol-cmp-fight' && /^Why they compete:/.test(reason(pg)) && pg.w.history.length === stepsBefore + 1 && pg.w.location.hash === '#compare/' + rivals[0].join('/'), `${menu(pg, 'A')} / ${menu(pg, 'B')} / ${pg.w.history.length - stepsBefore} steps`);
+  const stepsAt = pg.w.history.length;
+  refreshBtn.click();
+  ok('and Refresh does nothing when that pair is already showing: no step is added and the pair stays', pg.w.history.length === stepsAt && menu(pg, 'A') === rivals[0][0] && menu(pg, 'B') === rivals[0][1], `${pg.w.history.length - stepsAt} steps`);
 
   const idle = (() => { for (let i = 0; i < facts.order.length; i++) for (let j = i + 1; j < facts.order.length; j++) { const a = facts.order[i], b = facts.order[j]; if (!linkedIn(facts.riv, a, b) && !linkedIn(facts.pair, a, b)) return [a, b]; } return null; })();
   pick(pg, idle[0], 'A'); pick(pg, idle[1], 'B');
@@ -1217,22 +1793,22 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
 
   const topPair = most(facts.pair), topRiv = most(facts.riv);
   pick(pg, topPair, 'A'); pick(pg, topRiv === topPair ? facts.order.find(i => i !== topPair) : topRiv, 'B');
-  const wantPartners = partnersIn(facts.pair, topPair), a1 = samplesOf(cols(pg)[0], 'Works well with');
+  const wantPartners = partnersIn(facts.pair, topPair), a1 = samplesOf(pg, 'a', 'Works well with');
   ok('under a policy, up to three of the policies that work well with it are shown, its own entries first, each with its author\'s reason, and the rest are counted',
      wantPartners.length > 0 && a1.n === Math.min(3, wantPartners.length) && sameList(a1.titles, wantPartners.slice(0, 3).map(i => facts.title[i])) &&
      sameList(a1.whys, wantPartners.slice(0, 3).map(i => whyIn(facts.pair, topPair, i)).filter(Boolean)) && a1.more === (wantPartners.length > 3 ? `and ${wantPartners.length - 3} more` : ''),
      `${JSON.stringify(a1)} vs ${wantPartners.map(i => facts.title[i])}`);
-  const wantRivals = partnersIn(facts.riv, topRiv), b1 = samplesOf(cols(pg)[1], 'Competes with');
+  const wantRivals = partnersIn(facts.riv, topRiv), b1 = samplesOf(pg, 'b', 'Competes with');
   ok('and the same for the policies that compete with it', wantRivals.length > 0 && b1.n === Math.min(3, wantRivals.length) && sameList(b1.titles, wantRivals.slice(0, 3).map(i => facts.title[i])) && b1.more === (wantRivals.length > 3 ? `and ${wantRivals.length - 3} more` : ''), JSON.stringify(b1));
   const loner = facts.order.find(i => !partnersIn(facts.pair, i).length);
-  if (loner) { pick(pg, loner, 'A'); ok('a policy with no recorded partners says so, with no sample and no count', samplesOf(cols(pg)[0], 'Works well with').n === 0 && /No recorded partners\./.test(samplesOf(cols(pg)[0], 'Works well with').text)); }
+  if (loner) { pick(pg, loner, 'A'); ok('a policy with no recorded partners says so, with no sample and no count', samplesOf(pg, 'a', 'Works well with').n === 0 && /No recorded partners\./.test(samplesOf(pg, 'a', 'Works well with').text)); }
 
   pick(pg, topPair, 'A'); pick(pg, facts.order.find(i => i !== topPair), 'B');
-  const sampleA = cols(pg)[0].querySelector('.pol-cmp-sample[data-side="a"]');
+  const sampleA = pg.d.querySelector('.pol-cmp-sample[data-side="a"]');
   const idA = sampleA.dataset.id;
   sampleA.click();
-  ok('clicking a sample under the left policy makes it the right one, and the left one stays', menu(pg, 'B') === idA && menu(pg, 'A') === topPair && cols(pg)[1].querySelector('.pol-cmp-name').textContent === facts.title[idA], `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
-  const sampleB = cols(pg)[1].querySelector('.pol-cmp-sample[data-side="b"]');
+  ok('clicking a sample under the left policy makes it the right one, and the left one stays', menu(pg, 'B') === idA && menu(pg, 'A') === topPair && head(pg, 'b').querySelector('.pol-cmp-name').textContent === facts.title[idA], `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
+  const sampleB = pg.d.querySelector('.pol-cmp-sample[data-side="b"]');
   const idB = sampleB.dataset.id;
   sampleB.click();
   ok('and a sample under the right policy makes it the left one', menu(pg, 'A') === idB && menu(pg, 'B') === idA, `${menu(pg, 'A')} / ${menu(pg, 'B')}`);
@@ -1241,37 +1817,38 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const two = synced.length >= 2 ? synced.slice(0, 2) : facts.order.slice(0, 2);
   pick(pg, two[0], 'A'); pick(pg, two[1], 'B');
   const same = [0, 1].map(i => {
-    const col = cols(pg)[i], mine = { summary: col.querySelector('.pol-modal-text').innerHTML, lists: [...col.querySelectorAll('.pol-modal-list')].map(u => u.innerHTML) };
-    col.querySelector('.pol-cmp-open').click();
+    const side = ['a', 'b'][i], mine = { summary: cellOf(pg, side, 'What it is').querySelector('.pol-modal-text').innerHTML, lists: cellsOf(pg, side).flatMap(c => [...c.querySelectorAll('.pol-modal-list')]).map(u => u.innerHTML) };
+    head(pg, side).querySelector('.pol-cmp-open').click();
     const body = pg.d.getElementById('polModalBody'), theirs = { summary: body.querySelector('.pol-modal-text').innerHTML, lists: [...body.querySelectorAll('.pol-modal-twocol .pol-modal-list')].map(u => u.innerHTML) };
     return pg.d.getElementById('polModalTitle').textContent === facts.title[two[i]] && mine.summary === theirs.summary && mine.lists.length > 0 && sameList(mine.lists, theirs.lists);
   });
   ok('each side carries the card word for word: what it is, the strengths and the risks are exactly what the dialog shows, and "Read the full policy" opens that dialog', same.every(Boolean), same.join());
-  ok('a column\'s sections are the dialog\'s in kind and in the order: what it is, what works well with it, what competes with it, strengths, risks',
-     sameList([...cols(pg)[0].querySelectorAll('.pol-modal-label')].map(l => l.textContent), ['What it is', 'Works well with', 'Competes with', 'Strengths', 'Risks']), [...cols(pg)[0].querySelectorAll('.pol-modal-label')].map(l => l.textContent).join());
+  ok('the rows are the dialog\'s sections in kind and in the order: what it is, what works well with it, what competes with it, strengths, risks',
+     sameList(rowLabels(pg), ['What it is', 'Works well with', 'Competes with', 'Strengths', 'Risks']), rowLabels(pg).join());
 
   const lone = idle;
   const oneSided = openCmp({ transform: afterMap(`(() => { const p = POLICY_DATA.find(x => x.id === ${JSON.stringify(lone[0])}); p.competesWith = (p.competesWith || []).concat([{ id: ${JSON.stringify(lone[1])}, why: 'A one-sided reason, for the test.' }]); })();`) });
   pick(oneSided, lone[0], 'A'); pick(oneSided, lone[1], 'B');
   const fromWriter = ring(oneSided) === 'pol-cmp-fight' && /A one-sided reason, for the test\./.test(reason(oneSided));
   pick(oneSided, lone[1], 'A'); pick(oneSided, lone[0], 'B');
-  const back = samplesOf(cols(oneSided)[0], 'Competes with');
+  const back = samplesOf(oneSided, 'a', 'Competes with');
   ok('a link written on one card only counts for both: the fight shows from either side, and the policy that was named lists the one that named it, with that reason',
      fromWriter && ring(oneSided) === 'pol-cmp-fight' && back.titles.includes(facts.title[lone[0]]) && back.whys.includes('A one-sided reason, for the test.'), JSON.stringify(back));
 
   const gone = rivals[0][1];
   const arch = openCmp({ transform: afterMap(`POLICY_MAP.archived.push(${JSON.stringify(gone)});`) });
   const archAll = [...arch.d.querySelectorAll('#polCmpA option')].map(o => o.value);
-  const archPills = [...arch.d.querySelectorAll('#polCmpFightRow button[data-a]')].map(b => b.textContent);
   pick(arch, rivals[0][0], 'A');
-  ok('an archived policy is in no menu, no pill and no sample, and nothing logs an error',
-     !archAll.includes(gone) && archAll.length === facts.order.length - 1 && archPills.length === rivals.filter(([a, b]) => a !== gone && b !== gone).length && !cols(arch).some(c => c.textContent.includes(facts.title[gone])) && arch.errors.length === 0, `${archAll.length} in the menu, ${arch.errors.length} errors`);
+  const archPicked = new Set();
+  for (let i = 0; i < 120; i++) { arch.d.getElementById('polCmpRandom').click(); archPicked.add(menu(arch, 'A')); archPicked.add(menu(arch, 'B')); }
+  ok('an archived policy is in no menu, no sample, and is never chosen by Randomize, and nothing logs an error',
+     !archAll.includes(gone) && archAll.length === facts.order.length - 1 && !arch.d.getElementById('polCmpCols').textContent.includes(facts.title[gone]) && !archPicked.has(gone) && archPicked.size > 20 && arch.errors.length === 0, `${archAll.length} in the menu, ${archPicked.size} chosen, ${arch.errors.length} errors`);
 
   // A card whose text comes from its Google Doc has its summary replaced by the Doc's as the page loads, so the cross-link is written into one that is not.
   const [xs, ys] = facts.order.filter(i => !synced.includes(i));
   const linked = openCmp({ transform: afterMap(`(() => { const p = POLICY_DATA.find(x => x.id === ${JSON.stringify(xs)}); p.summary = (p.summary || '') + ' See {{pol:${ys}|the other policy}}.'; })();`) });
   pick(linked, xs, 'A');
-  const xref = cols(linked)[0].querySelector('.pol-xref');
+  const xref = cellsOf(linked, 'a').map(c => c.querySelector('.pol-xref')).find(Boolean);
   if (xref) xref.click();
   ok('a cross-link written inside a card\'s text still opens the policy it names, from the Compare view as in the dialog', !!xref && xref.textContent === 'the other policy' && linked.d.getElementById('polModalTitle').textContent === facts.title[ys], xref ? linked.d.getElementById('polModalTitle').textContent : 'no cross-link');
 
@@ -1293,6 +1870,355 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
   const outside = motion ? sect.replace(motion[0], '') : sect;
   ok('the fight graphic moves only for a reader who has not asked their device for less motion: every animation in the Compare styles sits inside a no-preference media query',
      !!motion && /animation:/.test(motion[1]) && !/animation\s*:|animation-[a-z]+\s*:/.test(outside), motion ? 'an animation sits outside the media query' : 'no no-preference media query');
+
+  /* ── "address this" (2026-11-23): one check for each problem the reading of the view found ────────────────────────────────────── */
+  const cmpCss = sect.slice(0, sect.indexOf('.pol-subview-toggle')), bare = cmpCss.replace(/\/\*[\s\S]*?\*\//g, '');
+  // 1. the two cards did not line up: rows
+  pick(pg, rivals[0][0], 'A'); pick(pg, rivals[0][1], 'B');
+  const rowEls = [...pg.d.querySelectorAll('#polCmpCols > .pol-cmp-row')];
+  const sidesOf = r => [...r.children].filter(c => c.classList.contains('pol-cmp-cell')).map(c => c.dataset.side).join();
+  ok('the comparison is rows, not two columns: the first row is the two names, then a row for each section with its label across the top and the two policies\' cells next to each other, A then B, so the same section of both sits at the same height',
+     rowEls.length >= 4 && rowEls[0].classList.contains('pol-cmp-row-head') && rowEls.every(r => sidesOf(r) === 'a,b') && rowEls.slice(1).every(r => r.firstElementChild.classList.contains('pol-cmp-rowlabel')) && !pg.d.querySelector('.pol-cmp-col'), rowEls.map(sidesOf).join(' | '));
+  ok('the row labels are headings a screen reader can jump between, and the markup order is the reading order: nothing in the Compare styles reorders it (no order property, no reversed direction), so a keyboard meets the cells as they are seen',
+     rowsOf(pg).every(r => { const l = r.querySelector('.pol-cmp-rowlabel'); return l.getAttribute('role') === 'heading' && l.getAttribute('aria-level') === '4'; }) && !/(?<![-\w])order\s*:/.test(bare) && !/-reverse/.test(bare), '');
+  ok('under its label each cell says whose it is, since a cell far down the page has no policy name in view',
+     rowsOf(pg).every(r => ['a', 'b'].every(sd => (r.querySelector(`.pol-cmp-cell[data-side="${sd}"] .pol-cmp-who`) || { textContent: '(no name)' }).textContent === facts.title[rivals[0][sd === 'a' ? 0 : 1]])), '');
+  const lop = openCmp({ transform: afterMap(`(() => { const a = POLICY_DATA.find(x => x.id === ${JSON.stringify(xs)}), b = POLICY_DATA.find(x => x.id === ${JSON.stringify(ys)}); a.risks = []; a.strengths = ['A strength, for the test.']; b.risks = ['A risk, for the test.']; b.strengths = []; })();`) });
+  pick(lop, xs, 'A'); pick(lop, ys, 'B');
+  ok('a section only one of the two policies has is still a row, and the other cell says so, so the rows keep lining up: Strengths for the one that lists them, Risks for the other',
+     sameList(rowLabels(lop), ['What it is', 'Works well with', 'Competes with', 'Strengths', 'Risks']) && /A strength, for the test\./.test(textOf(cellOf(lop, 'a', 'Strengths'))) && /None listed on this card\./.test(textOf(cellOf(lop, 'b', 'Strengths'))) &&
+     /None listed on this card\./.test(textOf(cellOf(lop, 'a', 'Risks'))) && /A risk, for the test\./.test(textOf(cellOf(lop, 'b', 'Risks'))), rowLabels(lop).join());
+  lop.w.eval(`POLICY_DATA.find(x => x.id === ${JSON.stringify(ys)}).risks = []`);
+  pick(lop, facts.order.find(i => i !== xs && i !== ys), 'B'); pick(lop, ys, 'B');
+  ok('and a section neither has is left out, as the dialog leaves out a section a card has none of', !rowLabels(lop).includes('Risks') && rowLabels(lop).includes('Strengths') && lop.errors.length === 0, rowLabels(lop).join());
+
+  // 2 and 3. the picture: it plays and rests, and says in words what it shows
+  const nocomments = bare;
+  const anim = [...nocomments.matchAll(/animation:\s*[\w-]+\s+([\d.]+)s\s+[\w-]+\s+(\d+)/g)].map(m => [+m[1], +m[2]]);
+  const teamOver = /\.pol-cmp-team \.pol-cmp-gl, \.pol-cmp-team \.pol-cmp-gr \{ animation-duration: ([\d.]+)s; animation-iteration-count: (\d+); \}/.exec(nocomments);
+  const longest = Math.max(...anim.map(([dur, n]) => dur * n), teamOver ? +teamOver[1] * +teamOver[2] : 0);
+  ok('the picture plays and then rests: no animation loops for ever and none runs longer than five seconds (three bumps; a pair that works well together two slower ones), where it looped for as long as the page was open and could not be stopped',
+     anim.length >= 2 && !/infinite/.test(nocomments) && longest > 0 && longest <= 5, JSON.stringify([anim, teamOver && teamOver.slice(1), longest]));
+  ok('and it ends where it rests: the bump starts and ends at no movement, so the gloves do not jump when it stops', /@keyframes pol-cmp-bump \{ 0% \{ transform: translateX\(0\); \}[^@]*100% \{ transform: translateX\(0\); \} \}/.test(nocomments), '');
+  const caps = [], announces = [], caption = () => (pg.d.querySelector('.pol-cmp-vs') || { textContent: '(no caption)' }).textContent, announce = () => [...pg.d.querySelectorAll('.pol-cmp-announce')].map(e => e.textContent).join('/');
+  const uiWords = () => [...pg.d.querySelectorAll('.pol-cmp-announce, .pol-cmp-lead, .pol-cmp-vs, .pol-cmp-rowlabel, .pol-cmp-who, #polCmpRandom, #polCmpBack, #polCmpCopy, .pol-cmp-none, .pol-cmp-note')].map(e => e.textContent).join(' | ');
+  pick(pg, rivals[0][0], 'A'); pick(pg, rivals[0][1], 'B'); caps.push(caption()); announces.push(announce());
+  const fightWords = uiWords(), fightReason = reason(pg), fightLabel = pg.d.getElementById('polCmpRing').getAttribute('aria-label');
+  pick(pg, teams[0][0], 'A'); pick(pg, teams[0][1], 'B'); caps.push(caption()); announces.push(announce());
+  const teamWords = uiWords(), teamReason = reason(pg);
+  pick(pg, idle[0], 'A'); pick(pg, idle[1], 'B'); caps.push(caption()); announces.push(announce());
+  pick(pg, idle[0], 'B'); caps.push(caption()); announces.push(announce());
+  ok('the picture says in words what it shows, under it: "They compete", "They work well together", "No recorded link", "The same policy" (the burst\'s VS, + and ? mean nothing alone)', sameList(caps, ['They compete', 'They work well together', 'No recorded link', 'The same policy']), caps.join(' | '));
+  ok('the words are plain: Policy A and Policy B over the two names in every state, and no fight, tag team, corner or teammate in the labels, the caption or the buttons (the authors\' own reasons are theirs)',
+     announces.every(a => a === 'Policy A/Policy B') && !/fight|tag team|corner|teammate/i.test(fightWords + teamWords), fightWords + ' || ' + teamWords);
+  ok('a competing pair says that competing is not ranking, in the view\'s own words, and a pair that works well together does not need to; the ring is a group with a name that says both policies and how they are linked',
+     /This view does not rank them\./.test(fightReason) && !/rank/.test(teamReason) && fightLabel === `${facts.title[rivals[0][0]]} and ${facts.title[rivals[0][1]]}: they compete` && pg.d.getElementById('polCmpRing').getAttribute('role') === 'group', fightLabel);
+
+  // (the Back pill's check waits for the browser's Back, so it is with the address checks below, in compareAddressTests)
+  // a sample that sits beside the ring need not move the page: it is scrolled to the ring only when the ring is out of view
+  pick(pg, topPair, 'A'); pick(pg, topRiv === topPair ? facts.order.find(i => i !== topPair) : topRiv, 'B');
+  const ringEl = pg.d.getElementById('polCmpRing'), barEl = pg.d.querySelector('.pol-subview-bar'), pairNow2 = () => [menu(pg, 'A'), menu(pg, 'B')]; let scrolls = 0;
+  ringEl.scrollIntoView = () => { scrolls++; };
+  barEl.getBoundingClientRect = () => ({ top: 0, bottom: 100 });
+  // a sample that changes the pair (one that is not already the other side)
+  const changing = () => [...pg.d.querySelectorAll('.pol-cmp-sample')].find(b => b.dataset.id !== (b.dataset.side === 'a' ? menu(pg, 'B') : menu(pg, 'A')));
+  ringEl.getBoundingClientRect = () => ({ top: 200, bottom: 400 });
+  changing().click();
+  const inView = [scrolls, pg.d.activeElement === ringEl];
+  ringEl.getBoundingClientRect = () => ({ top: -900, bottom: -700 });
+  changing().click();
+  ok('pressing a sample puts the focus on the ring (the cells were drawn again) and scrolls to it only when the ring is out of view: not when it is already showing under the menus, and yes when it is above the window',
+     inView[0] === 0 && inView[1] === true && scrolls === 1 && pg.d.activeElement === ringEl, JSON.stringify([inView, scrolls]));
+  // the ring partly behind the pinned row (the switch and the menus, whose bottom the page measures: here 100): it is not out of the window, but it is out of sight
+  const scrollsUnder = scrolls;
+  ringEl.getBoundingClientRect = () => ({ top: 50, bottom: 250 });
+  changing().click();
+  ok('and it scrolls when the ring is hidden behind the pinned row of the switch and the menus (its top is above that row\'s bottom), which is measured from the row and not from the view', scrolls === scrollsUnder + 1, `${scrolls - scrollsUnder} scrolls`);
+
+  // a sample that is already the other side changes nothing, so it moves nothing: the focus stays on the button and the page is not scrolled
+  const already = teams.find(([ta, tb]) => { pick(pg, ta, 'A'); pick(pg, tb, 'B'); return !!pg.d.querySelector(`.pol-cmp-sample[data-side="a"][data-id="${tb}"]`); });
+  const sameBtn = already ? pg.d.querySelector(`.pol-cmp-sample[data-side="a"][data-id="${already[1]}"]`) : null, scrollsBefore = scrolls;
+  ringEl.getBoundingClientRect = () => ({ top: -900, bottom: -700 });
+  if (sameBtn) { sameBtn.focus(); sameBtn.click(); }
+  ok('pressing a sample that is already the other side changes nothing and moves nothing: the pair is the same, the button is still there with the focus on it, and the page is not scrolled to the ring (even with the ring out of view)',
+     !!sameBtn && sameBtn.isConnected && pg.d.activeElement === sameBtn && scrolls === scrollsBefore && sameList(pairNow2(), already), already ? already.join('+') : 'no pair shows its partner as a sample');
+
+  // 8. a sample button is named for what it does and described by the author's reason, not read out whole as its name
+  pick(pg, topPair, 'A'); pick(pg, topRiv === topPair ? facts.order.find(i => i !== topPair) : topRiv, 'B');
+  const smp = [...pg.d.querySelectorAll('.pol-cmp-sample')], smpIds = smp.map(b => b.getAttribute('aria-describedby')).filter(Boolean);
+  ok('a sample is named for what pressing it does, "Compare A with B", and the author\'s reason is its description rather than part of its name (read out as a name it was a whole paragraph); each reason has an id of its own',
+     smp.length > 0 && smpIds.length > 0 && new Set(smpIds).size === smpIds.length && smp.every(b => {
+       const mine = facts.title[b.dataset.side === 'a' ? menu(pg, 'A') : menu(pg, 'B')], theirs = facts.title[b.dataset.id], why = b.querySelector('.pol-cmp-sample-why');
+       return b.getAttribute('aria-label') === (b.dataset.side === 'a' ? `Compare ${mine} with ${theirs}` : `Compare ${theirs} with ${mine}`) && (why ? b.getAttribute('aria-describedby') === why.id && pg.d.getElementById(why.id) === why : !b.hasAttribute('aria-describedby'));
+     }), smp.map(b => b.getAttribute('aria-label')).join(' | '));
+
+  // 4, 5 and 8 in the styles: contrast, size, the focus ring, touch targets, the phone's layout
+  const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const tokens = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'tokens.css'), 'utf8');
+  const tok = name => { const all = [...tokens.matchAll(new RegExp('--' + name + ':\\s*(#[0-9a-fA-F]{6})', 'g'))]; return all.length ? all[all.length - 1][1] : null; };   // the last declaration wins, as in the page
+  const vs = ratio(tok('headline'), tok('gold-deep')), plus = ratio('#ffffff', tok('navy')), qm = ratio('#ffffff', tok('muted'));
+  ok('the VS on the gold burst is readable: dark (the headline colour) on the gold, not white (2.6:1), at 4.5:1 or better, and the white on the navy and on the grey burst is too',
+     /\.pol-cmp-fight \.pol-cmp-burst-text \{ fill: var\(--headline\); \}/.test(bare) && /\.pol-cmp-burst-text \{[^}]*fill: #fff/.test(bare) && vs >= 4.5 && plus >= 4.5 && qm >= 4.5, `${vs.toFixed(2)} / ${plus.toFixed(2)} / ${qm.toFixed(2)}`);
+  const onBeige = ratio(tok('text'), tok('beige')), mutedOnBeige = ratio(tok('muted'), tok('beige')), mutedOnCard = ratio(tok('muted'), tok('light-beige'));
+  ok('the small text on the beige name boxes is the body colour (8.7:1), not the grey (4.3:1 there), and the grey that is left is on the card, where it is 4.5:1 or better',
+     /\.pol-cmp-announce \{[^}]*color: var\(--text\)/.test(bare) && /\.pol-cmp-areaname \{[^}]*color: var\(--text\)/.test(bare) && onBeige >= 4.5 && mutedOnBeige < 4.5 && mutedOnCard >= 4.5, `${onBeige.toFixed(2)} / ${mutedOnBeige.toFixed(2)} / ${mutedOnCard.toFixed(2)}`);
+  const sizes = [...bare.matchAll(/font-size:\s*([\d.]+)px/g)].map(m => +m[1]);
+  ok('nothing in the Compare styles is under 12px (it had 11px labels, and 7% of the text was 11 or 12px), and the smallest text is the site\'s 13px notes size or the 12px labels', sizes.length > 10 && Math.min(...sizes) >= 12, 'smallest ' + Math.min(...sizes) + 'px');
+  ok('the keyboard focus ring is the site\'s navy, 2px, on the ring and on a sample (the green one was 2.6:1), and nothing in the Compare styles draws a green outline',
+     /\.pol-cmp-ring:focus-visible \{ outline: 2px solid var\(--navy\)/.test(bare) && /\.pol-cmp-sample:focus-visible \{ outline: 2px solid var\(--navy\)/.test(bare) && !/outline[^;}]*var\(--green\)/.test(bare) && ratio(tok('navy'), tok('light-beige')) >= 3, '');
+  const policyBare = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  ok('the menus and the pills are a unit each, the menus first: the slot goes under the switch when it has less than the 460px the six pills take; the menus are a unit that grows from 320px, the same on both views, so that on one line the pills keep their size and end the row at the same place on Links and on Compare, and a menu is at most 520px wide; the pills are one unit that wraps (to a line of their own under the menus) only when they do not fit beside them, and wrap among themselves only on a phone; no view has a basis of its own',
+     /\.pol-subview-slot\.controls \{[^}]*flex: 1 1 460px; min-width: 0;/.test(policyBare) && /\.pol-subview-slot \.pol-subview-pills \{[^}]*flex: 0 1 auto; min-width: 0; min-height: 32px;/.test(policyBare) && /\.pol-subview-pick \{[^}]*flex: 1 1 320px; min-width: 0;/.test(policyBare) &&
+     /\.pol-subview-pick \.ctl-pair \{ flex: 1 1 150px; min-width: 0; max-width: 520px; \}/.test(policyBare) && !/#polLinksSlot \.pol-subview-pick|#polCmpSlot \.pol-subview-pick|#polLinksSlot \.ctl-pair|#polCmpSlot \.ctl-pair/.test(policyBare) &&
+     /\.pol-subview-pick \.ctl-pair select \{[^}]*width: 100%/.test(policyBare) && /\.pol-subview-slot \.kw-pill \{ flex: none; \}/.test(policyBare) && !/pol-cmp-bar|pol-cmp-pills|pol-draft-count/.test(policyBare), '');
+  const phone = /@media \(max-width: 700px\) \{([\s\S]*?)\n  \}/.exec(bare), narrow = /@media \(max-width: 780px\) \{([\s\S]*?)\n  \}/.exec(bare);
+  ok('the row with the switch and the menus sticks under the top of the window only while Compare is showing and the window is wide enough (above 780px, where the row is the switch and the menus with the pills under them, two lines, 91px, or one line from about 1125px, and not three): it takes the bar\'s background and rule so that what scrolls under it is covered, keeps the switch where it was, and the ring\'s scroll margin clears its measured height',
+     /\.pol-subview-bar\.is-pinned \{ position: sticky; top: 0; z-index: 100; margin-top: 10px; padding: 10px 0; background: var\(--beige\); border-bottom: 1px solid var\(--divider\); \}/.test(policyBare) &&
+     !!narrow && /\.pol-subview-bar\.is-pinned \{ position: static; \}/.test(narrow[1]) && /\.pol-cmp-ring \{ scroll-margin-top: 12px; \}/.test(narrow[1]) && /\.pol-cmp-ring \{[^}]*scroll-margin-top: calc\(var\(--pol-bar-h, 76px\) \+ 10px\)/.test(bare), narrow ? '' : 'no 780px block');
+  ok('on a phone the two cells of a row stack, the ring is only the picture and its words (the names are in the cells below), the row with the switch and the menus scrolls away instead of covering a third of the window, each menu has a line of its own, and the buttons, pills and menus are 44px tall; above that width a row is two columns',
+     !!phone && /\.pol-cmp-row \{ grid-template-columns: 1fr; \}/.test(phone[1]) && /\.pol-cmp-corner \{ display: none; \}/.test(phone[1]) && /\.pol-cmp-clash \{ width: 150px; height: 83px; \}/.test(phone[1]) && /\.pol-subview-bar\.is-pinned \{ margin-top: 16px; padding: 0 0 10px; \}/.test(phone[1]) &&
+     /\.pol-cmp \.pol-action-btn \{ min-height: 44px; \}/.test(phone[1]) && /\.pol-subview-slot select, \.pol-subview-slot \.kw-pill, [^{]*\{ min-height: 44px; \}/.test(policyBare) && /\.pol-subview-pick \.ctl-pair \{ flex-basis: 100%; max-width: none; \}/.test(phone[1]) &&
+     /\.pol-cmp-row \{ display: grid; grid-template-columns: 1fr 1fr;/.test(bare), phone ? '' : 'no phone block');
+  ok('the rows of recorded pairs left no styles behind: nothing in the Compare styles is for the competing-pair pills, the strip they sat in, the count of pairs or a row to swipe along', !/pol-cmp-scroll|pol-cmp-starts|pol-cmp-count/.test(bare), '');
+
+  /* ── "Yes, try it" (2026-11-24): on a phone a long "What it is" is folded to its first lines, with a button that opens it ───────────────────── */
+  const foldedPg = openCmp({ transform: afterMap(`(() => { const a = POLICY_DATA.find(x => x.id === ${JSON.stringify(xs)}), b = POLICY_DATA.find(x => x.id === ${JSON.stringify(ys)}); a.summary = 'A long summary. ' + 'Words go on and on and on. '.repeat(40) + 'See {{pol:${ys}|the other policy}}.'; b.summary = 'A short summary.'; })();`) });
+  pick(foldedPg, xs, 'A'); pick(foldedPg, ys, 'B');
+  const noBtn = { getAttribute: () => '(no button)', textContent: '(no button)', click: () => {}, dispatchEvent: () => {} };   // a missing button fails the checks that look at it, rather than crashing the ones after
+  const foldOf = side => cellOf(foldedPg, side, 'What it is').querySelector('.pol-cmp-fold'), rawBtn = side => foldOf(side).querySelector('.pol-cmp-fold-btn'), btnOf = side => rawBtn(side) || noBtn, foldText = side => foldOf(side).querySelector('.pol-modal-text');
+  ok('a summary of more than 600 characters has a fold with a Show more button (closed, named for the policy, pointing at the text); a short one has neither, and the two cells of the row fold on their own',
+     foldOf('a').classList.contains('is-long') && !foldOf('a').classList.contains('is-open') && !!rawBtn('a') && btnOf('a').getAttribute('aria-expanded') === 'false' && btnOf('a').textContent === 'Show more' &&
+     btnOf('a').getAttribute('aria-label') === `Show more about ${facts.title[xs]}` && !!foldText('a').id && btnOf('a').getAttribute('aria-controls') === foldText('a').id && !foldOf('b').classList.contains('is-long') && !rawBtn('b'), foldOf('a').className + ' / ' + foldOf('b').className);
+  const fullText = foldText('a').textContent;
+  ok('folding never touches the words: the whole summary is in the page from the first word to the last, folded or open (it is only clipped by the styles), and a short one is as it was',
+     fullText.startsWith('A long summary.') && fullText.endsWith('the other policy.') && (fullText.match(/Words go on and on and on\./g) || []).length === 40 && foldText('b').textContent === 'A short summary.', String(fullText.length));
+  const edges = facts.order.map(id => { pick(pg, id, 'A'); const f = cellOf(pg, 'a', 'What it is').querySelector('.pol-cmp-fold'); return [id, f.querySelector('.pol-modal-text').textContent.length, f.classList.contains('is-long'), !!f.querySelector('.pol-cmp-fold-btn')]; });
+  ok('every card folds by the same rule, whether its words are in the data or synced from its Doc: more than 600 characters of text, and then it has the button (one that is not long has none)',
+     edges.length === facts.order.length && edges.every(([, n, long, btn]) => long === (n > 600) && btn === long), edges.filter(([, n, long]) => long !== (n > 600)).map(e => e.join(':')).join());
+  btnOf('a').click();
+  const open1 = [foldOf('a').classList.contains('is-open'), btnOf('a').getAttribute('aria-expanded'), btnOf('a').textContent, btnOf('a').getAttribute('aria-label')];
+  btnOf('a').click();
+  const open2 = [foldOf('a').classList.contains('is-open'), btnOf('a').getAttribute('aria-expanded'), btnOf('a').textContent, btnOf('a').getAttribute('aria-label')];
+  ok('pressing Show more opens the summary (aria-expanded true, "Show less about ...") and pressing it again folds it',
+     sameList(open1, [true, 'true', 'Show less', `Show less about ${facts.title[xs]}`]) && sameList(open2, [false, 'false', 'Show more', `Show more about ${facts.title[xs]}`]), JSON.stringify([open1, open2]));
+  const xr = foldText('a').querySelector('.pol-xref');
+  if (xr) xr.dispatchEvent(new foldedPg.w.FocusEvent('focusin', { bubbles: true }));
+  const byFocus = foldOf('a').classList.contains('is-open') && btnOf('a').getAttribute('aria-expanded') === 'true';
+  btnOf('a').click();
+  btnOf('a').dispatchEvent(new foldedPg.w.FocusEvent('focusin', { bubbles: true }));
+  ok('keyboard focus that lands in a folded summary (on a link in the part that is out of sight) opens it, so the focus is never on something that cannot be seen; focus on the Show more button itself does not',
+     !!xr && byFocus && !foldOf('a').classList.contains('is-open'), '');
+  btnOf('a').click();
+  pick(foldedPg, facts.order.find(i => i !== xs && i !== ys), 'B'); pick(foldedPg, ys, 'B');
+  ok('a pair drawn again starts folded again', foldOf('a').classList.contains('is-long') && !foldOf('a').classList.contains('is-open') && btnOf('a').textContent === 'Show more' && foldedPg.errors.length === 0, foldOf('a').className);
+  const modalsCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'modals.css'), 'utf8'), dialogLine = +(/\.pol-modal-text \{[^}]*line-height: ([\d.]+)/.exec(modalsCss) || [0, 0])[1];
+  const outsidePhone = bare.replace(phone ? phone[0] : '', '');
+  ok('the fold is for a phone only: the clip (seven lines of the dialog\'s text, faded out) and the button are inside the phone rules; outside them nothing is clipped and the button is not shown',
+     !!phone && dialogLine > 0 && Math.abs(7 * dialogLine - 11.9) < 0.01 && /\.pol-cmp-fold\.is-long:not\(\.is-open\) \.pol-modal-text \{ max-height: 11\.9em; overflow: hidden;[^}]*mask-image: linear-gradient/.test(phone[1]) && /\.pol-cmp-fold\.is-long \.pol-cmp-fold-btn \{ display: inline-block; \}/.test(phone[1]) &&
+     /\.pol-cmp-fold-btn \{ display: none;/.test(outsidePhone) && !/max-height/.test(outsidePhone) && !/\.pol-cmp-fold[^{]*\.pol-modal-text \{/.test(outsidePhone), `line-height ${dialogLine}`);
+
+  /* The Compare checks that have to wait for the browser (a Back, or an address typed in, finishes a moment after it is made) are in one async function, which the last async block at the end of the file
+     runs in order after the other groups, as it does legislationTests and the rest: an async block of its own here would race the exit. */
+  compareAddressTests = async () => {
+    /* ── "Yes, go ahead" (2026-11-24): each comparison has an address, and the browser's Back and Forward walk through the pairs ─────────────────────
+       The pair on screen is in the address (#compare/<a>/<b>); a link opens Compare on it (40-router.js); each change of the pair (polCmpGo) adds ONE step to the browser's history, which remembers the pair before it,
+       and the Back pill is the browser's Back limited to that (it finishes a moment later, so these wait for it); a Copy link pill copies the address. The rest of the site still only rewrites the address, adding no
+       step: the switch under the masthead, the tabs and the policy dialog are checked here too, because they now write the pair's address and must not add to the history. docs/adr/0007-compare-pair-addresses-push-history.md */
+    const cmpHash = ids => '#compare/' + ids.join('/');
+    const namesIn = x => [...x.d.querySelectorAll('#polCmpCols .pol-cmp-row-head .pol-cmp-name')].map(e => e.textContent);
+    const stepsOf = x => x.w.history.length;
+    const ringFor = ([a, b]) => a === b ? 'pol-cmp-same' : linkedIn(facts.riv, a, b) ? 'pol-cmp-fight' : linkedIn(facts.pair, a, b) ? 'pol-cmp-team' : 'pol-cmp-idle';
+
+    const el = (x, id) => x.d.getElementById(id);
+    const pairIn = x => ['A', 'B'].map(which => { const e = el(x, 'polCmp' + which); return e ? e.value : '(no menu)'; });
+    const ringOf = x => { const e = el(x, 'polCmpRing'); return e ? e.className.replace('pol-cmp-ring ', '') : '(no ring)'; };
+    const textIn = (x, id) => { const e = el(x, id); return e ? e.textContent : '(no #' + id + ')'; };
+    const attrOf = (x, id, a) => { const e = el(x, id); return e ? e.getAttribute(a) : '(no #' + id + ')'; };
+    const isHidden = (x, id) => { const e = el(x, id); return !e || e.style.display === 'none'; };
+    const backOf = x => el(x, 'polCmpBack') || { disabled: false, title: '(no Back pill)', click() {} };
+    // Everything a reader sees of a pair that comes from the pair itself (and its address), so that a pair drawn again by Back or Forward can be compared with the same pair as it was first drawn.
+    const snap = x => JSON.stringify({ pair: pairIn(x), hash: x.w.location.hash, ring: ringOf(x), names: namesIn(x), reason: textIn(x, 'polCmpReason'), rows: rowLabels(x) });
+    // A check that cannot run (a mutation took the view away, say) fails by name instead of throwing in the section after it.
+    const section = async (what, fn) => { try { await fn(); } catch (e) { ok(`${what}: the checks could not finish (${e.message})`, false, String(e.stack || e).split('\n').slice(0, 3).join(' | ')); } };
+
+    await section('the Back pill walks back through the pairs', async () => {
+      const bk = openCmp(), backBtn = bk.d.getElementById('polCmpBack'), pairOf = x => [menu(x, 'A'), menu(x, 'B')], start = pairOf(bk), startsOff = backBtn.disabled;
+      pick(bk, facts.order.find(i => !start.includes(i)), 'A');                          // a menu
+      const afterMenu = pairOf(bk), onAfter = !backBtn.disabled, tip = backBtn.title;
+      [...bk.d.querySelectorAll('.pol-cmp-sample')].find(b => b.dataset.id !== (b.dataset.side === 'a' ? menu(bk, 'B') : menu(bk, 'A'))).click();   // a sample
+      const afterSample = pairOf(bk);
+      const q = [0.15, 0.85]; bk.w.Math.random = () => q.length ? q.shift() : 0.5;
+      bk.d.getElementById('polCmpRandom').click();                                        // Randomize
+      const afterRandom = pairOf(bk);
+      // The pill presses the browser's Back (2026-11-24), which finishes a moment later: wait for it, as a reader's next glance would.
+      backBtn.click(); await settle(3); const back1 = pairOf(bk);
+      backBtn.click(); await settle(3); const back2 = pairOf(bk);
+      backBtn.click(); await settle(3); const back3 = pairOf(bk);
+      ok('Back is off until the pair has been changed, names the pair it goes back to, and then undoes each change in turn, whatever made it (a menu, a sample, Randomize), until it is at the first pair and off again',
+         startsOff && onAfter && tip.includes(facts.title[start[0]]) && tip.includes(facts.title[start[1]]) && !sameList(afterRandom, afterSample) && sameList(back1, afterSample) && sameList(back2, afterMenu) && sameList(back3, start) && backBtn.disabled && bk.errors.length === 0, JSON.stringify([start, afterMenu, afterSample, afterRandom, back1, back2, back3]));
+    });
+
+    await section('an address opens Compare on the pair it names', async () => {
+      // 1. an address opens Compare on the pair it names
+      const lk = load('index.html', cmpHash(teams[0])); await settle(10);
+      ok('an address for a pair opens the Landscape on Compare with those two policies (the Policy tab current, Compare pressed, both menus, both names and the ring), adds no step to the history, and logs no error',
+         lk.d.getElementById('viewPolicy').getAttribute('aria-selected') === 'true' && attrOf(lk, 'polSubviewCompare', 'aria-pressed') === 'true' && !isHidden(lk, 'polCompareArea') && sameList(pairIn(lk), teams[0]) &&
+         sameList(namesIn(lk), teams[0].map(id => facts.title[id])) && ringOf(lk) === ringFor(teams[0]) && lk.w.location.hash === cmpHash(teams[0]) && stepsOf(lk) === 1 && lk.errors.length === 0,
+         `${lk.w.location.hash} ${pairIn(lk)} ${ringOf(lk)} steps ${stepsOf(lk)} ${lk.errors[0] || ''}`);
+      const bare0 = load('index.html', '#compare'); await settle(10);
+      ok('#compare opens Compare on the pair it opens with (the first competing pair the cards record), and the address is rewritten to name that pair, with no step added',
+         sameList(pairIn(bare0), rivals[0]) && bare0.w.location.hash === cmpHash(rivals[0]) && stepsOf(bare0) === 1 && bare0.errors.length === 0, `${bare0.w.location.hash} ${pairIn(bare0)} ${bare0.errors[0] || ''}`);
+    });
+
+    await section('an address that does not name two policies on the page', async () => {
+      // 2. an address that does not name two policies on the page
+      const goneId = facts.order.find(i => !rivals[0].includes(i) && !teams[0].includes(i));
+      const inj = encodeURIComponent('<img src=x onerror=alert(1)>'), inj2 = encodeURIComponent('"]\'[x');
+      const badLinks = [
+        ['an id that is no policy', `#compare/zz-no-such-policy/${teams[0][1]}`],
+        ['one id alone', `#compare/${teams[0][0]}`],
+        ['ids in capitals', `#compare/${teams[0][0].toUpperCase()}/${teams[0][1].toUpperCase()}`],
+        ['markup and quotes where the ids go', `#compare/${inj}/${inj2}`],
+        ['a policy the Sheet has archived', `#compare/${goneId}/${teams[0][1]}`, afterMap(`POLICY_MAP.archived.push(${JSON.stringify(goneId)});`)],
+      ];
+      const badOut = [];
+      for (const [what, h, transform] of badLinks) {
+        const x = load('index.html', h, transform ? { transform } : undefined); await settle(10);
+        badOut.push([what, sameList(pairIn(x), rivals[0]), x.w.location.hash === cmpHash(rivals[0]), stepsOf(x) === 1, x.errors.length === 0, !x.d.querySelector('img[src="x"]')]);
+      }
+      ok('an address that does not name two policies on the page (an id that is no policy, one id alone, capitals, markup and quotes, a policy the Sheet has archived) opens Compare on its first pair, the address is rewritten to say so, no step is added, and nothing from the address reaches the page',
+         badOut.length === 5 && badOut.every(r => r.slice(1).every(Boolean)), badOut.filter(r => !r.slice(1).every(Boolean)).map(r => JSON.stringify(r)).join(' | '));
+      const same0 = load('index.html', cmpHash([teams[0][0], teams[0][0]])); await settle(10);
+      const extra0 = load('index.html', cmpHash(teams[0]) + '/extra/parts'); await settle(10);
+      ok('the same policy twice is a valid address (it opens as the picture\'s "same policy" and the address is kept), and parts after the two ids are dropped from the address',
+         sameList(pairIn(same0), [teams[0][0], teams[0][0]]) && ringOf(same0) === 'pol-cmp-same' && same0.w.location.hash === cmpHash([teams[0][0], teams[0][0]]) && sameList(pairIn(extra0), teams[0]) && extra0.w.location.hash === cmpHash(teams[0]) && same0.errors.length + extra0.errors.length === 0,
+         `${same0.w.location.hash} ${ringOf(same0)} ${extra0.w.location.hash}`);
+    });
+
+    await section("the Landscape's switch gives the address of what is on screen", async () => {
+      // 3. the Landscape's switch writes the address of what is on screen, and adds no step
+      const sw = load('index.html', '#policy'); await settle(10);
+      const sw0 = stepsOf(sw), swHash = [];
+      click(sw.w, sw.d, 'polSubviewCompare'); swHash.push(sw.w.location.hash);
+      click(sw.w, sw.d, 'polSubviewLinks'); swHash.push(sw.w.location.hash);
+      click(sw.w, sw.d, 'polSubviewCompare'); swHash.push(sw.w.location.hash);
+      click(sw.w, sw.d, 'polSubviewAll'); swHash.push(sw.w.location.hash);
+      const swSteps = stepsOf(sw);
+      click(sw.w, sw.d, 'polSubviewCompare');
+      sw.w.location.hash = '#policy'; await settle(5);
+      ok('the Landscape\'s switch gives the address of what is on screen and adds no step (Compare is the pair it opens on, Links is the policy it opens on, All is #policy), and the address #policy, typed while Compare is showing, puts the Landscape back on All',
+         sameList(swHash, [cmpHash(rivals[0]), '#links/' + linksStart(linksFacts(sw)), cmpHash(rivals[0]), '#policy']) && swSteps === sw0 && attrOf(sw, 'polSubviewAll', 'aria-pressed') === 'true' && !isHidden(sw, 'polCatRows') && isHidden(sw, 'polCompareArea') && sw.w.location.hash === '#policy' && sw.errors.length === 0,
+         `${swHash} steps ${sw0}/${swSteps} ${sw.w.location.hash}`);
+    });
+
+    await section('a change of pair adds one step, however it is made', async () => {
+      // 4. a change of pair adds one step, however it is made
+      const st = openCmp(); await settle(5);
+      const stOut = [], st0 = stepsOf(st);
+      const doStep = (what, fn) => {
+        const n = stepsOf(st), was = pairIn(st).join('/');
+        fn();
+        const now = pairIn(st);
+        stOut.push([what, stepsOf(st) - n === 1, now.join('/') !== was, st.w.location.hash === cmpHash(now), sameList(st.w.history.state, { polCmp: { prev: was.split('/') } })]);
+      };
+      const others = () => facts.order.filter(i => i !== menu(st, 'A') && i !== menu(st, 'B'));
+      const rnd = vals => { const q = vals.slice(); st.w.Math.random = () => q.length ? q.shift() : 0.5; };
+      doStep('menu A', () => pick(st, others()[0], 'A'));
+      doStep('menu B', () => pick(st, others()[1], 'B'));
+      doStep('Randomize', () => { rnd([0.15, 0.85]); st.d.getElementById('polCmpRandom').click(); });
+      doStep('menu A, to a policy that has samples', () => pick(st, others().sort((x, y) => partnersIn(facts.pair, y).length - partnersIn(facts.pair, x).length)[0], 'A'));
+      doStep('a sample', () => { const s = [...st.d.querySelectorAll('.pol-cmp-sample')].find(b => b.dataset.id !== (b.dataset.side === 'a' ? menu(st, 'B') : menu(st, 'A'))); if (s) s.click(); });
+      doStep('Refresh', () => st.d.getElementById('polCmpRefresh').click());
+      const sameBefore = [stepsOf(st), st.w.location.hash];
+      pick(st, menu(st, 'A'), 'A');
+      st.d.getElementById('polCmpRefresh').click();
+      ok('every way of changing the pair adds exactly one step to the history, at the new pair\'s address, and the step remembers the pair before it: a menu (A, then B), Randomize, a menu again, a sample, and Refresh; choosing the pair that is already showing, or pressing Refresh on the pair the view opens on, adds nothing',
+         stOut.length === 6 && stOut.every(r => r.slice(1).every(Boolean)) && sameList([stepsOf(st), st.w.location.hash], sameBefore) && stepsOf(st) === st0 + 6 && st.errors.length === 0, JSON.stringify(stOut.filter(r => !r.slice(1).every(Boolean))) + ` steps ${st0} -> ${stepsOf(st)}`);
+      const keptSteps = stepsOf(st), keptPair = pairIn(st);
+      click(st.w, st.d, 'viewCards'); const awayHash = st.w.location.hash;
+      click(st.w, st.d, 'viewPolicy');
+      ok('leaving the tab and coming back keeps the pair, its address and the step Back goes to, and adds no step: Papers is #papers, and the Policy tab is Compare on the same pair again',
+         awayHash === '#papers' && st.w.location.hash === cmpHash(keptPair) && sameList(pairIn(st), keptPair) && stepsOf(st) === keptSteps && !backOf(st).disabled && !!(st.w.history.state && st.w.history.state.polCmp) && st.errors.length === 0,
+         `${awayHash} ${st.w.location.hash} steps ${keptSteps}/${stepsOf(st)} ${JSON.stringify(st.w.history.state)}`);
+    });
+
+    await section('Back and Forward', async () => {
+      // 5. Back and Forward
+      const bf = openCmp(); await settle(5);
+      const bfSteps0 = stepsOf(bf), seen = [snap(bf)];
+      const bfq = [0.15, 0.85]; bf.w.Math.random = () => bfq.length ? bfq.shift() : 0.5;
+      bf.d.getElementById('polCmpRandom').click(); seen.push(snap(bf));
+      pick(bf, facts.order.find(i => !rivals[0].includes(i) && i !== menu(bf, 'A') && i !== menu(bf, 'B')), 'B'); seen.push(snap(bf));
+      bf.d.getElementById('polCmpRefresh').click(); seen.push(snap(bf));
+      const bfSteps = stepsOf(bf), walked = [];
+      for (let i = seen.length - 2; i >= 0; i--) { bf.w.history.back(); await settle(3); walked.push(['back', snap(bf) === seen[i], stepsOf(bf) === bfSteps]); }
+      for (let i = 1; i < seen.length; i++) { bf.w.history.forward(); await settle(3); walked.push(['forward', snap(bf) === seen[i], stepsOf(bf) === bfSteps]); }
+      ok('the browser\'s Back and Forward walk through the pairs: each is drawn in full again (menus, names, ring, reason, rows) at its own address, and neither adds a step',
+         seen.length === 4 && bfSteps === bfSteps0 + 3 && walked.length === 6 && walked.every(r => r[1] && r[2]) && bf.errors.length === 0, JSON.stringify(walked) + ` ${bfSteps0}/${bfSteps}`);
+      bf.w.history.back(); await settle(3); bf.w.history.back(); await settle(3);
+      const atTwo = snap(bf);
+      pick(bf, facts.order.find(i => !pairIn(bf).includes(i)), 'B');
+      const fresh = snap(bf);
+      bf.w.history.forward(); await settle(3);
+      ok('a change of pair made after going Back drops the steps ahead of it, as any page does: the history is the earlier pairs and the new one, and Forward has nowhere to go',
+         stepsOf(bf) === bfSteps0 + 2 && snap(bf) === fresh && fresh !== atTwo && bf.errors.length === 0, `steps ${bfSteps0} -> ${stepsOf(bf)}`);
+    });
+
+    await section("the Back pill is the browser's Back, and an address typed in", async () => {
+      // 6. the Back pill is the browser's Back, limited to the pairs
+      const arr = load('index.html', '#about'); await settle(10);
+      arr.w.location.hash = cmpHash(teams[1]); await settle(5);
+      const arrOff = backOf(arr).disabled, arr1 = stepsOf(arr);
+      pick(arr, facts.order.find(i => !teams[1].includes(i)), 'B');
+      const arrOn = !backOf(arr).disabled, arrTip = backOf(arr).title, arr2 = stepsOf(arr);
+      backOf(arr).click(); await settle(3);
+      ok('a page opened on a pair by an address starts with Back off, even with history behind it (the step an address makes remembers no earlier pair); after a change it is on and names the pair; pressing it is the browser\'s Back: the pair and its address come back, no step is added, and it is off again',
+         arr1 === 2 && arrOff && arrOn && arrTip.includes(facts.title[teams[1][0]]) && arrTip.includes(facts.title[teams[1][1]]) && arr2 === arr1 + 1 && sameList(pairIn(arr), teams[1]) && arr.w.location.hash === cmpHash(teams[1]) && stepsOf(arr) === arr2 && backOf(arr).disabled && arr.errors.length === 0,
+         `${arr1} ${arrOff} ${arrOn} ${arrTip} ${arr2}/${stepsOf(arr)} ${arr.w.location.hash}`);
+    });
+
+    await section('a policy dialog opened from Compare', async () => {
+      // 7. a policy dialog opened from Compare rewrites the step's address and gives it back
+      const dlg = openCmp(); await settle(5);
+      pick(dlg, facts.order.find(i => !pairIn(dlg).includes(i)), 'B');
+      const dlgPair = pairIn(dlg), dlgSteps = stepsOf(dlg);
+      dlg.d.querySelector('#polCmpCols .pol-cmp-open').click();
+      const whileOpen = [dlg.w.location.hash, stepsOf(dlg)];
+      dlg.d.getElementById('polModalClose').click();
+      const afterClose = [dlg.w.location.hash, stepsOf(dlg), !backOf(dlg).disabled, !!(dlg.w.history.state && dlg.w.history.state.polCmp)];
+      ok('a policy dialog opened from Compare is #policy/<id> while it is open and gives the pair its address back when it closes; the step is rewritten, not added, and the Back pill still knows its pair',
+         whileOpen[0] === '#policy/' + dlgPair[0] && whileOpen[1] === dlgSteps && afterClose[0] === cmpHash(dlgPair) && afterClose[1] === dlgSteps && afterClose[2] && afterClose[3] && dlg.errors.length === 0, JSON.stringify([whileOpen, afterClose]));
+    });
+
+    await section('Copy link and the bar', async () => {
+      // 8. Copy link
+      const cp = load('index.html', cmpHash(teams[0])); await settle(10);
+      const copied = [];
+      cp.w.document.execCommand = () => { const t = cp.w.document.querySelector('textarea'); copied.push(t && t.value); return true; };
+      const copyBtn = cp.d.getElementById('polCmpCopy');
+      copyBtn.click();
+      const flash = copyBtn.textContent;
+      pick(cp, facts.order.find(i => !teams[0].includes(i)), 'B');
+      copyBtn.click();
+      ok('Copy link copies the address of the pair on screen, built from the page\'s own location, says it has ("Copied"), and follows the pair when it changes',
+         sameList(copied, [`https://example.org/${cmpHash(teams[0])}`, `https://example.org/${cmpHash(pairIn(cp))}`]) && flash === 'Copied ✓' && cp.errors.length === 0, JSON.stringify(copied));
+      const barCss = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'policy.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      const barKids = [...pg.d.getElementById('polCmpSlot').children], pickBox = barKids[0], pillsBox = barKids[1];
+      ok('the switch\'s row holds the two menus as one unit and then Back, Copy Draft, Copy link, Print, Randomize and Refresh, in alphabetical order, as another (so that where there is no room the pills drop to a line of their own together, under the menus)',
+         barKids.length === 2 && !!pillsBox && pillsBox.classList.contains('pol-subview-pills') && !!pickBox && pickBox.classList.contains('pol-subview-pick') && sameList([...pickBox.children].map(e => e.querySelector('select').id), ['polCmpA', 'polCmpB']) &&
+         sameList([...pillsBox.children].map(e => e.id), ['polCmpBack', 'polCmpCopyDraft', 'polCmpCopy', 'polCmpPrint', 'polCmpRandom', 'polCmpRefresh']) && !pg.d.getElementById('polCmpAdd') && !/\bAdd\b/.test(pg.d.getElementById('polCmpSlot').textContent) &&
+         pg.d.getElementById('polCmpCopy').textContent === 'Copy link' && !!pg.d.getElementById('polCmpCopy').title && pg.d.getElementById('polCmpRandom').textContent === 'Randomize' && !!pg.d.getElementById('polCmpRandom').title && /\.pol-subview-slot \.pol-subview-pills \{ display: inline-flex; flex-wrap: wrap;/.test(barCss), `${barKids.length} children`);
+    });
+
+    await section('no switch while the cards are hidden', async () => {
+      // 9. no switch to put on Compare while the cards are hidden
+      const hideCards = html => { const m = 'let policyCardsHidden = false;'; if (!html.includes(m)) throw new Error('policyCardsHidden is no longer declared as the test expects'); return html.replace(m, 'let policyCardsHidden = true;'); };
+      const hid = load('index.html', cmpHash(teams[0]), { transform: hideCards }); await settle(10);
+      ok('while the policy cards are hidden (policyCardsHidden) there is no switch to put on Compare: an address for a pair opens the tab on its notice, with no error, and the address is the tab\'s own',
+         /temporarily unavailable/.test(hid.d.getElementById('policyArea').textContent) && hid.w.location.hash === '#policy' && bodyView(hid.d) === 'policy' && hid.errors.length === 0, `${hid.w.location.hash} ${hid.errors[0] || ''}`);
+    });
+  };
 }
 
 /* ── policy cards: no Research basis, no Press & resources, no References list in "Copy as draft" ─────
@@ -1308,8 +2234,8 @@ const bodyView = d => (d.body.className.match(/([\w-]+)-view/) || [])[1] || null
    Phase and Domain. The `level` and `category` fields stay in the data: the area is derived from the category.
 
    And the "How it interacts" section (a card's pairsWith and competesWith as Pairs with / Competes with lists of cross-links) was removed from
-   the dialog and from "Copy as draft" at the owner's request. The two fields stay in the data: pairsWith draws the Links graph's solid lines and
-   competesWith its dashed ones (checked above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block).
+   the dialog and from "Copy as draft" at the owner's request. The two fields stay in the data: pairsWith fills the Links view's left column and
+   competesWith its right one (checked above), and a cross-link written inside a card's own text still opens the card it names (checked at the end of this block).
 
    Last, the `level` field (which of five stages of AI disruption a card addressed: Repair, Expand, Build, Restructure, Transform) and its
    DISRUPTION_LEVELS table were retired once nothing showed them. The one thing that still read them was a per-category column view that
@@ -1413,15 +2339,16 @@ for (const old of ['#sources', '#research', '#changelog']) {
 }
 
 /* ── Legislation: a map of the states, a card that follows the pointer, and the bills ────────────────────────────────
-   The section opens; its masthead says what is loaded, from the data; the map draws all 50 states and DC; pointing at a state shows it in the card (its bills and its midterm results); clicking pins it and narrows the
-   bills table. The bills (federal ones from GovInfo, state ones from Open States) are a file of their own, fetched when a section of Government action first opens, so every test here waits for them. The midterm results
-   (Senate, House, governor) come from the Associated Press's pages and are cited below the map; they are by state, in the card (they were a layer of their own until 2026-11-18). Part A checks the shipped bills and the
-   view the section opens on, part B the midterm results in the card and pinning, part C paging, the hover card's cap, the territories and the sources, and part D the bill paths with five test bills of its own (the real
+   The section opens; its masthead says what is loaded, from the data; the map draws all 50 states and DC; pointing at a state shows it in the card (its bills; there are no midterm results); clicking pins it and narrows the
+   bills table. The bills (federal ones from GovInfo, state ones from Open States) are a file of their own, fetched when a section of Government action first opens, so every test here waits for them. The 2026 midterm results
+   that used to be on the page (a layer of the map until 2026-11-18, then a block in the card, totals in its overview and a table at the head of All) were removed on 2026-11-23; part B checks that nothing of them is left. Part A checks the shipped bills and the
+   view the section opens on, part B the card and pinning, part C paging, the hover card's cap, the territories and the sources, and part D the bill paths with five test bills of its own (the real
    ones are set aside and put back), so that what counts as active (introduced and not failed) and what is left out are both checked. */
 const legislationTests = async () => {
-  // These checks run on All, which holds the bills, the midterm results and the card with all of it (Legislation alone holds the bills: its own checks are after these). The Enforcement rows are set aside (noActions): the
-  // card shows them in a block of its own, which the Enforcement checks test; these checks are about the bills and the results.
-  const { w, d } = load('index.html', '#all', { transform: noActions });
+  // These checks run on Legislation, the section the tab opens on and the one the Reset button puts it back on (the owner, 2026-11-24; they ran on All until then, when All was where the tab opened, and a long chain of Resets that
+  // each go back to the opening section has to stay on one section). Legislation holds the bills and the card with them; All's own words (its legend counts items, its card says Bills in Congress) are checked in the Government action block
+  // above and in the Federal and States block below. The Enforcement rows are set aside (noActions): the card shows them in a block of its own, which the Enforcement checks test; these checks are about the bills.
+  const { w, d } = load('index.html', '#legislation', { transform: noActions });
   await settle(10);
   const fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true }));
   const path = code => d.querySelector(`#legMap path[data-state="${code}"]`);
@@ -1431,13 +2358,6 @@ const legislationTests = async () => {
   const legend = () => d.getElementById('legLegend').textContent;
   const num = n => n.toLocaleString('en-US');
   const area = d.getElementById('legislationArea');
-  const nStates = w.eval('Object.keys(MIDTERM_RESULTS).length');
-  const cnt = (office, k) => w.eval(`Object.values(MIDTERM_RESULTS).filter(s => s.${office} && s.${office}.result === '${k}').length`);
-  const races = office => w.eval(`Object.values(MIDTERM_RESULTS).filter(s => s.${office}).length`);
-  const seats = w.eval('Object.values(MIDTERM_RESULTS).reduce((n, s) => { const h = s.house || {}; return n + (h.d || 0) + (h.r || 0) + (h.dLead || 0) + (h.rLead || 0) + (h.runoff || 0); }, 0)');
-  const houseStates = k => w.eval(`Object.values(MIDTERM_RESULTS).filter(s => { const d = s.house.d || 0, r = s.house.r || 0; return ${k === 'none' ? 'd + r === 0' : k === 'd' ? 'd > r' : k === 'r' ? 'r > d' : 'd === r && d + r > 0'}; }).length`);
-  const AP = 'https://apnews.com/projects/elections-2026/';
-  const nat = w.eval('MIDTERM_NATIONAL');
   // the shipped bills
   const nBills = w.eval('LEGISLATION_DATA.filter(b => !b.passing).length'), nPassing = w.eval('LEGISLATION_DATA.filter(b => b.passing).length'), nFed = w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && !b.passing).length"), nFedPassing = w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && b.passing).length"), nState = nBills - nFed;
   const countOf = code => w.eval(`LEGISLATION_DATA.filter(b => b.level === 'state' && b.state === '${code}' && !b.passing).length`);
@@ -1447,7 +2367,6 @@ const legislationTests = async () => {
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const longDay = iso => { const [y, m, day] = iso.split('-'); return `${MONTHS[+m - 1]} ${+day}, ${y}`; };   // "2026-11-17" as the page writes it
   const PAGE = 10, pagesOf = n => Math.max(1, Math.ceil(n / PAGE));   // the bills table's page (LEG_PAGE_SIZE); the Papers list and the Fact Bank keep fifty
-  const RPAGE = 10, rpagesOf = n => Math.max(1, Math.ceil(n / RPAGE));   // the results table's page (LEG_RESULTS_PAGE_SIZE): states to a page
   // The pointer leaving the map: with nothing pinned the card stays on the state last pointed at for LEG_CARD_GRACE ms (so the pointer can reach its link), so a test that wants the card
   // back at the overview waits that long.
   const GRACE = 450, leaveMap = async () => { d.getElementById('legMap').dispatchEvent(new w.MouseEvent('mouseleave', { bubbles: true })); await wait(GRACE + 80); };
@@ -1455,12 +2374,12 @@ const legislationTests = async () => {
   const names = Object.values(feeds).map(f => f.short || f.org), joinNames = names.length > 2 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names.join(' and ');
 
   /* ── A. the shipped bills, and the view the tab opens on ─────────────────────────────────────────────────── */
-  ok('#all opens the All view', bodyView(d) === 'all', `body view was ${bodyView(d)}`);
-  ok('#all keeps its address bar', w.location.hash === '#all', `hash was ${w.location.hash}`);
+  ok('#legislation opens the Legislation view', bodyView(d) === 'legislation', `body view was ${bodyView(d)}`);
+  ok('#legislation keeps its address bar', w.location.hash === '#legislation', `hash was ${w.location.hash}`);
   const btn = d.getElementById('viewGovernment');
-  ok('#all marks the Enforcement and Legislation tab active, and not Landscape, and presses All in the switch',
-     btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active') && d.getElementById('govSwitchAll').getAttribute('aria-pressed') === 'true');
-  ok('the screen reader announcement names the tab and the section', d.getElementById('viewAnnounce').textContent === 'Government action: All view');
+  ok('#legislation marks the Enforcement and Legislation tab active, and not Landscape, and presses Legislation in the switch',
+     btn.classList.contains('active') && btn.getAttribute('aria-selected') === 'true' && !d.getElementById('viewPolicy').classList.contains('active') && d.getElementById('govSwitchLegislation').getAttribute('aria-pressed') === 'true');
+  ok('the screen reader announcement names the tab and the section', d.getElementById('viewAnnounce').textContent === 'Government action: Legislation view');
   ok('the bills are loaded: the federal ones from GovInfo, the state ones from Open States, as many as each says it holds (the ones that only mention AI counted apart), and from nobody else',
      area.getAttribute('data-bills') === 'ready' && nBills > 0 && Object.keys(feeds).join() === 'govinfo,openstates' && nFed === feeds.govinfo.included && nFedPassing === feeds.govinfo.passing && nState === feeds.openstates.included &&
      w.eval("LEGISLATION_DATA.every(b => b.source && /^https?:\\/\\//.test(b.source.url) && (b.level === 'federal' ? b.source.label === 'Congress.gov' && b.source.url.startsWith('https://www.congress.gov/bill/119th-congress/') && b.session === '119th Congress' : ['Legislature', 'Open States'].includes(b.source.label)))"),
@@ -1478,7 +2397,7 @@ const legislationTests = async () => {
   ok('where the note says a legislature\'s own summary was read from its site (Illinois), every one of that state\'s bills carries it: run tools/state_summaries.py, then the build, when this fails',
      !/Illinois/.test(feeds.openstates.summaries || '') || w.eval("LEGISLATION_DATA.filter(b => b.state === 'IL').every(b => b.summary && b.summary.length > 20)"),
      w.eval("LEGISLATION_DATA.filter(b => b.state === 'IL' && !b.summary).map(b => b.bill).join()"));
-  ok('the tab\'s masthead is the owner\'s own question and blurb: a centralized repository of the bills, cases and actions, with the midterm results, and how to use the switch and the Show menu; it quotes no count',
+  ok('the tab\'s masthead is the owner\'s own question and blurb: a centralized repository of the bills, cases and actions, and how to use the switch and the Show menu; it quotes no count and says nothing of the midterm results',
      d.getElementById('headerTabDescLede').textContent.trim() === GOV_HEADER && mastheadText() === GOV_BLURB, mastheadText());
   const chrome = [...d.querySelectorAll('#legislationArea button, #legislationArea h2, #legislationArea h3, #legLegend, #legMapSource')].map(e => e.textContent).join(' ') + mastheadText();
   ok('nothing on the tab mentions the Blue Rose memo or calls the layers by their old names', !/Blue Rose|memo/i.test(chrome) && !/Senate results|Active legislation/.test(chrome), chrome.slice(0, 200));
@@ -1496,12 +2415,12 @@ const legislationTests = async () => {
   ok('the three smallest shapes, DC, Delaware and Rhode Island, also get a larger invisible target on the map itself',
      [...d.querySelectorAll('#legMap .leg-hit')].map(c => c.getAttribute('data-state')).sort().join() === 'DC,DE,RI');
   const options = [...d.querySelectorAll('#legStateSelect option')], groups = [...d.querySelectorAll('#legStateSelect optgroup')].map(g => `${g.label}:${g.children.length}`).join();
-  ok('the Show menu offers "All jurisdictions", then Federal (Congress), then each of the 51 states once, then Puerto Rico, the one territory a source covers',
-     options.length === 54 && options[0].textContent === 'All jurisdictions' && options[1].value === 'federal' && groups === 'Federal:1,States:51,Territories:1' &&
-     options.slice(2).every(o => o.value && o.value !== 'federal' && o.textContent) && new Set(options.map(o => o.value)).size === 54, groups);
+  ok('the Show menu offers "All jurisdictions", then Federal (Congress), then All states (the States button\'s place, first in its group) and each of the 51 states once, then Puerto Rico, the one territory a source covers',
+     options.length === 55 && options[0].textContent === 'All jurisdictions' && options[1].value === 'federal' && options[2].value === 'states' && options[2].textContent === 'All states' && groups === 'Federal:1,States:52,Territories:1' &&
+     options.slice(2).every(o => o.value && o.value !== 'federal' && o.textContent) && new Set(options.map(o => o.value)).size === 55, groups);
   ok('the section switch is the first thing in the toolbar, then the Show menu, then the Status menu and the checkbox for the bills that only lightly mention AI, and the Reset button last, in that order',
      [...d.querySelectorAll('#legSticky .leg-controls-main > *')].map(e => e.id).join() === 'govSwitch,legShowPair,legStatusPair,legPassingWrap' && d.querySelector('#legSticky .leg-controls').lastElementChild === d.getElementById('legReset') &&
-     [...d.querySelectorAll('#govSwitch button')].map(b => b.textContent).join() === 'All,Cases,Enforcement,Legislation' && !d.getElementById('legLayerResults') && !d.getElementById('legOfficeToggle'), [...d.querySelectorAll('#legSticky .leg-controls-main > *')].map(e => e.id).join());
+     [...d.querySelectorAll('#govSwitch button')].map(b => b.textContent).join() === 'Legislation,Enforcement,Cases,All' && !d.getElementById('legLayerResults') && !d.getElementById('legOfficeToggle'), [...d.querySelectorAll('#legSticky .leg-controls-main > *')].map(e => e.id).join());
   ok('the Bills section has no word Bills in its title: the title is the jurisdiction and the count, and the section is still named Bills for a screen reader',
      d.getElementById('legBillsTitle').textContent.trim() === `All jurisdictions · ${num(nBills)} bills` && d.getElementById('legBillsTitle').textContent.trim() === d.getElementById('legBillsScope').textContent.trim() &&
      d.getElementById('legBillsSection').getAttribute('aria-label') === 'Bills' && !d.getElementById('legBillsSection').hasAttribute('aria-labelledby'), d.getElementById('legBillsTitle').textContent);
@@ -1535,7 +2454,7 @@ const legislationTests = async () => {
      !/flex-wrap/.test((/\n  \.leg-controls \{([^}]*)\}/.exec(legCss) || [])[1] || 'flex-wrap') && /\n  \.leg-controls-main \{[^}]*flex-wrap:\s*wrap[^}]*min-width:\s*0/.test(legCss) && /#legislationArea \.leg-reset \{[^}]*flex:\s*none/.test(legCss));
   ok('each table block ends with its divider under the note and the page numbers (the owner, 2026-11-18): the section carries the line, the pager has none of its own here, and the pager is the last thing in the section, after the note',
      /#legislationArea \.leg-section\s*\{[^}]*border-bottom:\s*1px solid var\(--divider\)/.test(legCss) && /#legislationArea \.pager\s*\{[^}]*border-top:\s*0/.test(legCss) &&
-     ['legResultsSection', 'legBillsSection'].every(sid => { const s = d.getElementById(sid); return s.lastElementChild.matches('nav.pager') && s.lastElementChild.previousElementSibling.classList.contains('leg-source'); }));
+     ['legBillsSection'].every(sid => { const s = d.getElementById(sid); return s.lastElementChild.matches('nav.pager') && s.lastElementChild.previousElementSibling.classList.contains('leg-source'); }));
   ok('the topics sit above the search bar, always showing: the chips come before the search box, there is no note under them, there is no More filters toggle and no panel for it, and the Status menu and the checkbox are in the toolbar, not behind anything',
      !d.getElementById('legMoreToggle') && !d.getElementById('legMorePanel') && !d.getElementById('legMoreCount') && !d.querySelector('#legislationArea .more-toggle, #legislationArea .more-panel') &&
      !!(d.getElementById('legTopicPills').compareDocumentPosition(d.getElementById('legSearch')) & 4) && topicsBar.compareDocumentPosition(searchBar) === 4 && !!d.querySelector('#legSticky #legStatus') && !!d.querySelector('#legSticky #legPassing') &&
@@ -1543,23 +2462,21 @@ const legislationTests = async () => {
   ok('there is no Federal button, since Congress is the Federal entry in the Show menu, and the masthead says where to find places (the card no longer has the hint)',
      !d.getElementById('legFed') && ![...d.querySelectorAll('.leg-controls button')].some(b => /Federal/.test(b.textContent)) && !!d.querySelector('#legStateSelect option[value="federal"]') &&
      /choose a place in the Show menu/.test(mastheadText()) && !/Hover a state to see how its bills stand|choose Federal in the Show menu/.test(panel()), mastheadText());
-  ok('the data covers every race AP lists: 50 states, 35 Senate seats, 36 governor races and all 435 House districts',
-     nStates === 50 && races('senate') === 35 && races('governor') === 36 && seats === 435, `${nStates} states, ${races('senate')} Senate, ${races('governor')} governor, ${seats} districts`);
   // the Bills layer: the shading steps are thirds of the states that have bills, and the legend names what each holds
   const readSteps = () => [...d.querySelectorAll('#legLegend .leg-legend-item')].map(i => {
-    const sw = i.querySelector('.leg-swatch'), lv = sw && (sw.className.match(/fill-b(\d)/) || [])[1], m = /^([\d,]+)(?: to ([\d,]+))? items?\b/.exec(i.textContent.trim());   // on All the legend counts items (the bills, here: no other rows are loaded in this block)
+    const sw = i.querySelector('.leg-swatch'), lv = sw && (sw.className.match(/fill-b(\d)/) || [])[1], m = /^([\d,]+)(?: to ([\d,]+))? bills?\b/.exec(i.textContent.trim());   // on Legislation the legend counts bills (on All it counts items, which All's own checks read)
     return lv && m ? { lv: +lv, lo: +m[1].replace(/,/g, ''), hi: +(m[2] || m[1]).replace(/,/g, ''), n: +i.querySelector('.leg-muted-count').textContent } : null;
   }).filter(Boolean);
   const steps = readSteps();
   const stepOf = n => (steps.find(s => n >= s.lo && n <= s.hi) || {}).lv;
   const most = Math.max(...Object.values(counts)), fewest = Math.min(...Object.values(counts));
-  const noBills = (() => { const i = [...d.querySelectorAll('#legLegend .leg-legend-item')].find(x => /^No items/.test(x.textContent.trim())); return i ? +i.querySelector('.leg-muted-count').textContent : 0; })();
-  ok('the map is shaded by thirds of the states that have items (here bills only): every state is in the step its count falls in, and the legend\'s ranges run from the fewest to the most and account for every state',
+  const noBills = (() => { const i = [...d.querySelectorAll('#legLegend .leg-legend-item')].find(x => /^No bills/.test(x.textContent.trim())); return i ? +i.querySelector('.leg-muted-count').textContent : 0; })();
+  ok('the map is shaded by thirds of the states that have bills: every state is in the step its count falls in, and the legend\'s ranges run from the fewest to the most and account for every state',
      steps.length >= 1 && steps.length <= 3 &&
      Object.keys(counts).every(c => new RegExp(`fill-b${stepOf(counts[c])}\\b`).test(path(c).getAttribute('class'))) && steps[0].lo === fewest && steps[steps.length - 1].hi === most &&
      steps.reduce((s, x) => s + x.n, 0) + noBills === 51 && noBills === 51 - Object.keys(counts).length, legend());
-  ok('the legend counts the federal and the territory items (here bills), which are not on the map, and says what an item is', new RegExp(`Federal items, not on the map\\s*${num(nFed)}`).test(legend()) &&
-     (nTerritory ? new RegExp(`Territory items, not on the map\\s*${num(nTerritory)}`).test(legend()) : !/Territory items/.test(legend())) && /Items are the bills, key cases and enforcement actions, counted together/.test(legend()), legend());
+  ok('the legend counts the federal and the territory bills, which are not on the map, and (it is Legislation, not All) does not call them items', new RegExp(`Federal bills, not on the map\\s*${num(nFed)}`).test(legend()) &&
+     (nTerritory ? new RegExp(`Territory bills, not on the map\\s*${num(nTerritory)}`).test(legend()) : !/Territory bills/.test(legend())) && !/Items are the bills, key cases and enforcement actions/.test(legend()), legend());
   ok('the small-state buttons are shaded like their states: a state with bills, a shade; one without, none', tilesMatch() && tiles.every(b => !!counts[b.textContent] === /fill-b[123]/.test(b.getAttribute('class'))), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
   const billsTable = () => d.getElementById('legBillsTable'), pager = d.getElementById('legBillsPager');
   const heads = () => [...billsTable().querySelectorAll('th')].map(t => t.textContent).join();
@@ -1605,110 +2522,57 @@ const legislationTests = async () => {
        return /119th Congress/.test(r.textContent) && /Introduced /.test(r.textContent) && !/labels: /.test(r.textContent) && !!r.querySelector('a[href^="https://www.congress.gov/bill/119th-congress/"]'); })());
   fire(d.getElementById('legReset'), 'click');
 
-  /* ── B. the midterm results, by state: in the card, and in a table under the bills (they were a layer of their own until 2026-11-18) ────────────────────────────────── */
+  /* ── B. the card and the pinning. The 2026 midterm results are gone from the page (removed 2026-11-23 at the owner's request: they were a layer of the map, then a block in the card, totals in its overview and a table of every state
+        at the head of All), so these checks also say that nothing of them is left: no table, no block in the card, no source line for them, no data. ────────────────────────────────── */
   const mapSource = d.getElementById('legMapSource'), links = [...mapSource.querySelectorAll('a')].map(a => a.getAttribute('href'));
-  const apStamp = w.eval('MIDTERM_SOURCES.ap.updated');
-  ok('there is no results layer any more: no layer toggle, no office toggle, nothing marked data-layer or data-office, and the map is shaded by bills alone; the results are a table of their own, above the bills table',
-     !d.getElementById('legLayerResults') && !d.getElementById('legLayerBills') && !d.getElementById('legOfficeToggle') &&
-     !area.hasAttribute('data-layer') && !d.getElementById('legMap').hasAttribute('data-layer') && !d.querySelector('#legislationArea [data-office], #legislationArea [data-layer]') &&
-     !!d.getElementById('legResultsTable') && !!(d.getElementById('legResultsSection').compareDocumentPosition(d.getElementById('legBillsSection')) & 4));
-  ok('the line below the map cites the midterm results\' source as well, AP\'s results page with a link to it, after the two that the bills come from',
-     d.getElementById('legLegend').nextElementSibling === mapSource && /The Associated Press, “2026 Midterm Election Results: Senate, House and Governor Races”/.test(mapSource.textContent) && links.includes(AP) && links.indexOf(AP) === links.length - 1, mapSource.textContent);
+  const PAGE_TEXT = () => d.getElementById('legislationArea').textContent + d.getElementById('headerTabDescText').textContent + d.getElementById('aboutArea').textContent;
+  ok('there are no midterm results on the page: no layer toggle, no office toggle, no results section, table, pager or note, nothing marked data-layer or data-office, and the map is shaded by bills alone',
+     !d.getElementById('legLayerResults') && !d.getElementById('legLayerBills') && !d.getElementById('legOfficeToggle') && !d.getElementById('legResultsSection') && !d.getElementById('legResultsTable') && !d.getElementById('legResultsPager') && !d.getElementById('legSource') &&
+     !area.hasAttribute('data-layer') && !d.getElementById('legMap').hasAttribute('data-layer') && !d.querySelector('#legislationArea [data-office], #legislationArea [data-layer], #legislationArea .gov-all-only'));
+  ok('nothing on the tab, in its masthead or on About says midterm, election results, the Associated Press or AP, and none of the data that held them (MIDTERM_*) is loaded',
+     !/midterm|election result|associated press|\bAP\b/i.test(PAGE_TEXT()) && w.eval("typeof MIDTERM_RESULTS === 'undefined' && typeof MIDTERM_SOURCES === 'undefined' && typeof MIDTERM_PAGES === 'undefined' && typeof MIDTERM_NOTE === 'undefined' && typeof MIDTERM_NATIONAL === 'undefined'"), PAGE_TEXT().match(/.{20}(midterm|election result|associated press|\bAP\b).{20}/i));
+  ok('the line below the map cites the two feeds the bills come from, GovInfo and Open States, and nobody else, and the map has no pattern or fill for a race not yet called',
+     d.getElementById('legLegend').nextElementSibling === mapSource && links.join() === Object.values(feeds).map(f => f.url).join() && !/Associated Press/.test(mapSource.textContent) && !d.getElementById('legHatch') && !d.querySelector('#legMap defs'), mapSource.textContent);
   fire(path('TX'), 'mouseover');
-  ok('pointing at Texas shows its bills and its Senate, House and governor results in one card, with no source line and no links: the sources are cited under the map',
-     /Texas/.test(panel()) && /Bills/.test(panel()) && /2026 Midterm results/.test(panel()) && /SenateDemocratic gain/.test(panel()) && /HouseDemocrats 14, Republicans 24/.test(panel()) && /GovernorDemocratic gain/.test(panel()) &&
-     !/Source/.test(panel()) && !d.querySelector('#legPanel a'), panel());
+  ok('pointing at Texas shows its bills in one card, with no source line and no links: the sources are cited under the map, and the card has no results block',
+     /Texas/.test(panel()) && /Bills/.test(panel()) && !/Midterm|Senate|House|Governor|Democrat|Republican|Uncalled/.test(panel()) && !/Source/.test(panel()) && !d.querySelector('#legPanel a') && !d.querySelector('#legPanel .leg-office, #legPanel .leg-result'), panel());
   ok('the pointed-at state is outlined', d.getElementById('legRingHover').getAttribute('d') === path('TX').getAttribute('d') && path('TX').getAttribute('d').length > 20);
-  fire(path('NE'), 'mouseover');
-  ok('a Republican hold reads as one, in the Senate and for governor', /Nebraska/.test(panel()) && (panel().match(/Republican hold/g) || []).length === 2 && /HouseDemocrats 1, Republicans 2/.test(panel()), panel());
-  fire(path('AK'), 'mouseover');
-  // The results move as AP calls races, so what Alaska's card should show is read from the data here, not written into the test.
-  const akRow = JSON.parse(w.eval('JSON.stringify(MIDTERM_RESULTS.AK)'));
-  const akUncalled = ['senate', 'governor'].filter(o => akRow[o] && akRow[o].result === 'uncalled').length, akLeads = (akRow.house.dLead || 0) + (akRow.house.rLead || 0);
-  ok('an uncalled race says so and names who leads, and an uncalled House seat is counted',
-     /Alaska/.test(panel()) && (panel().match(/Uncalled/g) || []).length === akUncalled && (akUncalled === 0 || /Peltola/.test(panel())) &&
-     (akLeads === 0 || new RegExp(`Not yet called: ${akLeads} `).test(panel())), panel());
-  fire(path('MS'), 'mouseover');
-  ok('Mississippi is a Democratic gain, naming the winner', /Mississippi/.test(panel()) && /Democratic gain/.test(panel()) && /Colom/.test(panel()), panel());
-  fire(path('MT'), 'mouseover');
-  ok('a state with no governor race says so', /Montana/.test(panel()) && /No 2026 governor race/.test(panel()), panel());
   fire(path('DC'), 'mouseover');
-  ok('DC, which AP lists no races for, says so, and its card lists no bills, only that none have been added, and has no "See more details below" link: there is nothing in the table below to see',
-     /District of Columbia/.test(panel()) && /AP lists no 2026 races for District of Columbia/.test(panel()) && d.querySelectorAll('#legPanel .leg-bill-list li').length === 0 && /No legislation has been added for District of Columbia yet\./.test(panel()) && !d.querySelector('#legPanel .leg-more-link'), panel());
+  ok('DC\'s card lists no bills, only that none have been added, and has no "See more details below" link: there is nothing in the table below to see',
+     /District of Columbia/.test(panel()) && d.querySelectorAll('#legPanel .leg-bill-list li').length === 0 && /No legislation has been added for District of Columbia yet\./.test(panel()) && !d.querySelector('#legPanel .leg-more-link'), panel());
   await leaveMap();
-  const resLine = (office, noun) => `${office[0].toUpperCase() + office.slice(1)}: ${races(office)} ${noun} were up: ${cnt(office, 'd-gain')} Democratic gains, ${cnt(office, 'd-hold')} Democratic holds, ${cnt(office, 'r-hold')} Republican holds${cnt(office, 'r-gain') ? `, ${cnt(office, 'r-gain')} Republican gains` : ''} and ${cnt(office, 'uncalled')} uncalled.`;
-  const hsum = JSON.parse(w.eval("(() => { let d = 0, r = 0, o = 0; Object.values(MIDTERM_RESULTS).forEach(s => { const h = s.house || {}; d += h.d || 0; r += h.r || 0; o += (h.dLead || 0) + (h.rLead || 0) + (h.runoff || 0); }); return JSON.stringify({ d, r, o }); })()"));
-  ok('moving off the map returns the card to the overview: the bills, a line for each office\'s results counted from the data, and the national totals AP showed, with no source line under them (AP is cited under the map)',
-     /United States/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === '' && /Bills/.test(panel()) && / bills? in /.test(panel()) && /federal bills/.test(panel()) &&
-     panel().includes(resLine('senate', 'seats')) && panel().includes(`House, by state: Democrats won ${hsum.d} districts, Republicans ${hsum.r}, and ${hsum.o} are not yet called.`) && panel().includes(resLine('governor', 'races')) &&
-     !/Hover a state to see its results\./.test(panel()) && /National totals/.test(panel()) &&
-     panel().includes(`Senate: Democrats ${nat.senate.democrats}, Republicans ${nat.senate.republicans}, ${nat.senate.toBeCalled} to be called.`) &&
-     panel().includes(`House: Democrats ${nat.house.democrats}, Republicans ${nat.house.republicans}, ${nat.house.toBeCalled} to be called.`) &&
-     panel().includes(`Governors: Democrats ${nat.governor.democrats}, Republicans ${nat.governor.republicans}, ${nat.governor.toBeCalled} to be called.`) && !/The Associated Press, updated/.test(panel()), panel());
-  /* the results table, under the bills table: ten states to a page, a column for each office, each row linking to AP's pages for that state */
-  const resultsTable = d.getElementById('legResultsTable'), resultsPager = d.getElementById('legResultsPager');
-  ok('the results table has a title written like the other sections\' (the place, a dot, then what it is): All jurisdictions · 2026 Midterm results, in the same type as the bills\' title',
-     d.getElementById('legResultsTitle').textContent.trim() === 'All jurisdictions · 2026 Midterm results' && d.getElementById('legResultsTitle').textContent.trim() === d.getElementById('legResultsScope').textContent.trim() &&
-     d.getElementById('legResultsScope').className === d.getElementById('legBillsScope').className && d.getElementById('legResultsTitle').className === d.getElementById('legBillsTitle').className, d.getElementById('legResultsTitle').textContent);
-  ok(`before a state is chosen the results table lists the states ${RPAGE} to a page, with a column for each office, and a pager that counts the pages`,
-     rows('legResultsTable') === Math.min(RPAGE, nStates) && [...resultsTable.querySelectorAll('th')].map(t => t.textContent).join() === 'State,Senate,House,Governor,Source' &&
-     !resultsPager.hidden && resultsPager.querySelector('.pager-status').textContent === `Page 1 of ${rpagesOf(nStates)}` && resultsPager.getAttribute('aria-label') === 'Pages of states', resultsPager.textContent);
-  // the pager walks every state once, alphabetically: RPAGE to a page, the last page holding the rest
-  const stateSizes = [], seenStates = [];
-  for (let i = 1; i <= rpagesOf(nStates); i++) {
-    stateSizes.push(rows('legResultsTable')); seenStates.push(...[...resultsTable.querySelectorAll('tbody tr')].map(r => r.getAttribute('data-state')));
-    if (i < rpagesOf(nStates)) fire(resultsPager.querySelector('button[aria-label="Next page"]'), 'click');
-  }
-  const stateOrder = JSON.parse(w.eval("JSON.stringify(Object.keys(MIDTERM_RESULTS).sort((a, b) => US_MAP.states[a].name.localeCompare(US_MAP.states[b].name)))"));
-  ok(`walking the results pager lists every state once, in alphabetical order, ${RPAGE} to each page and the rest on the last, with Next out of use there`,
-     stateSizes.length === rpagesOf(nStates) && stateSizes.slice(0, -1).every(n => n === RPAGE) && stateSizes[stateSizes.length - 1] === nStates - RPAGE * (rpagesOf(nStates) - 1) &&
-     seenStates.length === nStates && new Set(seenStates).size === nStates && seenStates.join() === stateOrder.join() &&
-     resultsPager.querySelector('.pager-status').textContent === `Page ${rpagesOf(nStates)} of ${rpagesOf(nStates)}` && resultsPager.querySelector('button[aria-label="Next page"]').disabled, stateSizes.join());
-  fire(resultsPager.querySelector('button[data-page="2"]'), 'click');   // Iowa is on the second page
-  ok('choosing a page of the results table takes the keyboard to that table, as the bills\' pager does', d.activeElement === resultsTable);
-  const resultsShape = () => { const t = resultsTable.querySelector('table'); return !!t && t.classList.contains('leg-table--results') && [...t.querySelectorAll('th')].map(h => h.textContent).join() === 'State,Senate,House,Governor,Source'; };
-  ok('the results table is the one whose column widths are fixed in the stylesheet (leg-table--results, columns State, Senate, House, Governor, Source), so every page of states is laid out as one state is', resultsShape());
-  const ia = resultsTable.querySelector('tr[data-state="IA"]');
-  ok('each result row links its offices to AP\'s race pages for that state',
-     [...ia.querySelectorAll('a')].map(a => a.getAttribute('href')).join() === `${AP}iowa-us-senate-results/,${AP}iowa-us-house-results/,${AP}iowa-governor-results/`, ia.textContent);
-  const sumD = w.eval('Object.values(MIDTERM_RESULTS).reduce((n, s) => n + (s.house.d || 0), 0)'), sumR = w.eval('Object.values(MIDTERM_RESULTS).reduce((n, s) => n + (s.house.r || 0), 0)');
-  const note = d.getElementById('legSource').textContent;
-  ok('the note under the results table reports it whenever the district results do not add up to AP\'s chamber total, and only then',
-     (sumD === nat.house.democrats && sumR === nat.house.republicans) ? !/add up to/.test(note) : (new RegExp(`add up to ${sumD} Democratic and ${sumR} Republican wins`).test(note) && note.includes(`showed ${nat.house.democrats} and ${nat.house.republicans}`)), note);
-  ok('and it starts with the standing note: each row links to AP\'s page for each of that state\'s races', /^Each row links to AP.s page for each of that state.s races\./.test(note), note);
-  ok('the note sits right under the results table and above the divider that starts its pager, in the results section, so the table says where its links go', resultsTable.nextElementSibling === d.getElementById('legSource') && d.getElementById('legSource').nextElementSibling === resultsPager && d.getElementById('legResultsSection').contains(d.getElementById('legSource')));
-  ok('and the bills table has its note the same way: under the table, above its pager', billsTable().nextElementSibling === d.getElementById('legBillsNote') && d.getElementById('legBillsNote').nextElementSibling === pager);
+  ok('moving off the map returns the card to the overview: the bills, in how many states and how many federal, and nothing about results or totals',
+     /United States/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === '' && /Bills/.test(panel()) && / bills? in /.test(panel()) && /federal bills/.test(panel()) && !/National totals|Midterm|Democrat|Republican|were up/.test(panel()), panel());
+  ok('the bills table has its note under the table, above its pager', billsTable().nextElementSibling === d.getElementById('legBillsNote') && d.getElementById('legBillsNote').nextElementSibling === pager);
   fire(path('GA'), 'click');
   const gaN = countOf('GA');
-  ok('clicking Georgia pins it: the menu follows, Clear shows, and both tables narrow to it, the bills table to Georgia\'s bills',
-     d.getElementById('legStateSelect').value === 'GA' && d.getElementById('legReset').classList.contains('is-on') && rows('legResultsTable') === 1 && /Georgia/.test(resultsTable.textContent) &&
+  ok('clicking Georgia pins it: the menu follows, Clear shows, and the bills table narrows to Georgia\'s bills',
+     d.getElementById('legStateSelect').value === 'GA' && d.getElementById('legReset').classList.contains('is-on') &&
      rows('legBillsTable') === Math.min(PAGE, gaN) && [...billsTable().querySelectorAll('tbody tr')].every(r => r.getAttribute('data-state') === 'GA') &&
      d.getElementById('legBillsScope').textContent === `Georgia · ${num(gaN)} ${gaN === 1 ? 'bill' : 'bills'}`, `${rows('legBillsTable')} rows for ${gaN} bills`);
-  ok('narrowed to one state it is the same table with the same columns, so it keeps the same widths, and with one row it has no pager', resultsShape() && rows('legResultsTable') === 1 && resultsPager.hidden);
   ok('a state\'s bills table has a Summary column only if one of its bills has a summary: only the columns something fills',
      heads() === `Jurisdiction,Bill,Title,Status,Last action,${w.eval("LEGISLATION_DATA.some(b => b.state === 'GA' && !b.passing && b.summary)") ? 'Summary,' : ''}Source`, heads());
   await leaveMap();
   ok('a pinned state keeps the card and its outline after the pointer leaves', /Georgia/.test(panel()) && d.getElementById('legRingPinned').getAttribute('d') === path('GA').getAttribute('d'));
   fire(d.getElementById('legReset'), 'click');
-  ok('Clear returns to all jurisdictions', d.getElementById('legStateSelect').value === '' && !d.getElementById('legReset').classList.contains('is-on') && rows('legBillsTable') === Math.min(PAGE, nBills) &&
-     rows('legResultsTable') === Math.min(RPAGE, nStates) && resultsPager.querySelector('.pager-status').textContent === `Page 1 of ${rpagesOf(nStates)}`);
+  ok('Clear returns to all jurisdictions', d.getElementById('legStateSelect').value === '' && !d.getElementById('legReset').classList.contains('is-on') && rows('legBillsTable') === Math.min(PAGE, nBills));
   const sel = d.getElementById('legStateSelect');
   sel.value = 'AK'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
-  ok('choosing a state in the menu does what clicking it does, for keyboard users', /Alaska/.test(panel()) && d.getElementById('legBillsScope').textContent.startsWith('Alaska') && rows('legResultsTable') === 1);
+  ok('choosing a state in the menu does what clicking it does, for keyboard users', /Alaska/.test(panel()) && d.getElementById('legBillsScope').textContent.startsWith('Alaska'));
   fire(d.getElementById('legReset'), 'click');
   fire(tile('RI'), 'mouseover');
   ok('pointing at a small state\'s button does what pointing at its shape does: the card shows the state, the map outlines it, and the button is marked',
-     /Rhode Island/.test(panel()) && /Democratic hold/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === path('RI').getAttribute('d') && tile('RI').classList.contains('is-hover'), panel());
+     /Rhode Island/.test(panel()) && d.getElementById('legRingHover').getAttribute('d') === path('RI').getAttribute('d') && tile('RI').classList.contains('is-hover'), panel());
   fire(path('CT'), 'mouseover');
   ok('pointing at a small state\'s shape marks its button, and only its button', tile('CT').classList.contains('is-hover') && !tile('RI').classList.contains('is-hover') && tiles.filter(b => b.classList.contains('is-hover')).length === 1);
   await leaveMap();
   ok('moving off the map unmarks the buttons', tiles.every(b => !b.classList.contains('is-hover')) && /United States/.test(panel()));
   fire(tile('RI'), 'click');
-  ok('clicking a small state\'s button pins it: the button is pressed and outlined, the menu follows, Clear shows, and both tables narrow to it',
+  ok('clicking a small state\'s button pins it: the button is pressed and outlined, the menu follows, Clear shows, and the bills table narrows to it',
      tile('RI').getAttribute('aria-pressed') === 'true' && tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === 'RI' && d.getElementById('legReset').classList.contains('is-on') &&
-     d.getElementById('legRingPinned').getAttribute('d') === path('RI').getAttribute('d') && d.getElementById('legBillsScope').textContent.startsWith('Rhode Island') && rows('legResultsTable') === 1 && /Rhode Island/.test(resultsTable.textContent) && tiles.filter(b => b.getAttribute('aria-pressed') === 'true').length === 1);
+     d.getElementById('legRingPinned').getAttribute('d') === path('RI').getAttribute('d') && d.getElementById('legBillsScope').textContent.startsWith('Rhode Island') && tiles.filter(b => b.getAttribute('aria-pressed') === 'true').length === 1);
   fire(tile('RI'), 'click');
-  ok('clicking it again lets go', tile('RI').getAttribute('aria-pressed') === 'false' && !tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === '' && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills` && rows('legResultsTable') === Math.min(RPAGE, nStates));
+  ok('clicking it again lets go', tile('RI').getAttribute('aria-pressed') === 'false' && !tile('RI').classList.contains('is-pinned') && d.getElementById('legStateSelect').value === '' && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(nBills)} bills`);
   tile('DE').dispatchEvent(new w.Event('focusin', { bubbles: true }));
   ok('giving a button the keyboard\'s focus previews its state, as pointing at it does', /Delaware/.test(panel()) && tile('DE').classList.contains('is-hover') && d.getElementById('legRingHover').getAttribute('d') === path('DE').getAttribute('d'), panel());
   tile('DE').dispatchEvent(new w.Event('focusout', { bubbles: true }));
@@ -1763,8 +2627,8 @@ const legislationTests = async () => {
   let jumps = [];
   ['legBillsTitle'].forEach(id => { d.getElementById(id).scrollIntoView = function () { jumps.push(this.id); }; });   // a test DOM has no layout: record where the page is sent
   fire(moreLink(), 'click');
-  ok('following the link pins the state, so the tables below are about it, and takes the reader to the details: the Bills title, with focus on the table',
-     d.getElementById('legStateSelect').value === 'NY' && d.getElementById('legBillsScope').textContent === `New York · ${num(nyN)} ${nyN === 1 ? 'bill' : 'bills'}` && rows('legResultsTable') === 1 &&
+  ok('following the link pins the state, so the table below is about it, and takes the reader to the details: the Bills title, with focus on the table',
+     d.getElementById('legStateSelect').value === 'NY' && d.getElementById('legBillsScope').textContent === `New York · ${num(nyN)} ${nyN === 1 ? 'bill' : 'bills'}` &&
      jumps.join() === 'legBillsTitle' && d.activeElement === billsTable(), `${d.getElementById('legStateSelect').value} / ${jumps} / ${d.getElementById('legBillsScope').textContent}`);
   fire(d.getElementById('legReset'), 'click');
   // the card stays for the pointer to reach its link: with nothing pinned, the state last pointed at stays for a moment after the pointer leaves the map, and while the pointer is on the card
@@ -1787,8 +2651,8 @@ const legislationTests = async () => {
   await leaveMap();
   sel.value = 'PR'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
   const prN = countOf('PR');
-  ok('a territory, which has no shape on the map, is chosen from the menu: its card gives its stats, and its results block and the results table say AP lists no races for it',
-     /Puerto Rico/.test(panel()) && cardOk(prN) && /AP lists no 2026 races for Puerto Rico/.test(panel()) && /AP lists no 2026 races for Puerto Rico/.test(d.getElementById('legResultsTable').textContent), panel());
+  ok('a territory, which has no shape on the map, is chosen from the menu: its card gives its stats',
+     /Puerto Rico/.test(panel()) && cardOk(prN), panel());
   ok('and Puerto Rico\'s bills are named for it in the table', rows('legBillsTable') === Math.min(PAGE, prN) && [...billsTable().querySelectorAll('tbody tr')].every(r => /Puerto Rico/.test(r.firstElementChild.textContent)));
   fire(d.getElementById('legReset'), 'click');
   sel.value = 'federal'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
@@ -1798,25 +2662,21 @@ const legislationTests = async () => {
      heads() === 'Jurisdiction,Bill,Title,Status,Last action,Summary,Source' && d.getElementById('legBillsNote').textContent === `Federal bills are ${feeds.govinfo.scope}. ${feeds.govinfo.summaries}${nFedPassing ? ' ' + passNote(nFedPassing) : ''}`, `${heads()} | ${d.getElementById('legBillsNote').textContent}`);
   fire(d.getElementById('legReset'), 'click');
   const links2 = [...d.getElementById('legMapSource').querySelectorAll('a')].map(a => a.getAttribute('href'));
-  ok('the line below the map cites GovInfo for the federal bills and Open States for the state bills, each with a link to its page, and then the Associated Press for the midterm results in the card, and no tracker',
+  ok('the line below the map cites GovInfo for the federal bills and Open States for the state bills, each with a link to its page, and nobody else: no Associated Press, and no tracker',
      /^Sources: U\.S\. Government Publishing Office, “Bill Status XML Bulk Data” \(bulk data, read /.test(d.getElementById('legMapSource').textContent) &&
-     /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) && /The Associated Press, “2026 Midterm Election Results/.test(d.getElementById('legMapSource').textContent) &&
-     links2.join() === Object.values(feeds).map(f => f.url).concat([AP]).join() && !/tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
-  // the newest of the sources' own dates: the feeds give the day they were read, AP the stamp its results were copied with ("November 17, 2026, 9:44 AM"), and the latest wins
-  const stampKey = s => { const m = /^([A-Za-z]+) (\d{1,2}), (\d{4})(?:, (\d{1,2}):(\d{2}) ([AP]M))?$/.exec(s); return Date.UTC(+m[3], MONTHS.indexOf(m[1]), +m[2], (+m[4] || 0) % 12 + (m[6] === 'PM' ? 12 : 0), +m[5] || 0); };
-  const allStamps = Object.values(feeds).map(f => f.read && longDay(f.read)).concat([apStamp]).filter(Boolean), newestStamp = allStamps.slice().sort((a, b) => stampKey(b) - stampKey(a))[0];
-  ok('and it ends with when the page was last updated, on a line of its own: the newest of the sources\' dates (AP\'s own stamp, as written, or a feed\'s day), while each source\'s own date stays in its citation',
+     /Open States, “Bill search” \(API v3, read /.test(d.getElementById('legMapSource').textContent) && !/Associated Press/.test(d.getElementById('legMapSource').textContent) &&
+     links2.join() === Object.values(feeds).map(f => f.url).join() && !/tracker/i.test(d.getElementById('legMapSource').textContent), d.getElementById('legMapSource').textContent);
+  // the newest of the sources' own dates: the feeds give the day they were read, and the latest wins
+  const newestStamp = (() => { const days = Object.values(feeds).map(f => f.read).filter(Boolean).sort(); return days.length ? longDay(days[days.length - 1]) : ''; })();
+  ok('and it ends with when the page was last updated, on a line of its own: the newest of the feeds\' days, while each source\'s own date stays in its citation',
      !!newestStamp && d.querySelectorAll('#legMapSource .leg-map-updated').length === 1 && d.querySelector('#legMapSource .leg-map-updated').textContent === `Last updated ${newestStamp}.` &&
-     d.getElementById('legMapSource').textContent.endsWith(` Last updated ${newestStamp}.`) && Object.values(feeds).every(f => d.getElementById('legMapSource').textContent.includes(`read ${longDay(f.read)})`)) &&
-     d.getElementById('legMapSource').textContent.includes(`updated ${apStamp})`), d.getElementById('legMapSource').textContent);
+     d.getElementById('legMapSource').textContent.endsWith(` Last updated ${newestStamp}.`) && Object.values(feeds).every(f => d.getElementById('legMapSource').textContent.includes(`read ${longDay(f.read)})`)), d.getElementById('legMapSource').textContent);
   const readDays = Object.keys(feeds).map(k => [k, feeds[k].read]);
   readDays.forEach(([k]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ''`));
-  w.eval('MIDTERM_SOURCES.ap.updated = ""');
   area.dispatchEvent(new w.Event('legislation:refresh'));
   ok('with no source dated the line makes up no date: it still cites the sources, and says nothing about when they were updated',
      /^Sources: /.test(d.getElementById('legMapSource').textContent) && !/Last updated/.test(d.getElementById('legMapSource').textContent) && !d.querySelector('#legMapSource .leg-map-updated'), d.getElementById('legMapSource').textContent);
   readDays.forEach(([k, v]) => w.eval(`LEGISLATION_FEEDS.${k}.read = ${JSON.stringify(v)}`));
-  w.eval(`MIDTERM_SOURCES.ap.updated = ${JSON.stringify(apStamp)}`);
   area.dispatchEvent(new w.Event('legislation:refresh'));
 
   /* ── D. the bill paths, with five bills of our own ───────────────────────────────────────────────────────── */
@@ -1848,11 +2708,9 @@ const legislationTests = async () => {
   ok('the state card counts the state\'s active bill, in committee, and not its failed one', cardOk(1) && d.querySelector('#legPanel .leg-stats--card .leg-stats-key').textContent === '1 in committee (100%)', panel());
   await leaveMap();
   d.getElementById('legStateSelect').value = 'federal'; d.getElementById('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
-  ok('choosing Federal in the Show menu shows Congress\'s stats in the card: its one bill, and a link to it below', /Federal \(Congress, agencies and courts\)/.test(panel()) && /Bills in Congress/.test(panel()) && cardOk(1) && d.querySelector('#legPanel .leg-more-link').getAttribute('data-more') === 'federal', panel());
-  ok('and pins it: both tables narrow to Congress, the results table says the results are by state, and the card says so too',
-     d.getElementById('legStateSelect').value === 'federal' && rows('legBillsTable') === 1 && /H\.R\. 3/.test(billsTable().textContent) &&
-     rows('legResultsTable') === 0 && /results are by state/.test(d.getElementById('legResultsTable').textContent) && /results are by state/.test(panel()) && /Federal \(Congress\)/.test(d.getElementById('legBillsScope').textContent));
-  ok('and when there is nothing to show (Federal) the results table still has its columns', resultsShape());
+  ok('choosing Federal in the Show menu shows Congress\'s stats in the card: its one bill, and a link to it below', d.querySelector('#legPanel .leg-panel-title').textContent === 'Federal (Congress)' && /Bills/.test(panel()) && !/agencies and courts/.test(panel()) && cardOk(1) && d.querySelector('#legPanel .leg-more-link').getAttribute('data-more') === 'federal', panel());
+  ok('and pins it: the bills table narrows to Congress, and its title says so',
+     d.getElementById('legStateSelect').value === 'federal' && rows('legBillsTable') === 1 && /H\.R\. 3/.test(billsTable().textContent) && /Federal \(Congress\)/.test(d.getElementById('legBillsScope').textContent));
   fire(d.getElementById('legReset'), 'click');
   ok('Clear returns from Federal to all jurisdictions', d.getElementById('legStateSelect').value === '' && rows('legBillsTable') === 3);
   sel.value = 'OH'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
@@ -1860,7 +2718,7 @@ const legislationTests = async () => {
   fire(d.getElementById('legReset'), 'click');
   ok('the map shades only states with an active state bill, and the legend counts the federal bills that are not on the map',
      /fill-b1/.test(path('TX').getAttribute('class')) && /fill-b1/.test(path('OH').getAttribute('class')) && !/fill-b/.test(path('CA').getAttribute('class')) &&
-     /1 item\s*2/.test(legend()) && /Federal items, not on the map\s*1/.test(legend()), legend());
+     /1 bill\s*2/.test(legend()) && /Federal bills, not on the map\s*1/.test(legend()), legend());
   ok('the buttons follow the shading as well: none of the small states has a test bill, so none is shaded', tilesMatch() && tiles.every(b => !/fill-/.test(b.getAttribute('class'))), tiles.map(b => b.textContent + ':' + fillOf(b)).join());
   w.eval('LEGISLATION_DATA.length = 0');
   w.__real = real; w.eval('LEGISLATION_DATA.push(...window.__real)');
@@ -1874,8 +2732,18 @@ const legislationTests = async () => {
      search across everything a row shows, the switch and the filters together, a jurisdiction pinned, an empty result, and paging. */
   const searchBox = d.getElementById('legSearch'), clearFilters = d.getElementById('legReset');   // the Reset button: is-on says something is chosen or filtered
   const chips = () => [...d.querySelectorAll('#legTopicPills button[data-topic]')], chipOf = id => d.querySelector(`#legTopicPills button[data-topic="${id}"]`);
-  const chipText = b => b.textContent.replace(/\s+/g, ' ').trim(), chipN = b => Number(b.querySelector('.kw-count').textContent.replace(/,/g, ''));
+  const chipText = b => b.textContent.replace(/\s+/g, ' ').trim();
   const resultLine = () => d.getElementById('legResultLine').textContent;
+  // The chips carry no counts (the owner, 2026-11-24), so what choosing a chip would leave is read by choosing it and putting it back (the result line is the count). A chip that is on leaves what is in view now; a dimmed one leaves none; and All or
+  // No topic, when other topics are picked, would clear them, which cannot be put back, so they are not read (NaN).
+  const chipN = b => {
+    if (b.disabled) return 0;
+    const line = () => Number(resultLine().replace(/,/g, '').match(/^(\d+) of/)[1]), key = b.dataset.topic, picked = chips().filter(c => c.dataset.topic !== 'all' && c.getAttribute('aria-pressed') === 'true');
+    if (b.getAttribute('aria-pressed') === 'true') return line();
+    if ((key === 'all' || key === 'none') && picked.length) return NaN;
+    fire(b, 'click'); const n = line(); fire(b, 'click');
+    return n;
+  };
   const typeInto = async text => { searchBox.value = text; searchBox.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260); };
   const titles = () => [...billsTable().querySelectorAll('tbody tr:not(.leg-empty-row)')].map(tr => tr.querySelector('td.leg-col-title').childNodes[0].textContent);
   const topicDefs = JSON.parse(w.eval('JSON.stringify(LEGISLATION_TOPICS.map(t => ({ id: t.id, label: t.label, words: t.words.length })))'));
@@ -1885,30 +2753,15 @@ const legislationTests = async () => {
      !clearFilters.classList.contains('is-on') && resultLine() === `${num(nBills)} of ${num(nBills)} bills.`, resultLine());
   ok('the topics are defined in the data, each with an id, a label and some words, and no two share an id',
      topicDefs.length >= 5 && new Set(topicDefs.map(t => t.id)).size === topicDefs.length && topicDefs.every(t => t.id && t.label && t.words > 0 && t.id !== 'all' && t.id !== 'none'), JSON.stringify(topicDefs.map(t => t.id)));
-  /* A bill's status and a race's result are labels to read, so they are not pills (a pill looks like a button): the status is its stage in words, as plain text; a result is a square in the
-     party's colour and the words, bold for a gain and for a race not yet called. (The status had a row of dots under its words for a few hours on 2026-11-17; the owner preferred the words alone.) */
+  /* A bill's status is a label to read, so it is not a pill (a pill looks like a button): it is its stage in words, as plain text. (The status had a row of dots under its words for a few hours on 2026-11-17; the owner
+     preferred the words alone. A race's result was another such label, a square and the words; the midterm results were removed on 2026-11-23.) */
   const stageLabels = JSON.parse(w.eval("JSON.stringify(Object.keys(LEGISLATION_STAGES).map(k => LEGISLATION_STAGES[k].label))"));
   const statusRows = [...billsTable().querySelectorAll('tbody tr:not(.leg-empty-row)')];
   ok('a bill\'s status is its stage in words as plain text: the cell\'s own text starts with the stage, with no pill and no dots',
      statusRows.length > 0 && statusRows.every(tr => { const cell = tr.children[3], first = cell.firstChild; return !!first && first.nodeType === 3 && stageLabels.includes(first.textContent) && !cell.querySelector('.leg-chip, .leg-step, .leg-track'); }),
      statusRows.slice(0, 2).map(tr => tr.children[3].textContent).join(' | '));
-  const RESULT_WORDS = { 'd-gain': 'Democratic gain', 'd-hold': 'Democratic hold', 'r-hold': 'Republican hold', 'r-gain': 'Republican gain', uncalled: 'Uncalled' };
-  const raceCells = [];
-  ['TX', 'NE', 'AK'].forEach(c => { fire(path(c), 'mouseover'); raceCells.push(...d.querySelectorAll('#legPanel .leg-result')); });
-  ok('a race\'s result in the card is a square in the party\'s colour and the words, not a pill: a gain or a race not yet called is bold, a hold is plain',
-     raceCells.length > 0 && raceCells.every(el => {
-       const sw = el.querySelector('.leg-swatch'), key = sw && (sw.className.match(/fill-(d-gain|d-hold|r-hold|r-gain|uncalled)/) || [])[1];
-       return !!key && sw.getAttribute('aria-hidden') === 'true' && el.textContent.trim() === RESULT_WORDS[key] && el.classList.contains('leg-result--news') === ['d-gain', 'r-gain', 'uncalled'].includes(key);
-     }) && raceCells.some(el => el.classList.contains('leg-result--news')) && raceCells.some(el => !el.classList.contains('leg-result--news')) && !d.querySelector('#legPanel .leg-chip'), raceCells.length + ' results');
-  await leaveMap();
-  const tableCells = [...d.querySelectorAll('#legResultsTable tbody tr:not(.leg-empty-row) .leg-result')];
-  ok('a race\'s result in the results table is the same square and words as in the card, not a pill: a gain or a race not yet called is bold, a hold is plain',
-     tableCells.length > 0 && tableCells.every(el => {
-       const sw = el.querySelector('.leg-swatch'), key = sw && (sw.className.match(/fill-(d-gain|d-hold|r-hold|r-gain|uncalled)/) || [])[1];
-       return !!key && sw.getAttribute('aria-hidden') === 'true' && el.textContent.trim() === RESULT_WORDS[key] && el.classList.contains('leg-result--news') === ['d-gain', 'r-gain', 'uncalled'].includes(key);
-     }) && !d.querySelector('#legResultsTable .leg-chip'), tableCells.length + ' results');
-  ok('the chips are All, then one for each topic in the data\'s order, then No topic; each carries its count, and All counts every bill',
-     chips().length === topicDefs.length + 2 && chipText(chips()[0]).startsWith('All') && chipN(chips()[0]) === nBills && chipText(chips()[chips().length - 1]).startsWith('No topic') &&
+  ok('the chips are All, then one for each topic in the data\'s order, then No topic; none carries a count (the owner, 2026-11-24), and All leaves every bill',
+     chips().length === topicDefs.length + 2 && chipText(chips()[0]).startsWith('All') && chipN(chips()[0]) === nBills && !chips().some(b => b.querySelector('.kw-count') || /\d/.test(b.textContent)) && chipText(chips()[chips().length - 1]).startsWith('No topic') &&
      topicDefs.every((t, i) => chipText(chips()[i + 1]).startsWith(t.label)) && chips().every(b => b.getAttribute('aria-pressed') === (b.dataset.topic === 'all' ? 'true' : 'false')), chips().map(chipText).join(' | '));
   ok('the topics are always showing, and there is no note under them about how a topic is assigned or how many bills have none',
      w.getComputedStyle(d.getElementById('legTopicPills')).display !== 'none' && !d.getElementById('legTopicNote') && !/our reading of each bill/.test(d.getElementById('legislationArea').textContent) && !/have none\./.test(d.getElementById('legTopicsBar').textContent));
@@ -1920,7 +2773,7 @@ const legislationTests = async () => {
        resultLine() === `${num(k)} of ${num(nBills)} bills.` && pickable.getAttribute('aria-pressed') === 'true' && clearFilters.classList.contains('is-on') &&
        rows('legBillsTable') === Math.min(PAGE, k) && d.getElementById('legBillsScope').textContent === `All jurisdictions · ${num(k)} ${k === 1 ? 'bill' : 'bills'}` && mastheadText() === mastBefore,
        `${resultLine()} / ${d.getElementById('legBillsScope').textContent}`);
-    const fedLeft = Number(((/Federal items, not on the map\s*([\d,]+)/.exec(legend()) || [])[1] || '0').replace(/,/g, '')), stateLeft = k - fedLeft;
+    const fedLeft = Number(((/Federal bills, not on the map\s*([\d,]+)/.exec(legend()) || [])[1] || '0').replace(/,/g, '')), stateLeft = k - fedLeft;
     ok('every bill left shows the topic on its row, and the panel\'s overview and the Federal count follow the filter (the state bills and the federal bills left add up to the bills the topic has)',
        [...billsTable().querySelectorAll('tbody tr')].every(tr => tr.textContent.includes('Topics: ') && tr.textContent.includes(label)) && stateLeft >= 0 &&
        (stateLeft ? new RegExp(`${num(stateLeft)} ${stateLeft === 1 ? 'bill' : 'bills'} in `).test(panel()) : !/ bills? in /.test(panel().replace(/federal bills?/, ''))) &&
@@ -2010,7 +2863,7 @@ const legislationTests = async () => {
     { id: 'f-9', level: 'state', state: 'TX', bill: 'HB 99', title: 'Dog tax', stage: 'committee', passing: true },
     { id: 'f-10', level: 'state', state: 'TX', bill: 'HB 100', title: 'Dog failure', stage: 'failed' })`);
   area.dispatchEvent(new w.Event('legislation:refresh'));
-  const summary = () => chips().map(chipText).join('|');
+  const summary = () => chips().map(b => chipText(b) + ' ' + chipN(b)).join('|');   // each chip's words and what choosing it leaves (the chips themselves carry no count)
   ok('the chips are built from the topics in the data: All, Pets, Cars, Rules and No topic, counted over the eight active bills (the one that only mentions AI waits behind the switch, the failed one is never listed)',
      summary() === 'All 8|Pets 4|Cars 3|Rules 1|No topic 2' && resultLine() === '8 of 8 bills.', summary());
   ok('a topic is a word in the title ("Dog licensing"), or two different words in the summary ("a dog and a puppy") but not one ("a dog"); and a $ makes a whole word, so "cat" is found in "Cat and puppy parks" but not in "Category review"',
@@ -2018,7 +2871,7 @@ const legislationTests = async () => {
   ok('each row names its topics, and the chips now count what choosing them would leave: Cars 1 (the vehicle with a dog), Rules 0 and dimmed, No topic 2',
      /Topics: Pets/.test(billsTable().textContent) && /Topics: Pets, Cars|Topics: Cars, Pets/.test(billsTable().textContent) && chipN(chipOf('cars')) === 1 && chipN(chipOf('rules')) === 0 && chipOf('rules').disabled && !chipOf('none').disabled, summary());
   ok('the map follows: Texas, Ohio and California are shaded for the pet bills (2, 1 and 1), the federal bills are not (none has pets), and the masthead is unchanged', 
-     /fill-b/.test(path('TX').getAttribute('class')) && /fill-b/.test(path('OH').getAttribute('class')) && /fill-b/.test(path('CA').getAttribute('class')) && /Federal items, not on the map\s*0/.test(legend()) &&
+     /fill-b/.test(path('TX').getAttribute('class')) && /fill-b/.test(path('OH').getAttribute('class')) && /fill-b/.test(path('CA').getAttribute('class')) && /Federal bills, not on the map\s*0/.test(legend()) &&
      mastheadText() === GOV_BLURB, mastheadText() + ' / ' + legend());
   fire(chipOf('cars'), 'click');
   ok('two chips together mean both: Pets and Cars leave the one bill that has both', titles().join('|') === 'Registering a vehicle with a dog' && resultLine() === '1 of 8 bills.', titles().join('|'));
@@ -2064,8 +2917,8 @@ const legislationTests = async () => {
   // sorting: Most recent action (the default), Oldest action, Jurisdiction
   const nums = () => [...billsTable().querySelectorAll('tbody tr:not(.leg-empty-row)')].map(tr => tr.querySelector('.leg-num').textContent);
   const sortSel = d.getElementById('legSort'), setSort = v => { sortSel.value = v; sortSel.dispatchEvent(new w.Event('change', { bubbles: true })); };
-  ok('the Sort menu offers Most recent action (the default), Oldest action and Jurisdiction, and the table is most recent first: the two bills dated May 10 lead (California before Texas on the tie), then the 20th of April, March, February, January, and the bills with no date come last',
-     [...sortSel.options].map(o => o.textContent).join() === 'Most recent action,Oldest action,Jurisdiction' && sortSel.value === 'recent' && nums().join() === 'AB 31,HB 12,H.R. 42,HB 11,AB 32,SB 21,H.R. 41,SB 22', nums().join());
+  ok('the Sort menu offers Most recent action (the default), Oldest action, the two Status orders and Jurisdiction, and the table is most recent first: the two bills dated May 10 lead (California before Texas on the tie), then the 20th of April, March, February, January, and the bills with no date come last',
+     [...sortSel.options].map(o => o.textContent).join('|') === 'Most recent action|Oldest action|Status, least progress first|Status, most progress first|Jurisdiction' && sortSel.value === 'recent' && nums().join() === 'AB 31,HB 12,H.R. 42,HB 11,AB 32,SB 21,H.R. 41,SB 22', nums().join());
   setSort('oldest');
   ok('Oldest action reverses the dates but still puts the bills with no date last, Congress ahead of the states among them', nums().join() === 'SB 21,AB 32,HB 11,H.R. 42,AB 31,HB 12,H.R. 41,SB 22', nums().join());
   setSort('jurisdiction');
@@ -2138,6 +2991,644 @@ const legislationTests = async () => {
   area.dispatchEvent(new w.Event('legislation:refresh'));
   ok('with the real bills and topics put back the filter bar is as it opened', resultLine() === `${num(nBills)} of ${num(nBills)} bills.` && chips().length === topicDefs.length + 2 && rows('legBillsTable') === Math.min(PAGE, nBills) && !passWrap.hidden && searchBox.value === '');
   await leaveMap();
+};
+
+/* ── Government action: Federal on the map, the Status and Last action columns, the order of progress, the chamber and date, and Export to CSV ──────────
+   The owner's reviewers' feedback, 2026-11-23 (round 2, linking the policy cards to the legislation, is NOT built). (1) A clickable Federal button on the map, a Capitol-dome icon and the word, with the small-state
+   buttons: Congress is a place like a state, so it works the way a state does in every section. (2) The Status and Last action columns of the bills table sort when their header is clicked and are searchable, and the one
+   sort state is shared with the Sort menu. (3) An Export to CSV pill that saves every bill in view. (4) Status sorts by progress (Introduced, In committee, Passed one chamber, Passed both chambers, Enacted), never
+   alphabetically. (5) A bill that passed one chamber says which, and when, and one that passed both says both. (6) The tab order is Legislation, Enforcement, Cases, then All (the sections' order is tested with the switch, above). Part A is the Federal button,
+   B the columns, C the order of progress, D the chamber and date, E the export. */
+const govBillsTests = async () => {
+  const TODAY = new Date();
+  const two = n => String(n).padStart(2, '0'), isoToday = `${TODAY.getFullYear()}-${two(TODAY.getMonth() + 1)}-${two(TODAY.getDate())}`;
+  const num = n => n.toLocaleString('en-US');
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const longDay = iso => { const [y, m, day] = iso.split('-'); return `${MONTHS[+m - 1]} ${+day}, ${y}`; };
+  const MISSING = 'Which chamber passed it, and when, is not in our data.', MISSING_BOTH = 'Which chambers passed it, and when, is not in our data.', OTHER_MISSING = 'The other chamber and its date are not in our data.';
+  const RANK = { failed: 0, introduced: 1, committee: 2, 'one-chamber': 3, 'both-chambers': 4, enacted: 5 };
+  const LABEL_RANK = { 'Introduced': 1, 'In committee': 2, 'Passed one chamber': 3, 'Passed both chambers': 4, 'Enacted': 5 };
+  const CSV_HEAD = ['Type', 'Jurisdiction', 'Bill number', 'Session', 'Title', 'Status', 'Chambers that passed it', 'Dates it passed', 'Last action date', 'Last action', 'Status note from the source',
+                    'Who acted', 'Date of the action or ruling', 'Outcome', 'Checked on', 'Summary', 'Topics', 'Mentions AI only in its text', 'Source', 'Link'];
+  const COL = Object.fromEntries(CSV_HEAD.map((h, i) => [h, i]));   // a column by its name: the header is the contract, the order is its own business
+  // a minimal RFC 4180 reader, so the export is read back the way a spreadsheet reads it
+  const parseCsv = text => {
+    const rows = []; let row = [], cell = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+      else if (c === '"') q = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\r' && text[i + 1] === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; i++; }
+      else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  };
+  // what a page needs for a download in jsdom: a Blob URL the test can read, and an anchor whose click does not navigate
+  const catchDownloads = w => {
+    const saved = [];
+    w.URL.createObjectURL = blob => { saved.push({ blob }); return 'blob:test/' + saved.length; };
+    w.URL.revokeObjectURL = () => {};
+    w.HTMLAnchorElement.prototype.click = function () { const s = saved[saved.length - 1]; if (s) { s.name = this.download; s.href = this.href; s.attached = this.isConnected; } };
+    const read = (blob, as) => new Promise((res, rej) => { const fr = new w.FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr[as === 'bytes' ? 'readAsArrayBuffer' : 'readAsText'](blob); });
+    return { saved, text: async blob => read(blob), bytes: async blob => new Uint8Array(await read(blob, 'bytes')) };
+  };
+
+  /* ── A. Federal and States on the map: two more places, in every section ───────────────────────────────────────
+     Federal (since 2026-11-23) is Congress, or the federal agencies and courts; States (the owner, 2026-11-24) is every state at once, the other level of government, so the two together are every jurisdiction. They are the map's bottom right,
+     side by side; the nine small-state buttons stay in the gutter at its right edge. Each is a place like a state: it previews its card, pins the list to it and lets go when pressed again. The place also decides what the map shades (the owner, 2026-11-24:
+     "highlight only federal legislation and enforcement actions. It's likely that nothing will be highlighted"): Federal shades nothing, since a federal row is on no state; All states shades what the map always shades, the states' own rows; one state, or nothing, shades every state. */
+  for (const [route, name] of [['legislation', 'Legislation'], ['all', 'All'], ['enforcement', 'Enforcement'], ['cases', 'Cases']]) {
+    const { w, d } = load('index.html', '#' + route);
+    await settle(10);
+    const id = x => d.getElementById(x), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true }));
+    const fed = id('legFedBtn'), states = id('legStatesBtn'), levels = id('legLevels'), gutter = id('legGutter'), tiles = id('legTiles');
+    const bills = route === 'legislation' || route === 'all', css = [...d.querySelectorAll('style')].map(el => el.textContent).join('\n');
+    const rows = JSON.parse(w.eval('JSON.stringify(LEGISLATION_ACTIONS)')), kind = route === 'cases' ? 'case' : 'enforcement';
+    const nFedBills = w.eval("LEGISLATION_DATA.filter(b => b.level === 'federal' && !b.passing && LEGISLATION_STAGES[b.stage] && LEGISLATION_STAGES[b.stage].active).length");
+    const nFedRows = rows.filter(a => a.kind === kind && a.level === 'federal').length;
+    const fedName = { legislation: 'Federal (Congress)', all: 'Federal (Congress, agencies and courts)', enforcement: 'Federal (agencies and courts)', cases: 'Federal (agencies and courts)' }[route];
+    ok(`${name}: Federal is a real button on the map with the word Federal, a Capitol-dome icon (inline SVG, drawn in the button's own colour, hidden from a screen reader) and aria-pressed, in the group at the map's bottom right (with States) and apart from the gutter of small-state buttons`,
+       fed.matches('button[type="button"]') && fed.textContent.trim() === 'Federal' && !!fed.querySelector('svg[aria-hidden="true"]') && fed.querySelectorAll('svg path').length >= 5 && /stroke="currentColor"/.test(fed.querySelector('svg').outerHTML) &&
+       /\.leg-level \{[^}]*color:\s*var\(--navy\)/.test(css) && fed.getAttribute('aria-pressed') === 'false' && fed.parentElement === levels && tiles.parentElement === gutter && !tiles.contains(fed) && !gutter.contains(fed) && id('legMapBox').contains(levels) && id('legMapBox').contains(gutter), route);
+    if (route === 'legislation') ok("Federal and States are at the map's bottom right (the owner, 2026-11-24): one group in the map's box, side by side, positioned at its right and bottom edges and before the gutter of small-state buttons, which stays at the right edge; on a phone a row under the map, at its right",
+       !!(levels.compareDocumentPosition(gutter) & 4) && /\.leg-levels \{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*display:\s*flex;/.test(css) && /\.leg-gutter \{[^}]*position:\s*absolute;[^}]*top:[^}]*right:\s*0;/.test(css) &&
+       /@media \(max-width: 520px\) \{[^@]*?\.leg-levels \{ position: static; justify-content: flex-end;/.test(css) && /\.leg-level \{ width: auto; height: 44px;/.test(css), route);
+    ok(`${name}: the button is named by the body it is about (${fedName}), and the visible word begins the name`, fed.getAttribute('aria-label') === fedName && fed.title === fedName && fedName.startsWith(fed.textContent.trim()), fed.getAttribute('aria-label'));
+    ok(`${name}: it is the same place as the Show menu's Federal entry, and no letters were added to the map for it`, !!d.querySelector(`#legStateSelect option[value="federal"]`) && fed.getAttribute('data-state') === 'federal' && d.querySelectorAll('#legMap text').length === 0);
+    fire(fed, 'mouseover');
+    ok(`${name}: pointing at it previews Federal in the card without pinning anything`, d.querySelector('#legPanel .leg-panel-title').textContent === fedName && fed.classList.contains('is-hover') && id('legStateSelect').value === '' && fed.getAttribute('aria-pressed') === 'false', d.querySelector('#legPanel .leg-panel-title').textContent);
+    fire(id('legMapBox'), 'mouseleave');
+    await wait(530);
+    fire(fed, 'click');
+    const title = bills ? id('legBillsTitle').textContent.trim() : id('enfLists').querySelector('.leg-section-title').textContent.trim();
+    ok(`${name}: pressing it selects federal as a place, as a state is selected: the Show menu says Federal, the button is pressed, ringed and filled, and Reset counts it`,
+       id('legStateSelect').value === 'federal' && fed.getAttribute('aria-pressed') === 'true' && fed.classList.contains('is-pinned') && id('legReset').classList.contains('is-on') && /^Reset all \(\d+\)$/.test(id('legResetText').textContent) &&
+       /\.leg-level\.is-pinned \{[^}]*background:\s*var\(--navy\)[^}]*box-shadow/.test(css), `${id('legStateSelect').value} ${id('legResetText').textContent}`);
+    ok(`${name}: the title and count say Federal, and the list holds only federal items`,
+       bills ? (title === `Federal (Congress) · ${num(nFedBills)} bills` && [...id('legBillsTable').querySelectorAll('tbody tr')].every(tr => tr.getAttribute('data-state') === 'federal'))
+             : (title.startsWith(`Federal (agencies and courts) · ${nFedRows} `) && w.location.hash === `#${route}/federal` && [...id('enfLists').querySelectorAll('tbody tr:not(.leg-empty-row)')].every(tr => { const a = rows.find(r => r.id === tr.getAttribute('data-id')); return a && a.level === 'federal'; })), title);
+    const card = id('legPanel'), cardTitle = card.querySelector('.leg-panel-title').textContent;
+    ok(`${name}: the card is Federal's: its title, and stats like a state's card (${bills ? 'the bills\' count and stage bar' : 'this section\'s count'}), with its link to the details below wherever there is something to see`,
+       cardTitle === fedName && (bills ? (card.querySelector('.leg-card-total').textContent === `${num(nFedBills)} bills` && !!card.querySelector('.leg-stats--card .leg-stats-bar')) : (nFedRows ? new RegExp(`${nFedRows} (enforcement actions?|key cases?)`).test(card.textContent) : /None listed for Federal/.test(card.textContent))) &&
+       (!!card.querySelector('.leg-more-link') === (bills || nFedRows > 0)), cardTitle + ' | ' + card.textContent.slice(0, 120));
+    fire(fed, 'click');
+    ok(`${name}: pressing it again lets go, as a state does: every jurisdiction, nothing pressed`, id('legStateSelect').value === '' && fed.getAttribute('aria-pressed') === 'false' && !fed.classList.contains('is-pinned') && (bills ? /^All jurisdictions · /.test(id('legBillsTitle').textContent) : /^All jurisdictions · /.test(id('enfLists').querySelector('.leg-section-title').textContent)));
+    fire(fed, 'click');
+    fire(id('legReset'), 'click');
+    ok(`${name}: Reset clears it, and the button is unpressed`, id('legStateSelect').value === '' && fed.getAttribute('aria-pressed') === 'false' && !fed.classList.contains('is-pinned') && id('legResetText').textContent === 'Reset all');
+    fire(id('govSwitch' + name), 'click');   // Reset puts the tab back on Legislation (2026-11-24): come back to the section this round is about
+    // the Show menu and the button are one choice: choosing Federal in the menu presses the button, and choosing a state unpresses it
+    const sel = id('legStateSelect');
+    sel.value = 'federal'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const pressedAfterMenu = fed.getAttribute('aria-pressed');
+    sel.value = 'TX'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok(`${name}: the Show menu and the button stay one choice: Federal in the menu presses the button, a state in the menu lets it go`, pressedAfterMenu === 'true' && fed.getAttribute('aria-pressed') === 'false');
+    sel.value = ''; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+
+    // ── States: every state at once (the owner, 2026-11-24) ──
+    const nStateBills = w.eval("LEGISLATION_DATA.filter(b => b.level === 'state' && !b.passing && LEGISLATION_STAGES[b.stage] && LEGISLATION_STAGES[b.stage].active).length");
+    const nStateRows = rows.filter(a => a.kind === kind && a.state).length;
+    const titleNow = () => bills ? id('legBillsTitle').textContent.trim() : id('enfLists').querySelector('.leg-section-title').textContent.trim();
+    ok(`${name}: States is a real button beside Federal: the word States, a four-tile icon (inline SVG in the button's own colour, hidden from a screen reader), aria-pressed, named All states, one place with the Show menu's All states entry (in its States group), and no letters added to the map`,
+       states.matches('button[type="button"]') && states.textContent.trim() === 'States' && !!states.querySelector('svg[aria-hidden="true"]') && states.querySelectorAll('svg rect').length === 4 && /stroke="currentColor"/.test(states.querySelector('svg').outerHTML) &&
+       states.getAttribute('aria-pressed') === 'false' && states.getAttribute('aria-label') === 'All states' && states.title === 'All states' && states.getAttribute('data-state') === 'states' &&
+       states.parentElement === levels && [...levels.children].map(e => e.id).join() === 'legFedBtn,legStatesBtn' && levels.getAttribute('role') === 'group' && /Federal/.test(levels.getAttribute('aria-label') || '') && /states/.test(levels.getAttribute('aria-label') || '') && !!d.querySelector('#legStateSelect optgroup[label="States"] option[value="states"]') && d.querySelectorAll('#legMap text').length === 0, route);
+    fire(states, 'mouseover');
+    ok(`${name}: pointing at States previews it in the card without pinning anything`, d.querySelector('#legPanel .leg-panel-title').textContent === 'All states' && states.classList.contains('is-hover') && id('legStateSelect').value === '' && states.getAttribute('aria-pressed') === 'false', d.querySelector('#legPanel .leg-panel-title').textContent);
+    fire(id('legMapBox'), 'mouseleave');
+    await wait(530);
+    const allTitle = titleNow();
+    fire(states, 'click');
+    ok(`${name}: pressing States selects every state as a place: the Show menu says All states, only that button is pressed, ringed and filled, the title and count say All states, the list holds only state items, and Reset counts it`,
+       id('legStateSelect').value === 'states' && states.getAttribute('aria-pressed') === 'true' && states.classList.contains('is-pinned') && fed.getAttribute('aria-pressed') === 'false' && !fed.classList.contains('is-pinned') && id('legReset').classList.contains('is-on') &&
+       (bills ? (titleNow() === `All states · ${num(nStateBills)} bills` && [...id('legBillsTable').querySelectorAll('tbody tr')].length > 0 && [...id('legBillsTable').querySelectorAll('tbody tr')].every(tr => tr.getAttribute('data-state') !== 'federal'))
+              : (titleNow().startsWith(`All states · ${nStateRows} `) && w.location.hash === `#${route}/states` && [...id('enfLists').querySelectorAll('tbody tr:not(.leg-empty-row)')].every(tr => { const a = rows.find(r => r.id === tr.getAttribute('data-id')); return a && !!a.state; }))), titleNow() + ' ' + w.location.hash);
+    const stCard = id('legPanel'), stCardTitle = stCard.querySelector('.leg-panel-title').textContent;
+    ok(`${name}: the card is All states': its title, and stats like a state's card (${bills ? 'the bills\' count and stage bar' : 'this section\'s count'}), with its link to the details below wherever there is something to see`,
+       stCardTitle === 'All states' && (bills ? (stCard.querySelector('.leg-card-total').textContent === `${num(nStateBills)} bills` && !!stCard.querySelector('.leg-stats--card .leg-stats-bar')) : (nStateRows ? new RegExp(`${nStateRows} (enforcement actions?|key cases?)`).test(stCard.textContent) : /None listed for the states/.test(stCard.textContent))) &&
+       (!!stCard.querySelector('.leg-more-link') === (bills || nStateRows > 0)), stCardTitle + ' | ' + stCard.textContent.slice(0, 120));
+    fire(states, 'click');
+    ok(`${name}: pressing it again lets go: every jurisdiction, nothing pressed, and the federal and the state items add up to every jurisdiction's`,
+       id('legStateSelect').value === '' && states.getAttribute('aria-pressed') === 'false' && !states.classList.contains('is-pinned') && /^All jurisdictions · /.test(titleNow()) &&
+       (bills ? allTitle === `All jurisdictions · ${num(nFedBills + nStateBills)} bills` : true), titleNow());
+    // the Show menu and the two buttons are one choice
+    sel.value = 'states'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const afterStatesMenu = [states.getAttribute('aria-pressed'), fed.getAttribute('aria-pressed')];
+    sel.value = 'federal'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const afterFedMenu = [states.getAttribute('aria-pressed'), fed.getAttribute('aria-pressed')];
+    sel.value = 'TX'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok(`${name}: the menu and the two buttons are one choice: All states in the menu presses States alone, Federal presses Federal alone, and a state lets both go`,
+       afterStatesMenu.join() === 'true,false' && afterFedMenu.join() === 'false,true' && states.getAttribute('aria-pressed') === 'false' && fed.getAttribute('aria-pressed') === 'false', [afterStatesMenu, afterFedMenu].join(' | '));
+    sel.value = 'states'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    fire(id('legReset'), 'click');
+    ok(`${name}: Reset clears States too`, id('legStateSelect').value === '' && states.getAttribute('aria-pressed') === 'false' && !states.classList.contains('is-pinned') && id('legResetText').textContent === 'Reset all');
+    fire(id('govSwitch' + name), 'click');
+
+    // ── what the map shades follows the level pinned ──
+    const shade = () => [...d.querySelectorAll('#legMap .leg-state')].map(p => p.getAttribute('data-state') + ((p.getAttribute('class').match(/fill-b\d/) || [''])[0])).join(), tileShade = () => [...d.querySelectorAll('#legTiles .leg-tile')].map(b => b.getAttribute('data-state') + ((b.getAttribute('class').match(/fill-b\d/) || [''])[0])).join();
+    const legendNow = () => id('legLegend').textContent.replace(/\s+/g, ' ').trim(), swatches = () => id('legLegend').querySelectorAll('.leg-swatch').length;
+    const unpinned = [shade(), tileShade(), legendNow(), swatches()];
+    sel.value = 'federal'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const onFed = [shade(), tileShade(), legendNow(), swatches()];
+    ok(`${name}: with Federal pinned the map shades nothing (a federal row is on no state): no state and no small-state button is coloured, and the legend is only how many federal ${route === 'all' ? 'items' : bills ? 'bills' : kind === 'case' ? 'cases' : 'actions'} there are, with no step to count states under`,
+       (route === 'cases' || /fill-b/.test(unpinned[0])) && !/fill-b/.test(onFed[0]) && !/fill-b/.test(onFed[1]) && onFed[3] === 0 && /^Federal [a-z]+, not on the map [\d,]+/.test(onFed[2]) && !/Territory/.test(onFed[2]) && !/^No /.test(onFed[2]) &&
+       (route !== 'legislation' || onFed[2] === `Federal bills, not on the map ${num(nFedBills)}`), onFed[2]);
+    sel.value = 'states'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const onStates = [shade(), tileShade(), legendNow(), swatches()];
+    ok(`${name}: with All states pinned the map is shaded exactly as with nothing pinned (the states' own rows are all it ever shades), and the legend leaves out the federal rows, which are not in view`,
+       onStates[0] === unpinned[0] && onStates[1] === unpinned[1] && onStates[3] === unpinned[3] && !/Federal/.test(onStates[2]) && (route === 'cases' || /Federal/.test(unpinned[2])), onStates[2]);   // (the legend with nothing pinned does have the federal line, apart from Cases, where it may be none)
+    // one state pinned: only that state is shaded (the owner, 2026-11-24: "pinning a single state also shade only that state")
+    const shadeMap = () => Object.fromEntries([...d.querySelectorAll('#legMap .leg-state')].map(p => [p.getAttribute('data-state'), (p.getAttribute('class').match(/fill-b\d/) || [''])[0]]));
+    const shadedNow = () => { const m = shadeMap(); return Object.keys(m).filter(k => m[k]); };
+    const tilesNow = () => [...d.querySelectorAll('#legTiles .leg-tile')].filter(b => /fill-b/.test(b.getAttribute('class'))).map(b => b.getAttribute('data-state'));
+    const stateName = code => w.eval(`US_MAP.states[${JSON.stringify(code)}].name`);
+    const billsIn = code => w.eval(`LEGISLATION_DATA.filter(b => b.level === 'state' && b.state === ${JSON.stringify(code)} && !b.passing && LEGISLATION_STAGES[b.stage] && LEGISLATION_STAGES[b.stage].active).length`);
+    const rowsIn = code => rows.filter(a => (route === 'all' || a.kind === kind) && a.state === code).length;
+    const inPlace = code => (bills ? billsIn(code) : 0) + (route === 'legislation' ? 0 : rowsIn(code));
+    const noun = n => route === 'all' ? (n === 1 ? 'item' : 'items') : bills ? (n === 1 ? 'bill' : 'bills') : kind === 'case' ? (n === 1 ? 'case' : 'cases') : (n === 1 ? 'action' : 'actions');
+    const pinState = code => { sel.value = code; sel.dispatchEvent(new w.Event('change', { bubbles: true })); };
+    const legendItems = () => [...id('legLegend').querySelectorAll('.leg-legend-item')].map(i => i.textContent.replace(/\s+/g, ' ').trim());
+    const before = shadeMap(), withRows = Object.keys(before).filter(k => before[k]), nothing = Object.keys(before).find(k => !before[k] && inPlace(k) === 0);
+    const tileCodes = [...d.querySelectorAll('#legTiles .leg-tile')].map(b => b.getAttribute('data-state')), smallWithRows = tileCodes.find(c => inPlace(c) > 0);
+    if (withRows.length) {
+      const one = withRows.find(c => !tileCodes.includes(c)) || withRows[0], n = inPlace(one);   // a state with a shape big enough to point at, if one has rows
+      pinState(one);
+      ok(`${name}: with one state pinned (${stateName(one)}) only that state is shaded, in the shade it has with nothing pinned, and the other states and the small-state buttons are plain`,
+         shadedNow().join() === one && shadeMap()[one] === before[one] && tilesNow().join() === (tileCodes.includes(one) ? one : ''), `${shadedNow()} ${tilesNow()}`);
+      const items = legendItems();
+      ok(`${name}: and the legend is the one line about it, in its shade (${stateName(one)} ${n} ${noun(n)}), with no step counts for states that are not shaded, no federal line and no territory line`,
+         items[0] === `${stateName(one)} ${n} ${noun(n)}` && items.length === (route === 'all' ? 2 : 1) && id('legLegend').querySelectorAll('.leg-swatch').length === 1 && id('legLegend').querySelector('.leg-swatch').classList.contains(before[one]) && !/Federal|Territory|^No /.test(items.join('|')), items.join(' | '));
+      if (smallWithRows) {
+        pinState(smallWithRows);
+        ok(`${name}: a small state is shaded alone too, and so is its button (${stateName(smallWithRows)})`, shadedNow().join() === smallWithRows && tilesNow().join() === smallWithRows && shadeMap()[smallWithRows] === before[smallWithRows], `${shadedNow()} ${tilesNow()}`);
+      }
+    }
+    if (nothing) {
+      pinState(nothing);
+      ok(`${name}: a state with none of this section's rows pinned shades nothing, and the legend says so (${stateName(nothing)} no ${noun(2)})`, shadedNow().length === 0 && tilesNow().length === 0 && legendItems()[0] === `${stateName(nothing)} no ${noun(2)}`, `${shadedNow()} | ${legendItems().join(' | ')}`);
+    }
+    pinState('PR');
+    ok(`${name}: a territory has no shape on the map, so pinning it shades nothing, and the legend counts it apart (or says none)`,
+       shadedNow().length === 0 && tilesNow().length === 0 && /^Puerto Rico (bills|items|actions|cases), not on the map [\d,]+$|^Puerto Rico no (bills|items|actions|cases)$/.test(legendItems()[0]), legendItems().join(' | '));
+    pinState('');
+    ok(`${name}: letting the state go brings every state back, in the shades it had`, JSON.stringify(shadeMap()) === JSON.stringify(before) && [shade(), tileShade(), legendNow(), swatches()].join('|') === unpinned.join('|'));
+    sel.value = ''; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok(`${name}: letting go brings the shading and the legend back`, [shade(), tileShade(), legendNow(), swatches()].join('|') === unpinned.join('|'));
+    // hovering a place only previews it
+    fire(fed, 'mouseover');
+    ok(`${name}: pointing at Federal changes no shading: only pinning it does`, [shade(), tileShade(), legendNow(), swatches()].join('|') === unpinned.join('|'));
+    fire(id('legMapBox'), 'mouseleave');
+    await wait(530);
+
+    // ── the topic chips carry no counts (the owner, 2026-11-24) ──
+    const chipBox = bills ? id('legTopicPills') : id('enfTopicPills'), chipBtns = [...chipBox.querySelectorAll('button[data-topic]')];
+    ok(`${name}: the topic chips carry no counts: no chip has a number or a count element`, (!bills || chipBtns.length > 3) && !chipBtns.some(b => b.querySelector('.kw-count') || /\d/.test(b.textContent)), chipBtns.slice(0, 3).map(b => b.textContent).join(' | '));
+  }
+
+  /* ── B and C. the columns, the one sort state, the order of progress, and the chamber and date: on bills of our own ──────────────────────── */
+  {
+    const { w, d } = load('index.html', '#legislation', { transform: noActions });
+    await settle(10);
+    const id = x => d.getElementById(x), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true })), css = [...d.querySelectorAll('style')].map(el => el.textContent).join('\n');
+    w.eval('LEGISLATION_DATA.splice(0)');   // the real bills are set aside: this page is ours alone and is not used again
+    w.eval(`LEGISLATION_DATA.push(
+      { id: 'g-1', level: 'state', state: 'TX', bill: 'HB 11', title: 'Alpha', stage: 'enacted', passed: [{ chamber: 'House', date: '2026-01-05' }, { chamber: 'Senate', date: '2026-01-08' }], lastAction: { date: '2026-01-10', text: 'Signed by the governor' } },
+      { id: 'g-2', level: 'state', state: 'TX', bill: 'HB 12', title: 'Bravo', stage: 'committee', lastAction: { date: '2026-05-10', text: 'Referred to committee' } },
+      { id: 'g-3', level: 'state', state: 'CA', bill: 'AB 31', title: 'Charlie', stage: 'one-chamber', passed: [{ chamber: 'Assembly', date: '2026-03-02' }], lastAction: { date: '2026-04-01', text: 'Sent to the upper chamber' } },
+      { id: 'g-4', level: 'state', state: 'OH', bill: 'SB 21', title: 'Delta', stage: 'one-chamber', passed: [{ chamber: 'Senate', date: '2026-02-03' }], lastAction: { date: '2026-02-20', text: 'Sent to the lower chamber' } },
+      { id: 'g-5', level: 'federal', bill: 'H.R. 41', title: 'Echo', stage: 'one-chamber', passed: [{ chamber: 'House', date: '2026-06-24' }], lastAction: { date: '2026-06-25', text: 'Sent to the other chamber' }, status: 'Introduced May 1, 2026. Committee: Judiciary' },
+      { id: 'g-6', level: 'federal', bill: 'H.R. 42', title: 'Foxtrot', stage: 'one-chamber', lastAction: { date: '2026-07-13', text: 'Held at the desk' } },
+      { id: 'g-7', level: 'state', state: 'TX', bill: 'HB 13', title: 'Golf', stage: 'introduced', lastAction: { date: '2026-06-01', text: 'Filed' } },
+      { id: 'g-8', level: 'state', state: 'OH', bill: 'SB 22', title: 'Hotel', stage: 'both-chambers', passed: [{ chamber: 'Senate', date: '2026-01-30' }, { chamber: 'House', date: '2026-02-01' }], lastAction: { date: '2026-02-01', text: 'Sent to the governor' } },
+      { id: 'g-9', level: 'state', state: 'CA', bill: 'AB 32', title: 'India', stage: 'committee', lastAction: { date: '2026-05-10', text: 'Referred to committee' } },
+      { id: 'g-10', level: 'state', state: 'TX', bill: 'HB 14', title: 'Juliet', stage: 'committee' },
+      { id: 'g-11', level: 'state', state: 'TX', bill: 'HB 15', title: 'Kilo', stage: 'failed', lastAction: { date: '2026-02-02', text: 'Died' } })`);
+    // HB 11 (enacted) carries passed data on purpose: the page names the chambers for the two stages that mean one or two chambers and for no other, whatever the data lists
+    id('legislationArea').dispatchEvent(new w.Event('legislation:refresh'));
+    const nums = () => [...d.querySelectorAll('#legBillsTable tbody tr:not(.leg-empty-row)')].map(tr => tr.querySelector('.leg-num').textContent);
+    const th = label => [...d.querySelectorAll('#legBillsTable th')].find(t => t.textContent.trim() === label);
+    const sortSel = id('legSort'), setSort = v => { sortSel.value = v; sortSel.dispatchEvent(new w.Event('change', { bubbles: true })); };
+    const ARROWS = t => t.querySelectorAll('.leg-sort-icon path').length;
+    const RECENT = 'H.R. 42,H.R. 41,HB 13,AB 32,HB 12,AB 31,SB 21,SB 22,HB 11,HB 14';   // the newest action first, the tie on the 10th of May by bill number, the bill with no date last
+    const ASC = 'HB 13,AB 32,HB 12,HB 14,H.R. 42,H.R. 41,AB 31,SB 21,SB 22,HB 11';       // introduced; committee (most recent first, the tie on the date by bill number, no date last); passed one chamber; both; enacted
+    const DESC = 'HB 11,SB 22,H.R. 42,H.R. 41,AB 31,SB 21,AB 32,HB 12,HB 14,HB 13';
+    // B. the columns
+    ok('the Status and Last action headers, and only those two, are buttons that sort: each button is in its th, which says aria-sort; the table opens sorted by Last action, newest first',
+       [...d.querySelectorAll('#legBillsTable th')].filter(t => t.querySelector('button[data-sort-col]')).map(t => t.textContent.trim()).join() === 'Status,Last action' && th('Status').getAttribute('aria-sort') === 'none' && th('Last action').getAttribute('aria-sort') === 'descending' &&
+       [...d.querySelectorAll('#legBillsTable th')].filter(t => !t.querySelector('button')).every(t => !t.hasAttribute('aria-sort')) && [...d.querySelectorAll('#legBillsTable th button')].every(b => b.type === 'button' && b.tabIndex === 0) &&
+       sortSel.value === 'recent' && nums().join() === RECENT, nums().join());
+    ok('the headers read as they did: the buttons and the arrows add no glyph to the text of a header (no Summary column here: none of these bills has one)', [...d.querySelectorAll('#legBillsTable th')].map(t => t.textContent.trim()).join() === 'Jurisdiction,Bill,Title,Status,Last action,Source');
+    ok('each sortable header carries an arrow made of two triangles (up and down), faint while it is not the order, and only the one that points the way when it is: the stylesheet hides the other',
+       ARROWS(th('Status')) === 2 && ARROWS(th('Last action')) === 2 && /\.leg-table th\[aria-sort="ascending"\] \.leg-sort-icon \.down, \.leg-table th\[aria-sort="descending"\] \.leg-sort-icon \.up \{ display: none; \}/.test(css) && /\.leg-sort-icon \{[^}]*opacity: 0\.4/.test(css));
+    // C. Status by progress
+    id('legBillsTable').querySelector('[data-sort-col="status"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    ok('clicking Status sorts by progress, the least first: Introduced, In committee, Passed one chamber, Passed both chambers, Enacted, and not alphabetically (alphabetical would open with Enacted)',
+       nums().join() === ASC && th('Status').getAttribute('aria-sort') === 'ascending' && th('Last action').getAttribute('aria-sort') === 'none', nums().join());
+    ok('the Sort menu says the same: one sort state, so the menu now reads Status, least progress first, and the header\'s tooltip offers the other direction', sortSel.value === 'status' && sortSel.selectedOptions[0].textContent === 'Status, least progress first' && /most progress first/.test(th('Status').querySelector('button').title), sortSel.value);
+    ok('the keyboard stays on the header that was pressed (the table is drawn again, and the focus is put back), so a keyboard reader can press it again', d.activeElement === th('Status').querySelector('button') && d.activeElement.getAttribute('data-sort-col') === 'status', String(d.activeElement && d.activeElement.outerHTML).slice(0, 80));
+    th('Status').querySelector('button').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    ok('pressing it again reverses it: the furthest along first, Enacted down to Introduced, with the descending arrow and the menu following', nums().join() === DESC && th('Status').getAttribute('aria-sort') === 'descending' && sortSel.value === 'status-desc' && th('Status').querySelectorAll('.leg-sort-icon').length === 1, nums().join());
+    th('Last action').querySelector('button').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    ok('pressing Last action while Status is the order gives the newest first (its first direction), and Status lets go of its arrow', sortSel.value === 'recent' && th('Last action').getAttribute('aria-sort') === 'descending' && th('Status').getAttribute('aria-sort') === 'none' && nums().join() === RECENT, nums().join());
+    ok('and pressing Last action again gives the oldest first, with the bills that have no date last in both', (th('Last action').querySelector('button').dispatchEvent(new w.MouseEvent('click', { bubbles: true })), true) && sortSel.value === 'oldest' && th('Last action').getAttribute('aria-sort') === 'ascending' && nums().slice(-1)[0] === 'HB 14', nums().join());
+    setSort('status-desc');
+    ok('choosing a Status order in the menu moves the header: the menu is one state with the headers', th('Status').getAttribute('aria-sort') === 'descending' && th('Last action').getAttribute('aria-sort') === 'none' && nums().join() === DESC);
+    setSort('jurisdiction');
+    ok('the Jurisdiction order belongs to no sortable column, so both headers say none; then a press on Status starts from its first direction', th('Status').getAttribute('aria-sort') === 'none' && th('Last action').getAttribute('aria-sort') === 'none' &&
+       (th('Status').querySelector('button').dispatchEvent(new w.MouseEvent('click', { bubbles: true })), sortSel.value === 'status' && nums().join() === ASC));
+    ok('a sort is part of what Reset all counts, whichever way it was set (a header or the menu), at once: the button turns solid and counts it (the order alone: the section is Legislation, where the tab opens, so it is not counted)', id('legReset').classList.contains('is-on') && id('legResetText').textContent === 'Reset all (1)', id('legResetText').textContent);
+    id('legReset').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    fire(id('govSwitchLegislation'), 'click');
+    ok('Reset all puts the order back to the newest action first', sortSel.value === 'recent' && th('Last action').getAttribute('aria-sort') === 'descending');
+    // the rank is the one place: the Status menu, the stats bar and the sort all read it from LEGISLATION_STAGES
+    ok('the order of progress is kept in one place, the rank of each stage in data/legislation-data.js: introduced 1, committee 2, one-chamber 3, both-chambers 4, enacted 5, and a failed stage 0, below every one that is alive',
+       (() => { const got = JSON.parse(w.eval('JSON.stringify(LEGISLATION_STAGES)')); return Object.keys(got).length === Object.keys(RANK).length && Object.keys(RANK).every(k => got[k] && got[k].rank === RANK[k]); })(), w.eval('JSON.stringify(LEGISLATION_STAGES)'));
+    ok('the Status menu runs in that order too, not alphabetically', [...id('legStatus').options].slice(1).map(o => o.value).join() === 'introduced,committee,one-chamber,both-chambers,enacted');
+    // the search finds what the two columns show
+    const searchBox = id('legSearch'), titles = () => nums().sort().join(), typeInto = async v => { searchBox.value = v; searchBox.dispatchEvent(new w.Event('input', { bubbles: true })); await wait(260); };
+    await typeInto('passed assembly');
+    ok('the search finds a bill by what its Status column shows: "passed assembly" finds the one bill the Assembly passed', titles() === 'AB 31', titles());
+    await typeInto('passed house');
+    ok('"passed house" finds the bills the House passed: the one that passed it alone and the one that passed both chambers (the other that passed one chamber has no chamber in the data, so it cannot be found by one; the enacted bill\'s data lists a House passage, which the page does not show for that stage)', titles() === 'H.R. 41,SB 22', titles());
+    await typeInto('passed senate');
+    ok('"passed senate" finds the bills the Senate passed: the one that passed it alone and the one that passed both chambers', titles() === 'SB 21,SB 22', titles());
+    await typeInto('january 30 2026');
+    ok('it finds a bill that passed both chambers by the date either one passed it: "January 30, 2026" is the day its Senate passed it (not its last action, which is a day later)', titles() === 'SB 22', titles());
+    await typeInto('enacted');
+    ok('and the stage itself: "enacted" finds the enacted bill', titles() === 'HB 11', titles());
+    await typeInto('march 2 2026');
+    ok('it finds a bill by the date it passed, written as the page writes it ("March 2, 2026")', titles() === 'AB 31', titles());
+    await typeInto('2026-05-10');
+    ok('and by the Last action column: the date written the other way, "2026-05-10", finds the two bills last acted on that day', titles() === 'AB 32,HB 12', titles());
+    await typeInto('may 10');
+    ok('"may 10" finds the same two', titles() === 'AB 32,HB 12', titles());
+    await typeInto('held at the desk');
+    ok('and the words of the last action: "held at the desk" finds that bill', titles() === 'H.R. 42', titles());
+    await typeInto('');
+    ok('the search box says what it finds: its placeholder names status and dates', /status, dates/.test(searchBox.placeholder), searchBox.placeholder);
+    // D. which chamber, and when
+    const cellOf = b => [...d.querySelectorAll('#legBillsTable tbody tr')].find(tr => tr.querySelector('.leg-num').textContent === b).cells[3];
+    const lineOf = b => (cellOf(b).querySelector('.leg-passed') || { textContent: '(no line)' }).textContent;   // the chamber line of a bill, or a words that fail the check instead of a crash that hides the checks after it
+    ok('a bill that passed one chamber says which, and when, under its status: "Passed Assembly, March 2, 2026" for a California bill (the legislature\'s own word, never House), "Passed Senate, February 3, 2026", "Passed House, June 24, 2026" for a federal one',
+       cellOf('AB 31').textContent.startsWith('Passed one chamber') && lineOf('AB 31') === 'Passed Assembly, March 2, 2026' && lineOf('SB 21') === 'Passed Senate, February 3, 2026' &&
+       lineOf('H.R. 41') === 'Passed House, June 24, 2026' && !/House/.test(cellOf('AB 31').textContent), cellOf('AB 31').textContent);
+    ok('the source\'s own status words still follow it (a federal bill\'s "Introduced ... Committee: ..."), after the chamber and date', cellOf('H.R. 41').textContent === 'Passed one chamberPassed House, June 24, 2026Introduced May 1, 2026. Committee: Judiciary', cellOf('H.R. 41').textContent);
+    const missingLine = (cellOf('H.R. 42').querySelector('.leg-passed') || { textContent: '(no line)' }).textContent;
+    ok('a bill that passed one chamber with no chamber or date in the data says so, and shows no guess', missingLine === MISSING && !/House|Senate/.test(missingLine), cellOf('H.R. 42').textContent);
+    ok('a bill that passed both chambers says both, in the order it passed them, each with its date: "Passed Senate, January 30, 2026; House, February 1, 2026"; the legislature\'s own name for each',
+       cellOf('SB 22').textContent === 'Passed both chambersPassed Senate, January 30, 2026; House, February 1, 2026' && lineOf('SB 22') === 'Passed Senate, January 30, 2026; House, February 1, 2026', cellOf('SB 22').textContent);
+    ok('no other stage shows a chamber line: committee, introduced and enacted bills have none (the enacted bill\'s data lists a House and a Senate passage, and the page leaves them out)', ['HB 12', 'HB 13', 'HB 11'].every(b => !cellOf(b).querySelector('.leg-passed')) && !/House|Senate/.test(cellOf('HB 11').textContent), cellOf('HB 11').textContent);
+    // a bill that passed both chambers whose data has less than that: the page says what is missing and shows no guess (the data is put back after)
+    const passedOf = (bill, v) => w.eval(`(() => { const b = LEGISLATION_DATA.find(x => x.id === '${bill}'); ${v === undefined ? 'delete b.passed' : 'b.passed = ' + JSON.stringify(v)}; })()`);
+    const refresh = () => id('legislationArea').dispatchEvent(new w.Event('legislation:refresh'));
+    const SB22 = [{ chamber: 'Senate', date: '2026-01-30' }, { chamber: 'House', date: '2026-02-01' }];
+    passedOf('g-8', [SB22[0]]); refresh();
+    ok('with one of its two chambers in the data, the page shows that one and says the other chamber and its date are not in the data', lineOf('SB 22') === 'Passed Senate, January 30, 2026. ' + OTHER_MISSING, cellOf('SB 22').textContent);
+    passedOf('g-8', undefined); refresh();
+    const missingBoth = lineOf('SB 22');
+    ok('with neither in the data, it says which chambers and when are not in the data, and names none', missingBoth === MISSING_BOTH && !/House|Senate/.test(missingBoth), missingBoth);
+    passedOf('g-8', [SB22[1], SB22[0]]); refresh();
+    ok('the order is the data\'s own, as the generator wrote it (the page does not sort the list, so the order is decided in one place): given the House first, the page says the House first', lineOf('SB 22') === 'Passed House, February 1, 2026; Senate, January 30, 2026', cellOf('SB 22').textContent);
+    passedOf('g-8', SB22); refresh();
+    ok('and put back, the bill says what it said', lineOf('SB 22') === 'Passed Senate, January 30, 2026; House, February 1, 2026');
+    // the Status column keeps the width its second line needs whichever of the two stages is in view (a view of the both-chambers bills alone had a 100px column: the width rule only looked at one stage)
+    const statusMenu = id('legStatus'), statusCls = () => (d.querySelector('#legBillsTable tbody tr:not(.leg-empty-row)') || { cells: [] }).cells[3] ? d.querySelector('#legBillsTable tbody tr:not(.leg-empty-row)').cells[3].className : '(no row)';   // the column's class is on its cells
+    statusMenu.value = 'both-chambers'; statusMenu.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok('with only the bills that passed both chambers in view, the Status column still gets its minimum width (its cells carry a second line)', nums().join() === 'SB 22' && statusCls() === 'leg-col-status' && /\.leg-table \.leg-col-status \{ min-width: 168px; \}/.test(css), statusCls() + ' / ' + nums().join());
+    statusMenu.value = 'one-chamber'; statusMenu.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok('and with only the bills that passed one chamber in view', nums().length === 4 && statusCls() === 'leg-col-status', statusCls() + ' / ' + nums().join());
+    statusMenu.value = 'committee'; statusMenu.dispatchEvent(new w.Event('change', { bubbles: true }));
+    ok('but with bills that have nothing under their stage in view (committee bills with no status note) the column is left to size itself', nums().length > 0 && !/leg-col-status/.test(statusCls()), statusCls() + ' / ' + nums().join());
+    statusMenu.value = ''; statusMenu.dispatchEvent(new w.Event('change', { bubbles: true }));
+    // F. the key under the Bills title is pressable: a Status filter (the owner, 2026-11-23: "the chart key ... should be clickable")
+    setSort('recent');
+    const keyBtns = () => [...d.querySelectorAll('#legBillsStats .leg-stats-key button[data-stats-stage]')], keyOn = () => keyBtns().filter(b => b.getAttribute('aria-pressed') === 'true').map(b => b.dataset.statsStage).join();
+    const keyText = () => keyBtns().map(b => b.textContent).join('|'), press = stage => keyBtns().find(b => b.dataset.statsStage === stage).dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    const statsLabelNow = () => (id('legBillsStats').querySelector('.leg-stats-bar') || { getAttribute: () => '' }).getAttribute('aria-label');
+    const KEY0 = '1 introduced (10%)|3 in committee (30%)|4 passed one chamber (40%)|1 passed both chambers (10%)|1 enacted (10%)';
+    ok('each stage in the key under the Bills title is a button with aria-pressed, none on to begin with, and it reads as it did (the same words and shares)',
+       keyBtns().length === 5 && keyText() === KEY0 && keyOn() === '' && keyBtns().every(b => b.type === 'button' && b.tabIndex === 0 && !!b.querySelector('.leg-stats-swatch')) &&
+       [...d.querySelectorAll('#legBillsStats .leg-stats-key li')].map(li => li.textContent).join('|') === KEY0 && keyBtns().every(b => /^Show only .+ bills$/.test(b.title)), keyText());
+    fire(d.querySelector('#legMap path[data-state="TX"]'), 'mouseover');
+    ok('the card\'s own key, a hover preview, stays plain text: pressing it would filter the table without pinning the place the card is about',
+       d.querySelectorAll('#legPanel .leg-stats-key li').length > 0 && d.querySelectorAll('#legPanel .leg-stats-key button').length === 0 && !d.querySelector('#legPanel .leg-stats-key--pills'));
+    fire(d.getElementById('legMapBox'), 'mouseleave'); await wait(520);
+    press('one-chamber');
+    ok('pressing a stage shows only the bills at that stage, exactly as choosing it in the Status menu does: the menu follows, the table, its title and the result line say four, the pressed entry is marked, and Reset counts it',
+       id('legStatus').value === 'one-chamber' && nums().join() === 'H.R. 42,H.R. 41,AB 31,SB 21' && id('legBillsScope').textContent === 'All jurisdictions · 4 bills' && /^4 of 10 bills/.test(id('legResultLine').textContent) && keyOn() === 'one-chamber' &&
+       keyBtns().find(b => b.dataset.statsStage === 'one-chamber').title === 'Showing only “Passed one chamber” bills. Press to show every status.' && id('legResetText').textContent === 'Reset all (1)', `${id('legStatus').value} ${nums().join()} ${keyOn()}`);
+    ok('the key still lists every stage, counted before the Status filter (as the Status menu counts), so another can be pressed at once, while the bar follows the bills in view: that one stage, whole',
+       keyText() === KEY0 && [...d.querySelectorAll('#legBillsStats .leg-stats-seg')].map(x => x.dataset.stage).join() === 'one-chamber' && statsLabelNow() === 'Where the 4 bills stand: 4 passed one chamber (100%).', keyText() + ' | ' + statsLabelNow());
+    ok('the keyboard stays on the pressed entry, though the bar is drawn again, so it can be pressed again', !!d.activeElement && d.activeElement.dataset.statsStage === 'one-chamber', String(d.activeElement && d.activeElement.outerHTML).slice(0, 80));
+    press('committee');
+    ok('pressing another stage switches to it directly, without clearing first', id('legStatus').value === 'committee' && nums().join() === 'AB 32,HB 12,HB 14' && keyOn() === 'committee' && id('legBillsScope').textContent === 'All jurisdictions · 3 bills');
+    press('committee');
+    ok('pressing the one that is on shows every status again: the menu says All statuses, ten bills, nothing marked, and the table is back on its first page',
+       id('legStatus').value === '' && nums().length === 10 && keyOn() === '' && id('legBillsScope').textContent === 'All jurisdictions · 10 bills' && id('legResetText').textContent === 'Reset all');
+    const setStatusMenu = v => { id('legStatus').value = v; id('legStatus').dispatchEvent(new w.Event('change', { bubbles: true })); };
+    setStatusMenu('enacted');
+    ok('the menu and the key are one state: choosing a stage in the Status menu presses its entry in the key', keyOn() === 'enacted' && nums().join() === 'HB 11');
+    setStatusMenu('');
+    await typeInto('texas');
+    ok('the key counts what the search leaves, so it follows the search and the topics (and the place and the checkbox): the four Texas bills are 1 introduced, 2 in committee and 1 enacted',
+       keyText() === '1 introduced (25%)|2 in committee (50%)|1 enacted (25%)', keyText());
+    press('enacted');
+    ok('with a status on and a search, the key keeps the stages the search leaves: the status does not hide the others', keyText() === '1 introduced (25%)|2 in committee (50%)|1 enacted (25%)' && keyOn() === 'enacted' && nums().join() === 'HB 11', keyText());
+    setStatusMenu('both-chambers');
+    ok('a status that leaves no bill in view (Texas has none that passed both chambers): the table is empty and the bar is gone, but the key is still there, with that stage at 0, so it can be pressed to clear it',
+       nums().length === 0 && !id('legBillsStats').hidden && !id('legBillsStats').querySelector('.leg-stats-bar') && keyText() === '1 introduced (25%)|2 in committee (50%)|0 passed both chambers (0%)|1 enacted (25%)' && keyOn() === 'both-chambers', keyText());
+    press('both-chambers');
+    ok('pressing it clears the status and the four Texas bills are back', id('legStatus').value === '' && nums().length === 4 && keyOn() === '');
+    await typeInto('qqqqq');
+    ok('with nothing in view at all (a search that finds nothing) there is no bar and no key: out of sight, as before', id('legBillsStats').hidden && id('legBillsStats').innerHTML === '');
+    await typeInto('');
+    ok('each entry is a pill, the Topics chips\' own values (Haas 12px, a navy outline on the pale fill, navy with white text and semibold when it is the one on), and the card\'s plain key is not styled as one',
+       /\.leg-stats-btn \{[^}]*padding: 4px 12px[^}]*background: var\(--light-beige\); border: 1px solid var\(--navy\); border-radius: var\(--r-ctl\)/.test(css) && /\.leg-stats-btn\[aria-pressed="true"\] \{ background: var\(--navy\); color: #fff; font-weight: 600; \}/.test(css) &&
+       /\.leg-stats-btn:focus-visible \{ outline: 2px solid var\(--navy\)/.test(css) && !/\.leg-stats--card \.leg-stats-btn/.test(css));
+    // E. the export, on these bills
+    const dl = catchDownloads(w), exp = id('legExport');
+    const savedText = async () => (await dl.text(dl.saved[dl.saved.length - 1].blob)), names = () => dl.saved.map(s => s.name);
+    ok('Export to CSV is a pill (a button, the Fact Bank\'s action pill value for value) at the right of the bills\' title, outside the heading, enabled while bills are in view', exp.matches('button[type="button"]') && exp.textContent === 'Export to CSV' && !exp.disabled && exp.parentElement.classList.contains('leg-section-head') && !id('legBillsTitle').contains(exp) &&
+       id('legBillsTitle').textContent.trim() === 'All jurisdictions · 10 bills' && /\.leg-export \{[^}]*border: 1px solid var\(--navy\)[^}]*border-radius: var\(--r-ctl\)[^}]*padding: 4px 12px[^}]*font-size: 12px; font-weight: 600/.test(css) && /Save the 10 bills/.test(exp.title), exp.title);
+    setSort('status');
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(30);
+    const bytes = await dl.bytes(dl.saved[0].blob), csv = await savedText(), table = parseCsv(csv.replace(/^\uFEFF/, ''));
+    ok('it saves a file named for the place and the day, with a byte order mark so Excel reads the accents and quotes, lines ending CRLF, made by a hidden temporary link that is out of the page again', dl.saved.length === 1 && dl.saved[0].name === `ai-bills-all-${isoToday}.csv` && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF &&
+       dl.saved[0].blob.type.startsWith('text/csv') && /\r\n$/.test(csv) && !/[^\r]\n/.test(csv.replace(/"(?:[^"]|"")*"/g, '')) && dl.saved[0].attached === true && !d.querySelector('body > a[download]'), `${dl.saved[0].name} ${dl.saved[0].blob.type}`);
+    ok('the file has a header row, and then one row for each of the ten bills in view (all of them, in the order the table is in now: least progress first)',
+       table[0].join('|') === CSV_HEAD.join('|') && table.length === 11 && table.slice(1).every(r => r.length === CSV_HEAD.length && r[COL['Type']] === 'Bill') && table.slice(1).map(r => r[COL['Bill number']]).join() === ASC, table.slice(1).map(r => r[COL['Bill number']]).join());
+    const row = b => table.find(r => r[COL['Bill number']] === b), cell = (b, h) => row(b)[COL[h]];
+    ok('a bill that passed both chambers has both in the file, in the order it passed them, and the dates in the same order, so each date lines up with its chamber: "Senate; House" and "2026-01-30; 2026-02-01"',
+       cell('SB 22', 'Status') === 'Passed both chambers' && cell('SB 22', 'Chambers that passed it') === 'Senate; House' && cell('SB 22', 'Dates it passed') === '2026-01-30; 2026-02-01', JSON.stringify(row('SB 22')));
+    ok('its columns carry the table\'s (and a bill at another stage has no chamber or date, whatever its data lists): the jurisdiction, the bill number, the stage in words, the chamber and the date it passed (YYYY-MM-DD), the last action\'s date and words, and the link; the columns that are for cases and actions are empty on a bill',
+       cell('AB 31', 'Jurisdiction') === 'California' && cell('AB 31', 'Status') === 'Passed one chamber' && cell('AB 31', 'Chambers that passed it') === 'Assembly' && cell('AB 31', 'Dates it passed') === '2026-03-02' && cell('AB 31', 'Last action date') === '2026-04-01' && cell('AB 31', 'Last action') === 'Sent to the upper chamber' &&
+       cell('H.R. 41', 'Jurisdiction') === 'Federal' && cell('H.R. 41', 'Chambers that passed it') === 'House' && cell('H.R. 41', 'Status note from the source') === 'Introduced May 1, 2026. Committee: Judiciary' && cell('HB 12', 'Chambers that passed it') === '' && cell('HB 12', 'Dates it passed') === '' &&
+       cell('H.R. 42', 'Chambers that passed it') === '' && cell('H.R. 42', 'Dates it passed') === '' && cell('HB 11', 'Chambers that passed it') === '' && cell('HB 11', 'Dates it passed') === '' &&
+       ['Who acted', 'Date of the action or ruling', 'Outcome', 'Checked on'].every(h => cell('AB 31', h) === ''), JSON.stringify(row('AB 31')));
+    // a filter narrows the file as it narrows the table
+    await typeInto('texas');
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(30);
+    const txTable = parseCsv((await savedText()).replace(/^\uFEFF/, ''));
+    ok('with a search on, the file holds exactly the bills the table does (the four Texas bills, in the same order), and the button\'s tooltip says how many', txTable.length === 5 && txTable.slice(1).map(r => r[COL['Bill number']]).join() === 'HB 13,HB 12,HB 14,HB 11' && /Save the 4 bills/.test(exp.title) && /Exported 4 bills to ai-bills-all-/.test(id('legAnnounce').textContent), txTable.map(r => r[COL['Bill number']]).join());
+    await typeInto('');
+    id('legStateSelect').value = 'CA'; id('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    id('legStateSelect').value = 'federal'; id('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(30);
+    ok('a place goes in the file name: California is ai-bills-california-<day>.csv and Federal ai-bills-federal-<day>.csv', names().slice(-2).join() === `ai-bills-california-${isoToday}.csv,ai-bills-federal-${isoToday}.csv`, names().join());
+    id('legStateSelect').value = ''; id('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
+    await typeInto('qqqqq');
+    const before = dl.saved.length;
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    ok('with no bill in view the pill is out of use and saves nothing', exp.disabled && dl.saved.length === before && /nothing in view/.test(exp.title), exp.title);
+    await typeInto('');
+    // a cell that starts with = + - @ (or a tab or a return) cannot run as a formula; commas, quotes and line breaks cannot break a row
+    w.eval(`LEGISLATION_DATA.push(
+      { id: 'x-1', level: 'state', state: 'TX', bill: 'HB 91', title: '=HYPERLINK("http://example.org","click")', stage: 'committee', summary: '+1 summary, with a comma' },
+      { id: 'x-2', level: 'state', state: 'TX', bill: 'HB 92', title: '-2+3', stage: 'committee', summary: '@SUM(A1:A2)' },
+      { id: 'x-3', level: 'state', state: 'TX', bill: 'HB 93', title: 'A "quoted" title, and a comma', stage: 'committee', summary: 'Line one\\nline two' },
+      { id: 'x-4', level: 'state', state: 'TX', bill: 'HB 94', title: '\\tTabbed', stage: 'committee', summary: 'Safe-ish - text = fine @ home' })`);
+    id('legislationArea').dispatchEvent(new w.Event('legislation:refresh'));
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(30);
+    const raw = await savedText(), nasty = parseCsv(raw.replace(/^\uFEFF/, '')), nr = b => nasty.find(r => r[COL['Bill number']] === b), T = COL['Title'], S = COL['Summary'];
+    ok('a cell that starts with =, +, - or @ (or a tab) is neutralised with a leading apostrophe, in the title and in the summary, so a spreadsheet shows it as text and never runs it',
+       nr('HB 91')[T] === '\'=HYPERLINK("http://example.org","click")' && nr('HB 91')[S] === '\'+1 summary, with a comma' && nr('HB 92')[T] === '\'-2+3' && nr('HB 92')[S] === '\'@SUM(A1:A2)' && nr('HB 94')[T] === '\'\tTabbed' &&
+       nasty.slice(1).every(r => r.every(c => !/^[=+\-@\t\r]/.test(c))), JSON.stringify([nr('HB 91')[T], nr('HB 92')[T]]));
+    ok('a quote inside a cell is doubled, and a comma or a line break inside a cell stays inside it, so every row still has its twenty cells; a dash or an equals sign that is not first is left alone',
+       nr('HB 93')[T] === 'A "quoted" title, and a comma' && nr('HB 93')[S] === 'Line one\nline two' && /"A ""quoted"" title, and a comma"/.test(raw) && nasty.slice(1).every(r => r.length === CSV_HEAD.length) && nr('HB 94')[S] === 'Safe-ish - text = fine @ home', JSON.stringify(nr('HB 93')));
+  }
+
+  /* ── the CSV on All also holds the key cases and the enforcement actions (the owner, 2026-11-23: "the CSV file should also include the cases and enforcement actions") ───────────────────────────────── */
+  {
+    const { w, d } = load('index.html', '#all');
+    await settle(10);
+    const id = x => d.getElementById(x), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true })), dl = catchDownloads(w), exp = id('legExport'), T = COL['Type'], J = COL['Jurisdiction'], TI = COL['Title'];
+    const acts = JSON.parse(w.eval('JSON.stringify(LEGISLATION_ACTIONS)')), cases = acts.filter(a => a.kind === 'case'), enf = acts.filter(a => a.kind === 'enforcement');
+    const topicLabel = Object.fromEntries(JSON.parse(w.eval('JSON.stringify(LEGISLATION_TOPICS.map(t => [t.id, t.label]))')));
+    const billsIn = f => w.eval(`LEGISLATION_DATA.filter(b => !b.passing && LEGISLATION_STAGES[b.stage] && LEGISLATION_STAGES[b.stage].active && (${f})).length`);
+    const readCsv = async i => parseCsv((await dl.text(dl.saved[i].blob)).replace(/^\uFEFF/, ''));
+    const place = code => w.eval(`(() => { const sel = document.getElementById('legStateSelect'); sel.value = '${code}'; sel.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    const nBills = billsIn('true'), kinds = rows => rows.map(r => r[T]).filter((x, i, a) => i === 0 || a[i - 1] !== x).join();
+    ok('there are real cases and enforcement actions to put in the file (this checks them against the data, so it needs the rows)', cases.length > 0 && enf.length > 0 && cases.every(a => a.title && a.date) && enf.every(a => a.title && a.date), `${cases.length} cases, ${enf.length} actions`);
+    fire(exp, 'click');
+    await wait(40);
+    const all = await readCsv(0), body = all.slice(1);
+    ok('on All the file holds the bills and also the key cases and the enforcement actions: one row for each, under the same header as the bills\' file, and no row is lost or added',
+       all[0].join('|') === CSV_HEAD.join('|') && body.length === nBills + cases.length + enf.length && body.filter(r => r[T] === 'Bill').length === nBills && body.filter(r => r[T] === 'Key case').length === cases.length &&
+       body.filter(r => r[T] === 'Enforcement action').length === enf.length && body.every(r => r.length === CSV_HEAD.length), `${body.length} rows: ${nBills} + ${cases.length} + ${enf.length}`);
+    ok('in the page\'s order: the bills first, then the key cases, then the enforcement actions, each kind together', kinds(body) === 'Bill,Key case,Enforcement action', kinds(body));
+    const rowOf = (a, type) => body.find(r => r[T] === type && r[TI] === a.title), host = u => String(u || '').replace(/^https?:\/\/(www\.)?/i, '').split('/')[0];
+    const checkRow = (a, type) => { const r = rowOf(a, type); return !!r && r[J] === (a.state ? w.eval(`US_MAP.states['${a.state}'].name`) : 'Federal') && r[COL['Status']] === (a.status || '') && r[COL['Who acted']] === (a.body || '') && r[COL['Date of the action or ruling']] === a.date &&
+      r[COL['Outcome']] === (a.outcome || '') && r[COL['Checked on']] === (a.asOf || '') && r[COL['Summary']] === (a.what || '') && r[COL['Topics']] === (a.uses || []).map(u => topicLabel[u] || u).join('; ') && r[COL['Source']] === host(a.url) && r[COL['Link']] === a.url &&
+      ['Bill number', 'Session', 'Chambers that passed it', 'Dates it passed', 'Last action date', 'Last action', 'Status note from the source', 'Mentions AI only in its text'].every(h => r[COL[h]] === ''); };
+    ok('a key case\'s row carries what its list shows: its place (Federal, or its state), title, status, who acted, the date, the outcome, the day it was last checked, our description as the Summary, its topics, the host as the Source and the link; and the columns that are for bills are empty',
+       cases.every(a => checkRow(a, 'Key case')), cases.filter(a => !checkRow(a, 'Key case')).map(a => a.id).join());
+    ok('and so does every enforcement action\'s: a state attorney general\'s action is under its state, an agency\'s under Federal', enf.every(a => checkRow(a, 'Enforcement action')) && enf.some(a => a.state) && enf.some(a => !a.state), enf.filter(a => !checkRow(a, 'Enforcement action')).map(a => a.id).join());
+    const wordsAll = `${num(nBills)} bills, ${cases.length} key case${cases.length === 1 ? '' : 's'} and ${enf.length} enforcement action${enf.length === 1 ? '' : 's'}`;
+    ok('on All the file is named for all of it, not for the bills (ai-government-action-all-<day>.csv), and the pill\'s tooltip and the announcement say what is in it, kind by kind',
+       dl.saved[0].name === `ai-government-action-all-${isoToday}.csv` && exp.title === `Save the ${wordsAll} in view, not just this page, as a CSV file` && id('legAnnounce').textContent === `Exported ${wordsAll} to ai-government-action-all-${isoToday}.csv.`, exp.title + ' | ' + id('legAnnounce').textContent);
+    // a place narrows all three kinds at once, as it narrows the page
+    const st = (enf.find(a => a.state) || {}).state, nameOf = code => w.eval(`US_MAP.states['${code}'].name`), slug = code => nameOf(code).toLowerCase().replace(/ /g, '-');
+    place(st);
+    fire(exp, 'click');
+    await wait(40);
+    const inSt = await readCsv(1), nS = billsIn(`b.level === 'state' && b.state === '${st}'`), cS = cases.filter(a => a.state === st).length, eS = enf.filter(a => a.state === st).length;
+    ok(`pinning ${nameOf(st)} narrows the file to its bills, its cases and its actions: ${nS} + ${cS} + ${eS}, all ${nameOf(st)}, in a file named for it`,
+       inSt.length - 1 === nS + cS + eS && inSt.slice(1).every(r => r[J] === nameOf(st)) && dl.saved[1].name === `ai-government-action-${slug(st)}-${isoToday}.csv` && eS > 0, `${inSt.length - 1} rows`);
+    place('federal');
+    fire(exp, 'click');
+    await wait(40);
+    const fed = await readCsv(2), nF = billsIn("b.level === 'federal'"), cF = cases.filter(a => !a.state && a.level === 'federal').length, eF = enf.filter(a => !a.state && a.level === 'federal').length;
+    ok(`pinning Federal does the same for Congress and the federal agencies and courts: ${nF} + ${cF} + ${eF}, all Federal, in ai-government-action-federal-<day>.csv`,
+       fed.length - 1 === nF + cF + eF && fed.slice(1).every(r => r[J] === 'Federal') && dl.saved[2].name === `ai-government-action-federal-${isoToday}.csv` && eF > 0, `${fed.length - 1} rows`);
+    place('');
+    // the order is the tab's Sort menu: the lists follow Most recent or Oldest, and a Status order (which a list has none of) leaves them most recent first
+    const dateSeq = (rows, type) => rows.filter(r => r[T] === type).map(r => r[COL['Date of the action or ruling']]);
+    const nonInc = a => a.every((x, i) => i === 0 || a[i - 1] >= x), nonDec = a => a.every((x, i) => i === 0 || a[i - 1] <= x);
+    const setSort = v => { id('legSort').value = v; id('legSort').dispatchEvent(new w.Event('change', { bubbles: true })); };
+    setSort('oldest'); fire(exp, 'click'); await wait(40);
+    const oldest = await readCsv(3);
+    ok('the Sort menu orders the lists in the file as it orders them on the page: Oldest puts the earliest action first', nonDec(dateSeq(oldest.slice(1), 'Enforcement action')) && enf.length > 1 && dateSeq(oldest.slice(1), 'Enforcement action')[0] === enf.map(a => a.date).sort()[0], dateSeq(oldest.slice(1), 'Enforcement action').join());
+    setSort('status'); fire(exp, 'click'); await wait(40);
+    const byStatus = await readCsv(4);
+    ok('and under a Status order (the bills\' own: a list has no stage) the actions are most recent first, while the bills are in order of progress',
+       nonInc(dateSeq(byStatus.slice(1), 'Enforcement action')) && byStatus.slice(1).filter(r => r[T] === 'Bill').map(r => LABEL_RANK[r[COL['Status']]]).every((x, i, a) => i === 0 || a[i - 1] <= x));
+    setSort('recent');
+    // Legislation is the bills alone, with the same header, and a file named for the bills
+    fire(id('govSwitchLegislation'), 'click');
+    fire(exp, 'click'); await wait(40);
+    const leg = await readCsv(5);
+    ok('on Legislation the file is the bills alone, as that section is (the same header, every row a Bill, named ai-bills-all-<day>.csv), and the pill\'s tooltip says so',
+       leg[0].join('|') === CSV_HEAD.join('|') && leg.length - 1 === nBills && leg.slice(1).every(r => r[T] === 'Bill') && dl.saved[5].name === `ai-bills-all-${isoToday}.csv` && exp.title === `Save the ${num(nBills)} bills in view, not just this page, as a CSV file`, exp.title);
+  }
+  {
+    // the bills file does not arrive: the pill is out of use, because a file made without them would leave them out without saying so, though the lists have rows
+    const { w, d } = load('index.html', '#all', { transform: html => html.replace("loadPayload('data/legislation-bills.js')", "loadPayload('data/no-such-bills.js')") });
+    await settle(10);
+    const dl = catchDownloads(w), exp = d.getElementById('legExport');
+    exp.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    ok('while the bills have not arrived (here they never do) the pill is out of use and saves nothing, however many cases and actions there are: it says why',
+       d.getElementById('legislationArea').getAttribute('data-bills') === 'failed' && exp.disabled && dl.saved.length === 0 && /could not be loaded/.test(exp.title), exp.title + ' | ' + d.getElementById('legislationArea').getAttribute('data-bills'));
+  }
+
+  /* ── C again. the rank is the one place: change it in the data, and the sort, the Status menu and the stats bar follow ───────────────── */
+  {
+    // swap the ranks of "In committee" and "Passed one chamber" in the data file as the page loads it: nothing else is touched
+    const swapped = html => html.replace(/'committee':(\s*)\{ label: 'In committee',(\s*)active: true,(\s*)rank: 2 \}/, "'committee':$1{ label: 'In committee',$2active: true,$3rank: 3 }").replace(/'one-chamber':(\s*)\{ label: 'Passed one chamber',(\s*)active: true,(\s*)rank: 3 \}/, "'one-chamber':$1{ label: 'Passed one chamber',$2active: true,$3rank: 2 }");
+    const { w, d } = load('index.html', '#legislation', { transform: html => swapped(noActions(html)) });
+    await settle(10);
+    const id = x => d.getElementById(x);
+    w.eval('LEGISLATION_DATA.splice(0)');
+    w.eval(`LEGISLATION_DATA.push(
+      { id: 'r-1', level: 'state', state: 'TX', bill: 'HB 1', title: 'A', stage: 'committee', lastAction: { date: '2026-01-01', text: 'x' } },
+      { id: 'r-2', level: 'state', state: 'TX', bill: 'HB 2', title: 'B', stage: 'one-chamber', passed: [{ chamber: 'House', date: '2026-01-02' }], lastAction: { date: '2026-01-02', text: 'x' } },
+      { id: 'r-3', level: 'state', state: 'TX', bill: 'HB 3', title: 'C', stage: 'introduced', lastAction: { date: '2026-01-03', text: 'x' } })`);
+    id('legislationArea').dispatchEvent(new w.Event('legislation:refresh'));
+    id('legBillsTable').querySelector('[data-sort-col="status"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    const nums = () => [...d.querySelectorAll('#legBillsTable tbody tr')].map(tr => tr.querySelector('.leg-num').textContent).join();
+    ok('the rank, and nothing else, decides: with the ranks of In committee and Passed one chamber swapped in the data, the Status sort, the Status menu and the stats bar all swap too',
+       w.eval('LEGISLATION_STAGES.committee.rank') === 3 && w.eval("LEGISLATION_STAGES['one-chamber'].rank") === 2 && nums() === 'HB 3,HB 2,HB 1' && [...id('legStatus').options].slice(1).map(o => o.value).join() === 'introduced,one-chamber,committee,both-chambers,enacted' && [...id('legBillsStats').querySelectorAll('.leg-stats-seg')].map(x => x.getAttribute('data-stage')).join() === 'introduced,one-chamber,committee', nums());
+  }
+
+  /* ── C and D on the shipped bills ───────────────────────────────────────────────────────────────────────── */
+  {
+    const { w, d } = load('index.html', '#legislation', { transform: noActions });
+    await settle(10);
+    const id = x => d.getElementById(x), fire = (el, type) => el.dispatchEvent(new w.MouseEvent(type, { bubbles: true }));
+    const bills = JSON.parse(w.eval('JSON.stringify(LEGISLATION_DATA)')), active = bills.filter(b => !b.passing);
+    const lowerIsAssembly = ['CA', 'NY', 'NJ', 'NV', 'WI'];   // states whose lower chamber the legislature calls the Assembly: a page that said House for these would be wrong
+    const oneChamber = bills.filter(b => b.stage === 'one-chamber'), bothChambers = bills.filter(b => b.stage === 'both-chambers');
+    ok('every bill that passed one chamber carries which chamber and when, from its source: a federal one House or Senate, a state one the legislature\'s own name for it (Assembly for CA, NY, NJ, NV and WI, never House), and a real date that is not in the future and not after the bill\'s last action',
+       oneChamber.length > 0 && oneChamber.every(b => Array.isArray(b.passed) && b.passed.length >= 1 && b.passed.every(p => typeof p.chamber === 'string' && p.chamber.length > 2 && /^\d{4}-\d{2}-\d{2}$/.test(p.date) && p.date >= '2025-01-01' && p.date <= isoToday && (!b.lastAction || p.date <= b.lastAction.date)) &&
+       (b.level === 'federal' ? b.passed.every(p => ['House', 'Senate'].includes(p.chamber)) : b.passed.every(p => !(p.chamber === 'House' && lowerIsAssembly.includes(b.state))))),
+       oneChamber.filter(b => !(Array.isArray(b.passed) && b.passed.length)).map(b => b.bill).join() + ' | ' + oneChamber.filter(b => b.passed && b.passed.some(p => p.date > (b.lastAction || {}).date)).map(b => b.bill).join());
+    ok('every bill that passed both chambers carries them: two different chambers, each with a real date that is not in the future and not after the bill\'s last action, in the order they passed it (the earlier date first), or, where the source has only one, that one (California\'s SCR 82: the Assembly\'s two "passages" are committee votes, which are not named); a federal one House and Senate, a state one the legislature\'s own names (never House for an Assembly state)',
+       bothChambers.length > 0 && bothChambers.filter(b => b.passed && b.passed.length === 2).length >= bothChambers.length - 1 && bothChambers.every(b => Array.isArray(b.passed) && [1, 2].includes(b.passed.length) && (b.passed.length < 2 || (b.passed[0].chamber !== b.passed[1].chamber && b.passed[0].date <= b.passed[1].date)) &&
+         b.passed.every(p => typeof p.chamber === 'string' && p.chamber.length > 2 && /^\d{4}-\d{2}-\d{2}$/.test(p.date) && p.date >= '2025-01-01' && p.date <= isoToday && (!b.lastAction || p.date <= b.lastAction.date)) &&
+         (b.level === 'federal' ? b.passed.every(p => ['House', 'Senate'].includes(p.chamber)) : b.passed.every(p => !(p.chamber === 'House' && lowerIsAssembly.includes(b.state))))),
+       bothChambers.filter(b => !(Array.isArray(b.passed) && b.passed.length === 2)).map(b => b.bill + ':' + ((b.passed || []).length)).join() + ' | ' + bothChambers.filter(b => b.passed && b.passed.length === 2 && b.passed[0].date > b.passed[1].date).map(b => b.bill).join());
+    ok('a committee\'s vote is not named as a chamber\'s passage: no bill at those stages has a passage dated on a day its source only records a committee vote (California\'s SCR 82 names its Senate and not its Assembly)',
+       !bills.some(b => b.state === 'CA' && b.bill === 'SCR 82' && (b.passed || []).some(p => p.chamber === 'Assembly')) && ((bothChambers.find(b => b.state === 'CA' && b.bill === 'SCR 82') || {}).passed || []).length <= 1);
+    ok('and no bill at any other stage carries one: it is for the bills that passed one chamber or both (the enacted federal bills passed both too, and the scan has the dates, but the page and the data say it for the two stages only)', bills.filter(b => !['one-chamber', 'both-chambers'].includes(b.stage)).every(b => !('passed' in b)), bills.filter(b => !['one-chamber', 'both-chambers'].includes(b.stage) && 'passed' in b).map(b => b.bill).join());
+    ok('the Assembly is in the data where it belongs: some California or New York bill passed the Assembly, and none of those states shows a House passage', oneChamber.some(b => b.passed.some(p => p.chamber === 'Assembly')) && !oneChamber.some(b => lowerIsAssembly.includes(b.state) && b.passed.some(p => p.chamber === 'House')));
+    // the Status filter on the one-chamber stage: every row says which chamber and when, exactly as the data has it
+    const st = id('legStatus'); st.value = 'one-chamber'; st.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const shownRows = [...d.querySelectorAll('#legBillsTable tbody tr')];
+    const billOfRow = (tr, stage) => active.find(x => x.stage === stage && x.bill === tr.querySelector('.leg-num').textContent && (x.level === 'federal') === (tr.getAttribute('data-state') === 'federal') && (x.level === 'federal' || tr.cells[0].textContent === w.eval(`US_MAP.states['${x.state}'] ? US_MAP.states['${x.state}'].name : LEGISLATION_TERRITORIES['${x.state}']`)));
+    const sayingOf = (tr, stage) => { const cell = tr.cells[3], b = billOfRow(tr, stage), need = stage === 'both-chambers' ? 2 : 1; return !!b && !!cell.querySelector('.leg-passed') &&
+      cell.querySelector('.leg-passed').textContent === 'Passed ' + (b.passed || []).map(p => `${p.chamber}, ${longDay(p.date)}`).join('; ') + ((b.passed || []).length < need ? '. ' + OTHER_MISSING : ''); };
+    ok('on the real bills, every row of the one-chamber stage says "Passed <chamber>, <date>" in its Status cell, matching its data, and none says the chamber is missing',
+       shownRows.length === 10 && shownRows.every(tr => sayingOf(tr, 'one-chamber')), shownRows.map(tr => tr.cells[3].textContent).join(' || '));
+    st.value = 'both-chambers'; st.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const bothRows = [...d.querySelectorAll('#legBillsTable tbody tr')], bothActive = active.filter(b => b.stage === 'both-chambers');
+    ok('and every row of the both-chambers stage says both: "Passed <chamber>, <date>; <chamber>, <date>", in the order the data has them; a bill with only one of the two in its data (SCR 82) says that one and that the other chamber and its date are not in the data, and no row says neither is',
+       bothActive.length > 0 && bothRows.length === Math.min(10, bothActive.length) && bothRows.every(tr => sayingOf(tr, 'both-chambers') && !new RegExp(MISSING_BOTH.slice(0, 30)).test(tr.cells[3].textContent)) &&
+       bothRows.filter(tr => /^Passed [^;,]+, [A-Z][a-z]+ \d{1,2}, \d{4}; [^;,]+, [A-Z][a-z]+ \d{1,2}, \d{4}$/.test((tr.cells[3].querySelector('.leg-passed') || { textContent: '' }).textContent)).length >= bothRows.length - 1, bothRows.map(tr => tr.cells[3].textContent).join(' || '));
+    st.value = ''; st.dispatchEvent(new w.Event('change', { bubbles: true }));
+    // sorting the real bills by progress: every bill, across every page, through the export (which holds all of them in the table's order)
+    const dl = catchDownloads(w);
+    id('legBillsTable').querySelector('[data-sort-col="status"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    id('legExport').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(40);
+    const table = parseCsv((await dl.text(dl.saved[0].blob)).replace(/^\uFEFF/, '')), body = table.slice(1), ST = COL['Status'], ranks = body.map(r => LABEL_RANK[r[ST]]);
+    const counts = {}; active.forEach(b => { counts[b.stage] = (counts[b.stage] || 0) + 1; });
+    ok(`Status sorted by progress on the real bills: the export holds all ${num(active.length)} of them (not the ten on the page), in order of progress, so each stage's bills come together in the order Introduced, In committee, Passed one chamber, Passed both chambers, Enacted`,
+       body.length === active.length && ranks.every(r => r >= 1) && ranks.every((r, i) => i === 0 || ranks[i - 1] <= r) && body[0][ST] === 'Introduced' && body[body.length - 1][ST] === 'Enacted' &&
+       ['introduced', 'committee', 'one-chamber', 'both-chambers', 'enacted'].every(k => body.filter(r => r[ST] === d.defaultView.eval(`LEGISLATION_STAGES['${k}'].label`)).length === counts[k]), body.map(r => r[ST]).filter((x, i, a) => i === 0 || a[i - 1] !== x).join(' > '));
+    ok('and it is not alphabetical: the first page is Introduced bills, where an alphabetical sort would open with Enacted ones, and Enacted ones come last', body.slice(0, 10).every(r => r[ST] === 'Introduced') && body.slice(-10).every(r => r[ST] === 'Enacted') && JSON.stringify(body.map(r => r[ST]).filter((x, i, a) => i === 0 || a[i - 1] !== x)) !== JSON.stringify(['Enacted', 'In committee', 'Introduced', 'Passed both chambers', 'Passed one chamber']));
+    // within a stage, the most recent action first
+    ok('within each stage the bill acted on most recently comes first (the tie-break does not flip when the order does)',
+       ['Introduced', 'In committee', 'Passed one chamber', 'Passed both chambers', 'Enacted'].every(lab => {
+         const ds = body.filter(r => r[ST] === lab).map(r => r[COL['Last action date']]), dated = ds.filter(x => x);
+         return ds.slice(0, dated.length).every(x => x) && ds.slice(dated.length).every(x => !x) && dated.every((x, i) => i === 0 || dated[i - 1] >= x);   // the dated ones first, newest first, then the ones with no date
+       }));
+    id('legBillsTable').querySelector('[data-sort-col="status"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    id('legExport').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(40);
+    const desc = parseCsv((await dl.text(dl.saved[1].blob)).replace(/^\uFEFF/, '')).slice(1);
+    ok('pressed again, the furthest along come first: Enacted, then Passed both chambers, down to Introduced', desc[0][ST] === 'Enacted' && desc[desc.length - 1][ST] === 'Introduced' && desc.map(r => LABEL_RANK[r[ST]]).every((r, i, a) => i === 0 || a[i - 1] >= r));
+    // the export of a place
+    const nyCount = active.filter(b => b.level === 'state' && b.state === 'NY').length;
+    id('legStateSelect').value = 'NY'; id('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
+    id('legExport').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await wait(40);
+    const ny = parseCsv((await dl.text(dl.saved[2].blob)).replace(/^\uFEFF/, '')).slice(1);
+    ok(`exporting New York gives every one of its ${nyCount} bills (more than a page), all New York, in the order in view, in a file named for it`, ny.length === nyCount && nyCount > 10 && ny.every(r => r[COL['Jurisdiction']] === 'New York') && dl.saved[2].name === `ai-bills-new-york-${isoToday}.csv` && ny.map(r => LABEL_RANK[r[ST]]).every((r, i, a) => i === 0 || a[i - 1] >= r), `${ny.length} of ${nyCount}`);
+    ok('a New York bill that passed one chamber has the chamber and the date in the file: the Assembly or the Senate, and a YYYY-MM-DD date', ny.filter(r => r[ST] === 'Passed one chamber').length > 0 && ny.filter(r => r[ST] === 'Passed one chamber').every(r => ['Assembly', 'Senate'].includes(r[COL['Chambers that passed it']]) && /^\d{4}-\d{2}-\d{2}$/.test(r[COL['Dates it passed']])));
+    const nyBoth = ny.filter(r => r[ST] === 'Passed both chambers');
+    ok('and one that passed both has both in the file: the Assembly and the Senate in the order it passed them, and two YYYY-MM-DD dates in that same order (earlier first), so each date lines up with its chamber',
+       nyBoth.length > 0 && nyBoth.every(r => { const c = r[COL['Chambers that passed it']].split('; '), ds = r[COL['Dates it passed']].split('; '); return c.length === 2 && ds.length === 2 && [...c].sort().join() === 'Assembly,Senate' && ds.every(x => /^\d{4}-\d{2}-\d{2}$/.test(x)) && ds[0] <= ds[1]; }), nyBoth.map(r => r[COL['Chambers that passed it']] + ' ' + r[COL['Dates it passed']]).join(' | '));
+    // the search finds the Last action date on the real bills
+    const sample = active.find(b => b.lastAction && b.lastAction.date), words = longDay(sample.lastAction.date);
+    id('legStateSelect').value = ''; id('legStateSelect').dispatchEvent(new w.Event('change', { bubbles: true }));
+    const box = id('legSearch'); box.value = words; box.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await wait(260);
+    const wantAtLeast = active.filter(b => b.lastAction && b.lastAction.date === sample.lastAction.date).length, got = Number((/^([\d,]+) of /.exec(id('legResultLine').textContent) || [])[1].replace(/,/g, ''));
+    ok(`searching a Last action date written as the page writes it ("${words}") finds at least every bill last acted on that day (${wantAtLeast})`, got >= wantAtLeast && wantAtLeast >= 1, `${got} / ${wantAtLeast}`);
+    box.value = ''; box.dispatchEvent(new w.Event('input', { bubbles: true }));
+  }
+
+  /* ── a bill whose veto stands is not listed ───────────────────────────────────────────────────────────────────────────────────────── *
+     Found 2026-11-23 by a scan of the page's data: California's SB 7 and SB 11 were at Passed both chambers with "Veto sustained." as their last action, SB 903 with "Consideration of Governor's veto pending.",
+     and New York's A 3411 (vetoed, then "TABLED", which does not even say veto) as well. The stage rule (os_stage in tools/legislation.py) only looked at a bill's LAST action, so a veto hid behind any later line
+     Open States gives no class. It now reads a veto wherever it sits (os_veto_stands): a bill whose veto stands is failed, which the page never lists. These run on the shipped bills, so they fail if the data is
+     built by a rule that lets a vetoed bill through. (The rule itself is tested in tests/test_legislation.py, including the vetoes that must not end a bill: a conditional one and a line-item one.) */
+  {
+    const { w, d } = load('index.html', '#legislation', { transform: noActions });
+    await settle(10);
+    const id = x => d.getElementById(x), ev = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    const bills = JSON.parse(w.eval('JSON.stringify(LEGISLATION_DATA)'));
+    const rows = () => [...d.querySelectorAll('#legBillsTable tbody tr')].filter(tr => tr.querySelector('.leg-num')), nums = () => rows().map(tr => tr.querySelector('.leg-num').textContent);
+    const pick = (el, v) => { el.value = v; ev(el, 'change'); };
+    const VETOED = [['os-ca-4-sb-7', 'California SB 7, veto sustained'], ['os-ca-4-sb-11', 'California SB 11, veto sustained'], ['os-ca-4-sb-903', 'California SB 903, veto pending'], ['os-ny-41-a-3411', 'New York A 3411, vetoed and tabled']];
+    ok('the bills a governor vetoed are not in the data the page lists: ' + VETOED.map(v => v[1]).join('; ') + ' (each was at Passed both chambers until the veto rule was fixed)',
+       VETOED.every(([vid]) => !bills.some(b => b.id === vid)), VETOED.filter(([vid]) => bills.some(b => b.id === vid)).map(v => v[0]).join());
+    ok('and no bill that is not law says "veto" in its last action (a line-item veto leaves a bill enacted; a conditional veto would be the one exception, and is looked at when it comes: the build prints a "veto:" line for it)',
+       bills.every(b => b.stage === 'enacted' || !/\bveto/i.test((b.lastAction || {}).text || '')), bills.filter(b => b.stage !== 'enacted' && /\bveto/i.test((b.lastAction || {}).text || '')).map(b => b.id).join());
+    // through the page, the way a reader would look for them: the Status menu's Passed both chambers, state by state
+    pick(id('legStatus'), 'both-chambers');
+    const anywhere = nums();
+    pick(id('legStateSelect'), 'CA');
+    const ca = nums();
+    pick(id('legStateSelect'), 'NY');
+    const ny = nums();
+    ok('Passed both chambers, for California and for New York, lists none of the four vetoed bills (SB 7, SB 11, SB 903, A 3411), though the stage is not empty: some bill passed both chambers and is listed',
+       anywhere.length >= 1 && !ca.some(n => ['SB 7', 'SB 11', 'SB 903'].includes(n)) && !ny.includes('A 3411'), anywhere.join() + ' | CA ' + ca.join() + ' | NY ' + ny.join());
+    // and by a search, the way a reader would find a bill that says veto: whatever the page lists for that word is law (the line-item vetoes of the budget bills), with the bills that only lightly mention AI on and off
+    pick(id('legStateSelect'), ''); pick(id('legStatus'), '');
+    const search = id('legSearch');
+    search.value = 'veto'; ev(search, 'input'); await wait(260);
+    const byDefault = rows();
+    id('legPassing').dispatchEvent(new w.MouseEvent('click', { bubbles: true })); await wait(260);
+    const withLight = rows();
+    ok('searching "veto" lists only bills that became law: with the bills that only lightly mention AI off (the default) and on, every bill found says Enacted, and with them on the search does find some (so it works)',
+       byDefault.every(tr => tr.cells[3].textContent.startsWith('Enacted')) && withLight.length >= 1 && withLight.every(tr => tr.cells[3].textContent.startsWith('Enacted')),
+       'default: ' + byDefault.map(tr => tr.querySelector('.leg-num').textContent + ' ' + tr.cells[3].textContent).join(' | ') + ' / with the light ones: ' + withLight.map(tr => tr.querySelector('.leg-num').textContent + ' ' + tr.cells[3].textContent).join(' | '));
+  }
+
+  /* ── the Export pill lives in the bills' section only, and the lists' Sort menu falls back under a Status order ──────────────────────── */
+  for (const [route, name] of [['all', 'All'], ['legislation', 'Legislation'], ['enforcement', 'Enforcement'], ['cases', 'Cases']]) {
+    const { w, d } = load('index.html', '#legislation');
+    await settle(10);
+    const id = x => d.getElementById(x);
+    id('legSort').value = 'status'; id('legSort').dispatchEvent(new w.Event('change', { bubbles: true }));
+    id('govSwitch' + name).dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await settle(5);
+    const shown = el => { for (let n = el; n && n !== d.body; n = n.parentElement) if (w.getComputedStyle(n).display === 'none') return false; return true; };
+    const leg = route === 'all' || route === 'legislation';
+    ok(`${name}: the Export to CSV pill is ${leg ? 'showing, with the bills\' table' : 'not showing: there is no bills\' table in this section'}`, shown(id('legExport')) === leg, route);
+    if (!leg) ok(`${name}: the lists' Sort menu shows Most recent while the bills' Status order is chosen, since a list has no stage to order by, and the one setting is kept for when the bills come back`, id('enfSort').value === 'recent' && id('legSort').value === 'status' && id('legResetText').textContent.startsWith('Reset all ('), id('enfSort').value + ' ' + id('legSort').value);
+    if (route === 'all') {
+      const acts = JSON.parse(w.eval('JSON.stringify(LEGISLATION_ACTIONS)')).filter(a => a.kind === 'enforcement').sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title)).slice(0, 10).map(a => a.id).join();
+      ok('All: the bills\' Status order is the tab\'s order, and its lists, which have no stage to order by, list the most recent first', id('legSort').value === 'status' && [...id('enfLists').querySelectorAll('section[data-kind="enforcement"] tbody tr')].map(tr => tr.getAttribute('data-id')).join() === acts, acts);
+    }
+  }
 };
 
 /* ── Legislation: the bills load when the tab first opens ──────────────────────────────────────────────────── *
@@ -2294,7 +3785,10 @@ const syncedTextTests = async () => {
    reason. */
 (async () => {
   await legislationTests();
+  await govBillsTests();
   await legislationLoadTests();
+  if (compareAddressTests) await compareAddressTests();   // the Compare checks that wait for the browser's Back or a typed address (set up in the Compare block)
+  if (linksAddressTests) await linksAddressTests();   // the Links checks that wait for the browser's Back or a typed address (set up in the Links address block)
   await syncedTextTests();
   const { w, d, errors } = load('index.html', '#about');
 
