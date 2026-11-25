@@ -24,10 +24,11 @@ Who updates each part of the site, and how often, is in the table in [`README.md
 | **the Brief tab (called Agenda until 2026-11-19; its files still say agenda): the brief's words, the link to the paper, or the cards each idea points to** | `data/agenda-data.js` (by hand, but the brief's words exactly as published and never reworded: a test pins their fingerprint; the `related` lists are ours; rules in [`docs/agenda.md`](docs/agenda.md)) | reload; no build step |
 | **how the Brief tab looks or behaves** | `src/js/35-agenda.js`, `src/styles/agenda.css`, `src/views/40-agenda.html`, and `TAB_DESCS.agenda` in `src/js/70-render.js` | `python3 build.py` |
 | **a fact (Fact Bank)** | `data/fact-bank-data.js`, through the `research-intake` and `fact-bank` skills in `skills/` (a fact belongs to one paper; the paragraph around it is in `data/fact-bank-context.js`) | reload; no build step |
-| **a midterm result or a stage (Legislation section)** | `data/legislation-data.js` (by hand; the row format is at the top of the file) | reload; no build step |
+| **a stage of a bill (its label, whether it counts as active, its rank in the Status order)** | `data/legislation-data.js` (by hand; the row format is at the top of the file; the 2026 midterm results that used to be in it were removed on 2026-11-23) | reload; no build step |
 | **an enforcement action or a key case (for the Enforcement and Cases sections of Government action)** | the **Google Sheet**'s `enforcement` or `cases` tab, never the repo: the daily sync copies them into `content/enforcement.csv`, `content/cases.csv` and `data/legislation-actions.js` (see [`content/README.md`](content/README.md)); a row is published only when its `status` is `approved` | nothing: the next sync publishes it (or "Run workflow" in the Actions tab) |
 | **a topic in the Legislation filter (its name, or the words that find it)** | `LEGISLATION_TOPICS` in `data/legislation-data.js` (by hand; how a bill gets a topic is in the comment above it, and in [`docs/legislation-sources.md`](docs/legislation-sources.md)) | reload; no build step |
-| **the bills (Legislation tab)** | `python3 tools/openstates_fetch.py` and `python3 tools/congress_fetch.py`, then `python3 tools/legislation.py build`, writes `data/legislation-bills.js`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
+| **the bills (Legislation tab)** | `python3 tools/openstates_fetch.py` and `python3 tools/congress_fetch.py`, then `python3 tools/legislation.py build`, writes `data/legislation-bills.js` (each bill that passed one chamber or both carries which chambers and when, from its source's actions; a state bill whose veto stands is left out, as a failed bill is: `os_veto_stands`); see [`docs/legislation-sources.md`](docs/legislation-sources.md). The weekly job runs COPIES of the two fetch tools: copy them again after changing either | reload; no build step |
+| **the order of the Status column (Introduced, In committee, Passed one chamber, Passed both chambers, Enacted)** | `rank` in each entry of `LEGISLATION_STAGES` in `data/legislation-data.js` (the one place; the Status menu and the stats bar read it too) | reload; no build step |
 | **a state bill's summary where Open States has none (Illinois, New Jersey)** | `python3 tools/state_summaries.py` reads each legislature's own summary into `content/legislation-state-summaries.json` (by the tool, never by hand), then `python3 tools/legislation.py build`; see [`docs/legislation-sources.md`](docs/legislation-sources.md) | reload; no build step |
 | **the state outlines (Legislation map)** | `python3 tools/us_map.py --topojson <us-atlas states-albers-10m.json>` writes `data/us-map.js` | reload; no build step |
 | **a paper's summary** | `data/paper-summaries.js` (drafted by Claude, reviewed by a person; rules in [`docs/paper-summaries.md`](docs/paper-summaries.md)) | reload; no build step |
@@ -101,7 +102,7 @@ src/views/20-shell           <main>, tab description, #viewPanel
 src/views/30-fact-bank       ... 50-about, 60-legislation, 80-papers, 90-modals
 src/js/00-state              data wiring, helpers, state
 src/js/05-lazy               lazy payload loader (Fact Bank)
-src/js/10-policy-map         ... 20-cite-export, 30-policy-compare, 35-agenda, 40-router, 55-enforcement,
+src/js/10-policy-map         ... 20-cite-export, 30-policy-compare, 30-policy-links, 32-policy-draft, 35-agenda, 40-router, 55-enforcement,
                                  60-legislation, 70-render, 80-fact-bank
 ```
 
@@ -138,7 +139,7 @@ python3 tools/research.py selftest                             # the research ru
 python3 tools/actions.py selftest                              # the cases and enforcement rules
 python3 tools/policy_docs.py selftest                          # the policy Doc tool: nasty fixtures, every refusal, deliberate breakages
 python3 tools/policy_map.py selftest                           # the archived and featured cards tool
-python3 -m unittest discover -s tests -p "test_*.py" -v       # the policy Doc tool's unit tests: the pilot Doc, the CLI, the gate, random text round-trips
+python3 -m unittest discover -s tests -p "test_*.py" -v       # the policy Doc tool's unit tests (the pilot Doc, the CLI, the gate, random text round-trips) and the bills' passage and veto rules (tests/test_legislation.py: which chambers passed a bill, in what order, and when; which vetoes end a bill)
 python3 tests/test_policy_docs.py --write-fixtures             # only when a test says the page fixtures are stale
 ```
 
