@@ -1,6 +1,7 @@
   /* ── Policy Map ─────────────────────────────────────────────── */
   let polLevelFilter = 'all';
   let polViewMode    = 'all';   // the Landscape's view: 'all', 'links' or 'compare' (buildPolicyView in 20-cite-export.js)
+  let polShowView    = null;    // the switch's own function, set by buildPolicyView once it has drawn the switch: the router calls it to put the Landscape on a view for an address (#compare/<a>/<b>, 40-router.js). Null until then, and for good while the cards are hidden (policyCardsHidden)
 
   // APA-style citation: Author. (Year). Title. Organization.
   // The `source` field stores "Author — Organization"; a bare organization stands alone.
