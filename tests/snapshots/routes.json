@@ -400,5 +400,125 @@
     "panelLabelledBy": "homeTitleLink",
     "announce": "About view",
     "hash": "#about"
+  },
+  "#compare": {
+    "errors": [],
+    "bodyClasses": [
+      "policy-view"
+    ],
+    "nav": [
+      "viewPolicy"
+    ],
+    "navSelected": [
+      "viewPolicy"
+    ],
+    "panelLabelledBy": "viewPolicy",
+    "announce": "Policy landscape view",
+    "hash": "#compare/tax-credits-for-families/guaranteed-income-ubi"
+  },
+  "#compare/ui-reform/guaranteed-income-ubi": {
+    "errors": [],
+    "bodyClasses": [
+      "policy-view"
+    ],
+    "nav": [
+      "viewPolicy"
+    ],
+    "navSelected": [
+      "viewPolicy"
+    ],
+    "panelLabelledBy": "viewPolicy",
+    "announce": "Policy landscape view",
+    "hash": "#compare/ui-reform/guaranteed-income-ubi"
+  },
+  "#compare/nowhere/ui-reform": {
+    "errors": [],
+    "bodyClasses": [
+      "policy-view"
+    ],
+    "nav": [
+      "viewPolicy"
+    ],
+    "navSelected": [
+      "viewPolicy"
+    ],
+    "panelLabelledBy": "viewPolicy",
+    "announce": "Policy landscape view",
+    "hash": "#compare/tax-credits-for-families/guaranteed-income-ubi"
+  },
+  "#enforcement/states": {
+    "errors": [],
+    "bodyClasses": [
+      "enforcement-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Enforcement view",
+    "hash": "#enforcement/states"
+  },
+  "#cases/states": {
+    "errors": [],
+    "bodyClasses": [
+      "cases-view"
+    ],
+    "nav": [
+      "viewGovernment"
+    ],
+    "navSelected": [
+      "viewGovernment"
+    ],
+    "panelLabelledBy": "viewGovernment",
+    "announce": "Government action: Cases view",
+    "hash": "#cases/states"
+  },
+  "#links": {
+    "errors": [],
+    "bodyClasses": [
+      "policy-view"
+    ],
+    "nav": [
+      "viewPolicy"
+    ],
+    "navSelected": [
+      "viewPolicy"
+    ],
+    "panelLabelledBy": "viewPolicy",
+    "announce": "Policy landscape view",
+    "hash": "#links/ai-audit-mandate"
+  },
+  "#links/ui-reform": {
+    "errors": [],
+    "bodyClasses": [
+      "policy-view"
+    ],
+    "nav": [
+      "viewPolicy"
+    ],
+    "navSelected": [
+      "viewPolicy"
+    ],
+    "panelLabelledBy": "viewPolicy",
+    "announce": "Policy landscape view",
+    "hash": "#links/ui-reform"
+  },
+  "#links/nowhere": {
+    "errors": [],
+    "bodyClasses": [
+      "policy-view"
+    ],
+    "nav": [
+      "viewPolicy"
+    ],
+    "navSelected": [
+      "viewPolicy"
+    ],
+    "panelLabelledBy": "viewPolicy",
+    "announce": "Policy landscape view",
+    "hash": "#links/ai-audit-mandate"
   }
 }
