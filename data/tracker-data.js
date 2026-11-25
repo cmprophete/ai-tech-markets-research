@@ -2762,7 +2762,7 @@ const POLICY_CATEGORIES = {
 // These are the four pathways in Becky Chao's April 2026 brief, "Ideas for
 // Shared Economic Prosperity in the AI Transition" (becky_brief.md), kept in
 // her order. Key order below IS the render order, top→bottom on the map and
-// in the Links graph's vertical bands, so don't reorder casually.
+// in the menus of the Links and Compare views, so don't reorder casually.
 //
 //   Becky's section heading                          → row label
 //   1. Modernize the Social Contract                 → Economic Security
