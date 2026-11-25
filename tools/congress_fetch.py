@@ -26,7 +26,7 @@ introduced, so most new bills are found by their titles alone). The subject term
 none of them is "artificial intelligence".
 
 What it saves, in candidates.json in the cache folder: for each match, its official record as GovInfo gives it (titles, introduction date, committees, latest
-action, stage, whether it became law, the latest CRS summary, the CRS subject terms, its address on Congress.gov (GovInfo gives it for most bills; for the rest it is built from
+action, stage, which chamber passed it and on what date (`passed`, from the bill's own actions: see passages_of), whether it became law, the latest CRS summary, the CRS subject terms, its address on Congress.gov (GovInfo gives it for most bills; for the rest it is built from
 the bill's kind and number, which is how Congress.gov names its pages), and the bills GovInfo calls identical to it),
 and which words matched where. tools/legislation.py turns that into rows (merging identical House and Senate companions into one).
 """
@@ -140,6 +140,21 @@ def stage_of(b):
     return 'introduced'
 
 
+def passages_of(b):
+    """Where the bill passed a chamber, from its actions: [{'chamber': 'House', 'date': '2025-03-10'}, ...], at most one entry for each chamber, House first.
+    It reads the actions the way stage_of does (the Library of Congress's "Passed/agreed to in House: ..." line, or a chamber's own "Passed House" / "Passed Senate ..."), so a
+    bill is at the one-chamber stage exactly when this has one entry. A chamber that passed a bill more than once (it amended and sent it back, say) gives its LATEST date: that
+    is the vote that is standing, and the one that sent it on. A date that does not parse is left out rather than guessed. The page shows this for a bill that passed one chamber
+    (the owner's request, 2026-11-23: which chamber, and when); nothing here is worked out from anything but the bill's own actions."""
+    best = {}
+    for a in b.findall('actions/item'):
+        m = re.match(r'(?:Passed/agreed to in|Passed) (House|Senate)\b', (a.findtext('text') or '').strip())
+        day = text_of(a, 'actionDate')
+        if m and re.fullmatch(r'\d{4}-\d{2}-\d{2}', day):
+            best[m.group(1)] = max(best.get(m.group(1), ''), day)
+    return [{'chamber': c, 'date': best[c]} for c in ('House', 'Senate') if c in best]
+
+
 def titles_of(b):
     """(display title, official title as introduced, every title the bill has in any version)."""
     items = [(text_of(i, 'titleType'), text_of(i, 'title')) for i in b.findall('titles/item')]
@@ -187,7 +202,7 @@ def record(b, kind, tier, hits, display, official, summary):
             if k2:
                 ident.append(f'{k2}:{text_of(it, "number")}')
     return {'kind': kind, 'number': text_of(b, 'number'), 'bill': f'{LABEL[kind]} {text_of(b, "number")}', 'chamber': text_of(b, 'originChamber'), 'introduced': text_of(b, 'introducedDate'),
-            'title': display, 'officialTitle': official, 'stage': stage_of(b), 'last': last,
+            'title': display, 'officialTitle': official, 'stage': stage_of(b), 'passed': passages_of(b), 'last': last,
             'law': ((text_of(law, 'type') or 'Public Law') + ' ' + text_of(law, 'number')).strip() if law is not None else '',
             'committees': [[text_of(c, 'chamber'), re.sub(r' Committee$', '', text_of(c, 'name'))] for c in b.findall('committees/item')],
             'tier': tier, 'terms': hits, 'summary': summary[:1200], 'subjects': [text_of(i, 'name') for i in b.findall('subjects/legislativeSubjects/item') if text_of(i, 'name')],
