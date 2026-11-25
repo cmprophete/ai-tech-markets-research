@@ -24,15 +24,14 @@
   #aboutArea                         { display: none; }
   .about-view #aboutArea             { display: block; }
   .about-view .header-tab-desc       { display: none; }
-  /* Government action: its four sections, All, Cases, Enforcement and Legislation, are ONE area (#legislationArea: the toolbar, the topic chips, the search, the map and the section's own list; legislation.css).
+  /* Government action: its four sections, Legislation, Enforcement, Cases and All, are ONE area (#legislationArea: the toolbar, the topic chips, the search, the map and the section's own list; legislation.css).
      The area takes the masthead's inset from .cards-area. A control or a list that belongs to some of the sections is shown only there: gov-leg-only for the bills' own (Legislation and All), gov-lists-only
-     for the lists' own controls (Enforcement and Cases), gov-all-only for what only All holds (the midterm results table), and the enforcement and cases lists (#enforcementArea) everywhere but Legislation. */
+     for the lists' own controls (Enforcement and Cases), and the enforcement and cases lists (#enforcementArea) everywhere but Legislation. */
   #legislationArea                   { display: none; }
   .all-view #legislationArea, .legislation-view #legislationArea, .enforcement-view #legislationArea, .cases-view #legislationArea { display: block; }
   .legislation-view .cards-area      { padding-top: 0; }
   .enforcement-view .gov-leg-only, .cases-view .gov-leg-only { display: none; }
   .legislation-view .gov-lists-only, .all-view .gov-lists-only { display: none; }
-  .legislation-view .gov-all-only, .enforcement-view .gov-all-only, .cases-view .gov-all-only { display: none; }
   .legislation-view #enforcementArea { display: none; }
   /* ── ABOUT: the front page ───────────────────────────────────────────────────────────────────────────────────
      It sets its text in the styles the other tabs already use, bar one (the part headings, below): the shared
@@ -566,83 +565,126 @@
   }
   .pol-subview-btn.active { background: var(--navy); color: #fff; }
   .pol-subview-btn:hover:not(.active) { color: var(--text); background: color-mix(in srgb, var(--navy) 7%, transparent); }
-  /* ── Policy Links graph (test-run, hand-rolled SVG force layout) ── */
-  .pol-links-wrap { padding: 20px 28px 50px; }
-  .pol-links-graph-outer {
-    border: 1px solid var(--border); border-radius: var(--r-card);
-    background: var(--surface); overflow: hidden; position: relative;
+  /* The switch and, beside it on the same row, the controls of the view showing (the owner, 2026-11-24: "Start from should be in line with the views", the same for Compare's menus, then "make sure the rest of the buttons are
+     in line with the row across compare and link views", then "the policy selections should be before" the buttons). A slot is the shared filter bar's block (.controls, for its menu, label and pill styles) with the bar look
+     turned off: it does not stick of its own, and has no rule or padding. Each of the two views has a slot, and only the one of the view showing is shown; All has none. In a slot the MENUS come first and the PILLS after them,
+     each a unit of its own. On a wide enough window everything is one line, the switch, the menus and the pills: the pills keep their size and end the row, the menus take what they leave (the same room on both views, the
+     basis below is the same for Links' one menu and Compare's two, so the pills end the row at the same place on both). Where that does not fit (under about 1125px) the pills drop together to a line of their own under the menus.
+     Under about 780px the slot itself goes under the switch, and on a phone the pills wrap in two lines. The switch is level with the first line of the slot, whose height the pills' own minimum matches. */
+  .pol-subview-bar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 20px; margin: 20px 28px 0; }
+  .pol-subview-bar .pol-subview-toggle { margin: 0; flex: none; }
+  .pol-subview-slot.controls { position: static; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; flex: 1 1 460px; min-width: 0; padding: 0; background: none; border-bottom: none; }   /* 460px is the width of the six pills: with less room than that the slot goes under the switch */
+  .pol-subview-slot[hidden] { display: none; }
+  .pol-subview-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; flex: 1 1 320px; min-width: 0; }   /* 320px holds Compare's two menus side by side (150px each): the line is one only when this and the pills fit */
+  .pol-subview-pick .ctl-pair { flex: 1 1 150px; min-width: 0; max-width: 520px; }   /* a menu is at most as wide as the longest title needs, so on a very wide window the room is left empty, not stretched */
+  .pol-subview-pick .ctl-pair select { flex: 1 1 auto; width: 100%; }
+  .pol-subview-slot .pol-subview-pills { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; flex: 0 1 auto; min-width: 0; min-height: 32px; }   /* one unit; the switch is 32px tall */
+  .pol-subview-slot .kw-pill { flex: none; }
+  /* Compare's row stays under the top of the window while its long rows are read, as its two menus did when they were a bar of their own (the switch goes with them, the menus being on its row). The other two views are short.
+     The row keeps the switch where it was (the margin and the padding add up to the 20px above it everywhere), and takes the shared bar's own background and rule so that what scrolls under it is covered. The script
+     measures its height into --pol-bar-h, which the ring's scroll margin clears when a click on a sample brings the new pair to the top. Under 780px it does not stick (see the Compare rules below). */
+  .pol-subview-bar.is-pinned { position: sticky; top: 0; z-index: 100; margin-top: 10px; padding: 10px 0; background: var(--beige); border-bottom: 1px solid var(--divider); }
+  /* ── Landscape: the Links view (src/js/30-policy-links.js) ──────────────────────────────────────────────────────────────────
+     One policy in the middle, what works well with it on the left and what competes with it on the right, joined to it by lines (solid for works well with, dashed for competes with), and under them every
+     neighbour again with the authors' reasons. A neighbour's outline says the same, solid or dashed, so the two kinds differ by shape and never by colour alone; the area is the dot before a title, which leaves
+     the outline free for that one job. Type and surfaces are the other views': the shared filter bar's menu and pills (filterbar.css), Compare's policy name (20px bold, as the All view's area titles are) for the policy in the middle,
+     the Map's policy tile (a bold title over its area) for a neighbour, the dialog's own label (15.5px bold, as Compare's row labels are) over each column and over the list of reasons, and the notes size (13px) for the reasons. The grey (--muted) is not used for anything that
+     is read: it is 4.3:1 on the beige. Where the three columns do not fit (a stage under 720px wide, set by the script, which also stops drawing the lines) they stack in the same reading order. */
+  .pol-links-wrap { padding: 12px 28px 50px; }
+  .pol-links { display: flex; flex-direction: column; gap: 14px; }
+  /* The path under the switch is the shared filter bar's block too, with the bar look turned off: it does not stick. */
+  .pol-links .controls.pol-links-trail { position: static; border-bottom: none; padding: 0; }
+  /* A step of the path carries a whole title, which can run past a phone's width: it wraps instead of being clipped (the shared pill never wraps). */
+  .pol-links .controls .kw-pill { white-space: normal; text-align: left; line-height: 1.35; max-width: 100%; }
+  .pol-links-sep { font-family: var(--grot); font-size: 12px; color: var(--text); }
+  .pol-links-here { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--headline); line-height: 1.3; }
+  .pol-links-empty { padding: 48px 0; text-align: center; color: var(--text); font-size: 14px; }
+  .pol-links-stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 44px; align-items: center; scroll-margin-top: 12px; }   /* a move brings the stage to the top of the window, with a little room above it */
+  .pol-links-stage.is-stacked { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  /* The lines lie under the tiles (they come first in the markup and the tiles have a background) and never take a click. */
+  .pol-links-lines { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+  .pol-links-stage.is-stacked .pol-links-lines { display: none; }
+  .pol-links-line { fill: none; stroke: var(--navy); stroke-width: 1.5; stroke-opacity: 0.7; }
+  .pol-links-line--rival { stroke-dasharray: 6 5; }
+  .pol-links-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .pol-links-none { margin: 0; font-size: 13px; color: var(--text); }
+  /* A neighbour: the Map's policy tile, in an outline that is solid for a policy that works well with the one in the middle and dashed for one that competes with it. */
+  .pol-links-tile {
+    display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; cursor: pointer;
+    font-family: var(--sans); color: var(--text);
+    background: var(--surface); border: 1.5px solid var(--navy); border-radius: var(--r-card); padding: 8px 12px;
+    transition: background 0.15s;
   }
-  .pol-links-svg { display: block; width: 100%; height: auto; min-height: 560px; }
-  .pol-links-band-label {
-    font-family: 'Haas Grotesk', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;   /* the .lbl-grot label style */
-    fill: var(--muted); opacity: 0.75;
+  .pol-links-tile--rival { border-style: dashed; }
+  .pol-links-tile:hover { background: color-mix(in srgb, var(--cat-color, transparent) 8%, var(--surface)); }
+  .pol-links-tile:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .pol-links-tile-title { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; font-weight: 700; color: var(--headline); line-height: 1.3; }
+  .pol-links-tile-title::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); flex-shrink: 0; margin-top: 0.38em; }
+  .pol-links-tile-area { padding-left: 17px; font-size: 13px; line-height: 1.6; color: var(--text); }
+  /* The policy in the middle: navy, as the active pill of the switch is, so it is the one thing on the stage that is filled (white on the navy is 12.4:1; the beige area line 10.9:1), with a top rule in its area's colour
+     and a ring round the dot, because the navy area (Labor and Worker Rights) would otherwise vanish into the card. The button that opens its dialog is the shared one, light on the dark card: its hover (which fills
+     it navy, as everywhere) would lose it, so here it goes white instead, and its focus ring (navy) is white. */
+  .pol-links-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 14px 12px; background: var(--navy); border: 1px solid var(--navy); border-top: 3px solid var(--cat-color, var(--navy)); border-radius: var(--r-card); }
+  .pol-links-card:focus { outline: none; }
+  .pol-links-card:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }   /* the site's own ring, on the beige round the card */
+  .pol-links-name { margin: 0; font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: #fff; line-height: 1.2; }   /* Compare's .pol-cmp-name, white on the navy */
+  .pol-links-area { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--beige); }
+  .pol-links-area::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); box-shadow: 0 0 0 1.5px var(--beige); flex-shrink: 0; }
+  .pol-links-card .pol-action-btn { margin-top: 4px; }
+  .pol-links-card .pol-action-btn:hover { background: #fff; color: var(--navy); }
+  .pol-links-card .pol-action-btn:focus-visible { outline-color: #fff; }
+  /* The reasons: one rounded card of rows, a policy's name (a button that moves there) and how it is linked, then the authors' words. A rival's row has the dashed rule. */
+  .pol-links-why { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); overflow: hidden; }
+  .pol-links-rowlabel { padding: 16px 18px 10px; }
+  .pol-links-row { padding: 12px 18px 13px; border-top: 1px solid var(--border); }
+  .pol-links-row--rival { border-left: 3px dashed var(--navy); padding-left: 15px; }
+  .pol-links-row-name { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; font-size: 14px; line-height: 1.3; }
+  .pol-links-go { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--headline); text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .pol-links-go:hover { color: var(--navy); }
+  .pol-links-kind { font-size: 13px; color: var(--text); }
+  .pol-links-text { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: var(--text); }
+  .pol-links-text + .pol-links-text { margin-top: 6px; }
+  .pol-links-nolinks { padding: 14px 18px; }
+  @media (max-width: 700px) {
+    .pol-links-rowlabel { padding: 14px 14px 8px; }
+    .pol-links-row { padding: 12px 14px; }
+    .pol-links-row--rival { padding-left: 11px; }
+    .pol-links-go { padding: 6px 0; }
+    /* Touch targets are 44px, where the shared pill, select and button are about 27 to 35px. */
+    .pol-links .controls .kw-pill, .pol-subview-slot select, .pol-subview-slot .kw-pill, .pol-links .pol-action-btn, .pol-links-tile { min-height: 44px; }
   }
-  .pol-links-edge, .pol-links-rival { stroke: var(--muted); stroke-opacity: 0.35; fill: none; transition: stroke-opacity 0.15s, stroke 0.15s; }
-  /* Rival policies (each card's competesWith) are dashed, so the two kinds of line differ by shape and not by colour alone. A touch darker at rest,
-     because a dashed line shows less ink than a solid one. */
-  .pol-links-rival { stroke-dasharray: 6 5; stroke-opacity: 0.55; }
-  .pol-links-edge.dimmed, .pol-links-rival.dimmed { stroke-opacity: 0.08; }
-  .pol-links-edge.lit, .pol-links-rival.lit { stroke: var(--accent); stroke-opacity: 0.85; }
-  .pol-links-node-dot {
-    stroke: var(--surface); stroke-width: 1.5px; cursor: pointer;
-    transition: opacity 0.15s, r 0.15s;
-  }
-  .pol-links-node.dimmed .pol-links-node-dot { opacity: 0.28; }
-  /* Labels render via <foreignObject><div> (not SVG <text>) specifically so
-     long policy titles can wrap onto multiple lines instead of running off
-     as one long unbroken string. */
-  .pol-links-node-label-fo { overflow: visible; pointer-events: none; }
-  /* 13px is the notes size on the other tabs. It is in the graph's own units, so at the page's width the graph is drawn a little smaller (about 12px);
-     LABEL_FS in renderPolicyLinksGraph is this number, which the layout uses to keep the labels apart. */
-  .pol-links-node-label {
-    font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
-    font-size: 13px; line-height: 1.28; color: var(--text);
-    white-space: normal; overflow-wrap: break-word;
-    transition: opacity 0.15s, font-weight 0.15s, color 0.15s;
-  }
-  .pol-links-node.dimmed .pol-links-node-label { opacity: 0.3; }
-  .pol-links-node.lit .pol-links-node-label { font-weight: 600; color: var(--headline); }
-  .pol-links-node-hit { fill: transparent; cursor: pointer; }
-  .pol-links-legend {
-    display: flex; flex-wrap: wrap; gap: 6px 18px;
-    padding: 12px 16px; border-top: 1px solid var(--border);
-    font-family: var(--sans); font-size: 13px; line-height: 1.4; color: var(--text);   /* the Legislation map legend's style */
-  }
-  .pol-links-legend-item { display: flex; align-items: center; gap: 6px; }
-  .pol-links-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  /* The legend's samples of the two kinds of line. Their own classes, not .pol-links-edge, so nothing that counts the graph's lines counts these. */
-  .pol-links-key-line { flex-shrink: 0; overflow: visible; }
-  .pol-links-key-line line { stroke: var(--muted); stroke-opacity: 0.7; stroke-width: 1.5; }
-  .pol-links-key-line--rival line { stroke-dasharray: 6 5; }
+  @media (prefers-reduced-motion: reduce) { .pol-links-tile { transition: none; } }
 
   /* ── Landscape: the Compare view (src/js/30-policy-compare.js) ──────────────────────────────────────────────────────────────
-     Two policies set side by side under a ring with a fight graphic. Type is the site's: the card-title style (15.5px bold) for the names in
-     the ring, the area-title style (20px bold) over each card, the dialog's own label, text and list classes for the card text, the notes size
-     (13px) for the authors' reasons. The two menus are the shared filter bar's (filterbar.css), which sticks under the switch; the pills under
-     it are the same bar's pills but do not stick, because the cards below are long and the menus are what has to stay in reach. */
+     Two policies set side by side under a ring with a picture. The comparison under it is ROWS, one section each with the two policies' cells next to each other (on a phone
+     the two cells of a row stack), so the same section of both sits together: in two long columns they did not line up, and on a phone the second began four screens
+     below the first (the owner, 2026-11-23: "address this"). Type is the site's: the card-title style (15.5px bold) for the names in the ring and the row labels (the dialog's
+     own label), the area-title style (20px bold) over each policy, the dialog's own text and list classes for the card text, and the notes size (13px) for the authors' reasons and
+     for the smallest text: nothing here is under 12px, and the grey (--muted) is used only where it is 4.5:1 or better (it was 4.3:1 on the beige boxes). The two menus and the
+     pills beside them (Add, Back, Copy Draft, Copy link, Print, Randomize, Refresh, in alphabetical order, as on the Links view) are the shared filter bar's (filterbar.css), and are on the row of the switch above this
+     view (the slot rules above), which stays under the top of the window while the cards below are read. */
   .pol-cmp { padding: 12px 28px 50px; display: flex; flex-direction: column; gap: 14px; }
-  .pol-cmp .controls.pol-cmp-starts { position: static; border-bottom: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-  /* A fight's pill carries two full titles, which can run past a phone's width: it wraps instead of being clipped (the shared pill never wraps). */
-  .pol-cmp .controls .kw-pill { white-space: normal; text-align: left; line-height: 1.35; max-width: 100%; }
   .pol-cmp-empty { padding: 48px 0; text-align: center; color: var(--text); font-size: 14px; }
   .pol-cmp-ring {
     display: grid; grid-template-columns: 1fr 200px 1fr; align-items: stretch; gap: 6px;   /* the two corners are the same height whatever their titles run to */
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
-    padding: 14px; scroll-margin-top: 76px;   /* a sample's click brings the ring to the top, under the sticky menus */
+    padding: 14px; scroll-margin-top: calc(var(--pol-bar-h, 76px) + 10px);   /* a sample's click brings the ring to the top, under the pinned row of the switch and menus (its live height, --pol-bar-h) */
   }
   .pol-cmp-ring:focus { outline: none; }
-  .pol-cmp-ring:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  /* The site's own focus ring, 2px navy (12:1 on the card): the green one that was here was 2.6:1. */
+  .pol-cmp-ring:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .pol-cmp-corner {
     display: flex; flex-direction: column; gap: 3px; min-height: 96px; padding: 9px 12px;
     background: var(--surface2); border-top: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-ctl);
   }
   .pol-cmp-corner-b { text-align: right; }
-  .pol-cmp-announce { font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--muted); }
+  .pol-cmp-announce { font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--text); }   /* on the beige box --muted is 4.3:1; --text is 8.7:1 */
   .pol-cmp-name-sm { font-family: var(--sans); font-size: 15.5px; font-weight: 700; color: var(--headline); line-height: 1.25; }
-  .pol-cmp-areaname { font-size: 12px; color: var(--muted); }
-  /* The picture: two gloves and a burst, drawn in the site's palette (JS: polCmpClash). It is decoration (aria-hidden); the corners and the reason line say it in words. */
-  .pol-cmp-clash { display: block; width: 200px; height: 110px; margin: 0 auto; align-self: center; }
+  .pol-cmp-areaname { font-size: 13px; color: var(--text); }
+  /* The picture: two gloves and a burst, drawn in the site's palette (JS: polCmpClash), with what it means in words under it. It is decoration (aria-hidden); the ring's label, the caption and the reason line say it in words. */
+  .pol-cmp-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .pol-cmp-clash { display: block; width: 200px; height: 110px; margin: 0 auto; }
+  .pol-cmp-vs { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--headline); text-align: center; line-height: 1.3; }
   .pol-cmp-cuff { fill: var(--light-beige); stroke: var(--navy); stroke-width: 2; }
   .pol-cmp-glove-a, .pol-cmp-glove-b { stroke: var(--navy); stroke-width: 2; }
   .pol-cmp-glove-a { fill: var(--pink); }
@@ -652,32 +694,46 @@
   .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }
   .pol-cmp-idle .pol-cmp-burst-shape, .pol-cmp-same .pol-cmp-burst-shape { fill: var(--muted); }
   .pol-cmp-burst-text { font-family: var(--sans); font-size: 17px; font-weight: 700; fill: #fff; }
-  /* With no recorded link, or the same policy twice, the gloves are held apart: they only meet for a fight or a tag team. */
+  /* White on the gold was 2.6:1; the headline colour on it is 5.6:1. White stays on the navy burst (12.4:1) and the grey one (4.8:1). */
+  .pol-cmp-fight .pol-cmp-burst-text { fill: var(--headline); }
+  /* With no recorded link, or the same policy twice, the gloves are held apart: they only meet for a competing pair or a pair that works well together. */
   .pol-cmp-idle .pol-cmp-gl, .pol-cmp-idle .pol-cmp-gr, .pol-cmp-same .pol-cmp-gl, .pol-cmp-same .pol-cmp-gr { transform: translateX(-14px); }
-  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the gloves still, touching, with the burst. */
+  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the gloves still, touching, with the burst. For everyone else it
+     is short and then rests: three bumps (a pair that works well together, two slower ones: 4.4s), where it looped for as long as the page was open and could not be stopped. It plays
+     again whenever a pair is drawn, because the picture is drawn anew. Nothing moves for longer than five seconds. */
   @media (prefers-reduced-motion: no-preference) {
-    .pol-cmp-fight .pol-cmp-gl, .pol-cmp-fight .pol-cmp-gr, .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation: pol-cmp-bump 1s ease-in-out infinite; }
-    .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation-duration: 2.2s; }
-    .pol-cmp-fight .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .pol-cmp-fight .pol-cmp-gl, .pol-cmp-fight .pol-cmp-gr, .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation: pol-cmp-bump 1s ease-in-out 3; }
+    .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation-duration: 2.2s; animation-iteration-count: 2; }
+    .pol-cmp-fight .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out 3; transform-box: fill-box; transform-origin: center; }
   }
-  @keyframes pol-cmp-bump { 0%, 100% { transform: translateX(-9px); } 50% { transform: translateX(7px); } }
+  @keyframes pol-cmp-bump { 0% { transform: translateX(0); } 25% { transform: translateX(-9px); } 55% { transform: translateX(7px); } 100% { transform: translateX(0); } }
   @keyframes pol-cmp-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
   .pol-cmp-reason {
     margin: 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
     background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-deep); border-radius: var(--r-card);
   }
   .pol-cmp-reason-team { border-left-color: var(--navy); }
-  .pol-cmp-reason-idle, .pol-cmp-reason-same { border-left-color: var(--divider); color: var(--muted); }
+  .pol-cmp-reason-idle, .pol-cmp-reason-same { border-left-color: var(--divider); }
   .pol-cmp-lead { font-weight: 700; color: var(--headline); }
-  .pol-cmp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-  .pol-cmp-col {
-    display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; min-width: 0;
-    background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--cat-color, var(--border)); border-radius: var(--r-card);
-  }
+  .pol-cmp-note { display: block; margin-top: 6px; font-size: 13px; }
+  /* The comparison: one rounded card of rows. A row is a label across the top and the two policies' cells under it, A on the left and B on the right (one under the other on a phone). */
+  .pol-cmp-cols { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); overflow: hidden; }
+  .pol-cmp-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); }
+  .pol-cmp-row:first-child { border-top: none; }
+  .pol-cmp-rowlabel { grid-column: 1 / -1; padding: 16px 18px 0; }
+  .pol-cmp-cell { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 10px 18px 16px; }
+  .pol-cmp-cell[data-side="b"] { border-left: 1px solid var(--border); }
+  .pol-cmp-row-head .pol-cmp-cell { gap: 12px; padding: 16px 18px; border-top: 3px solid var(--cat-color, var(--border)); }
   .pol-cmp-name { font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--headline); line-height: 1.2; }
-  .pol-cmp-area { display: flex; align-items: center; gap: 8px; margin-top: -8px; font-size: 12px; color: var(--muted); }
+  .pol-cmp-area { display: flex; align-items: center; gap: 8px; margin-top: -8px; font-size: 13px; color: var(--text); }
   .pol-cmp-area::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); flex-shrink: 0; }
-  .pol-cmp-col .pol-action-btn { align-self: flex-start; }
+  /* Under a row's label each cell says whose it is: a cell far down the page has no policy name in view. */
+  .pol-cmp-who { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--headline); line-height: 1.3; }
+  .pol-cmp-who::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--cat-color, var(--muted)); flex-shrink: 0; }
+  .pol-cmp-cell .pol-action-btn { align-self: flex-start; }
+  /* A summary's box: nothing is folded above a phone's width, and the Show more button that goes with a long one is not shown (the phone rules below). */
+  .pol-cmp-fold { display: flex; flex-direction: column; gap: 10px; }
+  .pol-cmp-fold-btn { display: none; align-self: flex-start; }
   .pol-cmp-samples { display: flex; flex-direction: column; gap: 8px; }
   /* A sample is a policy tile (the Map's: a stripe in its area's colour, a bold title) with the author's reason under it. */
   .pol-cmp-sample {
@@ -689,22 +745,46 @@
     transition: background 0.15s, border-color 0.15s;
   }
   .pol-cmp-sample:hover { background: color-mix(in srgb, var(--cat-color, transparent) 8%, var(--surface)); border-left-color: var(--cat-color, var(--accent)); }
-  .pol-cmp-sample:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .pol-cmp-sample:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
   .pol-cmp-sample-title { font-size: 14px; font-weight: 700; color: var(--headline); line-height: 1.3; }
-  .pol-cmp-sample-why { font-size: 13px; color: var(--muted); line-height: 1.5; }
-  .pol-cmp-sample-go { align-self: flex-end; display: inline-flex; align-items: center; gap: 5px; font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; color: var(--accent); }
-  .pol-cmp-more, .pol-cmp-none { font-size: 12px; color: var(--muted); }
+  .pol-cmp-sample-why { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .pol-cmp-sample-go { align-self: flex-end; display: inline-flex; align-items: center; gap: 5px; font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--accent); }
+  .pol-cmp-more, .pol-cmp-none { font-size: 13px; color: var(--text); }
+  /* Below about 780px the slot goes under the switch and the switch, the pills and the menus take three lines or more (130px, a fifth of a tablet's window), too much to keep over the long rows: the row scrolls away with the page,
+     and a click on a sample scrolls the ring up to just under the top of the window. Above it, the row is the switch with the pills beside it and the menus under them, two lines, 91px (or one line, from about 1250px). */
+  @media (max-width: 780px) {
+    .pol-subview-bar.is-pinned { position: static; }
+    .pol-cmp-ring { scroll-margin-top: 12px; }
+  }
   @media (max-width: 700px) {
     .pol-cmp { padding: 12px 16px 40px; }
-    .pol-cmp-ring { grid-template-columns: 1fr; }
-    .pol-cmp-corner-b { text-align: left; }
-    .pol-cmp-cols { grid-template-columns: 1fr; }
-    .pol-cmp-col { padding: 14px; }
+    /* The ring is only the picture and its words on a phone: the two names and areas are in the cells just below it (and in the ring's label for a screen reader), and the picture is smaller. */
+    .pol-cmp-ring { grid-template-columns: 1fr; padding: 10px; gap: 4px; }
+    .pol-cmp-corner { display: none; }
+    .pol-cmp-clash { width: 150px; height: 83px; }
+    /* On a phone the row is several rows tall (a third of the window) and scrolls away with the page, as it does from 780px down (above); each cell says whose it is. Its spacing is the phone's own. */
+    .pol-subview-bar.is-pinned { margin-top: 16px; padding: 0 0 10px; }
+    /* The two cells of a row are one under the other, A then B, each saying whose it is. */
+    .pol-cmp-row { grid-template-columns: 1fr; }
+    .pol-cmp-rowlabel { padding: 14px 14px 0; }
+    .pol-cmp-cell { padding: 10px 14px 14px; }
+    .pol-cmp-cell[data-side="b"] { border-left: none; border-top: 1px dashed var(--border); }
+    .pol-cmp-row-head .pol-cmp-cell { padding: 14px; }
+    .pol-cmp-row-head .pol-cmp-cell[data-side="b"] { border-top: 3px solid var(--cat-color, var(--border)); }
+    /* A long summary (the script marks it is-long) is its first seven lines on a phone, fading out, with a button that opens it: about 1,000px each otherwise, before the first thing to compare. The text is only clipped, never
+       cut or changed (7 lines is 7 x 1.7em of the dialog's 14px text); a keyboard focus that lands inside it opens it (the script). Above a phone's width none of this applies. */
+    .pol-cmp-fold.is-long:not(.is-open) .pol-modal-text { max-height: 11.9em; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 2.4em), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 2.4em), transparent); }
+    .pol-cmp-fold.is-long .pol-cmp-fold-btn { display: inline-block; }
+    /* Touch targets are 44px, where the shared pill, select and button are about 27 to 35px. */
+    .pol-cmp .pol-action-btn { min-height: 44px; }   /* the menus and pills of the view are on the switch's row, and have theirs above (.pol-subview-slot) */
+    /* On a phone each menu has a line of its own, the whole width (two side by side were 108px each, too narrow to read a title in). */
+    .pol-subview-pick .ctl-pair { flex-basis: 100%; max-width: none; }
   }
   @media (prefers-reduced-motion: reduce) { .pol-cmp-sample { transition: none; } }
 
   @media (max-width: 700px) {
     .pol-subview-toggle { margin: 16px 16px 0; }
+    .pol-subview-bar { margin: 16px 16px 0; }
     .pol-links-wrap { padding: 16px 16px 40px; }
 
     /* Policy Map: tighten row padding; auto-fill collapses cards to 1-up */
@@ -713,3 +793,21 @@
     .pol-cat-row-head { padding: 12px 14px 10px; }
   }
 
+  /* ── Landscape: the draft's print sheet (src/js/32-policy-draft.js) ─────────────────────────────────────────────────────────
+     The policies added to the draft are written into #polDraftSheet when Print is pressed. It is never seen on a screen. For printing, everything else on the page is hidden, as the dialog's Print does for the dialog
+     (cards.css), and each policy starts on a page of its own: the card text is a page or two each, and a draft of several is read as separate documents. The text is the dialog's (its classes, so its type), the links
+     and citations lose their colour and underline and a link says where it goes, in small type after it, because the reader of a printed page cannot click it. The :not(.pol-modal-open) keeps the two print rules apart: with a dialog open,
+     its own rules in cards.css win and the sheet stays hidden. */
+  .pol-draft-sheet { display: none; }
+  @media print {
+    body.pol-draft-printing:not(.pol-modal-open) > *:not(#polDraftSheet) { display: none !important; }
+    body.pol-draft-printing:not(.pol-modal-open) #polDraftSheet { display: block !important; background: #fff; color: #000; padding: 0; }
+    .pol-draft-doc + .pol-draft-doc { break-before: page; }
+    .pol-draft-title { margin: 0; font-family: var(--sans); font-size: 22px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; color: #000; }
+    .pol-draft-area { margin: 4px 0 16px; font-size: 13px; color: #333; }
+    .pol-draft-doc .pol-modal-section { break-inside: avoid-page; padding-bottom: 12px; margin-bottom: 12px; }
+    .pol-draft-doc .syn-cite, .pol-draft-doc .pol-xref { color: inherit; border-bottom: none; }
+    .pol-draft-doc .pol-modal-text a, .pol-draft-doc .pol-modal-list a { color: inherit; border-bottom: none; }
+    .pol-draft-doc .pol-modal-text a::after, .pol-draft-doc .pol-modal-list a::after { content: " (" attr(href) ")"; font-size: 9px; color: #555; word-break: break-all; }
+    .pol-draft-foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #999; font-size: 11px; color: #444; word-break: break-all; }
+  }
