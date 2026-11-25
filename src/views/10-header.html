@@ -11,9 +11,10 @@
         <!-- Three labelled groups, each tab above its group's label. Alphabetical within a group. The label is for the eye
              (aria-hidden), so a tab that would not make sense without its group says it in its accessible name, which still
              contains the visible text (Brief says "Policy brief" and Landscape "Policy landscape"; the others are clear alone).
-             Government action is ONE tab (since 2026-11-17, at the owner's request; it was two, Enforcement and Legislation), labelled "Enforcement and Legislation" in the owner's words, above the
-             group label Government action. It holds three sections, Cases, Enforcement and Legislation, switched in the toolbar of the area (src/views/60-legislation.html); each keeps an address of its own
-             (#cases, #enforcement, #legislation), and this button opens the one that was open last. -->
+             Government action is ONE tab (since 2026-11-17, at the owner's request; it was two, Enforcement and Legislation), labelled "Enforcement and Legislation" (the owner's words, 2026-11-18; her reviewers had it read
+             "Legislation and Enforcement" on 2026-11-23, and the owner put it back to "Enforcement and Legislation" on 2026-11-24), above the group label Government action. It holds four sections, Legislation, Enforcement, Cases and
+             All (in that order), switched in the toolbar of the area (src/views/60-legislation.html); each keeps an address of its own (#all, #legislation, #enforcement, #cases), and this button opens the one that was open last,
+             Legislation the first time (the owner, 2026-11-24). -->
         <div class="tab-group" data-group="research" role="presentation">
           <div class="tab-group-btns" role="presentation">
             <button class="header-nav-btn" id="viewFactBank" data-view="fact-bank" role="tab" aria-selected="false" aria-controls="viewPanel">Fact Bank</button>
