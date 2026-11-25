@@ -34,7 +34,7 @@ const ROUTES = [
   '#fact-bank', '#policy',
   '#brief',        // Brief (an excerpt of Becky Chao's brief), first in the Policy group (called Agenda until 2026-11-19)
   '#agenda',       // the Brief's old name: lands on it, and the address bar is rewritten to #brief
-  '#all',          // All, the first of the four sections of the Government action tab: everything at once, and where the tab opens
+  '#all',          // All, the last of the four sections in the Government action tab's switch (Legislation, Enforcement, Cases, All): everything at once, and where the tab still opens
   '#legislation',  // Legislation, the bills alone
   '#enforcement',  // Enforcement, one of the three sections of the Government action tab (a placeholder until the data file has a row of its kind)
   '#cases',        // Cases, the third section
@@ -47,6 +47,14 @@ const ROUTES = [
   '#job-displacement', '#tracker', '#tracker/jobs', '#tracker/btos/where',
   '#adoption', '#adoption/who', '#themes', '#theme/displacement',
   '#tracker/nonsense', '#nonsense',
+  // The Landscape on Compare (2026-11-24, docs/adr/0007-compare-pair-addresses-push-history.md): the pair it opens with, a pair of two policies, and a pair that is not two
+  // policies on the page (it opens on the first pair and the address is rewritten to name it). Appended last so that the rows above keep their places in a sliced run.
+  '#compare', '#compare/ui-reform/guaranteed-income-ubi', '#compare/nowhere/ui-reform',
+  // Every state at once as a place (the States button, 2026-11-24): the same sections on `states`, which the Show menu's All states entry and the map's States button also choose.
+  '#enforcement/states', '#cases/states',
+  // The Landscape on Links (2026-11-24, docs/adr/0009-links-policy-addresses.md): the policy it opens with, a policy, and an id that is no policy on the page (it opens on the first policy and the address is rewritten to
+  // name it). Appended last, as the Compare routes were, so that the rows above keep their places in a sliced run.
+  '#links', '#links/ui-reform', '#links/nowhere',
 ];
 
 // Every nav button, in the header's order of ids: without Agenda, Enforcement and Legislation here the
