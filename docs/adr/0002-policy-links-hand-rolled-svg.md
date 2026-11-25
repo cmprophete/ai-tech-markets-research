@@ -1,6 +1,6 @@
 # Policy Links graph is a hand-rolled SVG force simulation, no external library
 
-**Status:** accepted
+**Status:** superseded by [0008](0008-policy-links-view-follow-the-links.md) (2026-11-24): the graph was replaced by a view that follows the links from one policy. This record stands for why the graph was built the way it was.
 
 The site loads zero external JS libraries today — `tracker-data.js` and `fact-bank-data.js` are the only `<script src>` tags, and even fonts are self-hosted. Adding a force-directed graph could have pulled in D3's force module from a CDN, which is the conventional choice for this kind of layout. We instead hand-rolled a small physics simulation (repulsion between all nodes, spring attraction along `pairsWith` edges, plus a soft per-category gravity pull toward a target height) directly in `index.html`'s existing script block.
 
