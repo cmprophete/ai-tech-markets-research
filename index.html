@@ -557,13 +557,13 @@
     content: ""; position: absolute; left: 2px; top: 0.6em;
     width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.7;
   }
-  /* The source's details (category, methodology, region) are a row of pills directly under the key finding. They are
+  /* The source's details (category, methodology, region) are a row of pills between the text and the two buttons (a child of .src-body, so the body's gap spaces it). They are
      the Fact Bank's pills value for value (#factBankArea .chip in policy.css: Haas Grotesk 11px/500, the micro-tag
      radius, 2.5px 9px of padding), and like those they carry no visible label. The category is tinted green, as a
      fact's topic pills are; the other two are plain, as its evidence-type pill is. Each pill says what it is in a
      tooltip and to a screen reader (see sourceDetailsHTML). The row wraps by pill, so on a phone a pill is never
      split. The date is not here: the byline above already says it. */
-  .src-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+  .src-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
   .src-chip {
     display: inline-flex; align-items: center;
     font-family: var(--grot); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; line-height: 1.6;
@@ -1762,35 +1762,26 @@
   .pol-cmp-announce { font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--text); }   /* on the beige box --muted is 4.3:1; --text is 8.7:1 */
   .pol-cmp-name-sm { font-family: var(--sans); font-size: 15.5px; font-weight: 700; color: var(--headline); line-height: 1.25; }
   .pol-cmp-areaname { font-size: 13px; color: var(--text); }
-  /* The picture: two gloves and a burst, drawn in the site's palette (JS: polCmpClash), with what it means in words under it. It is decoration (aria-hidden); the ring's label, the caption and the reason line say it in words. */
+  /* The picture: a burst with a mark in it (VS for a competing pair, + for a pair that works well together), drawn in the site's palette (JS: polCmpClash), with what it means in words under it. It is decoration (aria-hidden); the ring's label, the caption and the reason line say it in words. */
   .pol-cmp-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
   .pol-cmp-clash { display: block; width: 200px; height: 110px; margin: 0 auto; }
-  .pol-cmp-vs { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--headline); text-align: center; line-height: 1.3; }
-  .pol-cmp-cuff { fill: var(--light-beige); stroke: var(--navy); stroke-width: 2; }
-  .pol-cmp-glove-a, .pol-cmp-glove-b { stroke: var(--navy); stroke-width: 2; }
-  .pol-cmp-glove-a { fill: var(--pink); }
-  .pol-cmp-glove-b { fill: var(--gold); }
-  .pol-cmp-knuckle { fill: none; stroke: var(--navy); stroke-width: 2; stroke-linecap: round; }
   .pol-cmp-burst-shape { fill: var(--gold-deep); }
-  .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }
+  .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }   /* the + burst of a pair that works well together: navy, with the white mark (13:1) */
   .pol-cmp-idle .pol-cmp-burst-shape, .pol-cmp-same .pol-cmp-burst-shape { fill: var(--muted); }
-  .pol-cmp-burst-text { font-family: var(--sans); font-size: 17px; font-weight: 700; fill: #fff; }
-  /* White on the gold was 2.6:1; the headline colour on it is 5.6:1. White stays on the navy burst (12.4:1) and the grey one (4.8:1). */
+  .pol-cmp-burst-text { font-family: var(--sans); font-size: 34px; font-weight: 700; fill: #fff; dominant-baseline: central; }
+  .pol-cmp-team .pol-cmp-burst-text { font-size: 68px; }   /* VS and ? at 34px stand about 24px tall; the + glyph is only about a third of its font size, so it is set at twice that to stand as tall as they do (the owner, 2026-11-25: all three similar sizes) */
+  /* White on the gold was 2.6:1; the headline colour on it is 5.6:1. White stays on the grey burst (4.8:1). */
   .pol-cmp-fight .pol-cmp-burst-text { fill: var(--headline); }
-  /* With no recorded link, or the same policy twice, the gloves are held apart: they only meet for a competing pair or a pair that works well together. */
-  .pol-cmp-idle .pol-cmp-gl, .pol-cmp-idle .pol-cmp-gr, .pol-cmp-same .pol-cmp-gl, .pol-cmp-same .pol-cmp-gr { transform: translateX(-14px); }
-  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the gloves still, touching, with the burst. For everyone else it
-     is short and then rests: three bumps (a pair that works well together, two slower ones: 4.4s), where it looped for as long as the page was open and could not be stopped. It plays
+  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the burst still. For everyone else it
+     is short and then rests: three pops of the burst (3s), where it looped for as long as the page was open and could not be stopped. It plays
      again whenever a pair is drawn, because the picture is drawn anew. Nothing moves for longer than five seconds. */
   @media (prefers-reduced-motion: no-preference) {
-    .pol-cmp-fight .pol-cmp-gl, .pol-cmp-fight .pol-cmp-gr, .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation: pol-cmp-bump 1s ease-in-out 3; }
-    .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation-duration: 2.2s; animation-iteration-count: 2; }
     .pol-cmp-fight .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out 3; transform-box: fill-box; transform-origin: center; }
+    .pol-cmp-team .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out 3; transform-box: fill-box; transform-origin: center; }
   }
-  @keyframes pol-cmp-bump { 0% { transform: translateX(0); } 25% { transform: translateX(-9px); } 55% { transform: translateX(7px); } 100% { transform: translateX(0); } }
   @keyframes pol-cmp-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
   .pol-cmp-reason {
-    margin: 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
+    grid-column: 1 / -1; margin: 6px 0 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
     background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-deep); border-radius: var(--r-card);
   }
   .pol-cmp-reason-team { border-left-color: var(--navy); }
@@ -3022,9 +3013,9 @@
     const when = d => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     return `Summary written from the ${s.basis}${s.basisNote ? ` (${s.basisNote})` : ''}. ${s.reviewed ? `Reviewed ${when(s.reviewed)}.` : 'Draft, not yet reviewed.'}`;
   }
-  function summaryHTML(s, details) {
+  function summaryHTML(s) {
     return `
-      <p class="src-finding src-lede">${escapeHTML(s.lede)}</p>${details || ''}
+      <p class="src-finding src-lede">${escapeHTML(s.lede)}</p>
       <p class="src-para">${escapeHTML(s.body)}</p>
       ${s.note ? `<div class="src-take"><span class="src-take-label">Take note</span><p class="src-para">${escapeHTML(s.note)}</p></div>` : ''}
       <p class="src-basis">${escapeHTML(summaryBasis(s))}</p>`;
@@ -3042,8 +3033,8 @@
   }
 
   /* The source's own details as a row of pills, in the order the reader asked for: its category, its methodology (a
-     paper type such as Peer-Reviewed or Commentary) and its region. The Papers cards carry the row directly under
-     their key finding. The pills are the Fact Bank's (.src-chip in cards.css) and, like those, show no label, so each
+     paper type such as Peer-Reviewed or Commentary) and its region. The Papers cards carry the row between their text and
+     their two buttons (the reader asked for it directly above the buttons, 2026-11-25; for an hour it was above the lede). The pills are the Fact Bank's (.src-chip in cards.css) and, like those, show no label, so each
      one says what it is in a tooltip and, through screen-reader-only text, to assistive technology; data-kind carries
      the same word for the tests. (The Fact Bank's cards had this information as a plain line for a day, and the reader
      asked for it off.) The date is not among them: the byline already gives it. */
@@ -3059,16 +3050,17 @@
       </ul>`;
   }
 
-  // The open row, top to bottom: the paper's text with its details pills directly under the key finding (or the
-  // summary's lede), then its two buttons in one line: Open source, and Copy summary + citation.
+  // The open row, top to bottom: the paper's text (the key finding and bullets, or the summary), then its details
+  // pills, then its two buttons in one line: Open source, and Copy summary + citation.
   function buildSourceBody(entry) {
     const details = sourceDetailsHTML(entry);
     const takeaways = (entry.takeaways || []).map(t => `<li>${t}</li>`).join('');
     const text = entry.summary
-      ? summaryHTML(entry.summary, details)
-      : `<p class="src-finding">${entry.keyFinding}</p>${details}${takeaways ? `<ul class="src-takeaways">${takeaways}</ul>` : ''}`;
+      ? summaryHTML(entry.summary)
+      : `<p class="src-finding">${entry.keyFinding}</p>${takeaways ? `<ul class="src-takeaways">${takeaways}</ul>` : ''}`;
     return `
       <div class="src-text">${text}</div>
+      ${details}
       <div class="src-actions">
         ${entry.sourceUrl ? `<a class="cite-act" href="${entry.sourceUrl}" target="_blank" rel="noopener noreferrer">Open source ↗</a>` : ''}
         <button class="cite-act" type="button" data-fmt="summary">Copy summary + citation</button>
@@ -3618,7 +3610,7 @@
      Nothing here is made up. Complementary is each card's pairsWith, conflicting its competesWith, and every reason shown is the author's own
      `why`, as written. A link written on one card only is read as a link between the two (the Links view reads it through this same index), so a policy's samples
      are its own entries first, in the order they were written, then the policies that name it. There are no scores and no winner: the gloves
-     picture "these two compete", they do not rank, and the reason for a competing pair says so. Most pairs of policies have no recorded link at all
+     picture "these two compete", they do not rank, and the reason for a competing pair says so; a pair that works well together is two hands shaking. Most pairs of policies have no recorded link at all
      (6 of the 435 pairs of 30 compete, 29 work well together, on 2026-11-19), and the view says so rather than staging a contest.
 
      2026-11-23, the owner: "address this", the problems found in reading the view. What was changed, and why:
@@ -3627,11 +3619,17 @@
        and on a phone the second policy began four screens below the first). On a phone the two cells of a row stack, so one policy's Strengths are under the
        other's. A cell far down the page has no column heading in view, so each names its policy. The order in the markup is the reading order at every width:
        nothing is reordered with CSS, which would split what a keyboard and a screen reader meet from what is seen.
-     * The picture says what it shows in words under it ("They compete", "They work well together"), because "VS", "+" and "?" mean nothing alone; the VS
-       is dark on the gold, where it was white at 2.6:1; and the gloves move three times (a tag team twice, slower) when a pair is drawn and then rest, where they
+     * The picture says what it shows in words under it ("They compete", "They work well together"), because "VS" and "?" mean nothing alone; the VS
+       is dark on the gold, where it was white at 2.6:1; and the picture moves three times (the gloves bump, the hands shake) when a pair is drawn and then rests, where it
        looped for as long as the page was open (policy.css).
      * The words are plain: Policy A and Policy B, competing pairs, pairs that work well together. "Fight" suggested a winner. The picture stays, as asked. The
        state classes in the code are still pol-cmp-fight and pol-cmp-team.
+     * 2026-11-24, the owner: "in compare when policies work well together the graphic should be shaking hands". A pair the cards record as partners was two gloves tapping under a + burst (a tag team);
+       it is now a HANDSHAKE: the two policies' colours (pink for A, gold for B, as the gloves were) as two forearms in light cuffs, B's four fingers wrapped over A's hand and A's thumb over B's, three
+       short strokes above the clasp, and no burst. The hands pump up and down three times when the pair is drawn and then rest (policy.css), and sit still for a reader who has asked for less motion. The
+       gloves are for a competing pair and, held apart, for a pair with no recorded link.
+     * 2026-11-25, the owner: VS for policies that compete and + for policies that work well together (the handshake of 11-24 and the gloves are gone: marks only, the burst alone); the "Read the full
+       policy" button under each policy is gone; and the blurb on why they compete (or work well together) is inside the Policy A and Policy B box, under both policies.
      * Back goes to the pair before, whichever way the pair was changed (a menu, a sample, Randomize): a sample replaces the other side and brings the new pair to the top, and there was no way back from that.
      * 2026-11-24, the owner: the pills are in alphabetical order, Back, Copy Draft, Copy link, Print, Randomize, Refresh (the same order on the Links view, which has them all).
      * 2026-11-24, the owner: the row of the six competing pairs (a pill each) and the row that stepped through the 29 pairs that work well together (Previous, Pair 3 of 29, Next) were removed, and a Randomize
@@ -3709,10 +3707,7 @@
     }).join('');
   }
 
-  // The picture in the ring: two gloves and a burst. The state decides the burst and how the gloves sit; the colours and the motion are CSS (policy.css).
-  function polCmpGlove(cls) {
-    return `<rect class="pol-cmp-cuff" x="2" y="32" width="22" height="30" rx="4"/><ellipse class="${cls}" cx="50" cy="46" rx="29" ry="25"/><ellipse class="${cls}" cx="45" cy="26" rx="15" ry="10"/><path class="pol-cmp-knuckle" d="M68 36q8 10 0 20"/>`;
-  }
+  // The picture in the ring: a burst with a mark in it (VS, + or ?). The state decides the mark; the colours and the motion are CSS (policy.css).
   function polCmpStar(cx, cy, outer, inner, points) {
     const pts = [];
     for (let i = 0; i < points * 2; i++) {
@@ -3722,16 +3717,15 @@
     return pts.join(' ');
   }
   function polCmpClash(state) {
-    const label = state === 'team' ? '+' : state === 'same' ? '?' : 'VS';
+    // The mark in the burst (the owner, 2026-11-25: "marks only", no gloves): VS for a pair that competes, + for a pair that works well together; a pair with no recorded link gets a grey ? (the owner, 2026-11-25), as does the same policy twice.
+    const label = state === 'same' || state === 'idle' ? '?' : state === 'team' ? '+' : 'VS';
     return '<svg class="pol-cmp-clash" viewBox="0 0 200 110" aria-hidden="true" focusable="false">'
-      + `<g class="pol-cmp-gl">${polCmpGlove('pol-cmp-glove-a')}</g>`
-      + `<g transform="translate(200,0) scale(-1,1)"><g class="pol-cmp-gr">${polCmpGlove('pol-cmp-glove-b')}</g></g>`
-      + `<g class="pol-cmp-burst"><polygon class="pol-cmp-burst-shape" points="${polCmpStar(100, 48, 30, 19, 10)}"/><text class="pol-cmp-burst-text" x="100" y="54" text-anchor="middle">${label}</text></g></svg>`;
+      + `<g class="pol-cmp-burst"><polygon class="pol-cmp-burst-shape" points="${polCmpStar(100, 55, 46, 30, 10)}"/><text class="pol-cmp-burst-text" x="100" y="55" text-anchor="middle">${label}</text></g></svg>`;
   }
-  // What the picture means, in words under it: the burst's VS, + and ? are decoration and mean nothing alone.
+  // What the picture means, in words, for the ring's accessible name only (nothing is printed under the mark any more): the burst's VS and ? are decoration and mean nothing alone, and a picture of two hands is only a picture.
   const POL_CMP_CAPTION = { fight: 'They compete', team: 'They work well together', idle: 'No recorded link', same: 'The same policy' };
   const POL_CMP_NOTE = 'Competing means they are alternatives. This view does not rank them.';
-  const polCmpMid = state => `<div class="pol-cmp-mid">${polCmpClash(state)}<div class="pol-cmp-vs">${POL_CMP_CAPTION[state]}</div></div>`;
+  const polCmpMid = state => `<div class="pol-cmp-mid">${polCmpClash(state)}</div>`;   // no caption under the mark (the owner, 2026-11-25); its words are the ring's accessible name
 
   // A summary longer than this many characters is folded on a phone (see polCmpFold and policy.css); a shorter one would save little and is always shown whole.
   const POL_CMP_FOLD_AT = 600;
@@ -3769,13 +3763,12 @@
     };
   }
 
-  // The two cards as rows. The first row is each policy's name, its area and the button that opens its dialog; each row after it is one section, its label across both cells, then A's cell and B's.
+  // The two cards as rows. The first row is each policy's name and its area; each row after it is one section, its label across both cells, then A's cell and B's.
   const POL_CMP_NONE = '<div class="pol-cmp-none">None listed on this card.</div>';
   function polCmpRows(a, b) {
     const head = (p, side) => {
       const area = policyAreaOf(p);
-      return `<div class="pol-cmp-cell" data-side="${side}" style="--cat-color:${polCmpAreaColor(p)}"><h3 class="pol-cmp-name">${escapeHTML(p.title)}</h3><div class="pol-cmp-area">${area ? escapeHTML(area.label) : ''}</div>`
-        + `<div><button type="button" class="pol-action-btn pol-cmp-open" data-id="${escapeHTML(p.id)}">Read the full policy</button></div></div>`;
+      return `<div class="pol-cmp-cell" data-side="${side}" style="--cat-color:${polCmpAreaColor(p)}"><h3 class="pol-cmp-name">${escapeHTML(p.title)}</h3><div class="pol-cmp-area">${area ? escapeHTML(area.label) : ''}</div></div>`;
     };
     const cell = (p, side, html) => `<div class="pol-cmp-cell" data-side="${side}" style="--cat-color:${polCmpAreaColor(p)}"><div class="pol-cmp-who">${escapeHTML(p.title)}</div>${html}</div>`;
     const x = polCmpContent(a, 'a'), y = polCmpContent(b, 'b');
@@ -3809,9 +3802,9 @@
     ring.className = 'pol-cmp-ring pol-cmp-' + state;
     ring.setAttribute('role', 'group');
     ring.setAttribute('aria-label', `${a.title} and ${b.title}: ${POL_CMP_CAPTION[state].toLowerCase()}`);
-    ring.innerHTML = corner(a, 'Policy A', '') + polCmpMid(state) + corner(b, 'Policy B', ' pol-cmp-corner-b');
+    // The reason sits inside the ring, under both policies (the owner, 2026-11-25), so it is drawn with them.
+    ring.innerHTML = corner(a, 'Policy A', '') + polCmpMid(state) + corner(b, 'Policy B', ' pol-cmp-corner-b') + `<p class="pol-cmp-reason pol-cmp-reason-${state}" id="polCmpReason" aria-live="polite"></p>`;
     const reason = document.getElementById('polCmpReason');
-    reason.className = 'pol-cmp-reason pol-cmp-reason-' + state;
     if (state === 'fight' || state === 'team') {
       const kind = state === 'fight' ? 'riv' : 'pair', whys = idx.whys(a.id, b.id, kind);
       reason.innerHTML = `<span class="pol-cmp-lead">${state === 'fight' ? 'Why they compete:' : 'Why they work well together:'}</span> `
@@ -3905,7 +3898,6 @@
       + '<button class="kw-pill" type="button" id="polCmpRandom" title="Compare two policies chosen at random">Randomize</button><button class="kw-pill" type="button" id="polCmpRefresh" title="Back to the pair this view opens on">Refresh</button></span>';
     container.innerHTML = `
       <div class="pol-cmp-ring" id="polCmpRing" tabindex="-1"></div>
-      <p class="pol-cmp-reason" id="polCmpReason" aria-live="polite"></p>
       <div class="pol-cmp-cols" id="polCmpCols"></div>`;
     document.getElementById('polCmpA').addEventListener('change', e => polCmpGo(e.target.value, polCmpB));
     document.getElementById('polCmpB').addEventListener('change', e => polCmpGo(polCmpA, e.target.value));
@@ -3917,8 +3909,6 @@
     polDraftWire('Cmp', () => [polCmpA, polCmpB]);   // Copy Draft and Print take both policies, A then B
     const cols = document.getElementById('polCmpCols');
     const go = e => {
-      const open = e.target.closest ? e.target.closest('.pol-cmp-open') : null;
-      if (open) { openPolModalById(open.dataset.id); return true; }
       const xref = e.target.closest ? e.target.closest('.pol-xref') : null;
       if (xref) { e.stopPropagation(); openPolModalById(xref.dataset.polId); return true; }
       return false;
