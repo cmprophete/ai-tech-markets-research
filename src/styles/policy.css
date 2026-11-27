@@ -681,35 +681,26 @@
   .pol-cmp-announce { font-family: var(--grot); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--text); }   /* on the beige box --muted is 4.3:1; --text is 8.7:1 */
   .pol-cmp-name-sm { font-family: var(--sans); font-size: 15.5px; font-weight: 700; color: var(--headline); line-height: 1.25; }
   .pol-cmp-areaname { font-size: 13px; color: var(--text); }
-  /* The picture: two gloves and a burst, drawn in the site's palette (JS: polCmpClash), with what it means in words under it. It is decoration (aria-hidden); the ring's label, the caption and the reason line say it in words. */
+  /* The picture: a burst with a mark in it (VS for a competing pair, + for a pair that works well together), drawn in the site's palette (JS: polCmpClash), with what it means in words under it. It is decoration (aria-hidden); the ring's label, the caption and the reason line say it in words. */
   .pol-cmp-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
   .pol-cmp-clash { display: block; width: 200px; height: 110px; margin: 0 auto; }
-  .pol-cmp-vs { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--headline); text-align: center; line-height: 1.3; }
-  .pol-cmp-cuff { fill: var(--light-beige); stroke: var(--navy); stroke-width: 2; }
-  .pol-cmp-glove-a, .pol-cmp-glove-b { stroke: var(--navy); stroke-width: 2; }
-  .pol-cmp-glove-a { fill: var(--pink); }
-  .pol-cmp-glove-b { fill: var(--gold); }
-  .pol-cmp-knuckle { fill: none; stroke: var(--navy); stroke-width: 2; stroke-linecap: round; }
   .pol-cmp-burst-shape { fill: var(--gold-deep); }
-  .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }
+  .pol-cmp-team .pol-cmp-burst-shape { fill: var(--navy); }   /* the + burst of a pair that works well together: navy, with the white mark (13:1) */
   .pol-cmp-idle .pol-cmp-burst-shape, .pol-cmp-same .pol-cmp-burst-shape { fill: var(--muted); }
-  .pol-cmp-burst-text { font-family: var(--sans); font-size: 17px; font-weight: 700; fill: #fff; }
-  /* White on the gold was 2.6:1; the headline colour on it is 5.6:1. White stays on the navy burst (12.4:1) and the grey one (4.8:1). */
+  .pol-cmp-burst-text { font-family: var(--sans); font-size: 34px; font-weight: 700; fill: #fff; dominant-baseline: central; }
+  .pol-cmp-team .pol-cmp-burst-text { font-size: 68px; }   /* VS and ? at 34px stand about 24px tall; the + glyph is only about a third of its font size, so it is set at twice that to stand as tall as they do (the owner, 2026-11-25: all three similar sizes) */
+  /* White on the gold was 2.6:1; the headline colour on it is 5.6:1. White stays on the grey burst (4.8:1). */
   .pol-cmp-fight .pol-cmp-burst-text { fill: var(--headline); }
-  /* With no recorded link, or the same policy twice, the gloves are held apart: they only meet for a competing pair or a pair that works well together. */
-  .pol-cmp-idle .pol-cmp-gl, .pol-cmp-idle .pol-cmp-gr, .pol-cmp-same .pol-cmp-gl, .pol-cmp-same .pol-cmp-gr { transform: translateX(-14px); }
-  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the gloves still, touching, with the burst. For everyone else it
-     is short and then rests: three bumps (a pair that works well together, two slower ones: 4.4s), where it looped for as long as the page was open and could not be stopped. It plays
+  /* The motion is the only animation in the view and it is opt-in: a reader whose device asks for less motion gets the burst still. For everyone else it
+     is short and then rests: three pops of the burst (3s), where it looped for as long as the page was open and could not be stopped. It plays
      again whenever a pair is drawn, because the picture is drawn anew. Nothing moves for longer than five seconds. */
   @media (prefers-reduced-motion: no-preference) {
-    .pol-cmp-fight .pol-cmp-gl, .pol-cmp-fight .pol-cmp-gr, .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation: pol-cmp-bump 1s ease-in-out 3; }
-    .pol-cmp-team .pol-cmp-gl, .pol-cmp-team .pol-cmp-gr { animation-duration: 2.2s; animation-iteration-count: 2; }
     .pol-cmp-fight .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out 3; transform-box: fill-box; transform-origin: center; }
+    .pol-cmp-team .pol-cmp-burst { animation: pol-cmp-pop 1s ease-in-out 3; transform-box: fill-box; transform-origin: center; }
   }
-  @keyframes pol-cmp-bump { 0% { transform: translateX(0); } 25% { transform: translateX(-9px); } 55% { transform: translateX(7px); } 100% { transform: translateX(0); } }
   @keyframes pol-cmp-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
   .pol-cmp-reason {
-    margin: 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
+    grid-column: 1 / -1; margin: 6px 0 0; padding: 11px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
     background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--gold-deep); border-radius: var(--r-card);
   }
   .pol-cmp-reason-team { border-left-color: var(--navy); }
