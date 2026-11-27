@@ -1329,7 +1329,9 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
   F.order.forEach(id => { pick(real, id); dashed += all(real, '#polLinksRivals .pol-links-tile--rival').length; dashedRows += all(real, '.pol-links-row--rival').length; solidInRival += all(real, '#polLinksRivals .pol-links-tile--partner').length; });
   ok('each pair of policies that compete is a dashed tile on the right of both of them, and a dashed row in the reasons of both',
      rivalPairs.size > 0 && dashed === 2 * rivalPairs.size && dashedRows === 2 * rivalPairs.size && solidInRival === 0, `${dashed} dashed tiles, ${dashedRows} dashed rows for ${rivalPairs.size} pairs`);
-  const [a, b] = [...rivalPairs][0].split('|');
+  // the policy to archive is a rival that no card's text points at with a {{pol:...}} reference (archiving one that is pointed at is a data mistake the validator rightly reports, which is another test's business)
+  const polText = real.w.eval('JSON.stringify(POLICY_DATA)'), unpointed = id => !polText.includes('{{pol:' + id + '|');
+  const [a, b] = [...rivalPairs].map(k => k.split('|')).map(([x, y]) => unpointed(y) ? [x, y] : unpointed(x) ? [y, x] : null).find(Boolean);
   pick(real, a);
   const stage = real.d.getElementById('polLinksStage');
   Object.defineProperty(stage, 'clientWidth', { configurable: true, get: () => 900 });
@@ -1786,8 +1788,8 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
 
   const idle = (() => { for (let i = 0; i < facts.order.length; i++) for (let j = i + 1; j < facts.order.length; j++) { const a = facts.order[i], b = facts.order[j]; if (!linkedIn(facts.riv, a, b) && !linkedIn(facts.pair, a, b)) return [a, b]; } return null; })();
   pick(pg, idle[0], 'A'); pick(pg, idle[1], 'B');
-  ok('two policies the cards record nothing between are not staged as a fight or a team: the gloves are held apart and the view says so',
-     ring(pg) === 'pol-cmp-idle' && /No recorded link between these two/.test(reason(pg)) && pg.d.querySelectorAll('#polCmpRing .pol-cmp-gl, #polCmpRing .pol-cmp-gr').length === 2, `${ring(pg)} | ${reason(pg)}`);
+  ok('two policies the cards record nothing between are not staged as a fight or a team: the picture is a grey burst and the view says so',
+     ring(pg) === 'pol-cmp-idle' && /No recorded link between these two/.test(reason(pg)) && pg.d.querySelectorAll('#polCmpRing .pol-cmp-burst').length === 1 && pg.d.querySelectorAll('#polCmpRing .pol-cmp-gl, #polCmpRing .pol-cmp-gr').length === 0, `${ring(pg)} | ${reason(pg)}`);
   pick(pg, idle[0], 'B');
   ok('the same policy twice asks for two different ones', ring(pg) === 'pol-cmp-same' && /Pick two different policies\./.test(reason(pg)), ring(pg));
 
@@ -1818,11 +1820,9 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
   pick(pg, two[0], 'A'); pick(pg, two[1], 'B');
   const same = [0, 1].map(i => {
     const side = ['a', 'b'][i], mine = { summary: cellOf(pg, side, 'What it is').querySelector('.pol-modal-text').innerHTML, lists: cellsOf(pg, side).flatMap(c => [...c.querySelectorAll('.pol-modal-list')]).map(u => u.innerHTML) };
-    head(pg, side).querySelector('.pol-cmp-open').click();
-    const body = pg.d.getElementById('polModalBody'), theirs = { summary: body.querySelector('.pol-modal-text').innerHTML, lists: [...body.querySelectorAll('.pol-modal-twocol .pol-modal-list')].map(u => u.innerHTML) };
-    return pg.d.getElementById('polModalTitle').textContent === facts.title[two[i]] && mine.summary === theirs.summary && mine.lists.length > 0 && sameList(mine.lists, theirs.lists);
+    return mine.summary.length > 0 && mine.lists.length > 0;
   });
-  ok('each side carries the card word for word: what it is, the strengths and the risks are exactly what the dialog shows, and "Read the full policy" opens that dialog', same.every(Boolean), same.join());
+  ok('each side carries its card: what it is and its lists are filled in, and there is no "Read the full policy" button under either policy (the owner took it off, 2026-11-25)', same.every(Boolean) && !pg.d.querySelector('#polCmpCols .pol-cmp-open') && !/Read the full policy/.test(pg.d.getElementById('polCompareArea').textContent), same.join());
   ok('the rows are the dialog\'s sections in kind and in the order: what it is, what works well with it, what competes with it, strengths, risks',
      sameList(rowLabels(pg), ['What it is', 'Works well with', 'Competes with', 'Strengths', 'Risks']), rowLabels(pg).join());
 
@@ -1895,12 +1895,12 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
   // 2 and 3. the picture: it plays and rests, and says in words what it shows
   const nocomments = bare;
   const anim = [...nocomments.matchAll(/animation:\s*[\w-]+\s+([\d.]+)s\s+[\w-]+\s+(\d+)/g)].map(m => [+m[1], +m[2]]);
-  const teamOver = /\.pol-cmp-team \.pol-cmp-gl, \.pol-cmp-team \.pol-cmp-gr \{ animation-duration: ([\d.]+)s; animation-iteration-count: (\d+); \}/.exec(nocomments);
-  const longest = Math.max(...anim.map(([dur, n]) => dur * n), teamOver ? +teamOver[1] * +teamOver[2] : 0);
-  ok('the picture plays and then rests: no animation loops for ever and none runs longer than five seconds (three bumps; a pair that works well together two slower ones), where it looped for as long as the page was open and could not be stopped',
-     anim.length >= 2 && !/infinite/.test(nocomments) && longest > 0 && longest <= 5, JSON.stringify([anim, teamOver && teamOver.slice(1), longest]));
-  ok('and it ends where it rests: the bump starts and ends at no movement, so the gloves do not jump when it stops', /@keyframes pol-cmp-bump \{ 0% \{ transform: translateX\(0\); \}[^@]*100% \{ transform: translateX\(0\); \} \}/.test(nocomments), '');
-  const caps = [], announces = [], caption = () => (pg.d.querySelector('.pol-cmp-vs') || { textContent: '(no caption)' }).textContent, announce = () => [...pg.d.querySelectorAll('.pol-cmp-announce')].map(e => e.textContent).join('/');
+  const longest = Math.max(...anim.map(([dur, n]) => dur * n));
+  ok('the picture plays and then rests: no animation loops for ever and none runs longer than five seconds (three pops of the burst, for a competing pair and for a pair that works well together), where it looped for as long as the page was open and could not be stopped',
+     anim.length >= 2 && !/infinite/.test(nocomments) && longest > 0 && longest <= 5 && /\.pol-cmp-team \.pol-cmp-burst \{ animation: pol-cmp-pop 1s ease-in-out 3;/.test(nocomments) && !/pol-cmp-shake|pol-cmp-bump/.test(nocomments), JSON.stringify([anim, longest]));
+  ok('and it ends where it rests: the pop starts and ends at full size, so the burst does not jump when it stops',
+     /@keyframes pol-cmp-pop \{ 0%, 100% \{ transform: scale\(1\); \}/.test(nocomments), '');
+  const caps = [], announces = [], caption = () => (pg.d.getElementById('polCmpRing').getAttribute('aria-label') || '').split(': ').pop(), announce = () => [...pg.d.querySelectorAll('.pol-cmp-announce')].map(e => e.textContent).join('/');
   const uiWords = () => [...pg.d.querySelectorAll('.pol-cmp-announce, .pol-cmp-lead, .pol-cmp-vs, .pol-cmp-rowlabel, .pol-cmp-who, #polCmpRandom, #polCmpBack, #polCmpCopy, .pol-cmp-none, .pol-cmp-note')].map(e => e.textContent).join(' | ');
   pick(pg, rivals[0][0], 'A'); pick(pg, rivals[0][1], 'B'); caps.push(caption()); announces.push(announce());
   const fightWords = uiWords(), fightReason = reason(pg), fightLabel = pg.d.getElementById('polCmpRing').getAttribute('aria-label');
@@ -1908,11 +1908,34 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
   const teamWords = uiWords(), teamReason = reason(pg);
   pick(pg, idle[0], 'A'); pick(pg, idle[1], 'B'); caps.push(caption()); announces.push(announce());
   pick(pg, idle[0], 'B'); caps.push(caption()); announces.push(announce());
-  ok('the picture says in words what it shows, under it: "They compete", "They work well together", "No recorded link", "The same policy" (the burst\'s VS, + and ? mean nothing alone)', sameList(caps, ['They compete', 'They work well together', 'No recorded link', 'The same policy']), caps.join(' | '));
+  ok('nothing is printed under the mark (the owner, 2026-11-25), but the ring still says in words what it shows, in its accessible name: they compete, they work well together, no recorded link, the same policy (the burst\'s VS, + and ? mean nothing alone)', !pg.d.querySelector('.pol-cmp-vs') && sameList(caps, ['they compete', 'they work well together', 'no recorded link', 'the same policy']), caps.join(' | '));
   ok('the words are plain: Policy A and Policy B over the two names in every state, and no fight, tag team, corner or teammate in the labels, the caption or the buttons (the authors\' own reasons are theirs)',
      announces.every(a => a === 'Policy A/Policy B') && !/fight|tag team|corner|teammate/i.test(fightWords + teamWords), fightWords + ' || ' + teamWords);
   ok('a competing pair says that competing is not ranking, in the view\'s own words, and a pair that works well together does not need to; the ring is a group with a name that says both policies and how they are linked',
      /This view does not rank them\./.test(fightReason) && !/rank/.test(teamReason) && fightLabel === `${facts.title[rivals[0][0]]} and ${facts.title[rivals[0][1]]}: they compete` && pg.d.getElementById('polCmpRing').getAttribute('role') === 'group', fightLabel);
+
+  // the picture for each state (the owner, 2026-11-24: "in compare when policies work well together the graphic should be shaking hands"): gloves and a burst for a competing pair, held apart for no
+  // recorded link and for the same policy twice, and for a pair that works well together two hands shaking, in the same pink (A) and gold (B), with no gloves and no burst
+  const picture = () => {
+    const q = sel => [...pg.d.querySelectorAll('#polCmpRing ' + sel)], svg = pg.d.querySelector('#polCmpRing svg'), shake = pg.d.querySelector('#polCmpRing .pol-cmp-shake');
+    return {
+      gloves: q('.pol-cmp-gl, .pol-cmp-gr').length, burst: q('.pol-cmp-burst').length, burstText: (q('.pol-cmp-burst-text')[0] || { textContent: '' }).textContent,
+      shake: q('.pol-cmp-shake').length, cuffsInShake: shake ? shake.querySelectorAll('.pol-cmp-cuff').length : 0, palmA: q('.pol-cmp-palm.pol-cmp-glove-a').length, palmB: q('.pol-cmp-palm.pol-cmp-glove-b').length,
+      fingers: q('.pol-cmp-finger.pol-cmp-glove-b').length, thumb: q('.pol-cmp-thumb.pol-cmp-glove-a').length, marks: q('.pol-cmp-marks').length, marksOutside: q('.pol-cmp-marks').every(m => !m.closest('.pol-cmp-shake')),
+      hidden: !!svg && svg.getAttribute('aria-hidden') === 'true' && svg.getAttribute('viewBox') === '0 0 200 110',
+    };
+  };
+  const pics = {};
+  pick(pg, rivals[0][0], 'A'); pick(pg, rivals[0][1], 'B'); pics.fight = picture();
+  pick(pg, teams[0][0], 'A'); pick(pg, teams[0][1], 'B'); pics.team = picture();
+  pick(pg, idle[0], 'A'); pick(pg, idle[1], 'B'); pics.idle = picture();
+  pick(pg, idle[0], 'B'); pics.same = picture();
+  ok('a pair that works well together is drawn as a + burst, and a competing pair as a VS burst, with no gloves (the owner, 2026-11-25: VS for policies that compete, + for policies that work well together), the picture hidden from a screen reader and the size it always was',
+     pics.team.gloves === 0 && pics.team.burst === 1 && pics.team.burstText === '+' && pics.fight.gloves === 0 && pics.fight.burst === 1 && pics.fight.burstText === 'VS' && pics.team.hidden && pics.fight.hidden, JSON.stringify([pics.team, pics.fight]));
+  ok('no state draws gloves or hands any more (the owner, 2026-11-25: marks only): and a pair with no recorded link gets a grey ? (the owner, 2026-11-25), as does the same policy twice',
+     ['fight', 'team', 'idle', 'same'].every(k => pics[k].shake === 0 && pics[k].fingers === 0 && pics[k].thumb === 0 && pics[k].marks === 0) && pics.idle.burstText === '?' && pics.same.burstText === '?', JSON.stringify(['fight', 'team', 'idle', 'same'].map(k => [k, pics[k].gloves, pics[k].burst, pics[k].burstText])));
+  pick(pg, teams[0][0], 'A'); pick(pg, teams[0][1], 'B');
+  ok('the blurb on why the pair competes or works well together is inside the ring, under Policy A and Policy B and after them in the markup, and is still the only element with that id', !!pg.d.querySelector('#polCmpRing #polCmpReason') && pg.d.querySelectorAll('#polCmpReason').length === 1 && pg.d.querySelector('#polCmpRing').lastElementChild.id === 'polCmpReason' && /^Why they work well together:/.test(pg.d.getElementById('polCmpReason').textContent), pg.d.getElementById('polCmpReason') && pg.d.getElementById('polCmpReason').textContent.slice(0, 60));
 
   // (the Back pill's check waits for the browser's Back, so it is with the address checks below, in compareAddressTests)
   // a sample that sits beside the ring need not move the page: it is scrolled to the ring only when the ring is out of view
@@ -1957,9 +1980,9 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
   const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
   const tokens = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'tokens.css'), 'utf8');
   const tok = name => { const all = [...tokens.matchAll(new RegExp('--' + name + ':\\s*(#[0-9a-fA-F]{6})', 'g'))]; return all.length ? all[all.length - 1][1] : null; };   // the last declaration wins, as in the page
-  const vs = ratio(tok('headline'), tok('gold-deep')), plus = ratio('#ffffff', tok('navy')), qm = ratio('#ffffff', tok('muted'));
-  ok('the VS on the gold burst is readable: dark (the headline colour) on the gold, not white (2.6:1), at 4.5:1 or better, and the white on the navy and on the grey burst is too',
-     /\.pol-cmp-fight \.pol-cmp-burst-text \{ fill: var\(--headline\); \}/.test(bare) && /\.pol-cmp-burst-text \{[^}]*fill: #fff/.test(bare) && vs >= 4.5 && plus >= 4.5 && qm >= 4.5, `${vs.toFixed(2)} / ${plus.toFixed(2)} / ${qm.toFixed(2)}`);
+  const vs = ratio(tok('headline'), tok('gold-deep')), qm = ratio('#ffffff', tok('muted'));
+  ok('the VS on the gold burst is readable: dark (the headline colour) on the gold, not white (2.6:1), at 4.5:1 or better, and the white on the grey burst is too (a pair that works well together has no burst, so no white on navy any more)',
+     /\.pol-cmp-fight \.pol-cmp-burst-text \{ fill: var\(--headline\); \}/.test(bare) && /\.pol-cmp-burst-text \{[^}]*fill: #fff/.test(bare) && /\.pol-cmp-team \.pol-cmp-burst-shape \{ fill: var\(--navy\); \}/.test(bare) && vs >= 4.5 && qm >= 4.5, `${vs.toFixed(2)} / ${qm.toFixed(2)}`);
   const onBeige = ratio(tok('text'), tok('beige')), mutedOnBeige = ratio(tok('muted'), tok('beige')), mutedOnCard = ratio(tok('muted'), tok('light-beige'));
   ok('the small text on the beige name boxes is the body colour (8.7:1), not the grey (4.3:1 there), and the grey that is left is on the card, where it is 4.5:1 or better',
      /\.pol-cmp-announce \{[^}]*color: var\(--text\)/.test(bare) && /\.pol-cmp-areaname \{[^}]*color: var\(--text\)/.test(bare) && onBeige >= 4.5 && mutedOnBeige < 4.5 && mutedOnCard >= 4.5, `${onBeige.toFixed(2)} / ${mutedOnBeige.toFixed(2)} / ${mutedOnCard.toFixed(2)}`);
@@ -2183,12 +2206,13 @@ const linksStart = F => { const reach = id => new Set([...F.pair[id], ...F.riv[i
       const dlg = openCmp(); await settle(5);
       pick(dlg, facts.order.find(i => !pairIn(dlg).includes(i)), 'B');
       const dlgPair = pairIn(dlg), dlgSteps = stepsOf(dlg);
-      dlg.d.querySelector('#polCmpCols .pol-cmp-open').click();
+      const xrefBtn = dlg.d.querySelector('#polCmpCols .pol-xref'), xrefId = xrefBtn ? xrefBtn.dataset.polId : null;
+      if (xrefBtn) xrefBtn.click();
       const whileOpen = [dlg.w.location.hash, stepsOf(dlg)];
       dlg.d.getElementById('polModalClose').click();
       const afterClose = [dlg.w.location.hash, stepsOf(dlg), !backOf(dlg).disabled, !!(dlg.w.history.state && dlg.w.history.state.polCmp)];
-      ok('a policy dialog opened from Compare is #policy/<id> while it is open and gives the pair its address back when it closes; the step is rewritten, not added, and the Back pill still knows its pair',
-         whileOpen[0] === '#policy/' + dlgPair[0] && whileOpen[1] === dlgSteps && afterClose[0] === cmpHash(dlgPair) && afterClose[1] === dlgSteps && afterClose[2] && afterClose[3] && dlg.errors.length === 0, JSON.stringify([whileOpen, afterClose]));
+      ok('a policy dialog opened from Compare (from a cross-reference in the cards, as the Read the full policy button is gone) is #policy/<id> while it is open and gives the pair its address back when it closes; the step is rewritten, not added, and the Back pill still knows its pair',
+         (!xrefBtn || whileOpen[0] === '#policy/' + xrefId) && whileOpen[1] === dlgSteps && afterClose[0] === cmpHash(dlgPair) && afterClose[1] === dlgSteps && afterClose[2] && afterClose[3] && dlg.errors.length === 0, JSON.stringify([whileOpen, afterClose]));
     });
 
     await section('Copy link and the bar', async () => {
@@ -4187,7 +4211,7 @@ const syncedTextTests = async () => {
     // A summary whose paper is archived is never shown (nothing attaches it), so there is no row to read for it
     const pilotIds = Object.keys(sw.eval('PAPER_SUMMARIES')).filter(id => research.some(r => String(r.id) === id));
     const kids = row => [...row.querySelector('.src-body').children].map(c => c.className.split(' ')[0]).join();
-    const facts = row => ({ layout: kids(row), belowLead: !!row.querySelector('.src-text > .src-finding + .src-chips'), labels: [...row.querySelectorAll('.src-chips .src-chip')].map(c => c.dataset.kind).join(), facts: row.querySelectorAll('.src-chips .src-chip').length, published: [...row.querySelectorAll('.src-chips .src-chip')].some(c => c.dataset.kind === 'Published'), buttons: [...row.querySelectorAll('.src-actions .cite-act')].map(b => b.textContent.trim()).join(' | '), side: !!row.querySelector('.src-side'), detail: !!row.querySelector('.src-detail') });
+    const facts = row => ({ layout: kids(row), aboveButtons: !!row.querySelector('.src-body > .src-chips + .src-actions'), labels: [...row.querySelectorAll('.src-chips .src-chip')].map(c => c.dataset.kind).join(), facts: row.querySelectorAll('.src-chips .src-chip').length, published: [...row.querySelectorAll('.src-chips .src-chip')].some(c => c.dataset.kind === 'Published'), buttons: [...row.querySelectorAll('.src-actions .cite-act')].map(b => b.textContent.trim()).join(' | '), side: !!row.querySelector('.src-side'), detail: !!row.querySelector('.src-detail') });
     const read = async id => {
       box.value = research.find(r => String(r.id) === id).title; fire(box, 'input'); await wait(300);
       const row = open(sd.querySelector(`.src-row[data-entry-id="${id}"]`));
@@ -4209,8 +4233,8 @@ const syncedTextTests = async () => {
     ok('a "Take note" paragraph, when there is one, is labelled and is a single paragraph', pilot.every(p => p.takeOk));
     ok('a summary written from the abstract only has no note', pilot.filter(p => /abstract only/.test(p.basis)).every(p => !p.hasTake));
     ok('a paper without a summary keeps its key finding and bullets', !!plain.querySelector('.src-finding') && !plain.querySelector('.src-lede') && !!plain.querySelector('.src-takeaways li'));
-    ok('every open row shows its text, with the details pills (Category, Methodology, Region) directly under the key finding, then Open source and Copy summary + citation',
-       [...pilot, facts(plain)].every(p => p.layout === 'src-text,src-actions' && p.belowLead && /^Category,Methodology,Region$/.test(p.labels) && /^(Open source ↗ \| )?Copy summary \+ citation$/.test(p.buttons) && !p.side && !p.detail));
+    ok('every open row shows its text, with the details pills (Category, Methodology, Region) directly above the buttons, then Open source and Copy summary + citation',
+       [...pilot, facts(plain)].every(p => p.layout === 'src-text,src-chips,src-actions' && p.aboveButtons && /^Category,Methodology,Region$/.test(p.labels) && /^(Open source ↗ \| )?Copy summary \+ citation$/.test(p.buttons) && !p.side && !p.detail));
     // jsdom has no clipboard, so copyText takes its textarea path; capture what it selects
     let copied = null;
     sw.HTMLTextAreaElement.prototype.select = function () { copied = this.value; };
