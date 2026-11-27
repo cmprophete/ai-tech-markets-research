@@ -39,7 +39,8 @@ const PAPER_SUMMARIES = {
 2. **Three jobs, no overlap.** The lede is the claim. The body is what the authors did and found, and
    does not repeat the lede. The note is how much weight it can bear: the authors' own limits, and what
    kind of evidence it is. A short news piece can have no note.
-3. **Budget.** Lede 35 words, body 75, note 60. About 150 words in all, which is today's median row.
+3. **Budget.** Lede 25 words, body 50, note 60 (shortened on 2026-11-25 from 35 and 75; the note keeps its 60).
+   About 130 words at most. Every shown entry was trimmed to this on 2026-11-25.
 4. **No result figures** (percentages, dollar amounts, effect sizes, growth rates, rankings): they are
    quoted and rated in the Fact Bank, and a paraphrase here would be a second, unrated copy. Design
    descriptors are fine when the paper states them: sample size, number of cases, years covered.
@@ -80,10 +81,18 @@ continued or repeated:
    archived in the Sheet when the merge runs. A draft for a paper that was archived in the meantime is
    parked, not merged.
 
-Where it stands (2026-11-11): 54 summaries, the 12 pilot entries and 42 from the rollout. The rest of the
-non-archived papers still show their key finding and bullets. Writers also flag any place where a
-document disagrees with its tracker row (author, title, date, or a link that opens a different piece);
-those are listed for the Sheet and are not fixed in this file.
+Where it stands (2026-11-25): 171 entries: the 12 pilot entries, 42 from the first rollout (2026-11-11) and 117 from the
+second (2026-11-24 and 25, the same method, a cheaper model for most, which each entry's `model` field says). One entry
+(#152) is for a paper that is archived now and is not shown, so 166 of the 192 approved papers have a summary; the other
+26 still show their key finding and bullets. Those 26 could not be read: their servers refuse scripts, and a browser read (page text only, nothing clicked past a bot check, login or paywall) returned a bot check, a maintenance notice, an unrelated page or no text for a PDF. (#297, an NCSL article, was held back because the repo takes nothing from NCSL, and merged on the owner's word.) Four more entries (321 to 324) are for rows still under review, at the owner's request: their ids were assigned by the sync from bare links, so they follow the rows only while the repo's snapshot keeps those ids, and the page shows them once the rows are approved; the other four under-review rows could not be read. Entries written from a landing page or a paywalled abstract say so ("abstract only"), and the longest texts
+(12,000 to 45,000 words) were read in part: each such entry's `basisNote` says which parts. On 2026-11-25 the lede and
+body of the 91 entries then shown were shortened to the new budgets by a cheaper model working only from the old text
+(notes unchanged), and a sample of 12 was checked against the old text: no unsupported or misattributed claim, three
+slightly overstated sentences (fixed). Every batch of the second rollout had a sample of 3 to 6 summaries read against
+their sources by a second reader (and a paired test compared two writer models on 3 papers): no unsupported or
+misattributed claim, no result figures, and a few slightly overstated sentences (fixed). Writers also flag any place
+where a document disagrees with its tracker row (author, title, date, or a link that opens a different piece); those
+are listed for the Sheet and are not fixed in this file.
 
 ## What is not part of the rollout
 
