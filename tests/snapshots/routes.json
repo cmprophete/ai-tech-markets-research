@@ -414,7 +414,7 @@
     ],
     "panelLabelledBy": "viewPolicy",
     "announce": "Policy landscape view",
-    "hash": "#compare/tax-credits-for-families/guaranteed-income-ubi"
+    "hash": "#compare/reskilling-accounts/job-guarantee"
   },
   "#compare/ui-reform/guaranteed-income-ubi": {
     "errors": [],
@@ -444,7 +444,7 @@
     ],
     "panelLabelledBy": "viewPolicy",
     "announce": "Policy landscape view",
-    "hash": "#compare/tax-credits-for-families/guaranteed-income-ubi"
+    "hash": "#compare/reskilling-accounts/job-guarantee"
   },
   "#enforcement/states": {
     "errors": [],
