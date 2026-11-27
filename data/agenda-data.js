@@ -66,7 +66,7 @@ const AGENDA_DATA = {
                 {
                   lead: "Establish an income floor for displaced workers:",
                   text: "To mitigate the uncertainty workers face in the age of AI, direct cash transfers could also provide an economic floor allowing people to weather the shock of labor market changes. Direct cash interventions, however, shouldn’t be used as a justification for labor displacement from automation or substitution for including impacted workers in conversations around AI adoption and regulation.",
-                  related: ["guaranteed-income-ubi"]
+                  related: ["guaranteed-income-ubi", "universal-basic-income"]
                 },
                 {
                   lead: "Reevaluate the traditional models of work:",
