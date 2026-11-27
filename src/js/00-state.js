@@ -249,9 +249,9 @@
     const when = d => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     return `Summary written from the ${s.basis}${s.basisNote ? ` (${s.basisNote})` : ''}. ${s.reviewed ? `Reviewed ${when(s.reviewed)}.` : 'Draft, not yet reviewed.'}`;
   }
-  function summaryHTML(s, details) {
+  function summaryHTML(s) {
     return `
-      <p class="src-finding src-lede">${escapeHTML(s.lede)}</p>${details || ''}
+      <p class="src-finding src-lede">${escapeHTML(s.lede)}</p>
       <p class="src-para">${escapeHTML(s.body)}</p>
       ${s.note ? `<div class="src-take"><span class="src-take-label">Take note</span><p class="src-para">${escapeHTML(s.note)}</p></div>` : ''}
       <p class="src-basis">${escapeHTML(summaryBasis(s))}</p>`;
@@ -269,8 +269,8 @@
   }
 
   /* The source's own details as a row of pills, in the order the reader asked for: its category, its methodology (a
-     paper type such as Peer-Reviewed or Commentary) and its region. The Papers cards carry the row directly under
-     their key finding. The pills are the Fact Bank's (.src-chip in cards.css) and, like those, show no label, so each
+     paper type such as Peer-Reviewed or Commentary) and its region. The Papers cards carry the row between their text and
+     their two buttons (the reader asked for it directly above the buttons, 2026-11-25; for an hour it was above the lede). The pills are the Fact Bank's (.src-chip in cards.css) and, like those, show no label, so each
      one says what it is in a tooltip and, through screen-reader-only text, to assistive technology; data-kind carries
      the same word for the tests. (The Fact Bank's cards had this information as a plain line for a day, and the reader
      asked for it off.) The date is not among them: the byline already gives it. */
@@ -286,16 +286,17 @@
       </ul>`;
   }
 
-  // The open row, top to bottom: the paper's text with its details pills directly under the key finding (or the
-  // summary's lede), then its two buttons in one line: Open source, and Copy summary + citation.
+  // The open row, top to bottom: the paper's text (the key finding and bullets, or the summary), then its details
+  // pills, then its two buttons in one line: Open source, and Copy summary + citation.
   function buildSourceBody(entry) {
     const details = sourceDetailsHTML(entry);
     const takeaways = (entry.takeaways || []).map(t => `<li>${t}</li>`).join('');
     const text = entry.summary
-      ? summaryHTML(entry.summary, details)
-      : `<p class="src-finding">${entry.keyFinding}</p>${details}${takeaways ? `<ul class="src-takeaways">${takeaways}</ul>` : ''}`;
+      ? summaryHTML(entry.summary)
+      : `<p class="src-finding">${entry.keyFinding}</p>${takeaways ? `<ul class="src-takeaways">${takeaways}</ul>` : ''}`;
     return `
       <div class="src-text">${text}</div>
+      ${details}
       <div class="src-actions">
         ${entry.sourceUrl ? `<a class="cite-act" href="${entry.sourceUrl}" target="_blank" rel="noopener noreferrer">Open source ↗</a>` : ''}
         <button class="cite-act" type="button" data-fmt="summary">Copy summary + citation</button>
